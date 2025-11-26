@@ -68,6 +68,7 @@ export default function IncomePage() {
                 : 0
 
     const isGrowth = percentageChange >= 0
+    const isNextMonthDisabled = addMonths(currentDate, 1) > new Date()
 
     if (isLoading) {
         return <div className={styles.loading}>Загрузка...</div>
@@ -93,7 +94,12 @@ export default function IncomePage() {
                 <div className={styles.currentMonth}>
                     {format(currentDate, 'LLLL yyyy', { locale: ru })}
                 </div>
-                <button className={styles.navButton} onClick={handleNextMonth}>
+                <button
+                    className={styles.navButton}
+                    onClick={handleNextMonth}
+                    disabled={isNextMonthDisabled}
+                    style={{ opacity: isNextMonthDisabled ? 0.5 : 1, cursor: isNextMonthDisabled ? 'not-allowed' : 'pointer' }}
+                >
                     <ArrowRightIcon size={18} />
                 </button>
                 <Button variant="ghost" size="small" onClick={handleToday}>
@@ -111,29 +117,33 @@ export default function IncomePage() {
                     </div>
                     <div className={styles.statValue}>{currentMonthIncome.toLocaleString()} ₽</div>
                     <p className={styles.statDescription}>
-                        {isGrowth ? 'Рост' : 'Снижение'} на{' '}
-                        <strong>{Math.abs(currentMonthIncome - previousMonthIncome).toLocaleString()} ₽</strong> по
-                        сравнению с предыдущим месяцем
+                        Итого заработано: <strong>{currentMonthIncome.toLocaleString()} ₽</strong>
+                        <br />
+                        <span style={{ fontSize: '13px', opacity: 0.8 }}>
+                            {isGrowth ? 'Рост' : 'Снижение'} на {Math.abs(currentMonthIncome - previousMonthIncome).toLocaleString()} ₽
+                        </span>
                     </p>
                 </div>
 
-                <div className={styles.statCard}>
-                    <h3 className={styles.statTitle}>Предыдущий месяц</h3>
-                    <div className={styles.statValue}>{previousMonthIncome.toLocaleString()} ₽</div>
-                    <p className={styles.statDescription}>
-                        {format(subMonths(currentDate, 1), 'LLLL yyyy', { locale: ru })}
-                    </p>
-                </div>
+                {previousMonthIncome > 0 && (
+                    <div className={styles.statCard}>
+                        <h3 className={styles.statTitle}>Предыдущий месяц</h3>
+                        <div className={styles.statValue}>{previousMonthIncome.toLocaleString()} ₽</div>
+                        <p className={styles.statDescription}>
+                            {format(subMonths(currentDate, 1), 'LLLL yyyy', { locale: ru })}
+                        </p>
+                    </div>
+                )}
             </div>
 
             {monthlyData.length > 0 && (
-                <>
+                <div className={styles.chartsGrid}>
                     <div className={styles.chartSection}>
                         <h2 className={styles.chartTitle}>График доходов</h2>
                         <div className={styles.chart}>
                             <ResponsiveContainer width="100%" height={300}>
                                 <LineChart data={monthlyData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                                     <XAxis
                                         dataKey="month"
                                         stroke="var(--text-secondary)"
@@ -146,8 +156,8 @@ export default function IncomePage() {
                                     />
                                     <Tooltip
                                         contentStyle={{
-                                            backgroundColor: 'var(--card-bg)',
-                                            border: '1px solid var(--border-color)',
+                                            backgroundColor: 'var(--surface)',
+                                            border: '1px solid var(--border)',
                                             borderRadius: '8px',
                                             fontSize: '12px',
                                         }}
@@ -171,7 +181,7 @@ export default function IncomePage() {
                         <div className={styles.chart}>
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={monthlyData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                                     <XAxis
                                         dataKey="month"
                                         stroke="var(--text-secondary)"
@@ -180,8 +190,8 @@ export default function IncomePage() {
                                     <YAxis stroke="var(--text-secondary)" style={{ fontSize: '12px' }} />
                                     <Tooltip
                                         contentStyle={{
-                                            backgroundColor: 'var(--card-bg)',
-                                            border: '1px solid var(--border-color)',
+                                            backgroundColor: 'var(--surface)',
+                                            border: '1px solid var(--border)',
                                             borderRadius: '8px',
                                             fontSize: '12px',
                                         }}
@@ -192,7 +202,7 @@ export default function IncomePage() {
                             </ResponsiveContainer>
                         </div>
                     </div>
-                </>
+                </div>
             )}
         </div>
     )

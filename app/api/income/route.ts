@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
+import { ru } from 'date-fns/locale'
 
 export async function GET(request: Request) {
     try {
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
             })
 
             monthlyData.push({
-                month: format(date, 'MMM', { locale: require('date-fns/locale/ru') }),
+                month: format(date, 'MMM', { locale: ru }),
                 income: paidLessons._sum.price || 0,
                 lessons: (paidLessons._count || 0) + (unpaidLessons._count || 0),
                 paid: paidLessons._count || 0,
