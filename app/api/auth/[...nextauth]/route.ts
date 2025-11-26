@@ -55,6 +55,7 @@ export const authOptions: NextAuthOptions = {
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string
+                session.user.image = token.picture // Pass image from token to session
             }
             return session
         },

@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
         <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
             <div className={styles.logo}>
                 <Logo size={32} />
-                <h1 className={styles.logoText}>Mini-CRM</h1>
+                <h1 className={styles.logoText}>SkillTrack</h1>
             </div>
 
             <nav className={styles.nav}>
