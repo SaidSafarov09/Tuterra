@@ -33,7 +33,11 @@ interface Lesson {
 interface Student {
     id: string
     name: string
-    subjectId?: string
+    subjects: {
+        id: string
+        name: string
+        color: string
+    }[]
 }
 
 interface Subject {
@@ -135,10 +139,12 @@ export default function LessonsPage() {
 
     const handleStudentChange = (studentId: string) => {
         const student = students.find(s => s.id === studentId)
+        // If student has only one subject, pre-select it
+        const preSelectedSubject = student?.subjects.length === 1 ? student.subjects[0].id : ''
         setFormData(prev => ({
             ...prev,
             studentId,
-            subjectId: student?.subjectId || prev.subjectId || ''
+            subjectId: preSelectedSubject || prev.subjectId
         }))
     }
 

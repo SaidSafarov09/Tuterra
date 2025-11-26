@@ -8,6 +8,7 @@ interface ModalProps {
     title: string
     children: React.ReactNode
     footer?: React.ReactNode
+    size?: 'default' | 'large'
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -16,6 +17,7 @@ export const Modal: React.FC<ModalProps> = ({
     title,
     children,
     footer,
+    size = 'default',
 }) => {
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -39,7 +41,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div className={styles.overlay} onClick={onClose}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''}`} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.header}>
                     <h2 className={styles.title}>{title}</h2>
                 </div>

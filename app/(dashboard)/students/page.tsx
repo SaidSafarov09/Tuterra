@@ -15,11 +15,11 @@ interface Student {
     name: string
     contact?: string | null
     note?: string | null
-    subjectId?: string | null
-    subject?: {
+    subjects: {
+        id: string
         name: string
         color: string
-    }
+    }[]
     _count: {
         lessons: number
     }
@@ -212,7 +212,7 @@ export default function StudentsPage() {
 
     const filteredStudents = useMemo(() => {
         if (selectedSubjectFilter === 'all') return students
-        return students.filter((s) => s.subjectId === selectedSubjectFilter)
+        return students.filter((s) => s.subjects.some(subj => subj.id === selectedSubjectFilter))
     }, [students, selectedSubjectFilter])
 
     const filteredSubjects = useMemo(() => {
@@ -254,7 +254,7 @@ export default function StudentsPage() {
                     </button>
 
                     {subjects.map((subject) => {
-                        const count = students.filter((s) => s.subjectId === subject.id).length
+                        const count = students.filter((s) => s.subjects.some(subj => subj.id === subject.id)).length
                         if (count === 0) return null
 
                         return (
@@ -312,18 +312,18 @@ export default function StudentsPage() {
                                 <div className={styles.studentInfo}>
                                     <div className={styles.nameRow}>
                                         <h3 className={styles.studentName}>{student.name}</h3>
-                                        {student.subject && (
+                                        {student.subjects.map((subject) => (
                                             <span
+                                                key={subject.id}
                                                 className={styles.subjectBadge}
                                                 style={{
-                                                    color: student.subject.color,
-                                                    backgroundColor:
-                                                        student.subject.color + '20',
+                                                    color: subject.color,
+                                                    backgroundColor: subject.color + '20',
                                                 }}
                                             >
-                                                {student.subject.name}
+                                                {subject.name}
                                             </span>
-                                        )}
+                                        ))}
                                     </div>
                                     {student.contact && (
                                         <p className={styles.studentContact}>

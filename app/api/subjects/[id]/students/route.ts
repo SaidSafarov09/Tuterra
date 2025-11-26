@@ -18,7 +18,11 @@ export async function GET(
         const students = await prisma.student.findMany({
             where: {
                 ownerId: session.user.id,
-                subjectId: id,
+                subjects: {
+                    some: {
+                        id: id,
+                    },
+                },
             },
             include: {
                 lessons: {

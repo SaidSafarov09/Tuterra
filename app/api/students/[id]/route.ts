@@ -27,6 +27,7 @@ export async function GET(
                 ownerId: session.user?.id,
             },
             include: {
+                subjects: true,
                 lessons: {
                     orderBy: { date: 'desc' },
                 },

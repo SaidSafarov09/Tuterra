@@ -27,6 +27,11 @@ interface Subject {
 interface Student {
     id: string
     name: string
+    subjects: {
+        id: string
+        name: string
+        color: string
+    }[]
     lessons: {
         id: string
         date: string
@@ -42,6 +47,7 @@ const COLORS = [
 export default function SubjectsPage() {
     const router = useRouter()
     const [subjects, setSubjects] = useState<Subject[]>([])
+    const [allStudents, setAllStudents] = useState<Student[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [formData, setFormData] = useState({
@@ -58,6 +64,8 @@ export default function SubjectsPage() {
 
     // Add Student Modal State
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false)
+    const [addStudentMode, setAddStudentMode] = useState<'create' | 'link'>('link')
+    const [selectedStudentId, setSelectedStudentId] = useState('')
     const [studentFormData, setStudentFormData] = useState({
         name: '',
         contact: '',
@@ -77,6 +85,7 @@ export default function SubjectsPage() {
 
     useEffect(() => {
         fetchSubjects()
+        fetchAllStudents()
     }, [])
 
     const fetchSubjects = async () => {
@@ -92,6 +101,18 @@ export default function SubjectsPage() {
             toast.error('Произошла ошибка при загрузке предметов')
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    const fetchAllStudents = async () => {
+        try {
+            const response = await fetch('/api/students')
+            if (response.ok) {
+                const data = await response.json()
+                setAllStudents(data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch students:', error)
         }
     }
 
@@ -176,12 +197,16 @@ export default function SubjectsPage() {
 
     // Add Student Handlers
     const handleOpenAddStudentModal = () => {
+        setAddStudentMode('link')
+        setSelectedStudentId('')
         setStudentFormData({ name: '', contact: '', note: '' })
         setIsAddStudentModalOpen(true)
     }
 
     const handleCloseAddStudentModal = () => {
         setIsAddStudentModalOpen(false)
+        setAddStudentMode('link')
+        setSelectedStudentId('')
         setStudentFormData({ name: '', contact: '', note: '' })
     }
 
@@ -191,35 +216,67 @@ export default function SubjectsPage() {
     }
 
     const handleSubmitStudent = async () => {
-        if (!studentFormData.name.trim()) {
-            toast.error('Введите имя ученика')
-            return
-        }
         if (!selectedSubject) return
 
-        setIsSubmitting(true)
-        try {
-            const response = await fetch('/api/students', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...studentFormData,
-                    subjectId: selectedSubject.id,
-                }),
-            })
-
-            if (response.ok) {
-                await fetchSubjectStudents(selectedSubject.id)
-                await fetchSubjects() // Update counts
-                handleCloseAddStudentModal()
-                toast.success('Ученик успешно добавлен')
-            } else {
-                toast.error('Не удалось добавить ученика')
+        if (addStudentMode === 'create') {
+            if (!studentFormData.name.trim()) {
+                toast.error('Введите имя ученика')
+                return
             }
-        } catch (error) {
-            toast.error('Произошла ошибка')
-        } finally {
-            setIsSubmitting(false)
+
+            setIsSubmitting(true)
+            try {
+                const response = await fetch('/api/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...studentFormData,
+                        subjectId: selectedSubject.id,
+                    }),
+                })
+
+                if (response.ok) {
+                    await fetchSubjectStudents(selectedSubject.id)
+                    await fetchSubjects()
+                    await fetchAllStudents()
+                    handleCloseAddStudentModal()
+                    toast.success('Ученик успешно создан и добавлен')
+                } else {
+                    toast.error('Не удалось создать ученика')
+                }
+            } catch (error) {
+                toast.error('Произошла ошибка')
+            } finally {
+                setIsSubmitting(false)
+            }
+        } else {
+            // Link existing student
+            if (!selectedStudentId) {
+                toast.error('Выберите ученика')
+                return
+            }
+
+            setIsSubmitting(true)
+            try {
+                const response = await fetch(`/api/subjects/${selectedSubject.id}/students/link`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentId: selectedStudentId }),
+                })
+
+                if (response.ok) {
+                    await fetchSubjectStudents(selectedSubject.id)
+                    await fetchSubjects()
+                    handleCloseAddStudentModal()
+                    toast.success('Ученик успешно добавлен к предмету')
+                } else {
+                    toast.error('Не удалось добавить ученика')
+                }
+            } catch (error) {
+                toast.error('Произошла ошибка')
+            } finally {
+                setIsSubmitting(false)
+            }
         }
     }
 
@@ -462,6 +519,7 @@ export default function SubjectsPage() {
                 isOpen={isAddStudentModalOpen}
                 onClose={handleCloseAddStudentModal}
                 title="Добавить ученика"
+                size="large"
                 footer={
                     <ModalFooter
                         onCancel={handleCloseAddStudentModal}
@@ -472,31 +530,89 @@ export default function SubjectsPage() {
                 }
             >
                 <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-                    <Input
-                        label="Имя"
-                        name="name"
-                        value={studentFormData.name}
-                        onChange={handleStudentChange}
-                        required
-                        placeholder="Иван Иванов"
-                        disabled={isSubmitting}
-                    />
-                    <Input
-                        label="Контакт"
-                        name="contact"
-                        value={studentFormData.contact}
-                        onChange={handleStudentChange}
-                        placeholder="@telegram"
-                        disabled={isSubmitting}
-                    />
-                    <Input
-                        label="Заметка"
-                        name="note"
-                        value={studentFormData.note}
-                        onChange={handleStudentChange}
-                        placeholder="Дополнительная информация"
-                        disabled={isSubmitting}
-                    />
+                    {/* Mode selector */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                            <button
+                                type="button"
+                                onClick={() => setAddStudentMode('link')}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 16px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--border)',
+                                    background: addStudentMode === 'link' ? 'var(--primary)' : 'transparent',
+                                    color: addStudentMode === 'link' ? 'white' : 'var(--text-primary)',
+                                    cursor: 'pointer',
+                                    fontWeight: 500,
+                                }}
+                            >
+                                Добавить существующего
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setAddStudentMode('create')}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 16px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--border)',
+                                    background: addStudentMode === 'create' ? 'var(--primary)' : 'transparent',
+                                    color: addStudentMode === 'create' ? 'white' : 'var(--text-primary)',
+                                    cursor: 'pointer',
+                                    fontWeight: 500,
+                                }}
+                            >
+                                Создать нового
+                            </button>
+                        </div>
+                    </div>
+
+                    {addStudentMode === 'link' ? (
+                        <Dropdown
+                            label="Выберите ученика"
+                            placeholder="Выберите ученика"
+                            value={selectedStudentId}
+                            onChange={(value) => setSelectedStudentId(value)}
+                            options={allStudents
+                                .filter(s => !s.subjects.some(subj => subj.id === selectedSubject?.id))
+                                .map((student) => ({
+                                    value: student.id,
+                                    label: student.name,
+                                }))}
+                            searchable
+                            required
+                            disabled={isSubmitting}
+                        />
+                    ) : (
+                        <>
+                            <Input
+                                label="Имя"
+                                name="name"
+                                value={studentFormData.name}
+                                onChange={handleStudentChange}
+                                required
+                                placeholder="Иван Иванов"
+                                disabled={isSubmitting}
+                            />
+                            <Input
+                                label="Контакт"
+                                name="contact"
+                                value={studentFormData.contact}
+                                onChange={handleStudentChange}
+                                placeholder="@telegram"
+                                disabled={isSubmitting}
+                            />
+                            <Input
+                                label="Заметка"
+                                name="note"
+                                value={studentFormData.note}
+                                onChange={handleStudentChange}
+                                placeholder="Дополнительная информация"
+                                disabled={isSubmitting}
+                            />
+                        </>
+                    )}
                 </form>
             </Modal>
 

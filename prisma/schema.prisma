@@ -55,6 +55,15 @@ model Student {
   contact   String?
   note      String?
   ownerId   String
+
+  // Avatar customization fields
+  skinColor String? @default("#F4C2A6")
+  hairStyle String? @default("short")
+  hairColor String? @default("#2C1B18")
+  eyeStyle  String? @default("default")
+  accessory String? @default("none")
+  bgColor   String? @default("#E3F2FD")
+
   owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   subjects Subject[]
   lessons Lesson[]
