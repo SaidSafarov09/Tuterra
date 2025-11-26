@@ -7,6 +7,7 @@ import { z } from 'zod'
 const settingsSchema = z.object({
     name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
     phone: z.string().optional(),
+    avatar: z.string().nullable().optional(),
     currency: z.string(),
     timezone: z.string(),
 })
@@ -26,6 +27,7 @@ export async function GET(request: Request) {
                 name: true,
                 email: true,
                 phone: true,
+                avatar: true,
                 currency: true,
                 timezone: true,
             },
@@ -64,6 +66,7 @@ export async function PUT(request: Request) {
                 name: true,
                 email: true,
                 phone: true,
+                avatar: true,
                 currency: true,
                 timezone: true,
             },

@@ -41,7 +41,6 @@ export default function SettingsPage() {
         currency: 'RUB',
         timezone: 'Europe/Moscow',
     })
-    const [avatarFile, setAvatarFile] = useState<File | null>(null)
 
     useEffect(() => {
         fetchSettings()
@@ -76,7 +75,6 @@ export default function SettingsPage() {
     }
 
     const handleAvatarChange = (file: File | null) => {
-        setAvatarFile(file)
         if (file) {
             const reader = new FileReader()
             reader.onloadend = () => {
@@ -100,8 +98,19 @@ export default function SettingsPage() {
             })
 
             if (response.ok) {
+                const updatedUser = await response.json()
+
+                // Обновляем сессию с новыми данными
+                await update({
+                    ...session,
+                    user: {
+                        ...session?.user,
+                        name: updatedUser.name,
+                        image: updatedUser.avatar,
+                    },
+                })
+
                 toast.success('Настройки успешно сохранены')
-                await update() // Обновляем сессию
             } else {
                 const data = await response.json()
                 toast.error(data.error || 'Произошла ошибка')
@@ -125,61 +134,70 @@ export default function SettingsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className={styles.form}>
-
                 <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>Профиль</h2>
-                    <UserAvatarUpload
-                        currentAvatar={formData.avatar}
-                        userName={formData.name}
-                        onAvatarChange={handleAvatarChange}
-                    />
-                    <Input
-                        label="Имя"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                    <Input
-                        label="Email"
-                        name="email"
-                        value={formData.email}
-                        disabled
-                        hint="Email нельзя изменить"
-                    />
-                    <Input
-                        label="Телефон"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        placeholder="+7 (999) 000-00-00"
-                    />
+                    <div className={styles.profileGrid}>
+                        <div className={styles.avatarColumn}>
+                            <UserAvatarUpload
+                                currentAvatar={formData.avatar}
+                                userName={formData.name}
+                                onAvatarChange={handleAvatarChange}
+                            />
+                        </div>
+                        <div className={styles.fieldsColumn}>
+                            <Input
+                                label="Имя"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                            />
+                            <Input
+                                label="Email"
+                                name="email"
+                                value={formData.email}
+                                disabled
+                                hint="Email нельзя изменить"
+                            />
+                            <Input
+                                label="Телефон"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                placeholder="+7 (999) 000-00-00"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.section}>
+                    <h2 className={styles.sectionTitle}>Приложение</h2>
+                    <div className={styles.appGrid}>
+                        <Dropdown
+                            label="Валюта"
+                            value={formData.currency}
+                            onChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
+                            options={CURRENCIES}
+                        />
+                        <Dropdown
+                            label="Часовой пояс"
+                            value={formData.timezone}
+                            onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
+                            options={TIMEZONES}
+                            searchable
+                        />
+                    </div>
                 </div>
 
                 <div className={styles.section}>
                     <SubjectsManager />
                 </div>
 
-                <div className={styles.section}>
-                    <h2 className={styles.sectionTitle}>Приложение</h2>
-                    <Dropdown
-                        label="Валюта"
-                        value={formData.currency}
-                        onChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
-                        options={CURRENCIES}
-                    />
-                    <Dropdown
-                        label="Часовой пояс"
-                        value={formData.timezone}
-                        onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
-                        options={TIMEZONES}
-                        searchable
-                    />
+                <div className={styles.submitSection}>
+                    <Button type="submit" disabled={isSaving}>
+                        {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
+                    </Button>
                 </div>
-
-                <Button type="submit" disabled={isSaving}>
-                    {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
-                </Button>
             </form>
         </div>
     )

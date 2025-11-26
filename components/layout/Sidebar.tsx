@@ -32,6 +32,17 @@ interface SidebarProps {
     onClose?: () => void
 }
 
+// Generate stable color from string
+const stringToColor = (str: string): string => {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    const hue = Math.abs(hash % 360)
+    return `hsl(${hue}, 65%, 55%)`
+}
+
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     const pathname = usePathname()
     const { data: session } = useSession()
@@ -45,6 +56,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
             .toUpperCase()
             .slice(0, 2)
     }
+
+    const avatarBgColor = session?.user?.name ? stringToColor(session.user.name) : 'var(--primary)'
 
     return (
         <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
@@ -81,7 +94,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                             src={session?.user?.image || undefined}
                             alt={session?.user?.name || 'User'}
                         />
-                        <Avatar.Fallback className={styles.avatarFallback}>
+                        <Avatar.Fallback
+                            className={styles.avatarFallback}
+                            style={{ backgroundColor: avatarBgColor }}
+                        >
                             {getInitials(session?.user?.name)}
                         </Avatar.Fallback>
                     </Avatar.Root>
