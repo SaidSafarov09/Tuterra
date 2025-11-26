@@ -96,6 +96,15 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             .slice(0, 2)
     }
 
+    const stringToColor = (str: string): string => {
+        let hash = 0
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash)
+        }
+        const hue = Math.abs(hash % 360)
+        return `hsl(${hue}, 65%, 55%)`
+    }
+
     return (
         <div>
             <div className={styles.header}>
@@ -105,7 +114,10 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             <div className={styles.studentHeader}>
-                <div className={styles.studentAvatar}>
+                <div
+                    className={styles.studentAvatar}
+                    style={{ backgroundColor: stringToColor(student.name) }}
+                >
                     {getInitials(student.name)}
                 </div>
                 <div className={styles.studentInfo}>

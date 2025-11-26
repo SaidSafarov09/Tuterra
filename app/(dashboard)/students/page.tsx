@@ -1,16 +1,13 @@
 'use client'
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { UsersGroupIcon } from '@/components/icons/Icons'
+import { UsersGroupIcon, SearchIcon, PlusIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
-import { Dropdown } from '@/components/ui/Dropdown'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
-import { AvatarEditor } from '@/components/ui/AvatarEditor'
-import { StudentAvatar } from '@/components/ui/StudentAvatar'
 import styles from './page.module.scss'
 
 interface Student {
@@ -23,12 +20,6 @@ interface Student {
         name: string
         color: string
     }
-    skinColor?: string
-    hairStyle?: string
-    hairColor?: string
-    eyeStyle?: string
-    accessory?: string
-    bgColor?: string
     _count: {
         lessons: number
     }
@@ -38,15 +29,6 @@ interface Subject {
     id: string
     name: string
     color: string
-}
-
-const DEFAULT_AVATAR = {
-    skinColor: '#F4C2A6',
-    hairStyle: 'short',
-    hairColor: '#2C1B18',
-    eyeStyle: 'default',
-    accessory: 'none',
-    bgColor: '#E3F2FD',
 }
 
 export default function StudentsPage() {
@@ -63,16 +45,29 @@ export default function StudentsPage() {
         contact: '',
         note: '',
         subjectId: '',
-        ...DEFAULT_AVATAR,
+        subjectName: '', // For custom subject input
     })
 
     const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('all')
+    const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false)
+    const subjectInputRef = useRef<HTMLInputElement>(null)
 
     const { isOpen, openModal, closeModal } = useModalStore()
 
     useEffect(() => {
         fetchStudents()
         fetchSubjects()
+    }, [])
+
+    // Close suggestions on click outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (subjectInputRef.current && !subjectInputRef.current.contains(event.target as Node)) {
+                setShowSubjectSuggestions(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
     const fetchStudents = async () => {
@@ -113,7 +108,7 @@ export default function StudentsPage() {
             contact: '',
             note: '',
             subjectId: '',
-            ...DEFAULT_AVATAR,
+            subjectName: '',
         })
         setError('')
         openModal('create')
@@ -122,6 +117,7 @@ export default function StudentsPage() {
     const handleCloseModal = () => {
         closeModal()
         setError('')
+        setShowSubjectSuggestions(false)
     }
 
     // -----------------------------
@@ -136,29 +132,24 @@ export default function StudentsPage() {
         []
     )
 
-    const handleAvatarChange = useCallback((config: any) => {
-        setFormData((prev) => ({ ...prev, ...config }))
-    }, [])
+    const handleSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value
+        setFormData(prev => ({
+            ...prev,
+            subjectName: value,
+            subjectId: '', // Reset ID when typing, will rely on name or selection
+        }))
+        setShowSubjectSuggestions(true)
+    }
 
-    // 🔥 Мемоизированная конфигурация, не меняется при каждом рендере
-    const initialAvatarConfig = useMemo(
-        () => ({
-            skinColor: formData.skinColor,
-            hairStyle: formData.hairStyle,
-            hairColor: formData.hairColor,
-            eyeStyle: formData.eyeStyle,
-            accessory: formData.accessory,
-            bgColor: formData.bgColor,
-        }),
-        [
-            formData.skinColor,
-            formData.hairStyle,
-            formData.hairColor,
-            formData.eyeStyle,
-            formData.accessory,
-            formData.bgColor,
-        ]
-    )
+    const selectSubject = (subject: Subject) => {
+        setFormData(prev => ({
+            ...prev,
+            subjectId: subject.id,
+            subjectName: subject.name,
+        }))
+        setShowSubjectSuggestions(false)
+    }
 
     const handleSubmit = async () => {
         if (!formData.name.trim()) {
@@ -178,6 +169,7 @@ export default function StudentsPage() {
 
             if (response.ok) {
                 await fetchStudents()
+                await fetchSubjects() // Refresh subjects in case a new one was created
                 handleCloseModal()
                 toast.success('Ученик успешно добавлен')
             } else {
@@ -193,6 +185,28 @@ export default function StudentsPage() {
     }
 
     // -----------------------------
+    // HELPERS
+    // -----------------------------
+
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+    }
+
+    const stringToColor = (str: string): string => {
+        let hash = 0
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash)
+        }
+        const hue = Math.abs(hash % 360)
+        return `hsl(${hue}, 65%, 55%)`
+    }
+
+    // -----------------------------
     // FILTERED LIST
     // -----------------------------
 
@@ -200,6 +214,11 @@ export default function StudentsPage() {
         if (selectedSubjectFilter === 'all') return students
         return students.filter((s) => s.subjectId === selectedSubjectFilter)
     }, [students, selectedSubjectFilter])
+
+    const filteredSubjects = useMemo(() => {
+        if (!formData.subjectName) return subjects
+        return subjects.filter(s => s.name.toLowerCase().includes(formData.subjectName.toLowerCase()))
+    }, [subjects, formData.subjectName])
 
     // -----------------------------
     // RENDER
@@ -217,7 +236,10 @@ export default function StudentsPage() {
                     <h1 className={styles.title}>Ученики</h1>
                     <p className={styles.subtitle}>Управляйте списком ваших учеников</p>
                 </div>
-                <Button onClick={handleOpenModal}>+ Добавить ученика</Button>
+                <Button onClick={handleOpenModal}>
+                    <PlusIcon size={20} />
+                    Добавить ученика
+                </Button>
             </div>
 
             {/* Subject Filters */}
@@ -281,16 +303,12 @@ export default function StudentsPage() {
                             onClick={() => router.push(`/students/${student.id}`)}
                         >
                             <div className={styles.studentHeader}>
-                                <StudentAvatar
-                                    skinColor={student.skinColor}
-                                    hairStyle={student.hairStyle}
-                                    hairColor={student.hairColor}
-                                    eyeStyle={student.eyeStyle}
-                                    accessory={student.accessory}
-                                    bgColor={student.bgColor}
-                                    size={60}
-                                    className={styles.studentAvatar}
-                                />
+                                <div
+                                    className={styles.studentAvatarFallback}
+                                    style={{ backgroundColor: stringToColor(student.name) }}
+                                >
+                                    {getInitials(student.name)}
+                                </div>
                                 <div className={styles.studentInfo}>
                                     <div className={styles.nameRow}>
                                         <h3 className={styles.studentName}>{student.name}</h3>
@@ -347,13 +365,6 @@ export default function StudentsPage() {
                 }
             >
                 <div className={styles.modalContent}>
-                    <div className={styles.avatarSection}>
-                        <AvatarEditor
-                            initialConfig={initialAvatarConfig}
-                            onChange={handleAvatarChange}
-                        />
-                    </div>
-
                     <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
                         {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
 
@@ -367,20 +378,32 @@ export default function StudentsPage() {
                             disabled={isSubmitting}
                         />
 
-                        <Dropdown
-                            label="Предмет"
-                            placeholder="Выберите предмет (необязательно)"
-                            value={formData.subjectId}
-                            onChange={(value) =>
-                                setFormData((prev) => ({ ...prev, subjectId: value }))
-                            }
-                            options={subjects.map((s) => ({
-                                value: s.id,
-                                label: s.name,
-                            }))}
-                            searchable
-                            disabled={isSubmitting}
-                        />
+                        <div className={styles.subjectInputWrapper} ref={subjectInputRef}>
+                            <Input
+                                label="Предмет"
+                                name="subjectName"
+                                value={formData.subjectName}
+                                onChange={handleSubjectChange}
+                                onFocus={() => setShowSubjectSuggestions(true)}
+                                placeholder="Выберите или введите новый предмет"
+                                disabled={isSubmitting}
+                                autoComplete="off"
+                            />
+                            {showSubjectSuggestions && filteredSubjects.length > 0 && (
+                                <div className={styles.suggestionsList}>
+                                    {filteredSubjects.map(subject => (
+                                        <div
+                                            key={subject.id}
+                                            className={styles.suggestionItem}
+                                            onClick={() => selectSubject(subject)}
+                                        >
+                                            <div className={styles.suggestionColor} style={{ backgroundColor: subject.color }} />
+                                            {subject.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
                         <Input
                             label="Контакт"
