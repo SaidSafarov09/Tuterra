@@ -103,7 +103,7 @@
     display: inline-block;
     padding: 4px 12px;
     border-radius: 12px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
 }
 
@@ -164,5 +164,9 @@
 
     .lessonPriceContainer {
         text-align: left;
+    }
+
+    .badge {
+        font-size: 12px;
     }
 }
