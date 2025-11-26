@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         }
 
         const students = await prisma.student.findMany({
-            where: { ownerId: session.user.id },
+            where: { ownerId: session.user?.id },
             include: {
                 lessons: {
                     orderBy: { date: 'desc' },
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         const student = await prisma.student.create({
             data: {
                 ...validatedData,
-                ownerId: session.user.id,
+                ownerId: session.user?.id,
             },
         })
 

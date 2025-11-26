@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
@@ -21,7 +21,6 @@ interface Student {
         name: string
         color: string
     }
-    // Avatar fields
     skinColor?: string
     hairStyle?: string
     hairColor?: string
@@ -39,27 +38,33 @@ interface Subject {
     color: string
 }
 
+const DEFAULT_AVATAR = {
+    skinColor: '#F4C2A6',
+    hairStyle: 'short',
+    hairColor: '#2C1B18',
+    eyeStyle: 'default',
+    accessory: 'none',
+    bgColor: '#E3F2FD',
+}
+
 export default function StudentsPage() {
     const router = useRouter()
+
     const [students, setStudents] = useState<Student[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [error, setError] = useState('')
+
     const [formData, setFormData] = useState({
         name: '',
         contact: '',
         note: '',
         subjectId: '',
-        // Avatar defaults
-        skinColor: '#F4C2A6',
-        hairStyle: 'short',
-        hairColor: '#2C1B18',
-        eyeStyle: 'default',
-        accessory: 'none',
-        bgColor: '#E3F2FD',
+        ...DEFAULT_AVATAR,
     })
-    const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('all')
-    const [error, setError] = useState('')
+
+    const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('all')
 
     const { isOpen, openModal, closeModal } = useModalStore()
 
@@ -72,11 +77,10 @@ export default function StudentsPage() {
         try {
             const response = await fetch('/api/students')
             if (response.ok) {
-                const data = await response.json()
-                setStudents(data)
+                setStudents(await response.json())
             }
-        } catch (error) {
-            console.error('Failed to fetch students:', error)
+        } catch (e) {
+            console.error('Failed to fetch students:', e)
         } finally {
             setIsLoading(false)
         }
@@ -86,13 +90,16 @@ export default function StudentsPage() {
         try {
             const response = await fetch('/api/subjects')
             if (response.ok) {
-                const data = await response.json()
-                setSubjects(data)
+                setSubjects(await response.json())
             }
-        } catch (error) {
-            console.error('Failed to fetch subjects:', error)
+        } catch (e) {
+            console.error('Failed to fetch subjects:', e)
         }
     }
+
+    // -----------------------------
+    // MODAL LOGIC
+    // -----------------------------
 
     const handleOpenModal = () => {
         setFormData({
@@ -100,12 +107,7 @@ export default function StudentsPage() {
             contact: '',
             note: '',
             subjectId: '',
-            skinColor: '#F4C2A6',
-            hairStyle: 'short',
-            hairColor: '#2C1B18',
-            eyeStyle: 'default',
-            accessory: 'none',
-            bgColor: '#E3F2FD',
+            ...DEFAULT_AVATAR,
         })
         setError('')
         openModal('create')
@@ -116,16 +118,41 @@ export default function StudentsPage() {
         setError('')
     }
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        const { name, value } = e.target
-        setFormData((prev) => ({ ...prev, [name]: value }))
-    }
+    // -----------------------------
+    // FORM HANDLERS
+    // -----------------------------
 
-    const handleAvatarChange = (config: any) => {
+    const handleChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            const { name, value } = e.target
+            setFormData((prev) => ({ ...prev, [name]: value }))
+        },
+        []
+    )
+
+    const handleAvatarChange = useCallback((config: any) => {
         setFormData((prev) => ({ ...prev, ...config }))
-    }
+    }, [])
+
+    // 🔥 Мемоизированная конфигурация, не меняется при каждом рендере
+    const initialAvatarConfig = useMemo(
+        () => ({
+            skinColor: formData.skinColor,
+            hairStyle: formData.hairStyle,
+            hairColor: formData.hairColor,
+            eyeStyle: formData.eyeStyle,
+            accessory: formData.accessory,
+            bgColor: formData.bgColor,
+        }),
+        [
+            formData.skinColor,
+            formData.hairStyle,
+            formData.hairColor,
+            formData.eyeStyle,
+            formData.accessory,
+            formData.bgColor,
+        ]
+    )
 
     const handleSubmit = async () => {
         if (!formData.name.trim()) {
@@ -158,18 +185,26 @@ export default function StudentsPage() {
         }
     }
 
+    // -----------------------------
+    // FILTERED LIST
+    // -----------------------------
+
+    const filteredStudents = useMemo(() => {
+        if (selectedSubjectFilter === 'all') return students
+        return students.filter((s) => s.subjectId === selectedSubjectFilter)
+    }, [students, selectedSubjectFilter])
+
+    // -----------------------------
+    // RENDER
+    // -----------------------------
+
     if (isLoading) {
         return <div className={styles.loading}>Загрузка...</div>
     }
 
-    // Фильтрация учеников
-    const filteredStudents =
-        selectedSubjectFilter === 'all'
-            ? students
-            : students.filter((student) => student.subjectId === selectedSubjectFilter)
-
     return (
         <div>
+            {/* Header */}
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <h1 className={styles.title}>Ученики</h1>
@@ -178,6 +213,7 @@ export default function StudentsPage() {
                 <Button onClick={handleOpenModal}>+ Добавить ученика</Button>
             </div>
 
+            {/* Subject Filters */}
             {subjects.length > 0 && students.length > 0 && (
                 <div className={styles.filters}>
                     <button
@@ -187,17 +223,24 @@ export default function StudentsPage() {
                     >
                         Все ({students.length})
                     </button>
+
                     {subjects.map((subject) => {
                         const count = students.filter((s) => s.subjectId === subject.id).length
                         if (count === 0) return null
+
                         return (
                             <button
                                 key={subject.id}
-                                className={`${styles.filterChip} ${selectedSubjectFilter === subject.id ? styles.filterChipActive : ''
+                                className={`${styles.filterChip} ${selectedSubjectFilter === subject.id
+                                        ? styles.filterChipActive
+                                        : ''
                                     }`}
                                 style={{
                                     borderColor: subject.color,
-                                    color: selectedSubjectFilter === subject.id ? 'white' : subject.color,
+                                    color:
+                                        selectedSubjectFilter === subject.id
+                                            ? 'white'
+                                            : subject.color,
                                     background:
                                         selectedSubjectFilter === subject.id
                                             ? subject.color
@@ -212,6 +255,7 @@ export default function StudentsPage() {
                 </div>
             )}
 
+            {/* Empty State / Students Grid */}
             {students.length === 0 ? (
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateIcon}>👥</div>
@@ -246,14 +290,20 @@ export default function StudentsPage() {
                                         {student.subject && (
                                             <span
                                                 className={styles.subjectBadge}
-                                                style={{ color: student.subject.color, backgroundColor: `${student.subject.color}20` }}
+                                                style={{
+                                                    color: student.subject.color,
+                                                    backgroundColor:
+                                                        student.subject.color + '20',
+                                                }}
                                             >
                                                 {student.subject.name}
                                             </span>
                                         )}
                                     </div>
                                     {student.contact && (
-                                        <p className={styles.studentContact}>{student.contact}</p>
+                                        <p className={styles.studentContact}>
+                                            {student.contact}
+                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -265,7 +315,9 @@ export default function StudentsPage() {
                             <div className={styles.studentStats}>
                                 <div className={styles.stat}>
                                     <p className={styles.statLabel}>Занятий</p>
-                                    <p className={styles.statValue}>{student._count.lessons}</p>
+                                    <p className={styles.statValue}>
+                                        {student._count.lessons}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -273,6 +325,7 @@ export default function StudentsPage() {
                 </div>
             )}
 
+            {/* Modal */}
             <Modal
                 isOpen={isOpen}
                 onClose={handleCloseModal}
@@ -289,14 +342,7 @@ export default function StudentsPage() {
                 <div className={styles.modalContent}>
                     <div className={styles.avatarSection}>
                         <AvatarEditor
-                            initialConfig={{
-                                skinColor: formData.skinColor,
-                                hairStyle: formData.hairStyle,
-                                hairColor: formData.hairColor,
-                                eyeStyle: formData.eyeStyle,
-                                accessory: formData.accessory,
-                                bgColor: formData.bgColor,
-                            }}
+                            initialConfig={initialAvatarConfig}
                             onChange={handleAvatarChange}
                         />
                     </div>
@@ -318,8 +364,13 @@ export default function StudentsPage() {
                             label="Предмет"
                             placeholder="Выберите предмет (необязательно)"
                             value={formData.subjectId}
-                            onChange={(value) => setFormData((prev) => ({ ...prev, subjectId: value }))}
-                            options={subjects.map((s) => ({ value: s.id, label: s.name }))}
+                            onChange={(value) =>
+                                setFormData((prev) => ({ ...prev, subjectId: value }))
+                            }
+                            options={subjects.map((s) => ({
+                                value: s.id,
+                                label: s.name,
+                            }))}
                             searchable
                             disabled={isSubmitting}
                         />

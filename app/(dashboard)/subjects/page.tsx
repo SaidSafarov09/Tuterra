@@ -132,10 +132,10 @@ export default function SubjectsPage() {
                 <div className={styles.subjectsGrid}>
                     {subjects.map((subject) => (
                         <div
-                            key={subject.id}
+                            key={subject?.id}
                             className={styles.subjectCard}
                             style={{ '--subject-color': subject.color } as React.CSSProperties}
-                            onClick={() => router.push(`/subjects/${subject.id}`)}
+                            onClick={() => router.push(`/subjects/${subject?.id}`)}
                         >
                             <div className={styles.subjectHeader}>
                                 <div className={styles.subjectInfo}>

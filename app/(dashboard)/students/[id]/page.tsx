@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, use as usePromise } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { format } from 'date-fns'
@@ -25,18 +25,23 @@ interface Student {
     }
 }
 
-export default function StudentDetailPage({ params }: { params: { id: string } }) {
+export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter()
+
+    // ⬅️ Правильное разворачивание params
+    const { id } = usePromise(params)
+
     const [student, setStudent] = useState<Student | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
+        if (!id) return
         fetchStudent()
-    }, [params.id])
+    }, [id])
 
     const fetchStudent = async () => {
         try {
-            const response = await fetch(`/api/students/${params.id}`)
+            const response = await fetch(`/api/students/${id}`)
             if (response.ok) {
                 const data = await response.json()
                 setStudent(data)
@@ -57,7 +62,7 @@ export default function StudentDetailPage({ params }: { params: { id: string } }
         }
 
         try {
-            const response = await fetch(`/api/students/${params.id}`, {
+            const response = await fetch(`/api/students/${id}`, {
                 method: 'DELETE',
             })
 

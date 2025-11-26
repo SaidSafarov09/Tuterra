@@ -104,8 +104,8 @@ export default function DashboardPage() {
                         <div className={styles.lessonsList}>
                             {stats.upcomingLessons.map((lesson) => (
                                 <Link
-                                    key={lesson.id}
-                                    href={`/lessons/${lesson.id}`}
+                                    key={lesson?.id}
+                                    href={`/lessons/${lesson?.id}`}
                                     className={styles.lessonItem}
                                 >
                                     <div className={styles.lessonHeader}>
@@ -144,8 +144,8 @@ export default function DashboardPage() {
                         <div className={styles.lessonsList}>
                             {stats.unpaidLessons.slice(0, 5).map((lesson) => (
                                 <Link
-                                    key={lesson.id}
-                                    href={`/lessons/${lesson.id}`}
+                                    key={lesson?.id}
+                                    href={`/lessons/${lesson?.id}`}
                                     className={styles.lessonItem}
                                 >
                                     <div className={styles.lessonHeader}>

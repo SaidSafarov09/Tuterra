@@ -23,8 +23,8 @@ export async function GET(
 
         const subject = await prisma.subject.findFirst({
             where: {
-                id: params.id,
-                userId: session.user.id,
+                id: params?.id,
+                userId: session.user?.id,
             },
             include: {
                 students: true,
@@ -68,8 +68,8 @@ export async function PUT(
 
         const subject = await prisma.subject.updateMany({
             where: {
-                id: params.id,
-                userId: session.user.id,
+                id: params?.id,
+                userId: session.user?.id,
             },
             data: validatedData,
         })
@@ -79,7 +79,7 @@ export async function PUT(
         }
 
         const updatedSubject = await prisma.subject.findUnique({
-            where: { id: params.id },
+            where: { id: params?.id },
         })
 
         return NextResponse.json(updatedSubject)
@@ -112,8 +112,8 @@ export async function DELETE(
 
         const deleted = await prisma.subject.deleteMany({
             where: {
-                id: params.id,
-                userId: session.user.id,
+                id: params?.id,
+                userId: session.user?.id,
             },
         })
 

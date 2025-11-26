@@ -182,9 +182,9 @@ export default function LessonsPage() {
                 <div className={styles.lessonsList}>
                     {lessons.map((lesson) => (
                         <div
-                            key={lesson.id}
+                            key={lesson?.id}
                             className={styles.lessonCard}
-                            onClick={() => router.push(`/lessons/${lesson.id}`)}
+                            onClick={() => router.push(`/lessons/${lesson?.id}`)}
                         >
                             <div className={styles.lessonHeader}>
                                 <div>
@@ -230,7 +230,7 @@ export default function LessonsPage() {
                         value={formData.studentId}
                         onChange={(value) => setFormData((prev) => ({ ...prev, studentId: value }))}
                         options={students.map((student) => ({
-                            value: student.id,
+                            value: student?.id,
                             label: student.name,
                         }))}
                         searchable

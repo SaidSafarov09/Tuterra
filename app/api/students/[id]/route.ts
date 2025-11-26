@@ -23,8 +23,8 @@ export async function GET(
 
         const student = await prisma.student.findFirst({
             where: {
-                id: params.id,
-                ownerId: session.user.id,
+                id: params?.id,
+                ownerId: session.user?.id,
             },
             include: {
                 lessons: {
@@ -66,8 +66,8 @@ export async function PUT(
 
         const student = await prisma.student.updateMany({
             where: {
-                id: params.id,
-                ownerId: session.user.id,
+                id: params?.id,
+                ownerId: session.user?.id,
             },
             data: validatedData,
         })
@@ -77,7 +77,7 @@ export async function PUT(
         }
 
         const updatedStudent = await prisma.student.findUnique({
-            where: { id: params.id },
+            where: { id: params?.id },
         })
 
         return NextResponse.json(updatedStudent)
@@ -110,8 +110,8 @@ export async function DELETE(
 
         const deleted = await prisma.student.deleteMany({
             where: {
-                id: params.id,
-                ownerId: session.user.id,
+                id: params?.id,
+                ownerId: session.user?.id,
             },
         })
 

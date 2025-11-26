@@ -28,7 +28,7 @@ export async function GET(request: Request) {
             // Оплаченные занятия
             const paidLessons = await prisma.lesson.aggregate({
                 where: {
-                    ownerId: session.user.id,
+                    ownerId: session.user?.id,
                     isPaid: true,
                     date: {
                         gte: monthStart,
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
             // Неоплаченные занятия
             const unpaidLessons = await prisma.lesson.aggregate({
                 where: {
-                    ownerId: session.user.id,
+                    ownerId: session.user?.id,
                     isPaid: false,
                     date: {
                         gte: monthStart,
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
 
         const currentMonthIncome = await prisma.lesson.aggregate({
             where: {
-                ownerId: session.user.id,
+                ownerId: session.user?.id,
                 isPaid: true,
                 date: {
                     gte: currentMonthStart,
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
 
         const previousMonthIncome = await prisma.lesson.aggregate({
             where: {
-                ownerId: session.user.id,
+                ownerId: session.user?.id,
                 isPaid: true,
                 date: {
                     gte: prevMonthStart,

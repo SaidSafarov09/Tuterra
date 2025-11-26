@@ -68,9 +68,9 @@ export const AvatarEditor: React.FC<AvatarEditorProps> = ({
                 <div className={styles.tabs}>
                     {tabs.map((tab) => (
                         <button
-                            key={tab.id}
-                            className={`${styles.tab} ${activeTab === tab.id ? styles.activeTab : ''}`}
-                            onClick={() => setActiveTab(tab.id as any)}
+                            key={tab?.id}
+                            className={`${styles.tab} ${activeTab === tab?.id ? styles.activeTab : ''}`}
+                            onClick={() => setActiveTab(tab?.id as any)}
                             type="button"
                         >
                             <span className={styles.tabIcon}>{tab.icon}</span>

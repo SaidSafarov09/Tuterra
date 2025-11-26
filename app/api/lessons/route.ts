@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         const filter = searchParams.get('filter') // 'upcoming', 'past', 'unpaid'
 
         const now = new Date()
-        let where: any = { ownerId: session.user.id }
+        let where: any = { ownerId: session.user?.id }
 
         if (filter === 'upcoming') {
             where.date = { gte: now }
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
         const student = await prisma.student.findFirst({
             where: {
                 id: validatedData.studentId,
-                ownerId: session.user.id,
+                ownerId: session.user?.id,
             },
         })
 
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
         const lesson = await prisma.lesson.create({
             data: {
                 ...validatedData,
-                ownerId: session.user.id,
+                ownerId: session.user?.id,
             },
             include: {
                 student: true,

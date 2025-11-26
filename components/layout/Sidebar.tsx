@@ -19,7 +19,7 @@ import {
 } from '@/components/icons/Icons'
 
 const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: DashboardIcon },
+    { name: 'Главная', href: '/dashboard', icon: DashboardIcon },
     { name: 'Ученики', href: '/students', icon: StudentsIcon },
     { name: 'Занятия', href: '/lessons', icon: LessonsIcon },
     { name: 'Предметы', href: '/subjects', icon: SubjectsIcon },

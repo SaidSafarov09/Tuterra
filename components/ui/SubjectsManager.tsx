@@ -73,7 +73,7 @@ export const SubjectsManager: React.FC = () => {
         }
 
         try {
-            const url = editingSubject ? `/api/subjects/${editingSubject.id}` : '/api/subjects'
+            const url = editingSubject ? `/api/subjects/${editingSubject?.id}` : '/api/subjects'
             const method = editingSubject ? 'PUT' : 'POST'
 
             const response = await fetch(url, {
@@ -141,7 +141,7 @@ export const SubjectsManager: React.FC = () => {
             ) : (
                 <div className={styles.subjectsGrid}>
                     {subjects.map((subject) => (
-                        <div key={subject.id} className={styles.subjectCard}>
+                        <div key={subject?.id} className={styles.subjectCard}>
                             <div className={styles.subjectHeader}>
                                 <div className={styles.colorIndicator} style={{ backgroundColor: subject.color }} />
                                 <h3 className={styles.subjectName}>{subject.name}</h3>
@@ -166,7 +166,7 @@ export const SubjectsManager: React.FC = () => {
                                 </button>
                                 <button
                                     className={`${styles.actionButton} ${styles.deleteButton}`}
-                                    onClick={() => handleDelete(subject.id)}
+                                    onClick={() => handleDelete(subject?.id)}
                                     title="Удалить"
                                 >
                                     <DeleteIcon size={16} />

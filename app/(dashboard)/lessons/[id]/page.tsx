@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, use as usePromise } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { format } from 'date-fns'
@@ -17,26 +17,29 @@ interface Lesson {
         name: string
     }
 }
-
-export default function LessonDetailPage({ params }: { params: { id: string } }) {
+export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter()
+    const { id } = usePromise(params)
+
     const [lesson, setLesson] = useState<Lesson | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [isUpdating, setIsUpdating] = useState(false)
 
     useEffect(() => {
+        if (!id) return
         fetchLesson()
-    }, [params.id])
+    }, [id])
 
     const fetchLesson = async () => {
         try {
-            const response = await fetch(`/api/lessons/${params.id}`)
-            if (response.ok) {
-                const data = await response.json()
-                setLesson(data)
-            } else {
+            const response = await fetch(`/api/lessons/${id}`)
+            if (!response.ok) {
                 router.push('/lessons')
+                return
             }
+
+            const data = await response.json()
+            setLesson(data)
         } catch (error) {
             console.error('Failed to fetch lesson:', error)
             router.push('/lessons')
@@ -47,11 +50,10 @@ export default function LessonDetailPage({ params }: { params: { id: string } })
 
     const handleTogglePaid = async () => {
         if (!lesson) return
-
         setIsUpdating(true)
 
         try {
-            const response = await fetch(`/api/lessons/${params.id}`, {
+            const response = await fetch(`/api/lessons/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -71,12 +73,10 @@ export default function LessonDetailPage({ params }: { params: { id: string } })
     }
 
     const handleDelete = async () => {
-        if (!confirm('Вы уверены, что хотите удалить это занятие?')) {
-            return
-        }
+        if (!confirm('Вы уверены, что хотите удалить это занятие?')) return
 
         try {
-            const response = await fetch(`/api/lessons/${params.id}`, {
+            const response = await fetch(`/api/lessons/${id}`, {
                 method: 'DELETE',
             })
 
@@ -92,9 +92,7 @@ export default function LessonDetailPage({ params }: { params: { id: string } })
         return <div className={styles.loading}>Загрузка...</div>
     }
 
-    if (!lesson) {
-        return null
-    }
+    if (!lesson) return null
 
     return (
         <div>
@@ -135,6 +133,7 @@ export default function LessonDetailPage({ params }: { params: { id: string } })
                                 ? 'Отметить как неоплаченное'
                                 : 'Отметить как оплаченное'}
                     </Button>
+
                     <Button variant="danger" onClick={handleDelete}>
                         Удалить занятие
                     </Button>
