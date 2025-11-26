@@ -135,6 +135,23 @@
     }
 }
 
+.createOption {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--primary);
+    font-weight: 500;
+    transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--border-light);
+
+    &:hover {
+        background: var(--border-light);
+    }
+}
+
 .emptyState {
     padding: 32px 16px;
     text-align: center;

@@ -67,8 +67,6 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
     // Create Lesson Modal State
     // Create Lesson Modal State
     const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
-    const [createLessonSubjectMode, setCreateLessonSubjectMode] = useState<'select' | 'create'>('select')
-    const [newSubjectData, setNewSubjectData] = useState({ name: '', color: '#4A6CF7' })
     const [lessonFormData, setLessonFormData] = useState({
         subjectId: '',
         date: new Date(),
@@ -242,8 +240,6 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         // Pre-select subject if student has only one
         const defaultSubjectId = student?.subjects.length === 1 ? student.subjects[0].id : ''
 
-        setCreateLessonSubjectMode('select')
-        setNewSubjectData({ name: '', color: '#4A6CF7' })
         setLessonFormData({
             subjectId: defaultSubjectId,
             date: new Date(),
@@ -251,6 +247,41 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             isPaid: false,
         })
         setIsCreateLessonModalOpen(true)
+    }
+
+    const handleCreateSubject = async (name: string) => {
+        try {
+            // Random color
+            const colors = ['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
+            const randomColor = colors[Math.floor(Math.random() * colors.length)]
+
+            const createResponse = await fetch('/api/subjects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, color: randomColor }),
+            })
+
+            if (!createResponse.ok) {
+                const data = await createResponse.json()
+                toast.error(data.error || 'Не удалось создать предмет')
+                return
+            }
+
+            const newSubject = await createResponse.json()
+
+            // Link to student
+            await fetch(`/api/subjects/${newSubject.id}/students/link`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: id }),
+            })
+
+            await fetchSubjects() // Refresh list
+            setLessonFormData(prev => ({ ...prev, subjectId: newSubject.id }))
+            toast.success(`Предмет "${name}" создан`)
+        } catch (error) {
+            toast.error('Ошибка при создании предмета')
+        }
     }
 
     const handleSubmitLesson = async () => {
@@ -261,51 +292,12 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
         setIsSubmitting(true)
         try {
-            let finalSubjectId = lessonFormData.subjectId
-
-            if (createLessonSubjectMode === 'create') {
-                if (!newSubjectData.name.trim()) {
-                    toast.error('Введите название предмета')
-                    setIsSubmitting(false)
-                    return
-                }
-
-                // Create subject
-                const createResponse = await fetch('/api/subjects', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newSubjectData),
-                })
-
-                if (!createResponse.ok) {
-                    const data = await createResponse.json()
-                    toast.error(data.error || 'Не удалось создать предмет')
-                    setIsSubmitting(false)
-                    return
-                }
-
-                const newSubject = await createResponse.json()
-                finalSubjectId = newSubject.id
-
-                // Link subject to student
-                await fetch(`/api/subjects/${finalSubjectId}/students/link`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studentId: id }),
-                })
-            } else {
-                if (!finalSubjectId) {
-                    // It's allowed to have no subject, but if user selected "Select", maybe they want one?
-                    // API allows optional subjectId.
-                }
-            }
-
             const response = await fetch('/api/lessons', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     studentId: id,
-                    subjectId: finalSubjectId || undefined,
+                    subjectId: lessonFormData.subjectId || undefined,
                     date: lessonFormData.date.toISOString(),
                     price: Number(lessonFormData.price),
                     isPaid: lessonFormData.isPaid,
@@ -314,7 +306,6 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
             if (response.ok) {
                 await fetchStudent()
-                await fetchSubjects() // Refresh subjects list
                 setIsCreateLessonModalOpen(false)
                 toast.success('Занятие создано')
             } else {
@@ -606,84 +597,16 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                 }
             >
                 <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-                    <div style={{ marginBottom: '16px' }}>
-                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                            <button
-                                type="button"
-                                onClick={() => setCreateLessonSubjectMode('select')}
-                                style={{
-                                    flex: 1,
-                                    padding: '8px 16px',
-                                    borderRadius: '8px',
-                                    border: '1px solid var(--border)',
-                                    background: createLessonSubjectMode === 'select' ? 'var(--primary)' : 'transparent',
-                                    color: createLessonSubjectMode === 'select' ? 'white' : 'var(--text-primary)',
-                                    cursor: 'pointer',
-                                    fontWeight: 500,
-                                }}
-                            >
-                                Выбрать предмет
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setCreateLessonSubjectMode('create')}
-                                style={{
-                                    flex: 1,
-                                    padding: '8px 16px',
-                                    borderRadius: '8px',
-                                    border: '1px solid var(--border)',
-                                    background: createLessonSubjectMode === 'create' ? 'var(--primary)' : 'transparent',
-                                    color: createLessonSubjectMode === 'create' ? 'white' : 'var(--text-primary)',
-                                    cursor: 'pointer',
-                                    fontWeight: 500,
-                                }}
-                            >
-                                Создать новый
-                            </button>
-                        </div>
-                    </div>
-
-                    {createLessonSubjectMode === 'select' ? (
-                        <Dropdown
-                            label="Предмет"
-                            placeholder="Выберите предмет"
-                            value={lessonFormData.subjectId}
-                            onChange={(value) => setLessonFormData({ ...lessonFormData, subjectId: value })}
-                            options={allSubjects.map(s => ({ value: s.id, label: s.name }))}
-                            searchable
-                        />
-                    ) : (
-                        <>
-                            <Input
-                                label="Название предмета"
-                                value={newSubjectData.name}
-                                onChange={(e) => setNewSubjectData({ ...newSubjectData, name: e.target.value })}
-                                required
-                            />
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
-                                    Цвет
-                                </label>
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                    {['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'].map((c) => (
-                                        <button
-                                            key={c}
-                                            type="button"
-                                            onClick={() => setNewSubjectData({ ...newSubjectData, color: c })}
-                                            style={{
-                                                width: '32px',
-                                                height: '32px',
-                                                borderRadius: '50%',
-                                                background: c,
-                                                border: newSubjectData.color === c ? '2px solid var(--text-primary)' : 'none',
-                                                cursor: 'pointer',
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        </>
-                    )}
+                    <Dropdown
+                        label="Предмет"
+                        placeholder="Выберите или создайте предмет"
+                        value={lessonFormData.subjectId}
+                        onChange={(value) => setLessonFormData({ ...lessonFormData, subjectId: value })}
+                        options={allSubjects.map(s => ({ value: s.id, label: s.name }))}
+                        searchable
+                        creatable
+                        onCreate={handleCreateSubject}
+                    />
 
                     <DateTimePicker
                         label="Дата и время"

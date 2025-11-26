@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import styles from './Dropdown.module.scss'
-import { ChevronDownIcon, SearchIcon } from '@/components/icons/Icons'
+import { ChevronDownIcon, SearchIcon, PlusIcon } from '@/components/icons/Icons'
 
 export interface DropdownOption {
     value: string
@@ -17,6 +17,8 @@ interface DropdownProps {
     onChange: (value: string) => void
     options: DropdownOption[]
     searchable?: boolean
+    creatable?: boolean
+    onCreate?: (value: string) => void
     disabled?: boolean
     required?: boolean
     error?: string
@@ -30,6 +32,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
     onChange,
     options,
     searchable = false,
+    creatable = false,
+    onCreate,
     disabled = false,
     required = false,
     error,
@@ -70,6 +74,16 @@ export const Dropdown: React.FC<DropdownProps> = ({
         setSearchQuery('')
     }
 
+    const handleCreate = () => {
+        if (onCreate && searchQuery) {
+            onCreate(searchQuery)
+            setIsOpen(false)
+            setSearchQuery('')
+        }
+    }
+
+    const showCreateOption = creatable && searchQuery && !options.some(opt => opt.label.toLowerCase() === searchQuery.toLowerCase())
+
     return (
         <div className={`${styles.dropdown} ${className}`} ref={dropdownRef}>
             {label && (
@@ -109,8 +123,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
                         </div>
                     )}
 
-                    {filteredOptions.length > 0 ? (
-                        filteredOptions.map((option) => (
+                    <div className={styles.optionsList}>
+                        {filteredOptions.map((option) => (
                             <div
                                 key={option.value}
                                 className={`${styles.option} ${option.value === value ? styles.selected : ''
@@ -120,12 +134,21 @@ export const Dropdown: React.FC<DropdownProps> = ({
                                 {option.icon && option.icon}
                                 <span>{option.label}</span>
                             </div>
-                        ))
-                    ) : (
-                        <div className={styles.emptyState}>
-                            {searchQuery ? 'Ничего не найдено' : 'Нет опций'}
-                        </div>
-                    )}
+                        ))}
+
+                        {showCreateOption && (
+                            <div className={styles.createOption} onClick={handleCreate}>
+                                <PlusIcon size={14} />
+                                <span>Создать &quot;{searchQuery}&quot;</span>
+                            </div>
+                        )}
+
+                        {filteredOptions.length === 0 && !showCreateOption && (
+                            <div className={styles.emptyState}>
+                                {searchQuery ? 'Ничего не найдено' : 'Нет опций'}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
