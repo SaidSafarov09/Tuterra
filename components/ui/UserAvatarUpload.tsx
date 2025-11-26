@@ -69,11 +69,27 @@ export const UserAvatarUpload: React.FC<UserAvatarUploadProps> = ({
         onAvatarChange?.(null as any)
     }
 
+    // Generate stable color from string
+    const stringToColor = (str: string): string => {
+        let hash = 0
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash)
+        }
+
+        const hue = Math.abs(hash % 360)
+        return `hsl(${hue}, 65%, 55%)`
+    }
+
+    const avatarBgColor = userName ? stringToColor(userName) : 'var(--primary)'
+
     return (
         <div className={styles.container}>
             <Avatar.Root className={styles.avatarRoot}>
                 <Avatar.Image className={styles.avatarImage} src={preview || undefined} alt={userName || 'User'} />
-                <Avatar.Fallback className={styles.avatarFallback}>
+                <Avatar.Fallback
+                    className={styles.avatarFallback}
+                    style={{ backgroundColor: avatarBgColor }}
+                >
                     {getInitials(userName)}
                 </Avatar.Fallback>
             </Avatar.Root>

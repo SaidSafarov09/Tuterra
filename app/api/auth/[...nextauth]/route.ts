@@ -41,11 +41,18 @@ export const authOptions: AuthOptions = {
     session: { strategy: 'jwt' },
     pages: { signIn: '/login' },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.id = user.id
                 token.picture = user.image
             }
+
+            // Обработка обновления сессии
+            if (trigger === "update" && session?.user) {
+                token.name = session.user.name
+                token.picture = session.user.image
+            }
+
             return token
         },
         async session({ session, token }) {
