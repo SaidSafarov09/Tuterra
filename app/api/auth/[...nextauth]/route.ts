@@ -1,9 +1,9 @@
-import NextAuth, { NextAuthOptions } from 'next-auth'
+import NextAuth, { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcrypt'
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: AuthOptions = {
     providers: [
         CredentialsProvider({
             name: 'Credentials',
@@ -25,7 +25,6 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 const isValidPassword = await bcrypt.compare(credentials.password, user.hashedPassword)
-
                 if (!isValidPassword) {
                     throw new Error('Неверный email или пароль')
                 }
@@ -39,12 +38,8 @@ export const authOptions: NextAuthOptions = {
             },
         }),
     ],
-    session: {
-        strategy: 'jwt',
-    },
-    pages: {
-        signIn: '/login',
-    },
+    session: { strategy: 'jwt' },
+    pages: { signIn: '/login' },
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
