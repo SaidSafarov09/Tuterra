@@ -64,7 +64,7 @@ export default function DashboardPage() {
             <div className={styles.statsGrid}>
                 <Link href="/students" className={styles.statCardLink}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}><UsersGroupIcon size={32} /></div>
+                        <div className={styles.statIcon}><UsersGroupIcon size={32} color="#4F46E5" /></div>
                         <p className={styles.statLabel}>Всего учеников</p>
                         <h2 className={styles.statValue}>{stats?.studentsCount || 0}</h2>
                     </div>
@@ -72,7 +72,7 @@ export default function DashboardPage() {
 
                 <Link href="/lessons" className={styles.statCardLink}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}><BookIcon size={32} /></div>
+                        <div className={styles.statIcon}><BookIcon size={32} color="#10B981" /></div>
                         <p className={styles.statLabel}>Ближайших занятий</p>
                         <h2 className={styles.statValue}>{stats?.upcomingLessons?.length || 0}</h2>
                     </div>
@@ -80,7 +80,7 @@ export default function DashboardPage() {
 
                 <Link href="/lessons?filter=unpaid" className={styles.statCardLink}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}><AlertIcon size={32} /></div>
+                        <div className={styles.statIcon}><AlertIcon size={32} color="#F59E0B" /></div>
                         <p className={styles.statLabel}>Неоплаченных</p>
                         <h2 className={styles.statValue}>{stats?.unpaidLessons?.length || 0}</h2>
                     </div>
@@ -88,7 +88,7 @@ export default function DashboardPage() {
 
                 <Link href="/income" className={styles.statCardLink}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}><MoneyIcon size={32} /></div>
+                        <div className={styles.statIcon}><MoneyIcon size={32} color="#14B8A6" /></div>
                         <p className={styles.statLabel}>Доход за месяц</p>
                         <h2 className={styles.statValue}>{stats?.monthlyIncome || 0} ₽</h2>
                     </div>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
                         </div>
                     ) : (
                         <div className={styles.emptyState}>
-                            Все занятия оплачены! <CelebrationIcon size={20} />
+                            Все занятия оплачены! <CelebrationIcon size={20} color="#EC4899" />
                         </div>
                     )}
                 </div>

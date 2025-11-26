@@ -265,7 +265,7 @@ export default function StudentsPage() {
             {/* Empty State / Students Grid */}
             {students.length === 0 ? (
                 <div className={styles.emptyState}>
-                    <div className={styles.emptyStateIcon}><UsersGroupIcon size={64} /></div>
+                    <div className={styles.emptyStateIcon}><UsersGroupIcon size={64} color="#9CA3AF" /></div>
                     <h2 className={styles.emptyStateTitle}>Нет учеников</h2>
                     <p className={styles.emptyStateText}>
                         Добавьте первого ученика, чтобы начать работу
