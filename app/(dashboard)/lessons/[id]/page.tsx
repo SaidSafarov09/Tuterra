@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, use as usePromise } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -34,6 +35,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         try {
             const response = await fetch(`/api/lessons/${id}`)
             if (!response.ok) {
+                toast.error('Занятие не найдено')
                 router.push('/lessons')
                 return
             }
@@ -41,7 +43,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
             const data = await response.json()
             setLesson(data)
         } catch (error) {
-            console.error('Failed to fetch lesson:', error)
+            toast.error('Произошла ошибка при загрузке занятия')
             router.push('/lessons')
         } finally {
             setIsLoading(false)
@@ -64,9 +66,12 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
 
             if (response.ok) {
                 await fetchLesson()
+                toast.success(lesson.isPaid ? 'Отмечено как неоплаченное' : 'Отмечено как оплаченное')
+            } else {
+                toast.error('Произошла ошибка при обновлении')
             }
         } catch (error) {
-            console.error('Failed to update lesson:', error)
+            toast.error('Произошла ошибка при обновлении')
         } finally {
             setIsUpdating(false)
         }
@@ -81,10 +86,13 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
             })
 
             if (response.ok) {
+                toast.success('Занятие успешно удалено')
                 router.push('/lessons')
+            } else {
+                toast.error('Произошла ошибка при удалении')
             }
         } catch (error) {
-            console.error('Failed to delete lesson:', error)
+            toast.error('Произошла ошибка при удалении')
         }
     }
 

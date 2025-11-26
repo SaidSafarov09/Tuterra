@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
@@ -47,9 +48,11 @@ export default function SubjectsPage() {
             if (response.ok) {
                 const data = await response.json()
                 setSubjects(data)
+            } else {
+                toast.error('Не удалось загрузить предметы')
             }
         } catch (error) {
-            console.error('Failed to fetch subjects:', error)
+            toast.error('Произошла ошибка при загрузке предметов')
         } finally {
             setIsLoading(false)
         }
@@ -74,7 +77,7 @@ export default function SubjectsPage() {
 
     const handleSubmit = async () => {
         if (!formData.name.trim()) {
-            setError('Введите название предмета')
+            toast.error('Введите название предмета')
             return
         }
 
@@ -91,12 +94,13 @@ export default function SubjectsPage() {
             if (response.ok) {
                 await fetchSubjects()
                 handleCloseModal()
+                toast.success('Предмет успешно добавлен')
             } else {
                 const data = await response.json()
                 setError(data.error || 'Произошла ошибка')
             }
         } catch (error) {
-            console.error('Failed to create subject:', error)
+            toast.error('Произошла ошибка при создании предмета')
             setError('Произошла ошибка при создании предмета')
         } finally {
             setIsSubmitting(false)

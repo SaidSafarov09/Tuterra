@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
+import { BookIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Dropdown, DropdownOption } from '@/components/ui/Dropdown'
@@ -57,9 +59,11 @@ export default function LessonsPage() {
             if (response.ok) {
                 const data = await response.json()
                 setLessons(data)
+            } else {
+                toast.error('Не удалось загрузить занятия')
             }
         } catch (error) {
-            console.error('Failed to fetch lessons:', error)
+            toast.error('Произошла ошибка при загрузке занятий')
         } finally {
             setIsLoading(false)
         }
@@ -71,9 +75,11 @@ export default function LessonsPage() {
             if (response.ok) {
                 const data = await response.json()
                 setStudents(data)
+            } else {
+                toast.error('Не удалось загрузить учеников')
             }
         } catch (error) {
-            console.error('Failed to fetch students:', error)
+            toast.error('Произошла ошибка при загрузке учеников')
         }
     }
 
@@ -100,7 +106,7 @@ export default function LessonsPage() {
 
     const handleSubmit = async () => {
         if (!formData.studentId || !formData.price) {
-            setError('Заполните все обязательные поля')
+            toast.error('Заполните все обязательные поля')
             return
         }
 
@@ -122,12 +128,13 @@ export default function LessonsPage() {
             if (response.ok) {
                 await fetchLessons()
                 handleCloseModal()
+                toast.success('Занятие успешно добавлено')
             } else {
                 const data = await response.json()
                 setError(data.error || 'Произошла ошибка')
             }
         } catch (error) {
-            console.error('Failed to create lesson:', error)
+            toast.error('Произошла ошибка при создании занятия')
             setError('Произошла ошибка при создании занятия')
         } finally {
             setIsSubmitting(false)
@@ -171,7 +178,7 @@ export default function LessonsPage() {
 
             {lessons.length === 0 ? (
                 <div className={styles.emptyState}>
-                    <div className={styles.emptyStateIcon}>📚</div>
+                    <div className={styles.emptyStateIcon}><BookIcon size={64} /></div>
                     <h2 className={styles.emptyStateTitle}>Нет занятий</h2>
                     <p className={styles.emptyStateText}>
                         Добавьте первое занятие, чтобы начать работу

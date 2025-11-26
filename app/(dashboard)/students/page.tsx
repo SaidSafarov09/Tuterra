@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { UsersGroupIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -78,9 +80,11 @@ export default function StudentsPage() {
             const response = await fetch('/api/students')
             if (response.ok) {
                 setStudents(await response.json())
+            } else {
+                toast.error('Не удалось загрузить учеников')
             }
         } catch (e) {
-            console.error('Failed to fetch students:', e)
+            toast.error('Произошла ошибка при загрузке учеников')
         } finally {
             setIsLoading(false)
         }
@@ -91,9 +95,11 @@ export default function StudentsPage() {
             const response = await fetch('/api/subjects')
             if (response.ok) {
                 setSubjects(await response.json())
+            } else {
+                toast.error('Не удалось загрузить предметы')
             }
         } catch (e) {
-            console.error('Failed to fetch subjects:', e)
+            toast.error('Произошла ошибка при загрузке предметов')
         }
     }
 
@@ -156,7 +162,7 @@ export default function StudentsPage() {
 
     const handleSubmit = async () => {
         if (!formData.name.trim()) {
-            setError('Введите имя ученика')
+            toast.error('Введите имя ученика')
             return
         }
 
@@ -173,12 +179,13 @@ export default function StudentsPage() {
             if (response.ok) {
                 await fetchStudents()
                 handleCloseModal()
+                toast.success('Ученик успешно добавлен')
             } else {
                 const data = await response.json()
                 setError(data.error || 'Произошла ошибка')
             }
         } catch (error) {
-            console.error('Failed to create student:', error)
+            toast.error('Произошла ошибка при создании ученика')
             setError('Произошла ошибка при создании ученика')
         } finally {
             setIsSubmitting(false)
@@ -232,8 +239,8 @@ export default function StudentsPage() {
                             <button
                                 key={subject.id}
                                 className={`${styles.filterChip} ${selectedSubjectFilter === subject.id
-                                        ? styles.filterChipActive
-                                        : ''
+                                    ? styles.filterChipActive
+                                    : ''
                                     }`}
                                 style={{
                                     borderColor: subject.color,
@@ -258,7 +265,7 @@ export default function StudentsPage() {
             {/* Empty State / Students Grid */}
             {students.length === 0 ? (
                 <div className={styles.emptyState}>
-                    <div className={styles.emptyStateIcon}>👥</div>
+                    <div className={styles.emptyStateIcon}><UsersGroupIcon size={64} /></div>
                     <h2 className={styles.emptyStateTitle}>Нет учеников</h2>
                     <p className={styles.emptyStateText}>
                         Добавьте первого ученика, чтобы начать работу

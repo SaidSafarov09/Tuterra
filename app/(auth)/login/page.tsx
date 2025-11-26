@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import styles from '../auth.module.scss'
@@ -22,7 +23,7 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (searchParams?.get('registered') === 'true') {
-            setSuccessMessage('Регистрация успешна! Теперь вы можете войти.')
+            toast.success('Регистрация успешна! Теперь вы можете войти.')
         }
     }, [searchParams])
 
@@ -35,18 +36,17 @@ export default function LoginPage() {
     }
 
     const validateForm = () => {
-        const newErrors: Record<string, string> = {}
-
         if (!formData.email) {
-            newErrors.email = 'Введите email'
+            toast.error('Введите email')
+            return false
         }
 
         if (!formData.password) {
-            newErrors.password = 'Введите пароль'
+            toast.error('Введите пароль')
+            return false
         }
 
-        setErrors(newErrors)
-        return Object.keys(newErrors).length === 0
+        return true
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -77,8 +77,7 @@ export default function LoginPage() {
                 router.refresh()
             }
         } catch (error) {
-            console.error('Login error:', error)
-            setGeneralError('Произошла ошибка при входе')
+            toast.error('Произошла ошибка при входе')
         } finally {
             setIsLoading(false)
         }

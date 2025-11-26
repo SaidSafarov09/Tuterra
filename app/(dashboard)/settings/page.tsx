@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -41,7 +42,6 @@ export default function SettingsPage() {
         timezone: 'Europe/Moscow',
     })
     const [avatarFile, setAvatarFile] = useState<File | null>(null)
-    const [message, setMessage] = useState({ type: '', text: '' })
 
     useEffect(() => {
         fetchSettings()
@@ -60,9 +60,11 @@ export default function SettingsPage() {
                     currency: data.currency || 'RUB',
                     timezone: data.timezone || 'Europe/Moscow',
                 })
+            } else {
+                toast.error('Не удалось загрузить настройки')
             }
         } catch (error) {
-            console.error('Failed to fetch settings:', error)
+            toast.error('Произошла ошибка при загрузке настроек')
         } finally {
             setIsLoading(false)
         }
@@ -89,7 +91,6 @@ export default function SettingsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSaving(true)
-        setMessage({ type: '', text: '' })
 
         try {
             const response = await fetch('/api/settings', {
@@ -99,15 +100,14 @@ export default function SettingsPage() {
             })
 
             if (response.ok) {
-                setMessage({ type: 'success', text: 'Настройки успешно сохранены' })
+                toast.success('Настройки успешно сохранены')
                 await update() // Обновляем сессию
             } else {
                 const data = await response.json()
-                setMessage({ type: 'error', text: data.error || 'Произошла ошибка' })
+                toast.error(data.error || 'Произошла ошибка')
             }
         } catch (error) {
-            console.error('Failed to update settings:', error)
-            setMessage({ type: 'error', text: 'Произошла ошибка при сохранении' })
+            toast.error('Произошла ошибка при сохранении')
         } finally {
             setIsSaving(false)
         }
@@ -125,11 +125,6 @@ export default function SettingsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className={styles.form}>
-                {message.text && (
-                    <div className={message.type === 'success' ? styles.success : styles.error}>
-                        {message.text}
-                    </div>
-                )}
 
                 <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>Профиль</h2>

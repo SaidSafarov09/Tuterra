@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { UserIcon, ScissorsIcon, EyeIcon, PaletteIcon } from '@/components/icons/Icons'
 import { StudentAvatar, avatarOptions } from './StudentAvatar'
 import { Button } from './Button'
 import styles from './AvatarEditor.module.scss'
@@ -48,10 +49,10 @@ export const AvatarEditor: React.FC<AvatarEditorProps> = ({
     }
 
     const tabs = [
-        { id: 'base', label: 'База', icon: '👤' },
-        { id: 'hair', label: 'Волосы', icon: '✂️' },
-        { id: 'face', label: 'Лицо', icon: '👀' },
-        { id: 'bg', label: 'Фон', icon: '🎨' },
+        { id: 'base', label: 'База', icon: <UserIcon size={18} /> },
+        { id: 'hair', label: 'Волосы', icon: <ScissorsIcon size={18} /> },
+        { id: 'face', label: 'Лицо', icon: <EyeIcon size={18} /> },
+        { id: 'bg', label: 'Фон', icon: <PaletteIcon size={18} /> },
     ]
 
     return (

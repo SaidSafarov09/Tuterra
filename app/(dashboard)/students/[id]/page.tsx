@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, use as usePromise } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -46,10 +47,11 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                 const data = await response.json()
                 setStudent(data)
             } else {
+                toast.error('Ученик не найден')
                 router.push('/students')
             }
         } catch (error) {
-            console.error('Failed to fetch student:', error)
+            toast.error('Произошла ошибка при загрузке ученика')
             router.push('/students')
         } finally {
             setIsLoading(false)
@@ -67,10 +69,13 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             })
 
             if (response.ok) {
+                toast.success('Ученик успешно удален')
                 router.push('/students')
+            } else {
+                toast.error('Произошла ошибка при удалении')
             }
         } catch (error) {
-            console.error('Failed to delete student:', error)
+            toast.error('Произошла ошибка при удалении')
         }
     }
 

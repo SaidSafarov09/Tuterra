@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { PlusIcon, EditIcon, DeleteIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -40,9 +41,11 @@ export const SubjectsManager: React.FC = () => {
             if (response.ok) {
                 const data = await response.json()
                 setSubjects(data)
+            } else {
+                toast.error('Не удалось загрузить предметы')
             }
         } catch (error) {
-            console.error('Failed to fetch subjects:', error)
+            toast.error('Произошла ошибка при загрузке предметов')
         } finally {
             setIsLoading(false)
         }
@@ -85,13 +88,13 @@ export const SubjectsManager: React.FC = () => {
             if (response.ok) {
                 await fetchSubjects()
                 handleCloseModal()
+                toast.success(editingSubject ? 'Предмет успешно обновлен' : 'Предмет успешно создан')
             } else {
                 const data = await response.json()
                 setError(data.error || 'Произошла ошибка')
             }
         } catch (error) {
-            console.error('Failed to save subject:', error)
-            setError('Произошла ошибка при сохранении')
+            toast.error('Произошла ошибка при сохранении')
         }
     }
 
@@ -107,13 +110,13 @@ export const SubjectsManager: React.FC = () => {
 
             if (response.ok) {
                 await fetchSubjects()
+                toast.success('Предмет успешно удален')
             } else {
                 const data = await response.json()
-                alert(data.error || 'Произошла ошибка при удалении')
+                toast.error(data.error || 'Произошла ошибка при удалении')
             }
         } catch (error) {
-            console.error('Failed to delete subject:', error)
-            alert('Произошла ошибка при удалении')
+            toast.error('Произошла ошибка при удалении')
         }
     }
 

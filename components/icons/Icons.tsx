@@ -170,3 +170,77 @@ export const LogoutIcon: React.FC<IconProps> = ({ size = 20, className = '', col
         <path d="M13 14L17 10L13 6M17 10H7M7 3H5C3.89543 3 3 3.89543 3 5V15C3 16.1046 3.89543 17 5 17H7" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 )
+
+export const UsersGroupIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <circle cx="7" cy="6" r="2.5" stroke={color} strokeWidth="1.5" />
+        <circle cx="13" cy="6" r="2.5" stroke={color} strokeWidth="1.5" />
+        <path d="M2 16C2 13.7909 3.79086 12 6 12H8C9.10457 12 10.1046 12.4214 10.8507 13.1" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M18 16C18 13.7909 16.2091 12 14 12H12C10.8954 12 9.89543 12.4214 9.14929 13.1" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+)
+
+export const BookIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M4 3.5C4 2.94772 4.44772 2.5 5 2.5H15C15.5523 2.5 16 2.94772 16 3.5V16.5C16 17.0523 15.5523 17.5 15 17.5H5C4.44772 17.5 4 17.0523 4 16.5V3.5Z" stroke={color} strokeWidth="1.5" />
+        <path d="M7 6.5H13M7 9.5H13M7 12.5H11" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+)
+
+export const AlertIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M8.57465 3.5C9.15893 2.5 10.8411 2.5 11.4253 3.5L17.0574 13C17.6417 14 17.0006 15.25 15.8321 15.25H4.16795C2.99937 15.25 2.35829 14 2.94257 13L8.57465 3.5Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M10 7V10" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="10" cy="12.5" r="0.75" fill={color} />
+    </svg>
+)
+
+export const MoneyIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <circle cx="10" cy="10" r="7.25" stroke={color} strokeWidth="1.5" />
+        <path d="M10 6V14M8 7.5C8 6.94772 8.44772 6.5 9 6.5H11C11.5523 6.5 12 6.94772 12 7.5C12 8.05228 11.5523 8.5 11 8.5H9C8.44772 8.5 8 8.94772 8 9.5V10.5C8 11.0523 8.44772 11.5 9 11.5H11C11.5523 11.5 12 11.9477 12 12.5C12 13.0523 11.5523 13.5 11 13.5H9C8.44772 13.5 8 13.0523 8 12.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+)
+
+export const CelebrationIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M10 2L11 6L10 10L9 6L10 2Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M4 4L6.5 6.5L4 9L1.5 6.5L4 4Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M16 4L18.5 6.5L16 9L13.5 6.5L16 4Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M6 12L8 14L6 16L4 14L6 12Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M14 12L16 14L14 16L12 14L14 12Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+        <circle cx="10" cy="14" r="1.5" stroke={color} strokeWidth="1.5" />
+    </svg>
+)
+
+export const ScissorsIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <circle cx="5" cy="5" r="2.25" stroke={color} strokeWidth="1.5" />
+        <circle cx="5" cy="15" r="2.25" stroke={color} strokeWidth="1.5" />
+        <path d="M7 6L16 15M7 14L16 5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+)
+
+export const UserIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <circle cx="10" cy="7" r="3.25" stroke={color} strokeWidth="1.5" />
+        <path d="M4 17C4 13.6863 6.68629 11 10 11C13.3137 11 16 13.6863 16 17" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+)
+
+export const EyeIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+        <circle cx="10" cy="10" r="2.25" stroke={color} strokeWidth="1.5" />
+    </svg>
+)
+
+export const PaletteIcon: React.FC<IconProps> = ({ size = 20, className = '', color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M10 2.5C5.85786 2.5 2.5 5.85786 2.5 10C2.5 14.1421 5.85786 17.5 10 17.5C10.8284 17.5 11.5 16.8284 11.5 16V15C11.5 14.1716 12.1716 13.5 13 13.5H15C16.3807 13.5 17.5 12.3807 17.5 11V10C17.5 5.85786 14.1421 2.5 10 2.5Z" stroke={color} strokeWidth="1.5" />
+        <circle cx="7" cy="8" r="1" fill={color} />
+        <circle cx="10" cy="6" r="1" fill={color} />
+        <circle cx="13" cy="8" r="1" fill={color} />
+    </svg>
+)
+

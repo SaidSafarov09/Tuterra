@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { format, subMonths, addMonths } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
@@ -37,9 +38,11 @@ export default function IncomePage() {
                 setMonthlyData(data.monthlyData || [])
                 setCurrentMonthIncome(data.currentMonthIncome || 0)
                 setPreviousMonthIncome(data.previousMonthIncome || 0)
+            } else {
+                toast.error('Не удалось загрузить данные о доходах')
             }
         } catch (error) {
-            console.error('Failed to fetch income data:', error)
+            toast.error('Произошла ошибка при загрузке данных')
         } finally {
             setIsLoading(false)
         }

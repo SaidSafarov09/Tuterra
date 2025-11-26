@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import { UsersGroupIcon, BookIcon, AlertIcon, MoneyIcon, CelebrationIcon } from '@/components/icons/Icons'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import styles from './page.module.scss'
@@ -38,9 +40,11 @@ export default function DashboardPage() {
             if (response.ok) {
                 const data = await response.json()
                 setStats(data)
+            } else {
+                toast.error('Не удалось загрузить статистику')
             }
         } catch (error) {
-            console.error('Failed to fetch stats:', error)
+            toast.error('Произошла ошибка при загрузке статистики')
         } finally {
             setIsLoading(false)
         }
@@ -60,7 +64,7 @@ export default function DashboardPage() {
             <div className={styles.statsGrid}>
                 <Link href="/students" className={styles.statCardLink}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}>👥</div>
+                        <div className={styles.statIcon}><UsersGroupIcon size={32} /></div>
                         <p className={styles.statLabel}>Всего учеников</p>
                         <h2 className={styles.statValue}>{stats?.studentsCount || 0}</h2>
                     </div>
@@ -68,7 +72,7 @@ export default function DashboardPage() {
 
                 <Link href="/lessons" className={styles.statCardLink}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}>📚</div>
+                        <div className={styles.statIcon}><BookIcon size={32} /></div>
                         <p className={styles.statLabel}>Ближайших занятий</p>
                         <h2 className={styles.statValue}>{stats?.upcomingLessons?.length || 0}</h2>
                     </div>
@@ -76,7 +80,7 @@ export default function DashboardPage() {
 
                 <Link href="/lessons?filter=unpaid" className={styles.statCardLink}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}>⚠️</div>
+                        <div className={styles.statIcon}><AlertIcon size={32} /></div>
                         <p className={styles.statLabel}>Неоплаченных</p>
                         <h2 className={styles.statValue}>{stats?.unpaidLessons?.length || 0}</h2>
                     </div>
@@ -84,7 +88,7 @@ export default function DashboardPage() {
 
                 <Link href="/income" className={styles.statCardLink}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}>💰</div>
+                        <div className={styles.statIcon}><MoneyIcon size={32} /></div>
                         <p className={styles.statLabel}>Доход за месяц</p>
                         <h2 className={styles.statValue}>{stats?.monthlyIncome || 0} ₽</h2>
                     </div>
@@ -161,7 +165,9 @@ export default function DashboardPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className={styles.emptyState}>Все занятия оплачены! 🎉</div>
+                        <div className={styles.emptyState}>
+                            Все занятия оплачены! <CelebrationIcon size={20} />
+                        </div>
                     )}
                 </div>
             </div>

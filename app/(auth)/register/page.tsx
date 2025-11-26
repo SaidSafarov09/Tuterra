@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import styles from '../auth.module.scss'
@@ -28,22 +29,22 @@ export default function RegisterPage() {
     }
 
     const validateForm = () => {
-        const newErrors: Record<string, string> = {}
-
         if (!formData.name || formData.name.length < 2) {
-            newErrors.name = 'Имя должно содержать минимум 2 символа'
+            toast.error('Имя должно содержать минимум 2 символа')
+            return false
         }
 
         if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Введите корректный email'
+            toast.error('Введите корректный email')
+            return false
         }
 
         if (!formData.password || formData.password.length < 6) {
-            newErrors.password = 'Пароль должен содержать минимум 6 символов'
+            toast.error('Пароль должен содержать минимум 6 символов')
+            return false
         }
 
-        setErrors(newErrors)
-        return Object.keys(newErrors).length === 0
+        return true
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -73,8 +74,7 @@ export default function RegisterPage() {
             // Успешная регистрация - перенаправляем на страницу входа
             router.push('/login?registered=true')
         } catch (error) {
-            console.error('Registration error:', error)
-            setGeneralError('Произошла ошибка при регистрации')
+            toast.error('Произошла ошибка при регистрации')
         } finally {
             setIsLoading(false)
         }

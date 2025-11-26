@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import * as Avatar from '@radix-ui/react-avatar'
+import { toast } from 'sonner'
 import { UploadIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import styles from './UserAvatarUpload.module.scss'
@@ -35,13 +36,13 @@ export const UserAvatarUpload: React.FC<UserAvatarUploadProps> = ({
         if (file) {
             // Проверка размера файла (максимум 2MB)
             if (file.size > 2 * 1024 * 1024) {
-                alert('Размер файла не должен превышать 2MB')
+                toast.error('Размер файла не должен превышать 2MB')
                 return
             }
 
             // Проверка типа файла
             if (!file.type.startsWith('image/')) {
-                alert('Можно загрузить только изображения')
+                toast.error('Можно загрузить только изображения')
                 return
             }
 
