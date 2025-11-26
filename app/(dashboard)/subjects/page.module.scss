@@ -246,6 +246,13 @@
     color: var(--text-secondary);
 }
 
+.detailsFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+}
+
 @media (max-width: 768px) {
     .subjectsGrid {
         grid-template-columns: 1fr;

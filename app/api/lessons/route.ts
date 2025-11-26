@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 const lessonSchema = z.object({
     studentId: z.string(),
+    subjectId: z.string().optional(),
     date: z.string().transform((str) => new Date(str)),
     price: z.number().positive('Цена должна быть положительной'),
     isPaid: z.boolean().optional(),
@@ -37,6 +38,7 @@ export async function GET(request: Request) {
             where,
             include: {
                 student: true,
+                subject: true,
             },
             orderBy: { date: filter === 'past' ? 'desc' : 'asc' },
         })
@@ -84,6 +86,7 @@ export async function POST(request: Request) {
             },
             include: {
                 student: true,
+                subject: true,
             },
         })
 

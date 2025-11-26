@@ -7,6 +7,8 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Dropdown } from '@/components/ui/Dropdown'
+import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
 import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon } from '@/components/icons/Icons'
@@ -53,6 +55,23 @@ export default function SubjectsPage() {
     const [subjectStudents, setSubjectStudents] = useState<Student[]>([])
     const [isLoadingStudents, setIsLoadingStudents] = useState(false)
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+
+    // Add Student Modal State
+    const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false)
+    const [studentFormData, setStudentFormData] = useState({
+        name: '',
+        contact: '',
+        note: '',
+    })
+
+    // Create Lesson Modal State
+    const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
+    const [lessonFormData, setLessonFormData] = useState({
+        studentId: '',
+        date: new Date(),
+        price: '',
+        isPaid: false,
+    })
 
     const { isOpen, openModal, closeModal } = useModalStore()
 
@@ -150,6 +169,111 @@ export default function SubjectsPage() {
         } catch (error) {
             toast.error('Произошла ошибка при создании предмета')
             setError('Произошла ошибка при создании предмета')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    // Add Student Handlers
+    const handleOpenAddStudentModal = () => {
+        setStudentFormData({ name: '', contact: '', note: '' })
+        setIsAddStudentModalOpen(true)
+    }
+
+    const handleCloseAddStudentModal = () => {
+        setIsAddStudentModalOpen(false)
+        setStudentFormData({ name: '', contact: '', note: '' })
+    }
+
+    const handleStudentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target
+        setStudentFormData((prev) => ({ ...prev, [name]: value }))
+    }
+
+    const handleSubmitStudent = async () => {
+        if (!studentFormData.name.trim()) {
+            toast.error('Введите имя ученика')
+            return
+        }
+        if (!selectedSubject) return
+
+        setIsSubmitting(true)
+        try {
+            const response = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...studentFormData,
+                    subjectId: selectedSubject.id,
+                }),
+            })
+
+            if (response.ok) {
+                await fetchSubjectStudents(selectedSubject.id)
+                await fetchSubjects() // Update counts
+                handleCloseAddStudentModal()
+                toast.success('Ученик успешно добавлен')
+            } else {
+                toast.error('Не удалось добавить ученика')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    // Create Lesson Handlers
+    const handleOpenCreateLessonModal = () => {
+        setLessonFormData({ studentId: '', date: new Date(), price: '', isPaid: false })
+        setIsCreateLessonModalOpen(true)
+    }
+
+    const handleCloseCreateLessonModal = () => {
+        setIsCreateLessonModalOpen(false)
+        setLessonFormData({ studentId: '', date: new Date(), price: '', isPaid: false })
+    }
+
+    const handleLessonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, type } = e.target
+        const checked = (e.target as HTMLInputElement).checked
+        setLessonFormData((prev) => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value,
+        }))
+    }
+
+    const handleSubmitLesson = async () => {
+        if (!lessonFormData.studentId || !lessonFormData.price) {
+            toast.error('Заполните обязательные поля')
+            return
+        }
+        if (!selectedSubject) return
+
+        setIsSubmitting(true)
+        try {
+            const response = await fetch('/api/lessons', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentId: lessonFormData.studentId,
+                    subjectId: selectedSubject.id,
+                    date: lessonFormData.date.toISOString(),
+                    price: parseInt(lessonFormData.price),
+                    isPaid: lessonFormData.isPaid,
+                }),
+            })
+
+            if (response.ok) {
+                await fetchSubjectStudents(selectedSubject.id) // Update lessons info
+                await fetchSubjects() // Update counts
+                handleCloseCreateLessonModal()
+                toast.success('Занятие успешно создано')
+            } else {
+                toast.error('Не удалось создать занятие')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка')
         } finally {
             setIsSubmitting(false)
         }
@@ -283,6 +407,16 @@ export default function SubjectsPage() {
                 isOpen={isDetailsModalOpen}
                 onClose={handleCloseDetailsModal}
                 title={selectedSubject?.name || 'Предмет'}
+                footer={
+                    <div className={styles.detailsFooter}>
+                        <Button variant="secondary" onClick={handleOpenAddStudentModal}>
+                            Добавить ученика
+                        </Button>
+                        <Button onClick={handleOpenCreateLessonModal}>
+                            Создать занятие
+                        </Button>
+                    </div>
+                }
             >
                 <div className={styles.detailsContent}>
                     {isLoadingStudents ? (
@@ -321,6 +455,111 @@ export default function SubjectsPage() {
                         </div>
                     )}
                 </div>
+            </Modal>
+
+            {/* Add Student Modal */}
+            <Modal
+                isOpen={isAddStudentModalOpen}
+                onClose={handleCloseAddStudentModal}
+                title="Добавить ученика"
+                footer={
+                    <ModalFooter
+                        onCancel={handleCloseAddStudentModal}
+                        onSubmit={handleSubmitStudent}
+                        isLoading={isSubmitting}
+                        submitText="Добавить"
+                    />
+                }
+            >
+                <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+                    <Input
+                        label="Имя"
+                        name="name"
+                        value={studentFormData.name}
+                        onChange={handleStudentChange}
+                        required
+                        placeholder="Иван Иванов"
+                        disabled={isSubmitting}
+                    />
+                    <Input
+                        label="Контакт"
+                        name="contact"
+                        value={studentFormData.contact}
+                        onChange={handleStudentChange}
+                        placeholder="@telegram"
+                        disabled={isSubmitting}
+                    />
+                    <Input
+                        label="Заметка"
+                        name="note"
+                        value={studentFormData.note}
+                        onChange={handleStudentChange}
+                        placeholder="Дополнительная информация"
+                        disabled={isSubmitting}
+                    />
+                </form>
+            </Modal>
+
+            {/* Create Lesson Modal */}
+            <Modal
+                isOpen={isCreateLessonModalOpen}
+                onClose={handleCloseCreateLessonModal}
+                title="Создать занятие"
+                footer={
+                    <ModalFooter
+                        onCancel={handleCloseCreateLessonModal}
+                        onSubmit={handleSubmitLesson}
+                        isLoading={isSubmitting}
+                        submitText="Создать"
+                    />
+                }
+            >
+                <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+                    <Dropdown
+                        label="Ученик"
+                        placeholder="Выберите ученика"
+                        value={lessonFormData.studentId}
+                        onChange={(value) => setLessonFormData((prev) => ({ ...prev, studentId: value }))}
+                        options={subjectStudents.map((student) => ({
+                            value: student.id,
+                            label: student.name,
+                        }))}
+                        searchable
+                        required
+                        disabled={isSubmitting}
+                    />
+
+                    <DateTimePicker
+                        label="Дата и время"
+                        value={lessonFormData.date}
+                        onChange={(date) => setLessonFormData((prev) => ({ ...prev, date }))}
+                        showTime
+                        required
+                        disabled={isSubmitting}
+                    />
+
+                    <Input
+                        label="Цена"
+                        name="price"
+                        type="number"
+                        value={lessonFormData.price}
+                        onChange={handleLessonChange}
+                        required
+                        placeholder="1000"
+                        disabled={isSubmitting}
+                    />
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                            type="checkbox"
+                            name="isPaid"
+                            checked={lessonFormData.isPaid}
+                            onChange={handleLessonChange}
+                            disabled={isSubmitting}
+                        />
+                        Оплачено
+                    </label>
+                </form>
             </Modal>
         </div>
     )

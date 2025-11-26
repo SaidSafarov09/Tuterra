@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         const students = await prisma.student.findMany({
             where: { ownerId: session.user?.id },
             include: {
-                subject: true,
+                subjects: true,
                 lessons: {
                     orderBy: { date: 'desc' },
                     take: 1,
@@ -98,7 +98,9 @@ export async function POST(request: Request) {
                 contact: validatedData.contact,
                 note: validatedData.note,
                 ownerId: session.user.id,
-                subjectId: subjectId,
+                subjects: subjectId ? {
+                    connect: { id: subjectId }
+                } : undefined,
             },
         })
 

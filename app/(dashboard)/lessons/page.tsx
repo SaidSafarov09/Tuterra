@@ -23,11 +23,23 @@ interface Lesson {
         id: string
         name: string
     }
+    subject?: {
+        id: string
+        name: string
+        color: string
+    }
 }
 
 interface Student {
     id: string
     name: string
+    subjectId?: string
+}
+
+interface Subject {
+    id: string
+    name: string
+    color: string
 }
 
 export default function LessonsPage() {
@@ -35,11 +47,13 @@ export default function LessonsPage() {
     const searchParams = useSearchParams()
     const [lessons, setLessons] = useState<Lesson[]>([])
     const [students, setStudents] = useState<Student[]>([])
+    const [subjects, setSubjects] = useState<Subject[]>([])
     const [filter, setFilter] = useState(searchParams?.get('filter') || 'upcoming')
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [formData, setFormData] = useState({
         studentId: '',
+        subjectId: '',
         date: new Date(),
         price: '',
         isPaid: false,
@@ -50,6 +64,7 @@ export default function LessonsPage() {
 
     useEffect(() => {
         fetchStudents()
+        fetchSubjects()
         fetchLessons()
     }, [filter])
 
@@ -83,15 +98,29 @@ export default function LessonsPage() {
         }
     }
 
+    const fetchSubjects = async () => {
+        try {
+            const response = await fetch('/api/subjects')
+            if (response.ok) {
+                const data = await response.json()
+                setSubjects(data)
+            } else {
+                toast.error('Не удалось загрузить предметы')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка при загрузке предметов')
+        }
+    }
+
     const handleOpenModal = () => {
-        setFormData({ studentId: '', date: new Date(), price: '', isPaid: false })
+        setFormData({ studentId: '', subjectId: '', date: new Date(), price: '', isPaid: false })
         setError('')
         openModal('create')
     }
 
     const handleCloseModal = () => {
         closeModal()
-        setFormData({ studentId: '', date: new Date(), price: '', isPaid: false })
+        setFormData({ studentId: '', subjectId: '', date: new Date(), price: '', isPaid: false })
         setError('')
     }
 
@@ -101,6 +130,15 @@ export default function LessonsPage() {
         setFormData((prev) => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
+        }))
+    }
+
+    const handleStudentChange = (studentId: string) => {
+        const student = students.find(s => s.id === studentId)
+        setFormData(prev => ({
+            ...prev,
+            studentId,
+            subjectId: student?.subjectId || prev.subjectId || ''
         }))
     }
 
@@ -119,6 +157,7 @@ export default function LessonsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     studentId: formData.studentId,
+                    subjectId: formData.subjectId || undefined,
                     date: formData.date.toISOString(),
                     price: parseInt(formData.price),
                     isPaid: formData.isPaid,
@@ -195,7 +234,20 @@ export default function LessonsPage() {
                         >
                             <div className={styles.lessonHeader}>
                                 <div>
-                                    <h3 className={styles.studentName}>{lesson.student.name}</h3>
+                                    <div className={styles.studentNameRow}>
+                                        <h3 className={styles.studentName}>{lesson.student.name}</h3>
+                                        {lesson.subject && (
+                                            <span
+                                                className={styles.subjectBadge}
+                                                style={{
+                                                    color: lesson.subject.color,
+                                                    backgroundColor: `${lesson.subject.color}20`
+                                                }}
+                                            >
+                                                {lesson.subject.name}
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className={styles.lessonDate}>
                                         {format(new Date(lesson.date), 'dd MMMM yyyy, HH:mm', { locale: ru })}
                                     </p>
@@ -235,13 +287,26 @@ export default function LessonsPage() {
                         label="Ученик"
                         placeholder="Выберите ученика"
                         value={formData.studentId}
-                        onChange={(value) => setFormData((prev) => ({ ...prev, studentId: value }))}
+                        onChange={handleStudentChange}
                         options={students.map((student) => ({
                             value: student?.id,
                             label: student.name,
                         }))}
                         searchable
                         required
+                        disabled={isSubmitting}
+                    />
+
+                    <Dropdown
+                        label="Предмет"
+                        placeholder="Выберите предмет"
+                        value={formData.subjectId}
+                        onChange={(value) => setFormData((prev) => ({ ...prev, subjectId: value }))}
+                        options={subjects.map((subject) => ({
+                            value: subject.id,
+                            label: subject.name,
+                        }))}
+                        searchable
                         disabled={isSubmitting}
                     />
 

@@ -59,11 +59,27 @@
     gap: 16px;
 }
 
+.studentNameRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+}
+
 .studentName {
     font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 4px;
+    margin: 0;
+}
+
+.subjectBadge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 .lessonDate {
