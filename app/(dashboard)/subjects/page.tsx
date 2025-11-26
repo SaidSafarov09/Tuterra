@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
-import { SubjectsIcon } from '@/components/icons/Icons'
+import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon } from '@/components/icons/Icons'
 import styles from './page.module.scss'
 
 interface Subject {
@@ -18,6 +20,16 @@ interface Subject {
         students: number
         lessons: number
     }
+}
+
+interface Student {
+    id: string
+    name: string
+    lessons: {
+        id: string
+        date: string
+        price: number
+    }[]
 }
 
 const COLORS = [
@@ -35,6 +47,12 @@ export default function SubjectsPage() {
         color: '#4A6CF7',
     })
     const [error, setError] = useState('')
+
+    // Subject Details Modal State
+    const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
+    const [subjectStudents, setSubjectStudents] = useState<Student[]>([])
+    const [isLoadingStudents, setIsLoadingStudents] = useState(false)
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
     const { isOpen, openModal, closeModal } = useModalStore()
 
@@ -58,13 +76,43 @@ export default function SubjectsPage() {
         }
     }
 
-    const handleOpenModal = () => {
+    const fetchSubjectStudents = async (subjectId: string) => {
+        setIsLoadingStudents(true)
+        try {
+            const response = await fetch(`/api/subjects/${subjectId}/students`)
+            if (response.ok) {
+                const data = await response.json()
+                setSubjectStudents(data)
+            } else {
+                toast.error('Не удалось загрузить учеников')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка при загрузке учеников')
+        } finally {
+            setIsLoadingStudents(false)
+        }
+    }
+
+    const handleSubjectClick = (subject: Subject) => {
+        setSelectedSubject(subject)
+        setIsDetailsModalOpen(true)
+        fetchSubjectStudents(subject.id)
+    }
+
+    const handleCloseDetailsModal = () => {
+        setIsDetailsModalOpen(false)
+        setSelectedSubject(null)
+        setSubjectStudents([])
+    }
+
+    // Create Subject Modal Handlers
+    const handleOpenCreateModal = () => {
         setFormData({ name: '', color: '#4A6CF7' })
         setError('')
         openModal('create')
     }
 
-    const handleCloseModal = () => {
+    const handleCloseCreateModal = () => {
         closeModal()
         setFormData({ name: '', color: '#4A6CF7' })
         setError('')
@@ -93,7 +141,7 @@ export default function SubjectsPage() {
 
             if (response.ok) {
                 await fetchSubjects()
-                handleCloseModal()
+                handleCloseCreateModal()
                 toast.success('Предмет успешно добавлен')
             } else {
                 const data = await response.json()
@@ -107,6 +155,25 @@ export default function SubjectsPage() {
         }
     }
 
+    // Helper to generate initials
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+    }
+
+    const stringToColor = (str: string): string => {
+        let hash = 0
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash)
+        }
+        const hue = Math.abs(hash % 360)
+        return `hsl(${hue}, 65%, 55%)`
+    }
+
     if (isLoading) {
         return <div className={styles.loading}>Загрузка...</div>
     }
@@ -116,49 +183,48 @@ export default function SubjectsPage() {
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <h1 className={styles.title}>Предметы</h1>
-                    <p className={styles.subtitle}>Управляйте списком предметов, которые вы преподаете</p>
+                    <p className={styles.subtitle}>Ваши учебные дисциплины</p>
                 </div>
-                <Button onClick={handleOpenModal}>+&nbsp;&nbsp; Добавить предмет</Button>
+                <Button onClick={handleOpenCreateModal}>
+                    <PlusIcon size={20} />
+                    Добавить предмет
+                </Button>
             </div>
 
             {subjects.length === 0 ? (
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateIcon}>
-                        <SubjectsIcon size={64} color="var(--text-muted)" />
+                        <SubjectsIcon size={64} color="#9CA3AF" />
                     </div>
                     <h2 className={styles.emptyStateTitle}>Нет предметов</h2>
                     <p className={styles.emptyStateText}>
                         Добавьте первый предмет, чтобы начать работу
                     </p>
-                    <Button onClick={handleOpenModal}>Добавить предмет</Button>
+                    <Button onClick={handleOpenCreateModal}>Добавить предмет</Button>
                 </div>
             ) : (
                 <div className={styles.subjectsGrid}>
                     {subjects.map((subject) => (
                         <div
-                            key={subject?.id}
+                            key={subject.id}
                             className={styles.subjectCard}
-                            style={{ '--subject-color': subject.color } as React.CSSProperties}
-                        // onClick={() => router.push(`/subjects/${subject?.id}`)}
+                            onClick={() => handleSubjectClick(subject)}
                         >
-                            <div className={styles.subjectHeader}>
-                                <div className={styles.subjectInfo}>
-                                    <h3 className={styles.subjectName}>{subject.name}</h3>
+                            <div
+                                className={styles.cardHeader}
+                                style={{ backgroundColor: subject.color }}
+                            >
+                                <div className={styles.cardIcon}>
+                                    {subject.name[0].toUpperCase()}
                                 </div>
-                                <div
-                                    className={styles.subjectColor}
-                                    style={{ background: subject.color }}
-                                />
                             </div>
-
-                            <div className={styles.subjectStats}>
-                                <div className={styles.stat}>
-                                    <p className={styles.statLabel}>Учеников</p>
-                                    <p className={styles.statValue}>{subject._count.students}</p>
-                                </div>
-                                <div className={styles.stat}>
-                                    <p className={styles.statLabel}>Занятий</p>
-                                    <p className={styles.statValue}>{subject._count.lessons}</p>
+                            <div className={styles.cardContent}>
+                                <h3 className={styles.cardTitle}>{subject.name}</h3>
+                                <div className={styles.cardStats}>
+                                    <div className={styles.cardStat}>
+                                        <UsersGroupIcon size={16} />
+                                        <span>{subject._count.students} учеников</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -166,13 +232,14 @@ export default function SubjectsPage() {
                 </div>
             )}
 
+            {/* Create Subject Modal */}
             <Modal
                 isOpen={isOpen}
-                onClose={handleCloseModal}
+                onClose={handleCloseCreateModal}
                 title="Добавить предмет"
                 footer={
                     <ModalFooter
-                        onCancel={handleCloseModal}
+                        onCancel={handleCloseCreateModal}
                         onSubmit={handleSubmit}
                         isLoading={isSubmitting}
                         submitText="Добавить"
@@ -209,6 +276,51 @@ export default function SubjectsPage() {
                         </div>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Subject Details Modal */}
+            <Modal
+                isOpen={isDetailsModalOpen}
+                onClose={handleCloseDetailsModal}
+                title={selectedSubject?.name || 'Предмет'}
+            >
+                <div className={styles.detailsContent}>
+                    {isLoadingStudents ? (
+                        <div className={styles.loading}>Загрузка учеников...</div>
+                    ) : subjectStudents.length === 0 ? (
+                        <div className={styles.emptyDetails}>
+                            <p>В этом предмете пока нет учеников</p>
+                        </div>
+                    ) : (
+                        <div className={styles.studentsList}>
+                            {subjectStudents.map((student) => (
+                                <div key={student.id} className={styles.studentItem}>
+                                    <div className={styles.studentInfo}>
+                                        <div
+                                            className={styles.studentAvatar}
+                                            style={{ backgroundColor: stringToColor(student.name) }}
+                                        >
+                                            {getInitials(student.name)}
+                                        </div>
+                                        <span className={styles.studentName}>{student.name}</span>
+                                    </div>
+                                    <div className={styles.lessonInfo}>
+                                        {student.lessons.length > 0 ? (
+                                            <div className={styles.nextLesson}>
+                                                <ClockIcon size={14} className={styles.clockIcon} />
+                                                <span>
+                                                    {format(new Date(student.lessons[0].date), 'd MMM, HH:mm', { locale: ru })}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <span className={styles.noLesson}>Нет занятий</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </Modal>
         </div>
     )
