@@ -57,12 +57,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
     // Add Subject Modal State
     const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false)
-    const [addSubjectMode, setAddSubjectMode] = useState<'link' | 'create'>('link')
     const [selectedSubjectId, setSelectedSubjectId] = useState('')
-    const [subjectFormData, setSubjectFormData] = useState({
-        name: '',
-        color: '#4A6CF7',
-    })
 
     // Create Lesson Modal State
     // Create Lesson Modal State
@@ -171,56 +166,52 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
     // Add Subject Handlers
     const handleOpenAddSubjectModal = () => {
-        setAddSubjectMode('link')
         setSelectedSubjectId('')
-        setSubjectFormData({ name: '', color: '#4A6CF7' })
         setIsAddSubjectModalOpen(true)
     }
 
-    const handleSubmitSubject = async () => {
-        setIsSubmitting(true)
+    const handleCreateSubjectForLink = async (name: string) => {
         try {
-            let subjectIdToLink = selectedSubjectId
+            // Random color
+            const colors = ['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
+            const randomColor = colors[Math.floor(Math.random() * colors.length)]
 
-            if (addSubjectMode === 'create') {
-                if (!subjectFormData.name.trim()) {
-                    toast.error('Введите название предмета')
-                    setIsSubmitting(false)
-                    return
-                }
+            const createResponse = await fetch('/api/subjects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, color: randomColor }),
+            })
 
-                // Create subject
-                const createResponse = await fetch('/api/subjects', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(subjectFormData),
-                })
-
-                if (!createResponse.ok) {
-                    const data = await createResponse.json()
-                    toast.error(data.error || 'Не удалось создать предмет')
-                    setIsSubmitting(false)
-                    return
-                }
-
-                const newSubject = await createResponse.json()
-                subjectIdToLink = newSubject.id
-            } else {
-                if (!subjectIdToLink) {
-                    toast.error('Выберите предмет')
-                    setIsSubmitting(false)
-                    return
-                }
+            if (!createResponse.ok) {
+                const data = await createResponse.json()
+                toast.error(data.error || 'Не удалось создать предмет')
+                return
             }
 
-            // Link subject
-            const linkResponse = await fetch(`/api/subjects/${subjectIdToLink}/students/link`, {
+            const newSubject = await createResponse.json()
+            await fetchSubjects() // Refresh list
+            setSelectedSubjectId(newSubject.id)
+            toast.success(`Предмет "${name}" создан. Нажмите "Добавить", чтобы привязать его.`)
+        } catch (error) {
+            toast.error('Ошибка при создании предмета')
+        }
+    }
+
+    const handleSubmitSubject = async () => {
+        if (!selectedSubjectId) {
+            toast.error('Выберите предмет')
+            return
+        }
+
+        setIsSubmitting(true)
+        try {
+            const response = await fetch(`/api/subjects/${selectedSubjectId}/students/link`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ studentId: id }),
             })
 
-            if (linkResponse.ok) {
+            if (response.ok) {
                 await fetchStudent()
                 await fetchSubjects()
                 setIsAddSubjectModalOpen(false)
@@ -499,87 +490,22 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                     />
                 }
             >
-                <div style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                        <button
-                            type="button"
-                            onClick={() => setAddSubjectMode('link')}
-                            style={{
-                                flex: 1,
-                                padding: '8px 16px',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)',
-                                background: addSubjectMode === 'link' ? 'var(--primary)' : 'transparent',
-                                color: addSubjectMode === 'link' ? 'white' : 'var(--text-primary)',
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                            }}
-                        >
-                            Выбрать существующий
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setAddSubjectMode('create')}
-                            style={{
-                                flex: 1,
-                                padding: '8px 16px',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)',
-                                background: addSubjectMode === 'create' ? 'var(--primary)' : 'transparent',
-                                color: addSubjectMode === 'create' ? 'white' : 'var(--text-primary)',
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                            }}
-                        >
-                            Создать новый
-                        </button>
-                    </div>
-                </div>
-
-                {addSubjectMode === 'link' ? (
+                <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
                     <Dropdown
-                        label="Выберите предмет"
-                        placeholder="Выберите предмет"
+                        label="Предмет"
+                        placeholder="Выберите или создайте предмет"
                         value={selectedSubjectId}
                         onChange={setSelectedSubjectId}
                         options={allSubjects
-                            .filter(s => !student?.subjects.some(subj => subj.id === s.id))
+                            .filter(s => !student?.subjects.some(ss => ss.id === s.id))
                             .map(s => ({ value: s.id, label: s.name }))
                         }
                         searchable
+                        creatable
+                        onCreate={handleCreateSubjectForLink}
+                        menuPosition="relative"
                     />
-                ) : (
-                    <>
-                        <Input
-                            label="Название предмета"
-                            value={subjectFormData.name}
-                            onChange={(e) => setSubjectFormData({ ...subjectFormData, name: e.target.value })}
-                            required
-                        />
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
-                                Цвет
-                            </label>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                {['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'].map((c) => (
-                                    <button
-                                        key={c}
-                                        type="button"
-                                        onClick={() => setSubjectFormData({ ...subjectFormData, color: c })}
-                                        style={{
-                                            width: '32px',
-                                            height: '32px',
-                                            borderRadius: '50%',
-                                            background: c,
-                                            border: subjectFormData.color === c ? '2px solid var(--text-primary)' : 'none',
-                                            cursor: 'pointer',
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </>
-                )}
+                </form>
             </Modal>
 
             {/* Create Lesson Modal */}
@@ -606,6 +532,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                         searchable
                         creatable
                         onCreate={handleCreateSubject}
+                        menuPosition="relative"
                     />
 
                     <DateTimePicker

@@ -19,6 +19,7 @@ interface DropdownProps {
     searchable?: boolean
     creatable?: boolean
     onCreate?: (value: string) => void
+    menuPosition?: 'absolute' | 'relative'
     disabled?: boolean
     required?: boolean
     error?: string
@@ -34,6 +35,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
     searchable = false,
     creatable = false,
     onCreate,
+    menuPosition = 'absolute',
     disabled = false,
     required = false,
     error,
@@ -109,7 +111,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
             </button>
 
             {isOpen && (
-                <div className={styles.menu}>
+                <div className={`${styles.menu} ${menuPosition === 'relative' ? styles.menuRelative : ''}`}>
                     {searchable && (
                         <div className={styles.search}>
                             <input

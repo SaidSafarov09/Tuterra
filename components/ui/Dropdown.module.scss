@@ -75,6 +75,32 @@
     }
 }
 
+.menuRelative {
+    position: relative;
+    top: 4px;
+    width: 100%;
+    box-shadow: none;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    margin-top: -4px;
+    animation: dropdownExpand 0.2s ease;
+}
+
+@keyframes dropdownExpand {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 300px;
+    }
+}
+
 @keyframes dropdownAppear {
     from {
         opacity: 0;
