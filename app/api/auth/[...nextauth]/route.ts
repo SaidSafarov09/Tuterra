@@ -31,10 +31,10 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 return {
-                    id: user?.id,
+                    id: user.id,
                     email: user.email,
                     name: user.name,
-                    image: user.avatar || user.image,
+                    image: user.avatar || undefined,
                 }
             },
         }),
@@ -48,14 +48,15 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.id = user?.id
+                token.id = user.id
+                token.picture = user.image
             }
             return token
         },
         async session({ session, token }) {
             if (session.user) {
-                session.user.id = token?.id as string
-                session.user.image = token.picture // Pass image from token to session
+                session.user.id = token.id as string
+                session.user.image = token.picture
             }
             return session
         },

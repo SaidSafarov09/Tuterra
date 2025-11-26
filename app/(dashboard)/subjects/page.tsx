@@ -114,7 +114,7 @@ export default function SubjectsPage() {
                     <h1 className={styles.title}>Предметы</h1>
                     <p className={styles.subtitle}>Управляйте списком предметов, которые вы преподаете</p>
                 </div>
-                <Button onClick={handleOpenModal}>+ Добавить предмет</Button>
+                <Button onClick={handleOpenModal}>+&nbsp;&nbsp; Добавить предмет</Button>
             </div>
 
             {subjects.length === 0 ? (
@@ -135,7 +135,7 @@ export default function SubjectsPage() {
                             key={subject?.id}
                             className={styles.subjectCard}
                             style={{ '--subject-color': subject.color } as React.CSSProperties}
-                            onClick={() => router.push(`/subjects/${subject?.id}`)}
+                        // onClick={() => router.push(`/subjects/${subject?.id}`)}
                         >
                             <div className={styles.subjectHeader}>
                                 <div className={styles.subjectInfo}>

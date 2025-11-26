@@ -53,7 +53,7 @@ export default function DashboardPage() {
     return (
         <div>
             <div className={styles.header}>
-                <h1 className={styles.title}>Dashboard</h1>
+                <h1 className={styles.title}>Главная</h1>
                 <p className={styles.subtitle}>Обзор вашей активности</p>
             </div>
 
