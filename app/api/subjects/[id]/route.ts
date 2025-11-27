@@ -99,6 +99,51 @@ export async function PUT(
     }
 }
 
+export async function PATCH(
+    request: Request,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const session = await getServerSession(authOptions)
+
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+        }
+
+        const body = await request.json()
+
+        // Allow partial updates
+        const updateData: any = {}
+        if (body.name !== undefined) updateData.name = body.name
+        if (body.color !== undefined) updateData.color = body.color
+        if (body.icon !== undefined) updateData.icon = body.icon
+
+        const subject = await prisma.subject.updateMany({
+            where: {
+                id: params?.id,
+                userId: session.user?.id,
+            },
+            data: updateData,
+        })
+
+        if (subject.count === 0) {
+            return NextResponse.json({ error: 'Предмет не найден' }, { status: 404 })
+        }
+
+        const updatedSubject = await prisma.subject.findUnique({
+            where: { id: params?.id },
+        })
+
+        return NextResponse.json(updatedSubject)
+    } catch (error) {
+        console.error('Patch subject error:', error)
+        return NextResponse.json(
+            { error: 'Произошла ошибка при обновлении предмета' },
+            { status: 500 }
+        )
+    }
+}
+
 export async function DELETE(
     request: Request,
     { params }: { params: { id: string } }

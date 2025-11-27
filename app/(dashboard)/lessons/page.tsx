@@ -148,9 +148,77 @@ export default function LessonsPage() {
         }))
     }
 
+    const handleCreateStudent = async (name: string) => {
+        try {
+            const response = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+            })
+
+            if (!response.ok) {
+                toast.error('Не удалось создать ученика')
+                return
+            }
+
+            const newStudent = await response.json()
+            await fetchStudents()
+            setFormData(prev => ({ ...prev, studentId: newStudent.id }))
+            toast.success(`Ученик "${name}" создан`)
+        } catch (error) {
+            toast.error('Ошибка при создании ученика')
+        }
+    }
+
+    const handleCreateSubject = async (name: string) => {
+        try {
+            const colors = ['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
+            const randomColor = colors[Math.floor(Math.random() * colors.length)]
+
+            const response = await fetch('/api/subjects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, color: randomColor }),
+            })
+
+            if (!response.ok) {
+                toast.error('Не удалось создать предмет')
+                return
+            }
+
+            const newSubject = await response.json()
+            await fetchSubjects()
+            setFormData(prev => ({ ...prev, subjectId: newSubject.id }))
+
+            // If student is selected, auto-link the subject to the student
+            if (formData.studentId) {
+                try {
+                    await fetch(`/api/subjects/${newSubject.id}/students/link`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId: formData.studentId }),
+                    })
+                    await fetchStudents() // Refresh to show new subject link
+                } catch (error) {
+                    console.error('Failed to link subject to student:', error)
+                }
+            }
+
+            toast.success(`Предмет "${name}" создан`)
+        } catch (error) {
+            toast.error('Ошибка при создании предмета')
+        }
+    }
+
     const handleSubmit = async () => {
         if (!formData.studentId || !formData.price) {
             toast.error('Заполните все обязательные поля')
+            return
+        }
+
+        // Check if lesson date is in the past
+        if (formData.date < new Date()) {
+            toast.error('Нельзя создавать занятия в прошедшем времени')
             return
         }
 
@@ -291,7 +359,7 @@ export default function LessonsPage() {
 
                     <Dropdown
                         label="Ученик"
-                        placeholder="Выберите ученика"
+                        placeholder="Выберите или создайте ученика"
                         value={formData.studentId}
                         onChange={handleStudentChange}
                         options={students.map((student) => ({
@@ -299,13 +367,16 @@ export default function LessonsPage() {
                             label: student.name,
                         }))}
                         searchable
+                        creatable
+                        onCreate={handleCreateStudent}
+                        menuPosition="relative"
                         required
                         disabled={isSubmitting}
                     />
 
                     <Dropdown
                         label="Предмет"
-                        placeholder="Выберите предмет"
+                        placeholder="Выберите или создайте предмет"
                         value={formData.subjectId}
                         onChange={(value) => setFormData((prev) => ({ ...prev, subjectId: value }))}
                         options={subjects.map((subject) => ({
@@ -313,6 +384,9 @@ export default function LessonsPage() {
                             label: subject.name,
                         }))}
                         searchable
+                        creatable
+                        onCreate={handleCreateSubject}
+                        menuPosition="relative"
                         disabled={isSubmitting}
                     />
 

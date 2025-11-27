@@ -81,6 +81,14 @@ export default function SubjectsPage() {
         isPaid: false,
     })
 
+    // Edit Subject Modal State
+    const [isEditSubjectModalOpen, setIsEditSubjectModalOpen] = useState(false)
+    const [editSubjectData, setEditSubjectData] = useState({
+        id: '',
+        name: '',
+        color: '#4A6CF7',
+    })
+
     const { isOpen, openModal, closeModal } = useModalStore()
 
     useEffect(() => {
@@ -307,6 +315,12 @@ export default function SubjectsPage() {
         }
         if (!selectedSubject) return
 
+        // Check if lesson date is in the past
+        if (lessonFormData.date < new Date()) {
+            toast.error('Нельзя создавать занятия в прошедшем времени')
+            return
+        }
+
         setIsSubmitting(true)
         try {
             const response = await fetch('/api/lessons', {
@@ -328,6 +342,60 @@ export default function SubjectsPage() {
                 toast.success('Занятие успешно создано')
             } else {
                 toast.error('Не удалось создать занятие')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    // Edit Subject Handlers
+    const handleOpenEditSubjectModal = (subject: Subject) => {
+        setEditSubjectData({
+            id: subject.id,
+            name: subject.name,
+            color: subject.color,
+        })
+        setIsEditSubjectModalOpen(true)
+    }
+
+    const handleCloseEditSubjectModal = () => {
+        setIsEditSubjectModalOpen(false)
+        setEditSubjectData({ id: '', name: '', color: '#4A6CF7' })
+    }
+
+    const handleEditSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target
+        setEditSubjectData((prev) => ({ ...prev, [name]: value }))
+    }
+
+    const handleSubmitEditSubject = async () => {
+        if (!editSubjectData.name.trim()) {
+            toast.error('Введите название предмета')
+            return
+        }
+
+        setIsSubmitting(true)
+        try {
+            const response = await fetch(`/api/subjects/${editSubjectData.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: editSubjectData.name,
+                    color: editSubjectData.color,
+                }),
+            })
+
+            if (response.ok) {
+                await fetchSubjects()
+                if (selectedSubject?.id === editSubjectData.id) {
+                    setSelectedSubject(prev => prev ? { ...prev, name: editSubjectData.name, color: editSubjectData.color } : null)
+                }
+                handleCloseEditSubjectModal()
+                toast.success('Предмет обновлён')
+            } else {
+                toast.error('Не удалось обновить предмет')
             }
         } catch (error) {
             toast.error('Произошла ошибка')
@@ -407,6 +475,30 @@ export default function SubjectsPage() {
                                         <span>{subject._count.students} учеников</span>
                                     </div>
                                 </div>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleOpenEditSubjectModal(subject)
+                                    }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '8px',
+                                        right: '8px',
+                                        background: 'rgba(255, 255, 255, 0.9)',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '6px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '14px',
+                                        color: '#666',
+                                    }}
+                                    title="Редактировать"
+                                >
+                                    ✏️
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -675,6 +767,50 @@ export default function SubjectsPage() {
                         />
                         Оплачено
                     </label>
+                </form>
+            </Modal>
+
+            {/* Edit Subject Modal */}
+            <Modal
+                isOpen={isEditSubjectModalOpen}
+                onClose={handleCloseEditSubjectModal}
+                title="Редактировать предмет"
+                footer={
+                    <ModalFooter
+                        onCancel={handleCloseEditSubjectModal}
+                        onSubmit={handleSubmitEditSubject}
+                        isLoading={isSubmitting}
+                        submitText="Сохранить"
+                    />
+                }
+            >
+                <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+                    <Input
+                        label="Название предмета"
+                        name="name"
+                        value={editSubjectData.name}
+                        onChange={handleEditSubjectChange}
+                        required
+                        placeholder="Математика, Английский язык"
+                        disabled={isSubmitting}
+                    />
+
+                    <div>
+                        <label style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px', display: 'block' }}>
+                            Цвет
+                        </label>
+                        <div className={styles.colorPicker}>
+                            {COLORS.map((color) => (
+                                <div
+                                    key={color}
+                                    className={`${styles.colorOption} ${editSubjectData.color === color ? styles.selected : ''
+                                        }`}
+                                    style={{ background: color }}
+                                    onClick={() => setEditSubjectData((prev) => ({ ...prev, color }))}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </form>
             </Modal>
         </div>

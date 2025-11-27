@@ -125,6 +125,28 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         }
     }
 
+    const handleDeleteSubject = async (subjectId: string) => {
+        if (!confirm('Удалить предмет у этого ученика?')) return
+
+        try {
+            const response = await fetch(`/api/subjects/${subjectId}/students/link`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: id }),
+            })
+
+            if (response.ok) {
+                await fetchStudent()
+                await fetchSubjects()
+                toast.success('Предмет удалён')
+            } else {
+                toast.error('Не удалось удалить предмет')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка')
+        }
+    }
+
     // Edit Student Handlers
     const handleOpenEditModal = () => {
         if (!student) return
@@ -281,6 +303,12 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             return
         }
 
+        // Check if lesson date is in the past
+        if (lessonFormData.date < new Date()) {
+            toast.error('Нельзя создавать занятия в прошедшем времени')
+            return
+        }
+
         setIsSubmitting(true)
         try {
             const response = await fetch('/api/lessons', {
@@ -399,9 +427,33 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                                     fontWeight: 500,
                                     color: subject.color,
                                     backgroundColor: subject.color + '20',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
                                 }}
                             >
                                 {subject.name}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleDeleteSubject(subject.id)
+                                    }}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        padding: '0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        color: subject.color,
+                                        opacity: 0.7,
+                                        fontSize: '16px',
+                                        lineHeight: 1,
+                                    }}
+                                    title="Удалить предмет"
+                                >
+                                    ×
+                                </button>
                             </span>
                         ))
                     ) : (
