@@ -12,10 +12,11 @@ const subjectSchema = z.object({
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
+        const { id } = await params
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -23,7 +24,7 @@ export async function GET(
 
         const subject = await prisma.subject.findFirst({
             where: {
-                id: params?.id,
+                id: id,
                 userId: session.user?.id,
             },
             include: {
@@ -54,10 +55,11 @@ export async function GET(
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
+        const { id } = await params
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -68,7 +70,7 @@ export async function PUT(
 
         const subject = await prisma.subject.updateMany({
             where: {
-                id: params?.id,
+                id: id,
                 userId: session.user?.id,
             },
             data: validatedData,
@@ -79,7 +81,7 @@ export async function PUT(
         }
 
         const updatedSubject = await prisma.subject.findUnique({
-            where: { id: params?.id },
+            where: { id: id },
         })
 
         return NextResponse.json(updatedSubject)
@@ -101,10 +103,11 @@ export async function PUT(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
+        const { id } = await params
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -120,7 +123,7 @@ export async function PATCH(
 
         const subject = await prisma.subject.updateMany({
             where: {
-                id: params?.id,
+                id: id,
                 userId: session.user?.id,
             },
             data: updateData,
@@ -131,7 +134,7 @@ export async function PATCH(
         }
 
         const updatedSubject = await prisma.subject.findUnique({
-            where: { id: params?.id },
+            where: { id: id },
         })
 
         return NextResponse.json(updatedSubject)
@@ -146,10 +149,11 @@ export async function PATCH(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
+        const { id } = await params
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -158,7 +162,7 @@ export async function DELETE(
         // First, check if the subject exists and belongs to the user
         const subject = await prisma.subject.findFirst({
             where: {
-                id: params?.id,
+                id: id,
                 userId: session.user?.id,
             },
             include: {
@@ -178,7 +182,7 @@ export async function DELETE(
         if (lessonsCount > 0) {
             await prisma.lesson.deleteMany({
                 where: {
-                    subjectId: params?.id,
+                    subjectId: id,
                     ownerId: session.user?.id,
                 }
             })
@@ -187,7 +191,7 @@ export async function DELETE(
         // Delete the subject
         await prisma.subject.delete({
             where: {
-                id: params?.id,
+                id: id,
             },
         })
 

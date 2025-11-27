@@ -14,10 +14,11 @@ const studentSchema = z.object({
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
+        const { id } = await params
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -25,7 +26,7 @@ export async function GET(
 
         const student = await prisma.student.findFirst({
             where: {
-                id: params?.id,
+                id: id,
                 ownerId: session.user?.id,
             },
             include: {
@@ -55,10 +56,11 @@ export async function GET(
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
+        const { id } = await params
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -69,7 +71,7 @@ export async function PUT(
 
         const student = await prisma.student.updateMany({
             where: {
-                id: params?.id,
+                id: id,
                 ownerId: session.user?.id,
             },
             data: validatedData,
@@ -80,7 +82,7 @@ export async function PUT(
         }
 
         const updatedStudent = await prisma.student.findUnique({
-            where: { id: params?.id },
+            where: { id: id },
         })
 
         return NextResponse.json(updatedStudent)
@@ -102,10 +104,11 @@ export async function PUT(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions)
+        const { id } = await params
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -113,7 +116,7 @@ export async function DELETE(
 
         const deleted = await prisma.student.deleteMany({
             where: {
-                id: params?.id,
+                id: id,
                 ownerId: session.user?.id,
             },
         })
