@@ -98,9 +98,6 @@ export async function POST(request: Request) {
                 subject: true,
             },
         })
-        // If a subject is specified, ensure it is linked to the student
-        // We blindly attempt to connect. If it's already connected, it might throw or just work depending on the driver.
-        // We catch errors to ensure the lesson creation isn't affected.
         if (validatedData.subjectId) {
             try {
                 await prisma.student.update({
@@ -112,8 +109,6 @@ export async function POST(request: Request) {
                     } as any,
                 })
             } catch (error) {
-                // This is expected if the subject is already linked.
-                // We log it for debugging but don't fail the request.
                 console.log('Subject linking attempt result:', error)
             }
         }

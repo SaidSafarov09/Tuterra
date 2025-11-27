@@ -16,7 +16,7 @@ export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    
+
     try {
         const { id } = await params
         const session = await getServerSession(authOptions)
@@ -63,8 +63,6 @@ export async function PUT(
 
         const body = await request.json()
         const validatedData = lessonSchema.parse(body)
-
-        // Проверяем, что студент принадлежит текущему пользователю
         const student = await prisma.student.findFirst({
             where: {
                 id: validatedData.studentId,
