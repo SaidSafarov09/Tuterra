@@ -11,7 +11,8 @@ import { Dropdown } from '@/components/ui/Dropdown'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
-import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon } from '@/components/icons/Icons'
+import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon, EditIcon } from '@/components/icons/Icons'
+import { ColorPicker } from '@/components/ui/ColorPicker'
 import styles from './page.module.scss'
 
 interface Subject {
@@ -480,24 +481,10 @@ export default function SubjectsPage() {
                                         e.stopPropagation()
                                         handleOpenEditSubjectModal(subject)
                                     }}
-                                    style={{
-                                        position: 'absolute',
-                                        top: '8px',
-                                        right: '8px',
-                                        background: 'rgba(255, 255, 255, 0.9)',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        padding: '6px',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '14px',
-                                        color: '#666',
-                                    }}
+                                    className={styles.editButton}
                                     title="Редактировать"
                                 >
-                                    ✏️
+                                    <EditIcon size={16} />
                                 </button>
                             </div>
                         </div>
@@ -536,17 +523,10 @@ export default function SubjectsPage() {
                         <label style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px', display: 'block' }}>
                             Цвет
                         </label>
-                        <div className={styles.colorPicker}>
-                            {COLORS.map((color) => (
-                                <div
-                                    key={color}
-                                    className={`${styles.colorOption} ${formData.color === color ? styles.selected : ''
-                                        }`}
-                                    style={{ background: color }}
-                                    onClick={() => setFormData((prev) => ({ ...prev, color }))}
-                                />
-                            ))}
-                        </div>
+                        <ColorPicker
+                            value={formData.color}
+                            onChange={(color) => setFormData((prev) => ({ ...prev, color }))}
+                        />
                     </div>
                 </form>
             </Modal>
@@ -799,17 +779,10 @@ export default function SubjectsPage() {
                         <label style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px', display: 'block' }}>
                             Цвет
                         </label>
-                        <div className={styles.colorPicker}>
-                            {COLORS.map((color) => (
-                                <div
-                                    key={color}
-                                    className={`${styles.colorOption} ${editSubjectData.color === color ? styles.selected : ''
-                                        }`}
-                                    style={{ background: color }}
-                                    onClick={() => setEditSubjectData((prev) => ({ ...prev, color }))}
-                                />
-                            ))}
-                        </div>
+                        <ColorPicker
+                            value={editSubjectData.color}
+                            onChange={(color) => setEditSubjectData((prev) => ({ ...prev, color }))}
+                        />
                     </div>
                 </form>
             </Modal>
