@@ -57,7 +57,6 @@ export async function GET(request: Request) {
                 where: {
                     ownerId: session.user.id,
                     isPaid: true,
-                    isCanceled: false,
                     date: {
                         gte: monthStart,
                         lte: monthEnd,
