@@ -368,22 +368,24 @@ export default function CalendarPage() {
                                             {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
                                         </button>
 
-                                        <button
-                                            className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
-                                            onClick={() => handleToggleCancel(lesson)}
-                                        >
-                                            {lesson.isCanceled ? (
-                                                <>
-                                                    <CheckIcon size={16} />
-                                                    Восстановить
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <XCircleIcon size={16} />
-                                                    Отменить
-                                                </>
-                                            )}
-                                        </button>
+                                        {!isPast(new Date(lesson.date)) && (
+                                            <button
+                                                className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
+                                                onClick={() => handleToggleCancel(lesson)}
+                                            >
+                                                {lesson.isCanceled ? (
+                                                    <>
+                                                        <CheckIcon size={16} />
+                                                        Восстановить
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <XCircleIcon size={16} />
+                                                        Отменить
+                                                    </>
+                                                )}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}

@@ -11,14 +11,16 @@ import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
 import { formatSmartDate } from '@/lib/dateUtils'
-import { EditIcon, DeleteIcon, CheckIcon } from '@/components/icons/Icons'
+import { EditIcon, DeleteIcon, CheckIcon, XCircleIcon } from '@/components/icons/Icons'
 import styles from './page.module.scss'
+import { isPast } from 'date-fns'
 
 interface Lesson {
     id: string
     date: string
     price: number
     isPaid: boolean
+    isCanceled: boolean
     student: {
         id: string
         name: string
@@ -251,6 +253,26 @@ export default function LessonsPage() {
         }
     }
 
+    const handleToggleCancel = async (lesson: Lesson) => {
+        try {
+            const response = await fetch(`/api/lessons/${lesson.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isCanceled: !lesson.isCanceled }),
+            })
+
+            if (response.ok) {
+                const updatedLesson = await response.json()
+                toast.success(updatedLesson.isCanceled ? 'Занятие отменено' : 'Занятие восстановлено')
+                fetchLessons()
+            } else {
+                toast.error('Не удалось обновить статус')
+            }
+        } catch (error) {
+            toast.error('Ошибка при обновлении статуса')
+        }
+    }
+
     const handleTogglePaid = async (lesson: Lesson) => {
         try {
             const response = await fetch(`/api/lessons/${lesson.id}`, {
@@ -357,12 +379,15 @@ export default function LessonsPage() {
                     {lessons.map((lesson) => (
                         <div
                             key={lesson?.id}
-                            className={styles.lessonCard}
+                            className={`${styles.lessonCard} ${lesson.isCanceled ? styles.lessonCanceled : ''}`}
                         >
                             <div className={styles.lessonHeader}>
                                 <div>
                                     <div className={styles.studentNameRow}>
                                         <h3 className={styles.studentName}>{lesson.student.name}</h3>
+                                        {lesson.isCanceled && (
+                                            <span className={styles.canceledBadge}>Отменено</span>
+                                        )}
                                         {lesson.subject && (
                                             <span
                                                 className={styles.subjectBadge}
@@ -394,10 +419,31 @@ export default function LessonsPage() {
                                 <button
                                     className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
                                     onClick={() => handleTogglePaid(lesson)}
+                                    disabled={lesson.isCanceled}
                                 >
                                     <CheckIcon size={16} />
                                     {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
                                 </button>
+
+                                {!isPast(new Date(lesson.date)) && (
+                                    <button
+                                        className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.cancelButton}`}
+                                        onClick={() => handleToggleCancel(lesson)}
+                                    >
+                                        {lesson.isCanceled ? (
+                                            <>
+                                                <CheckIcon size={16} />
+                                                Восстановить
+                                            </>
+                                        ) : (
+                                            <>
+                                                <XCircleIcon size={16} />
+                                                Отменить
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+
                                 <button
                                     className={`${styles.actionButton} ${styles.editButton}`}
                                     onClick={() => handleEditLesson(lesson)}
