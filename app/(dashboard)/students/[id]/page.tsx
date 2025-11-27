@@ -610,7 +610,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                         onChange={(date) => setLessonFormData({ ...lessonFormData, date: date || new Date() })}
                         showTime
                         required
-                        dropDirection="up"
+                        dropDirection="center"
                     />
                     <Input
                         label="Стоимость"

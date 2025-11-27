@@ -557,7 +557,7 @@ export default function LessonsPage() {
                         showTime
                         required
                         disabled={isSubmitting}
-                        dropDirection="up"
+                        dropDirection="center"
                     />
 
                     <Input

@@ -18,7 +18,7 @@ interface DateTimePickerProps {
     required?: boolean
     error?: string
     placeholder?: string
-    dropDirection?: 'up' | 'down'
+    dropDirection?: 'up' | 'down' | 'center'
 }
 
 export const DateTimePicker: React.FC<DateTimePickerProps> = ({
