@@ -52,6 +52,7 @@ const TABS = [
     { id: 'upcoming', label: 'Предстоящие' },
     { id: 'past', label: 'Прошедшие' },
     { id: 'unpaid', label: 'Неоплаченные' },
+    { id: 'canceled', label: 'Отмененные' },
 ]
 
 export default function LessonsPage() {

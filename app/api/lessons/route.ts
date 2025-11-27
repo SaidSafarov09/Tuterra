@@ -31,10 +31,15 @@ export async function GET(request: Request) {
 
         if (filter === 'upcoming') {
             where.date = { gte: now }
+            where.isCanceled = false
         } else if (filter === 'past') {
             where.date = { lt: now }
+            where.isCanceled = false
         } else if (filter === 'unpaid') {
             where.isPaid = false
+            where.isCanceled = false
+        } else if (filter === 'canceled') {
+            where.isCanceled = true
         }
 
         const lessons = await prisma.lesson.findMany({

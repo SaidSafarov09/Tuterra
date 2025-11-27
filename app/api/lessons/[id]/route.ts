@@ -14,9 +14,10 @@ const lessonSchema = z.object({
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user?.id) {
@@ -25,7 +26,7 @@ export async function GET(
 
         const lesson = await prisma.lesson.findFirst({
             where: {
-                id: params?.id,
+                id: id,
                 ownerId: session.user?.id,
             },
             include: {
@@ -49,9 +50,10 @@ export async function GET(
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user?.id) {
@@ -78,7 +80,7 @@ export async function PUT(
 
         const lesson = await prisma.lesson.updateMany({
             where: {
-                id: params?.id,
+                id: id,
                 ownerId: session.user?.id,
             },
             data: validatedData,
@@ -89,7 +91,7 @@ export async function PUT(
         }
 
         const updatedLesson = await prisma.lesson.findUnique({
-            where: { id: params?.id },
+            where: { id: id },
             include: { student: true },
         })
 
@@ -112,9 +114,10 @@ export async function PUT(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user?.id) {
@@ -134,7 +137,7 @@ export async function PATCH(
 
         const lesson = await prisma.lesson.updateMany({
             where: {
-                id: params?.id,
+                id: id,
                 ownerId: session.user?.id,
             },
             data: updateData,
@@ -145,7 +148,7 @@ export async function PATCH(
         }
 
         const updatedLesson = await prisma.lesson.findUnique({
-            where: { id: params?.id },
+            where: { id: id },
             include: { student: true, subject: true },
         })
 
@@ -161,9 +164,10 @@ export async function PATCH(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const session = await getServerSession(authOptions)
 
         if (!session?.user?.id) {
@@ -172,7 +176,7 @@ export async function DELETE(
 
         const deleted = await prisma.lesson.deleteMany({
             where: {
-                id: params?.id,
+                id: id,
                 ownerId: session.user?.id,
             },
         })
