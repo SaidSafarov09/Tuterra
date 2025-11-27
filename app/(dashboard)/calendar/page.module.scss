@@ -1,0 +1,417 @@
+.container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    margin-bottom: 24px;
+}
+
+.headerText {
+    flex: 1;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+}
+
+// Calendar Container
+.calendarContainer {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-sm);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
+
+.monthTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.navButton {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+
+    &:hover {
+        background: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+// Calendar Grid
+.calendarWeekDays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.weekDay {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 8px;
+    text-transform: uppercase;
+}
+
+.calendarBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calendarWeek {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    flex: 1;
+}
+
+.calendarDay {
+    background: var(--background);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+
+    &:hover:not(.disabled) {
+        background: var(--border-light);
+        border-color: var(--border);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    &.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+
+        &:hover {
+            background: var(--background);
+            transform: none;
+        }
+    }
+
+    &.today {
+        border-color: var(--primary);
+        border-width: 2px;
+
+        .dayNumber {
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    &.hasLessons {
+        background: rgba(99, 102, 241, 0.03);
+    }
+}
+
+.dayNumber {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.dayIndicators {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: auto;
+}
+
+.subjectDots {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.subjectDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.moreDots {
+    font-size: 8px;
+    color: var(--text-secondary);
+    line-height: 6px;
+}
+
+.earnings {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    text-align: center;
+}
+
+// Modal Content
+.modalLoading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.dayDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dayStats {
+    display: flex;
+    gap: 16px;
+}
+
+.statCard {
+    flex: 1;
+    background: var(--background);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.statLabel {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.statValue {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.lessonsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lessonsTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.lessonCard {
+    background: var(--background);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: var(--border);
+    }
+}
+
+.lessonMain {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.lessonInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lessonStudent {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lessonMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.lessonSubject {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.lessonNotes {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.lessonPrice {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.price {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.pricePaid {
+    color: var(--success);
+}
+
+.priceUnpaid {
+    color: #f97316;
+}
+
+.paidBadge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.lessonActions {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+
+    &:hover {
+        background: var(--background);
+        color: var(--text-primary);
+        border-color: var(--border);
+    }
+}
+
+.deleteButton {
+    &:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+        border-color: var(--error);
+    }
+}
+
+.emptyDay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+
+    p {
+        margin-top: 16px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .calendarContainer {
+        padding: 16px;
+    }
+
+    .calendarDay {
+        min-height: 80px;
+        padding: 8px;
+    }
+
+    .dayNumber {
+        font-size: 12px;
+    }
+
+    .dayStats {
+        flex-direction: column;
+    }
+
+    .lessonActions {
+        flex-direction: column;
+    }
+}

@@ -26,6 +26,8 @@ import {
     ArrowRight,
     ChevronDown,
     ChevronUp,
+    ChevronLeft,
+    ChevronRight,
     Menu,
     X,
     Check,
@@ -71,6 +73,8 @@ export const ArrowLeftIcon: React.FC<IconProps> = (props) => <ArrowLeft {...prop
 export const ArrowRightIcon: React.FC<IconProps> = (props) => <ArrowRight {...props} />
 export const ChevronDownIcon: React.FC<IconProps> = (props) => <ChevronDown {...props} />
 export const ChevronUpIcon: React.FC<IconProps> = (props) => <ChevronUp {...props} />
+export const ChevronLeftIcon: React.FC<IconProps> = (props) => <ChevronLeft {...props} />
+export const ChevronRightIcon: React.FC<IconProps> = (props) => <ChevronRight {...props} />
 export const ClockIcon: React.FC<IconProps> = (props) => <Clock {...props} />
 export const MailIcon: React.FC<IconProps> = (props) => <Mail {...props} />
 export const PhoneIcon: React.FC<IconProps> = (props) => <Phone {...props} />
