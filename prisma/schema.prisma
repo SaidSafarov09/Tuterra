@@ -79,6 +79,7 @@ model Lesson {
   date      DateTime
   price     Int
   isPaid    Boolean  @default(false)
+  isCanceled Boolean @default(false)
   notes     String?
   ownerId   String
   studentId String

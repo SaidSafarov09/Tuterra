@@ -9,6 +9,7 @@ const lessonSchema = z.object({
     date: z.string().transform((str) => new Date(str)),
     price: z.number().positive('Цена должна быть положительной'),
     isPaid: z.boolean(),
+    isCanceled: z.boolean().optional(),
 })
 
 export async function GET(
@@ -129,6 +130,7 @@ export async function PATCH(
         if (body.date !== undefined) updateData.date = new Date(body.date)
         if (body.studentId !== undefined) updateData.studentId = body.studentId
         if (body.subjectId !== undefined) updateData.subjectId = body.subjectId
+        if (body.isCanceled !== undefined) updateData.isCanceled = body.isCanceled
 
         const lesson = await prisma.lesson.updateMany({
             where: {

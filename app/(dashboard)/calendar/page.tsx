@@ -9,7 +9,8 @@ import {
     ClockIcon,
     MoneyIcon,
     DeleteIcon,
-    CheckIcon
+    CheckIcon,
+    XCircleIcon
 } from '@/components/icons/Icons'
 import { Modal } from '@/components/ui/Modal'
 import {
@@ -36,6 +37,7 @@ interface Lesson {
     date: string
     price: number
     isPaid: boolean
+    isCanceled: boolean
     notes?: string
     student: {
         id: string
@@ -90,19 +92,17 @@ export default function CalendarPage() {
         setIsModalOpen(true)
     }
 
-    const loadDayData = (date: Date) => {
-        setIsLoadingDay(true)
-
-        const dayLessons = lessons.filter(lesson =>
+    const updateDayData = (currentLessons: Lesson[], date: Date) => {
+        const dayLessons = currentLessons.filter(lesson =>
             isSameDay(new Date(lesson.date), date)
         )
 
         const totalEarned = dayLessons
-            .filter(l => l.isPaid)
+            .filter(l => l.isPaid && !l.isCanceled)
             .reduce((sum, l) => sum + l.price, 0)
 
         const potentialEarnings = dayLessons
-            .filter(l => !l.isPaid)
+            .filter(l => !l.isPaid && !l.isCanceled)
             .reduce((sum, l) => sum + l.price, 0)
 
         setDayData({
@@ -110,27 +110,36 @@ export default function CalendarPage() {
             totalEarned,
             potentialEarnings
         })
+    }
+
+    const loadDayData = (date: Date) => {
+        setIsLoadingDay(true)
+        updateDayData(lessons, date)
         setIsLoadingDay(false)
     }
 
-    const handleCancelLesson = async (lessonId: string) => {
-        if (!confirm('Вы уверены, что хотите отменить это занятие?')) {
-            return
-        }
-
+    const handleToggleCancel = async (lesson: Lesson) => {
         try {
-            const response = await fetch(`/api/lessons/${lessonId}`, {
-                method: 'DELETE'
+            const response = await fetch(`/api/lessons/${lesson.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isCanceled: !lesson.isCanceled })
             })
 
             if (response.ok) {
-                toast.success('Занятие отменено')
-                await fetchLessons()
+                const updatedLesson = await response.json()
+
+                // Update local state immediately
+                const updatedLessons = lessons.map(l =>
+                    l.id === lesson.id ? updatedLesson : l
+                )
+                setLessons(updatedLessons)
+
                 if (selectedDate) {
-                    loadDayData(selectedDate)
+                    updateDayData(updatedLessons, selectedDate)
                 }
-            } else {
-                toast.error('Не удалось отменить занятие')
+
+                toast.success(updatedLesson.isCanceled ? 'Занятие отменено' : 'Занятие восстановлено')
             }
         } catch (error) {
             toast.error('Произошла ошибка')
@@ -146,11 +155,19 @@ export default function CalendarPage() {
             })
 
             if (response.ok) {
-                toast.success(lesson.isPaid ? 'Отмечено как неоплаченное' : 'Отмечено как оплаченное')
-                await fetchLessons()
+                const updatedLesson = await response.json()
+
+                // Update local state immediately
+                const updatedLessons = lessons.map(l =>
+                    l.id === lesson.id ? updatedLesson : l
+                )
+                setLessons(updatedLessons)
+
                 if (selectedDate) {
-                    loadDayData(selectedDate)
+                    updateDayData(updatedLessons, selectedDate)
                 }
+
+                toast.success(updatedLesson.isPaid ? 'Отмечено как оплаченное' : 'Отмечено как неоплаченное')
             }
         } catch (error) {
             toast.error('Произошла ошибка')
@@ -301,11 +318,17 @@ export default function CalendarPage() {
                         <div className={styles.lessonsList}>
                             <h3 className={styles.lessonsTitle}>Занятия ({dayData.lessons.length})</h3>
                             {dayData.lessons.map(lesson => (
-                                <div key={lesson.id} className={styles.lessonCard}>
+                                <div
+                                    key={lesson.id}
+                                    className={`${styles.lessonCard} ${lesson.isCanceled ? styles.lessonCanceled : ''}`}
+                                >
                                     <div className={styles.lessonMain}>
                                         <div className={styles.lessonInfo}>
                                             <div className={styles.lessonStudent}>
                                                 {lesson.student.name}
+                                                {lesson.isCanceled && (
+                                                    <span className={styles.canceledBadge}>Отменено</span>
+                                                )}
                                             </div>
                                             <div className={styles.lessonMeta}>
                                                 <ClockIcon size={14} />
@@ -336,33 +359,31 @@ export default function CalendarPage() {
                                         </div>
                                     </div>
                                     <div className={styles.lessonActions}>
-                                        {selectedDate && isFuture(selectedDate) && (
-                                            <>
-                                                <button
-                                                    className={styles.actionButton}
-                                                    onClick={() => handleTogglePaid(lesson)}
-                                                >
+                                        <button
+                                            className={styles.actionButton}
+                                            onClick={() => handleTogglePaid(lesson)}
+                                            disabled={lesson.isCanceled}
+                                        >
+                                            <CheckIcon size={16} />
+                                            {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
+                                        </button>
+
+                                        <button
+                                            className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
+                                            onClick={() => handleToggleCancel(lesson)}
+                                        >
+                                            {lesson.isCanceled ? (
+                                                <>
                                                     <CheckIcon size={16} />
-                                                    {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
-                                                </button>
-                                                <button
-                                                    className={`${styles.actionButton} ${styles.deleteButton}`}
-                                                    onClick={() => handleCancelLesson(lesson.id)}
-                                                >
-                                                    <DeleteIcon size={16} />
-                                                    Отменить занятие
-                                                </button>
-                                            </>
-                                        )}
-                                        {selectedDate && isPast(selectedDate) && !lesson.isPaid && (
-                                            <button
-                                                className={styles.actionButton}
-                                                onClick={() => handleTogglePaid(lesson)}
-                                            >
-                                                <CheckIcon size={16} />
-                                                Отметить оплаченным
-                                            </button>
-                                        )}
+                                                    Восстановить
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <XCircleIcon size={16} />
+                                                    Отменить
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
                                 </div>
                             ))}

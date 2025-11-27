@@ -342,6 +342,41 @@
     color: var(--success);
 }
 
+.lessonCanceled {
+    opacity: 0.7;
+    background: var(--background-secondary);
+
+    .lessonStudent {
+        text-decoration: line-through;
+        color: var(--text-secondary);
+    }
+
+    .price {
+        text-decoration: line-through;
+        color: var(--text-secondary);
+    }
+}
+
+.canceledBadge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+    margin-left: 8px;
+    text-decoration: none !important;
+    display: inline-block;
+}
+
+.restoreButton {
+    &:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border-color: var(--success);
+    }
+}
+
 .lessonActions {
     display: flex;
     gap: 8px;

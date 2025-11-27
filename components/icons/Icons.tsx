@@ -36,7 +36,8 @@ import {
     Mail,
     Phone,
     GraduationCap,
-    PieChart
+    PieChart,
+    XCircle
 } from 'lucide-react'
 
 interface IconProps {
@@ -67,6 +68,7 @@ export const CheckIcon: React.FC<IconProps> = (props) => <Check {...props} />
 export const MenuIcon: React.FC<IconProps> = (props) => <Menu {...props} />
 export const FilterIcon: React.FC<IconProps> = (props) => <Filter {...props} />
 export const SearchIcon: React.FC<IconProps> = (props) => <Search {...props} />
+export const XCircleIcon: React.FC<IconProps> = (props) => <XCircle {...props} />
 
 // UI Elements
 export const ArrowLeftIcon: React.FC<IconProps> = (props) => <ArrowLeft {...props} />

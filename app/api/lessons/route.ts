@@ -12,6 +12,7 @@ const lessonSchema = z.object({
     date: z.string().transform((str) => new Date(str)),
     price: z.number().positive('Цена должна быть положительной'),
     isPaid: z.boolean().optional(),
+    isCanceled: z.boolean().optional(),
 })
 
 export async function GET(request: Request) {
