@@ -29,7 +29,10 @@ export async function GET(request: Request) {
                     ownerId: session.user.id,
                     date: { gte: now },
                 },
-                include: { student: true },
+                include: {
+                    student: true,
+                    subject: true,
+                },
                 orderBy: { date: 'asc' },
                 take: 5,
             }),
@@ -40,7 +43,10 @@ export async function GET(request: Request) {
                     ownerId: session.user.id,
                     isPaid: false,
                 },
-                include: { student: true },
+                include: {
+                    student: true,
+                    subject: true,
+                },
                 orderBy: { date: 'desc' },
             }),
 

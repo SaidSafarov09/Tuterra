@@ -18,6 +18,11 @@ interface Lesson {
         id: string
         name: string
     }
+    subject?: {
+        id: string
+        name: string
+        color: string
+    } | null
 }
 
 interface DashboardStats {
@@ -116,6 +121,17 @@ export default function DashboardPage() {
                                     <div className={styles.lessonHeader}>
                                         <div>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
+                                            {lesson.subject && (
+                                                <span
+                                                    className={styles.subjectBadge}
+                                                    style={{
+                                                        color: lesson.subject.color,
+                                                        backgroundColor: `${lesson.subject.color}20`,
+                                                    }}
+                                                >
+                                                    {lesson.subject.name}
+                                                </span>
+                                            )}
                                             <p className={styles.lessonDate}>
                                                 {formatSmartDate(lesson.date)}
                                             </p>
@@ -156,6 +172,17 @@ export default function DashboardPage() {
                                     <div className={styles.lessonHeader}>
                                         <div>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
+                                            {lesson.subject && (
+                                                <span
+                                                    className={styles.subjectBadge}
+                                                    style={{
+                                                        color: lesson.subject.color,
+                                                        backgroundColor: `${lesson.subject.color}20`,
+                                                    }}
+                                                >
+                                                    {lesson.subject.name}
+                                                </span>
+                                            )}
                                             <p className={styles.lessonDate}>
                                                 {formatSmartDate(lesson.date)}
                                             </p>

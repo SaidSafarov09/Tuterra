@@ -312,18 +312,24 @@ export default function StudentsPage() {
                                 <div className={styles.studentInfo}>
                                     <div className={styles.nameRow}>
                                         <h3 className={styles.studentName}>{student.name}</h3>
-                                        {student.subjects.map((subject) => (
-                                            <span
-                                                key={subject.id}
-                                                className={styles.subjectBadge}
-                                                style={{
-                                                    color: subject.color,
-                                                    backgroundColor: subject.color + '20',
-                                                }}
-                                            >
-                                                {subject.name}
+                                        {student.subjects.length > 0 ? (
+                                            student.subjects.map((subject) => (
+                                                <span
+                                                    key={subject.id}
+                                                    className={styles.subjectBadge}
+                                                    style={{
+                                                        color: subject.color,
+                                                        backgroundColor: subject.color + '20',
+                                                    }}
+                                                >
+                                                    {subject.name}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className={styles.noSubjectHint}>
+                                                Добавьте предмет
                                             </span>
-                                        ))}
+                                        )}
                                     </div>
                                     {student.contact && (
                                         <p className={styles.studentContact}>

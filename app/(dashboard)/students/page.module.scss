@@ -161,6 +161,17 @@
     white-space: nowrap;
 }
 
+.noSubjectHint {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    background: var(--border-light);
+    font-style: italic;
+    white-space: nowrap;
+}
+
 .studentContact {
     font-size: 14px;
     color: var(--text-secondary);

@@ -155,18 +155,46 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const deleted = await prisma.subject.deleteMany({
+        // First, check if the subject exists and belongs to the user
+        const subject = await prisma.subject.findFirst({
             where: {
                 id: params?.id,
                 userId: session.user?.id,
             },
+            include: {
+                _count: {
+                    select: { lessons: true }
+                }
+            }
         })
 
-        if (deleted.count === 0) {
+        if (!subject) {
             return NextResponse.json({ error: 'Предмет не найден' }, { status: 404 })
         }
 
-        return NextResponse.json({ success: true })
+        const lessonsCount = subject._count.lessons
+
+        // Delete all lessons associated with this subject
+        if (lessonsCount > 0) {
+            await prisma.lesson.deleteMany({
+                where: {
+                    subjectId: params?.id,
+                    ownerId: session.user?.id,
+                }
+            })
+        }
+
+        // Delete the subject
+        await prisma.subject.delete({
+            where: {
+                id: params?.id,
+            },
+        })
+
+        return NextResponse.json({
+            success: true,
+            deletedLessonsCount: lessonsCount
+        })
     } catch (error) {
         console.error('Delete subject error:', error)
         return NextResponse.json(

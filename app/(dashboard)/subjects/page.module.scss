@@ -99,10 +99,22 @@
     gap: 6px;
 }
 
-.editButton {
+.cardActions {
     position: absolute;
     top: 12px;
     right: 12px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.subjectCard:hover .cardActions {
+    opacity: 1;
+}
+
+.editButton,
+.deleteButton {
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid var(--border-light);
     border-radius: 6px;
@@ -112,7 +124,6 @@
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
-    opacity: 0;
     transition: all 0.15s ease;
 
     &:hover {
@@ -124,6 +135,12 @@
     &:active {
         transform: scale(0.95);
     }
+}
+
+.deleteButton:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+    border-color: var(--error);
 }
 
 /* Modal Styles */

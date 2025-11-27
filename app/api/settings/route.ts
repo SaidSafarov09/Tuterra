@@ -8,7 +8,7 @@ const settingsSchema = z.object({
     name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
     phone: z.string().optional(),
     avatar: z.string().nullable().optional(),
-    currency: z.string(),
+    currency: z.string().optional(),
     timezone: z.string(),
 })
 

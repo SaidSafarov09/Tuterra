@@ -11,7 +11,7 @@ import { Dropdown } from '@/components/ui/Dropdown'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
-import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon, EditIcon } from '@/components/icons/Icons'
+import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon, EditIcon, DeleteIcon } from '@/components/icons/Icons'
 import { ColorPicker } from '@/components/ui/ColorPicker'
 import styles from './page.module.scss'
 
@@ -405,6 +405,36 @@ export default function SubjectsPage() {
         }
     }
 
+    const handleDeleteSubject = async (subject: Subject) => {
+        if (!confirm(`Вы уверены, что хотите удалить предмет "${subject.name}"? Это действие нельзя отменить.`)) {
+            return
+        }
+
+        try {
+            const response = await fetch(`/api/subjects/${subject.id}`, {
+                method: 'DELETE',
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                await fetchSubjects()
+
+                if (data.deletedLessonsCount > 0) {
+                    toast.success(
+                        `Предмет успешно удалён. Также удалено занятий: ${data.deletedLessonsCount}`,
+                        { duration: 4000 }
+                    )
+                } else {
+                    toast.success('Предмет успешно удалён')
+                }
+            } else {
+                toast.error('Не удалось удалить предмет')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка при удалении')
+        }
+    }
+
     // Helper to generate initials
     const getInitials = (name: string) => {
         return name
@@ -476,16 +506,28 @@ export default function SubjectsPage() {
                                         <span>{subject._count.students} учеников</span>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        handleOpenEditSubjectModal(subject)
-                                    }}
-                                    className={styles.editButton}
-                                    title="Редактировать"
-                                >
-                                    <EditIcon size={16} />
-                                </button>
+                                <div className={styles.cardActions}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleOpenEditSubjectModal(subject)
+                                        }}
+                                        className={styles.editButton}
+                                        title="Редактировать"
+                                    >
+                                        <EditIcon size={16} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDeleteSubject(subject)
+                                        }}
+                                        className={styles.deleteButton}
+                                        title="Удалить"
+                                    >
+                                        <DeleteIcon size={16} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
