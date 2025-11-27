@@ -18,6 +18,7 @@ interface DateTimePickerProps {
     required?: boolean
     error?: string
     placeholder?: string
+    dropDirection?: 'up' | 'down'
 }
 
 export const DateTimePicker: React.FC<DateTimePickerProps> = ({
@@ -31,6 +32,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
     required = false,
     error,
     placeholder = 'Выберите дату и время',
+    dropDirection = 'center',
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [currentMonth, setCurrentMonth] = useState(value || new Date())
@@ -146,7 +148,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
             </div>
 
             {isOpen && (
-                <div className={styles.picker}>
+                <div className={`${styles.picker} ${dropDirection === 'center' ? styles.pickerCenter : ''}`}>
                     <div className={styles.header}>
                         <button
                             className={styles.navButton}

@@ -198,6 +198,11 @@ export default function SettingsPage() {
                                     options={TIMEZONES}
                                     searchable
                                     menuPosition="relative"
+                                    onOpen={() => {
+                                        setTimeout(() => {
+                                            window.scrollBy({ top: 250, behavior: 'smooth' })
+                                        }, 100)
+                                    }}
                                 />
                             </div>
                         </div>

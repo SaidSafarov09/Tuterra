@@ -23,6 +23,7 @@ interface DropdownProps {
     disabled?: boolean
     required?: boolean
     error?: string
+    onOpen?: () => void
     className?: string
 }
 
@@ -39,6 +40,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
     disabled = false,
     required = false,
     error,
+    onOpen,
     className = '',
 }) => {
     const [isOpen, setIsOpen] = useState(false)
@@ -70,6 +72,16 @@ export const Dropdown: React.FC<DropdownProps> = ({
         }
     }, [isOpen])
 
+    const toggle = () => {
+        if (!disabled) {
+            const newState = !isOpen
+            setIsOpen(newState)
+            if (newState && onOpen) {
+                onOpen()
+            }
+        }
+    }
+
     const handleSelect = (optionValue: string) => {
         onChange(optionValue)
         setIsOpen(false)
@@ -99,7 +111,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 type="button"
                 className={`${styles.trigger} ${isOpen ? styles.open : ''} ${error ? styles.error : ''
                     } ${disabled ? styles.disabled : ''}`}
-                onClick={() => !disabled && setIsOpen(!isOpen)}
+                onClick={toggle}
                 disabled={disabled}
             >
                 <span className={selectedOption ? '' : styles.placeholder}>

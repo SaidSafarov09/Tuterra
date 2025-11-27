@@ -608,6 +608,9 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                         label="Дата и время"
                         value={lessonFormData.date}
                         onChange={(date) => setLessonFormData({ ...lessonFormData, date: date || new Date() })}
+                        showTime
+                        required
+                        dropDirection="up"
                     />
                     <Input
                         label="Стоимость"
