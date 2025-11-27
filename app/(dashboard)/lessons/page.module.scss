@@ -170,3 +170,58 @@
         font-size: 12px;
     }
 }
+
+.lessonActions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-light);
+    padding-top: 16px;
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+
+    &:hover {
+        background: var(--background);
+        color: var(--text-primary);
+    }
+}
+
+.editButton {
+    &:hover {
+        border-color: var(--border);
+    }
+}
+
+.deleteButton {
+    &:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+    }
+}
+
+.paidButton {
+    &.isPaid {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border-color: transparent;
+    }
+
+    &:hover {
+        border-color: var(--success);
+        color: var(--success);
+    }
+}

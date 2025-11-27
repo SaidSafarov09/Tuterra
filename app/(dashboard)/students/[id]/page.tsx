@@ -9,8 +9,7 @@ import { Dropdown } from '@/components/ui/Dropdown'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { EditIcon, PlusIcon, ClockIcon } from '@/components/icons/Icons'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { formatSmartDate } from '@/lib/dateUtils'
 import styles from './page.module.scss'
 
 interface Lesson {
@@ -476,7 +475,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                                 onClick={() => router.push(`/lessons/${lesson.id}`)}
                             >
                                 <div className={styles.lessonDate}>
-                                    {format(new Date(lesson.date), 'dd MMMM yyyy, HH:mm', { locale: ru })}
+                                    {formatSmartDate(lesson.date)}
                                 </div>
                                 <div className={styles.lessonInfo}>
                                     <span className={styles.lessonPrice}>{lesson.price} ₽</span>

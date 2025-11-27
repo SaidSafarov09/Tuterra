@@ -109,6 +109,54 @@ export async function PUT(
     }
 }
 
+export async function PATCH(
+    request: Request,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const session = await getServerSession(authOptions)
+
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+        }
+
+        const body = await request.json()
+
+        // Allow partial updates
+        const updateData: any = {}
+        if (body.isPaid !== undefined) updateData.isPaid = body.isPaid
+        if (body.price !== undefined) updateData.price = body.price
+        if (body.date !== undefined) updateData.date = new Date(body.date)
+        if (body.studentId !== undefined) updateData.studentId = body.studentId
+        if (body.subjectId !== undefined) updateData.subjectId = body.subjectId
+
+        const lesson = await prisma.lesson.updateMany({
+            where: {
+                id: params?.id,
+                ownerId: session.user?.id,
+            },
+            data: updateData,
+        })
+
+        if (lesson.count === 0) {
+            return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+        }
+
+        const updatedLesson = await prisma.lesson.findUnique({
+            where: { id: params?.id },
+            include: { student: true, subject: true },
+        })
+
+        return NextResponse.json(updatedLesson)
+    } catch (error) {
+        console.error('Patch lesson error:', error)
+        return NextResponse.json(
+            { error: 'Произошла ошибка при обновлении занятия' },
+            { status: 500 }
+        )
+    }
+}
+
 export async function DELETE(
     request: Request,
     { params }: { params: { id: string } }

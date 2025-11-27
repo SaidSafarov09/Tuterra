@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { UsersGroupIcon, BookIcon, AlertIcon, MoneyIcon, CelebrationIcon } from '@/components/icons/Icons'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { formatSmartDate } from '@/lib/dateUtils'
 import styles from './page.module.scss'
 
 interface Lesson {
@@ -116,7 +117,7 @@ export default function DashboardPage() {
                                         <div>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
                                             <p className={styles.lessonDate}>
-                                                {format(new Date(lesson.date), 'dd MMMM, HH:mm', { locale: ru })}
+                                                {formatSmartDate(lesson.date)}
                                             </p>
                                         </div>
                                         <div>
@@ -156,7 +157,7 @@ export default function DashboardPage() {
                                         <div>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
                                             <p className={styles.lessonDate}>
-                                                {format(new Date(lesson.date), 'dd MMMM, HH:mm', { locale: ru })}
+                                                {formatSmartDate(lesson.date)}
                                             </p>
                                         </div>
                                         <div className={styles.lessonPrice}>{lesson.price} ₽</div>

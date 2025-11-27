@@ -10,8 +10,8 @@ import { Dropdown, DropdownOption } from '@/components/ui/Dropdown'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { formatSmartDate } from '@/lib/dateUtils'
+import { EditIcon, DeleteIcon, CheckIcon } from '@/components/icons/Icons'
 import styles from './page.module.scss'
 
 interface Lesson {
@@ -55,6 +55,7 @@ export default function LessonsPage() {
     const [filter, setFilter] = useState(searchParams?.get('filter') || 'upcoming')
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
     const [formData, setFormData] = useState({
         studentId: '',
         subjectId: '',
@@ -117,6 +118,7 @@ export default function LessonsPage() {
     }
 
     const handleOpenModal = () => {
+        setEditingLesson(null)
         setFormData({ studentId: '', subjectId: '', date: new Date(), price: '', isPaid: false })
         setError('')
         openModal('create')
@@ -124,6 +126,7 @@ export default function LessonsPage() {
 
     const handleCloseModal = () => {
         closeModal()
+        setEditingLesson(null)
         setFormData({ studentId: '', subjectId: '', date: new Date(), price: '', isPaid: false })
         setError('')
     }
@@ -210,6 +213,57 @@ export default function LessonsPage() {
         }
     }
 
+    const handleEditLesson = (lesson: Lesson) => {
+        setEditingLesson(lesson)
+        setFormData({
+            studentId: lesson.student.id,
+            subjectId: lesson.subject?.id || '',
+            date: new Date(lesson.date),
+            price: lesson.price.toString(),
+            isPaid: lesson.isPaid,
+        })
+        setError('')
+        openModal('create') // We reuse the create modal
+    }
+
+    const handleDeleteLesson = async (lessonId: string) => {
+        if (!confirm('Вы уверены, что хотите удалить это занятие?')) return
+
+        try {
+            const response = await fetch(`/api/lessons/${lessonId}`, {
+                method: 'DELETE',
+            })
+
+            if (response.ok) {
+                toast.success('Занятие удалено')
+                fetchLessons()
+            } else {
+                toast.error('Не удалось удалить занятие')
+            }
+        } catch (error) {
+            toast.error('Ошибка при удалении занятия')
+        }
+    }
+
+    const handleTogglePaid = async (lesson: Lesson) => {
+        try {
+            const response = await fetch(`/api/lessons/${lesson.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isPaid: !lesson.isPaid }),
+            })
+
+            if (response.ok) {
+                toast.success(lesson.isPaid ? 'Помечено как неоплаченное' : 'Помечено как оплаченное')
+                fetchLessons()
+            } else {
+                toast.error('Не удалось обновить статус')
+            }
+        } catch (error) {
+            toast.error('Ошибка при обновлении статуса')
+        }
+    }
+
     const handleSubmit = async () => {
         if (!formData.studentId || !formData.price) {
             toast.error('Заполните все обязательные поля')
@@ -226,8 +280,11 @@ export default function LessonsPage() {
         setError('')
 
         try {
-            const response = await fetch('/api/lessons', {
-                method: 'POST',
+            const url = editingLesson ? `/api/lessons/${editingLesson.id}` : '/api/lessons'
+            const method = editingLesson ? 'PUT' : 'POST'
+
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     studentId: formData.studentId,
@@ -241,7 +298,7 @@ export default function LessonsPage() {
             if (response.ok) {
                 await fetchLessons()
                 handleCloseModal()
-                toast.success('Занятие успешно добавлено')
+                toast.success(editingLesson ? 'Занятие обновлено' : 'Занятие успешно добавлено')
             } else {
                 const data = await response.json()
                 setError(data.error || 'Произошла ошибка')
@@ -304,7 +361,6 @@ export default function LessonsPage() {
                         <div
                             key={lesson?.id}
                             className={styles.lessonCard}
-                            onClick={() => router.push(`/lessons/${lesson?.id}`)}
                         >
                             <div className={styles.lessonHeader}>
                                 <div>
@@ -323,7 +379,7 @@ export default function LessonsPage() {
                                         )}
                                     </div>
                                     <p className={styles.lessonDate}>
-                                        {format(new Date(lesson.date), 'dd MMMM yyyy, HH:mm', { locale: ru })}
+                                        {formatSmartDate(lesson.date)}
                                     </p>
                                 </div>
                                 <div className={styles.lessonPriceContainer}>
@@ -336,6 +392,30 @@ export default function LessonsPage() {
                                     </span>
                                 </div>
                             </div>
+
+                            <div className={styles.lessonActions}>
+                                <button
+                                    className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
+                                    onClick={() => handleTogglePaid(lesson)}
+                                >
+                                    <CheckIcon size={16} />
+                                    {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
+                                </button>
+                                <button
+                                    className={`${styles.actionButton} ${styles.editButton}`}
+                                    onClick={() => handleEditLesson(lesson)}
+                                >
+                                    <EditIcon size={16} />
+                                    Изменить
+                                </button>
+                                <button
+                                    className={`${styles.actionButton} ${styles.deleteButton}`}
+                                    onClick={() => handleDeleteLesson(lesson.id)}
+                                >
+                                    <DeleteIcon size={16} />
+                                    Удалить
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -344,13 +424,13 @@ export default function LessonsPage() {
             <Modal
                 isOpen={isOpen}
                 onClose={handleCloseModal}
-                title="Добавить занятие"
+                title={editingLesson ? "Редактировать занятие" : "Добавить занятие"}
                 footer={
                     <ModalFooter
                         onCancel={handleCloseModal}
                         onSubmit={handleSubmit}
                         isLoading={isSubmitting}
-                        submitText="Добавить"
+                        submitText={editingLesson ? "Сохранить" : "Добавить"}
                     />
                 }
             >
