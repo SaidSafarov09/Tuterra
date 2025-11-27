@@ -105,7 +105,7 @@ export default function SettingsPage() {
                     user: {
                         ...session?.user,
                         name: updatedUser.name,
-                        image: updatedUser.avatar,
+                        image: `/api/user/avatar?t=${Date.now()}`,
                     },
                 })
 
