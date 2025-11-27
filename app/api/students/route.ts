@@ -4,6 +4,8 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+export const dynamic = 'force-dynamic'
+
 const studentSchema = z.object({
     name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
     contact: z.string().optional(),

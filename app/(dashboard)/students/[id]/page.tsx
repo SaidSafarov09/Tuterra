@@ -491,7 +491,12 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                         ))}
                     </div>
                 ) : (
-                    <div className={styles.emptyState}>Нет занятий</div>
+                    <div className={styles.emptyLessons}>
+                        <p className={styles.emptyText}>Нет занятий</p>
+                        <Button size="small" onClick={handleOpenCreateLessonModal}>
+                            Создать
+                        </Button>
+                    </div>
                 )}
             </div>
 
