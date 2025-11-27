@@ -185,7 +185,7 @@ export default function CalendarPage() {
                         className={`${styles.calendarDay} ${!isSameMonth(day, monthStart) ? styles.disabled : ''
                             } ${isSameDay(day, new Date()) ? styles.today : ''} ${hasLessons ? styles.hasLessons : ''
                             }`}
-                        onClick={() => isSameMonth(day, monthStart) && handleDateClick(cloneDay)}
+                        onClick={() => handleDateClick(cloneDay)}
                     >
                         <span className={styles.dayNumber}>{format(day, dateFormat)}</span>
                         {hasLessons && (
