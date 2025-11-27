@@ -6,16 +6,8 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
-import { SubjectsManager } from '@/components/ui/SubjectsManager'
 import { UserAvatarUpload } from '@/components/ui/UserAvatarUpload'
 import styles from './page.module.scss'
-
-const CURRENCIES = [
-    { value: 'RUB', label: 'Российский рубль (₽)' },
-    { value: 'USD', label: 'Доллар США ($)' },
-    { value: 'EUR', label: 'Евро (€)' },
-    { value: 'KZT', label: 'Тенге (₸)' },
-]
 
 const TIMEZONES = [
     { value: 'Europe/Moscow', label: 'Москва (UTC+3)' },
@@ -29,8 +21,14 @@ const TIMEZONES = [
     { value: 'Asia/Vladivostok', label: 'Владивосток (UTC+10)' },
 ]
 
+const TABS = [
+    { id: 'general', label: 'Основные' },
+    { id: 'appearance', label: 'Оформление' },
+]
+
 export default function SettingsPage() {
     const { data: session, update } = useSession()
+    const [activeTab, setActiveTab] = useState('general')
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const [formData, setFormData] = useState({
@@ -38,7 +36,6 @@ export default function SettingsPage() {
         email: '',
         phone: '',
         avatar: null as string | null,
-        currency: 'RUB',
         timezone: 'Europe/Moscow',
     })
 
@@ -56,7 +53,6 @@ export default function SettingsPage() {
                     email: data.email || '',
                     phone: data.phone || '',
                     avatar: data.avatar || null,
-                    currency: data.currency || 'RUB',
                     timezone: data.timezone || 'Europe/Moscow',
                 })
             } else {
@@ -100,7 +96,7 @@ export default function SettingsPage() {
             if (response.ok) {
                 const updatedUser = await response.json()
 
-                // Обновляем сессию с новыми данными
+                // Force session update
                 await update({
                     ...session,
                     user: {
@@ -109,6 +105,11 @@ export default function SettingsPage() {
                         image: updatedUser.avatar,
                     },
                 })
+
+                // Trigger a hard reload of the session to ensure sidebar updates
+                // This is a workaround if update() doesn't propagate immediately
+                const event = new Event('visibilitychange');
+                document.dispatchEvent(event);
 
                 toast.success('Настройки успешно сохранены')
             } else {
@@ -133,65 +134,81 @@ export default function SettingsPage() {
                 <p className={styles.subtitle}>Управление профилем и предпочтениями</p>
             </div>
 
+            <div className={styles.tabs}>
+                {TABS.map((tab) => (
+                    <button
+                        key={tab.id}
+                        className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+                        onClick={() => setActiveTab(tab.id)}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
             <form onSubmit={handleSubmit} className={styles.form}>
-                <div className={styles.section}>
-                    <h2 className={styles.sectionTitle}>Профиль</h2>
-                    <div className={styles.profileGrid}>
-                        <div className={styles.avatarColumn}>
-                            <UserAvatarUpload
-                                currentAvatar={formData.avatar}
-                                userName={formData.name}
-                                onAvatarChange={handleAvatarChange}
-                            />
+                {activeTab === 'general' && (
+                    <>
+                        <div className={styles.section}>
+                            <h2 className={styles.sectionTitle}>Профиль</h2>
+                            <div className={styles.profileGrid}>
+                                <div className={styles.avatarColumn}>
+                                    <UserAvatarUpload
+                                        currentAvatar={formData.avatar}
+                                        userName={formData.name}
+                                        onAvatarChange={handleAvatarChange}
+                                    />
+                                </div>
+                                <div className={styles.fieldsColumn}>
+                                    <Input
+                                        label="Имя"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <Input
+                                        label="Email"
+                                        name="email"
+                                        value={formData.email}
+                                        disabled
+                                        hint="Email нельзя изменить"
+                                    />
+                                    <Input
+                                        label="Телефон"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        placeholder="+7 (999) 000-00-00"
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <div className={styles.fieldsColumn}>
-                            <Input
-                                label="Имя"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required
-                            />
-                            <Input
-                                label="Email"
-                                name="email"
-                                value={formData.email}
-                                disabled
-                                hint="Email нельзя изменить"
-                            />
-                            <Input
-                                label="Телефон"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                placeholder="+7 (999) 000-00-00"
-                            />
+
+                        <div className={styles.section}>
+                            <h2 className={styles.sectionTitle}>Региональные настройки</h2>
+                            <div className={styles.appGrid}>
+                                <Dropdown
+                                    label="Часовой пояс"
+                                    value={formData.timezone}
+                                    onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
+                                    options={TIMEZONES}
+                                    searchable
+                                    menuPosition="relative"
+                                />
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </>
+                )}
 
-                <div className={styles.section}>
-                    <h2 className={styles.sectionTitle}>Приложение</h2>
-                    <div className={styles.appGrid}>
-                        <Dropdown
-                            label="Валюта"
-                            value={formData.currency}
-                            onChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
-                            options={CURRENCIES}
-                        />
-                        <Dropdown
-                            label="Часовой пояс"
-                            value={formData.timezone}
-                            onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
-                            options={TIMEZONES}
-                            searchable
-                        />
+                {activeTab === 'appearance' && (
+                    <div className={styles.section}>
+                        <h2 className={styles.sectionTitle}>Оформление</h2>
+                        <p style={{ color: 'var(--text-secondary)' }}>
+                            Настройки оформления будут доступны в ближайшее время.
+                        </p>
                     </div>
-                </div>
-
-                <div className={styles.section}>
-                    <SubjectsManager />
-                </div>
+                )}
 
                 <div className={styles.submitSection}>
                     <Button type="submit" disabled={isSaving}>

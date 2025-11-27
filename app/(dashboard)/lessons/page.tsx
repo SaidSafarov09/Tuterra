@@ -46,6 +46,12 @@ interface Subject {
     color: string
 }
 
+const TABS = [
+    { id: 'upcoming', label: 'Предстоящие' },
+    { id: 'past', label: 'Прошедшие' },
+    { id: 'unpaid', label: 'Неоплаченные' },
+]
+
 export default function LessonsPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -325,25 +331,16 @@ export default function LessonsPage() {
                 <Button onClick={handleOpenModal}>+ Добавить занятие</Button>
             </div>
 
-            <div className={styles.filters}>
-                <Button
-                    variant={filter === 'upcoming' ? 'primary' : 'ghost'}
-                    onClick={() => setFilter('upcoming')}
-                >
-                    Предстоящие
-                </Button>
-                <Button
-                    variant={filter === 'past' ? 'primary' : 'ghost'}
-                    onClick={() => setFilter('past')}
-                >
-                    Прошедшие
-                </Button>
-                <Button
-                    variant={filter === 'unpaid' ? 'primary' : 'ghost'}
-                    onClick={() => setFilter('unpaid')}
-                >
-                    Неоплаченные
-                </Button>
+            <div className={styles.tabs}>
+                {TABS.map((tab) => (
+                    <button
+                        key={tab.id}
+                        className={`${styles.tab} ${filter === tab.id ? styles.active : ''}`}
+                        onClick={() => setFilter(tab.id)}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {lessons.length === 0 ? (
