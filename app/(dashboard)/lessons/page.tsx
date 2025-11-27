@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { BookIcon } from '@/components/icons/Icons'
@@ -56,7 +56,7 @@ const TABS = [
     { id: 'canceled', label: 'Отмененные' },
 ]
 
-export default function LessonsPage() {
+function LessonsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [lessons, setLessons] = useState<Lesson[]>([])
@@ -595,5 +595,20 @@ export default function LessonsPage() {
                 variant="danger"
             />
         </div>
+    )
+}
+
+export default function LessonsPage() {
+    return (
+        <Suspense fallback={
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <h1 className={styles.title}>Занятия</h1>
+                </div>
+                <div style={{ padding: '2rem', textAlign: 'center' }}>Загрузка...</div>
+            </div>
+        }>
+            <LessonsContent />
+        </Suspense>
     )
 }
