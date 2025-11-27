@@ -1,0 +1,278 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.headerText {
+    flex: 1;
+    min-width: 200px;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.subjectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.subjectCard {
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    transition: all 0.15s ease;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+
+    &:hover {
+        border-color: var(--border);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+        .editButton {
+            opacity: 1;
+        }
+    }
+}
+
+.cardHeader {
+    height: 120px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.cardIcon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.cardContent {
+    padding: 16px 20px 20px;
+    position: relative;
+}
+
+.cardTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    line-height: 1.4;
+}
+
+.cardStats {
+    display: flex;
+    gap: 16px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.cardStat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cardActions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.subjectCard:hover .cardActions {
+    opacity: 1;
+}
+
+.editButton,
+.deleteButton {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: var(--background);
+        color: var(--text-primary);
+        border-color: var(--border);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+.deleteButton:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+    border-color: var(--error);
+}
+
+/* Modal Styles */
+.detailsContent {
+    min-height: 200px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.studentsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.studentItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--background);
+    transition: background 0.2s;
+
+    &:hover {
+        background: var(--hover-bg);
+    }
+}
+
+.studentInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.studentAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.studentName {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.lessonInfo {
+    font-size: 13px;
+}
+
+.nextLesson {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    background: rgba(74, 108, 247, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.noLesson {
+    color: var(--text-muted);
+}
+
+.emptyDetails {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-secondary);
+}
+
+/* Form Styles */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Empty State */
+.emptyState {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px dashed var(--border);
+}
+
+.emptyStateIcon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.emptyStateTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0 0 8px;
+}
+
+.emptyStateText {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin: 0 0 24px;
+}
+
+.loading {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+}
+
+.detailsFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+}
+
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 24px;
+    }
+}

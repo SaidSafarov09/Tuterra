@@ -1,0 +1,207 @@
+.header {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.studentHeader {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: var(--surface);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 32px;
+}
+
+.studentAvatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.studentInfo {
+    flex: 1;
+}
+
+.studentName {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.studentContact {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+}
+
+.section {
+    background: var(--surface);
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+}
+
+.sectionHeader {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.sectionTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.note {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.lessonsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lessonItem {
+    padding: 16px;
+    background: var(--background);
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: var(--border-light);
+    }
+}
+
+.lessonDate {
+    font-size: 16px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.lessonInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-direction: row;
+}
+
+.lessonPrice {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.badgePaid {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.badgeUnpaid {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+}
+
+.emptyState {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.emptyLessons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 16px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px dashed var(--border);
+}
+
+.emptyText {
+    color: var(--text-muted);
+    font-size: 15px;
+    margin: 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .header {
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .studentHeader {
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        font-size: 12px;
+    }
+
+    .lessonDate {
+        font-size: 14px;
+    }
+
+    .lessonInfo {
+        flex-direction: column;
+    }
+}

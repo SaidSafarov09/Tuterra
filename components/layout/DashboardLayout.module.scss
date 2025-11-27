@@ -1,0 +1,87 @@
+.layout {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+.main {
+    flex: 1;
+    margin-left: 280px;
+    background: var(--background);
+    position: relative;
+}
+
+.content {
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    animation: overlayAppear 0.2s ease;
+}
+
+@keyframes overlayAppear {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.mobileMenuButton {
+    display: none;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 98;
+    height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 14px;
+
+    &:hover {
+        color: var(--text-primary);
+        border-color: var(--border);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0) scale(0.98);
+    }
+}
+
+@media (max-width: 768px) {
+    .main {
+        margin-left: 0;
+    }
+
+    .mobileMenuButton {
+        display: flex;
+    }
+
+    .content {
+        padding: 20px;
+        padding-top: 80px;
+    }
+}
