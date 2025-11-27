@@ -119,7 +119,7 @@ export default function DashboardPage() {
                                     className={styles.lessonItem}
                                 >
                                     <div className={styles.lessonHeader}>
-                                        <div>
+                                        <div className={styles.lessonInfo}>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
                                             <p className={styles.lessonDate}>
                                                 {formatSmartDate(lesson.date)}
@@ -136,7 +136,7 @@ export default function DashboardPage() {
                                                 </span>
                                             )}
                                         </div>
-                                        <div>
+                                        <div className={styles.lessonPriceContainer}>
                                             <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
                                                 {lesson.price} ₽
                                             </div>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                                     className={styles.lessonItem}
                                 >
                                     <div className={styles.lessonHeader}>
-                                        <div>
+                                        <div className={styles.lessonInfo}>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
                                             <p className={styles.lessonDate}>
                                                 {formatSmartDate(lesson.date)}
@@ -189,8 +189,10 @@ export default function DashboardPage() {
                                                 </span>
                                             )}
                                         </div>
-                                        <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
-                                            {lesson.price} ₽
+                                        <div className={styles.lessonPriceContainer}>
+                                            <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
+                                                {lesson.price} ₽
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
