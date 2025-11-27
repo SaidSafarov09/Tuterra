@@ -144,9 +144,9 @@
 .lessonDate {
     font-size: 15px;
     font-weight: 600;
-    color: var(--primary);
-    margin: 0;
-    background: rgba(74, 108, 247, 0.08);
+    color: #6366f1;
+    margin: 4px 0;
+    background: rgba(99, 102, 241, 0.08);
     padding: 4px 10px;
     border-radius: 6px;
     display: inline-block;
@@ -154,9 +154,16 @@
 
 .lessonPrice {
     font-weight: 600;
-    color: var(--primary);
     text-align: end;
     margin-bottom: 10px;
+}
+
+.pricePaid {
+    color: var(--success);
+}
+
+.priceUnpaid {
+    color: #f97316;
 }
 
 .badge {

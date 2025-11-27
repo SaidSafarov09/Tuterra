@@ -90,7 +90,10 @@ export default function SettingsPage() {
             const response = await fetch('/api/settings', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    ...formData,
+                    currency: 'RUB', // Default currency since we removed it from UI
+                }),
             })
 
             if (response.ok) {

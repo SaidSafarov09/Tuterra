@@ -121,6 +121,9 @@ export default function DashboardPage() {
                                     <div className={styles.lessonHeader}>
                                         <div>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
+                                            <p className={styles.lessonDate}>
+                                                {formatSmartDate(lesson.date)}
+                                            </p>
                                             {lesson.subject && (
                                                 <span
                                                     className={styles.subjectBadge}
@@ -132,12 +135,11 @@ export default function DashboardPage() {
                                                     {lesson.subject.name}
                                                 </span>
                                             )}
-                                            <p className={styles.lessonDate}>
-                                                {formatSmartDate(lesson.date)}
-                                            </p>
                                         </div>
                                         <div>
-                                            <div className={styles.lessonPrice}>{lesson.price} ₽</div>
+                                            <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
+                                                {lesson.price} ₽
+                                            </div>
                                             {!lesson.isPaid && (
                                                 <span className={`${styles.badge} ${styles.badgeUnpaid}`}>
                                                     Не оплачено
@@ -172,6 +174,9 @@ export default function DashboardPage() {
                                     <div className={styles.lessonHeader}>
                                         <div>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
+                                            <p className={styles.lessonDate}>
+                                                {formatSmartDate(lesson.date)}
+                                            </p>
                                             {lesson.subject && (
                                                 <span
                                                     className={styles.subjectBadge}
@@ -183,11 +188,10 @@ export default function DashboardPage() {
                                                     {lesson.subject.name}
                                                 </span>
                                             )}
-                                            <p className={styles.lessonDate}>
-                                                {formatSmartDate(lesson.date)}
-                                            </p>
                                         </div>
-                                        <div className={styles.lessonPrice}>{lesson.price} ₽</div>
+                                        <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
+                                            {lesson.price} ₽
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
