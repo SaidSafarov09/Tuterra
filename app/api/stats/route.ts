@@ -28,6 +28,7 @@ export async function GET(request: Request) {
                 where: {
                     ownerId: session.user.id,
                     date: { gte: now },
+                    isCanceled: false,
                 },
                 include: {
                     student: true,
@@ -42,6 +43,7 @@ export async function GET(request: Request) {
                 where: {
                     ownerId: session.user.id,
                     isPaid: false,
+                    isCanceled: false,
                 },
                 include: {
                     student: true,
@@ -55,6 +57,7 @@ export async function GET(request: Request) {
                 where: {
                     ownerId: session.user.id,
                     isPaid: true,
+                    isCanceled: false,
                     date: {
                         gte: monthStart,
                         lte: monthEnd,
@@ -70,7 +73,7 @@ export async function GET(request: Request) {
             studentsCount,
             upcomingLessons,
             unpaidLessons,
-            monthlyIncome: monthlyIncome._sum.price || 0,
+            monthlyIncome: monthlyIncome._sum?.price || 0,
         })
     } catch (error) {
         console.error('Get stats error:', error)
