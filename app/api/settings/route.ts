@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 const settingsSchema = z.object({
     name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
-    phone: z.string().optional(),
+    phone: z.string().optional().nullable().transform(v => v === '' ? null : v),
     avatar: z.string().nullable().optional(),
     currency: z.string().optional(),
     timezone: z.string(),
@@ -57,6 +57,25 @@ export async function PUT(request: Request) {
 
         const body = await request.json()
         const validatedData = settingsSchema.parse(body)
+
+        // Check if phone is taken by another user
+        if (validatedData.phone) {
+            const existingUser = await prisma.user.findFirst({
+                where: {
+                    phone: validatedData.phone,
+                    NOT: {
+                        id: session.user.id
+                    }
+                }
+            })
+
+            if (existingUser) {
+                return NextResponse.json(
+                    { error: 'Этот номер телефона уже используется' },
+                    { status: 400 }
+                )
+            }
+        }
 
         const user = await prisma.user.update({
             where: { id: session.user.id },

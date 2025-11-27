@@ -362,7 +362,7 @@ export default function LessonsPage() {
                     <h1 className={styles.title}>Занятия</h1>
                     <p className={styles.subtitle}>Управляйте расписанием занятий</p>
                 </div>
-                <Button onClick={handleOpenModal}>+ Добавить занятие</Button>
+                <Button onClick={handleOpenModal}>+&nbsp;&nbsp;Добавить занятие</Button>
             </div>
 
             <div className={styles.tabs}>
