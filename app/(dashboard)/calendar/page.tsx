@@ -98,7 +98,7 @@ export default function CalendarPage() {
         )
 
         const totalEarned = dayLessons
-            .filter(l => l.isPaid && !l.isCanceled)
+            .filter(l => l.isPaid)
             .reduce((sum, l) => sum + l.price, 0)
 
         const potentialEarnings = dayLessons

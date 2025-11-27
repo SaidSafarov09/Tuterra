@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { EditIcon, PlusIcon, ClockIcon } from '@/components/icons/Icons'
 import { formatSmartDate } from '@/lib/dateUtils'
@@ -68,6 +69,10 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         isPaid: false,
     })
 
+    // Delete Confirmation States
+    const [deleteStudentConfirm, setDeleteStudentConfirm] = useState(false)
+    const [deleteSubjectConfirm, setDeleteSubjectConfirm] = useState<string | null>(null)
+
     useEffect(() => {
         if (!id) return
         fetchStudent()
@@ -103,11 +108,11 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         }
     }
 
-    const handleDelete = async () => {
-        if (!confirm('Вы уверены, что хотите удалить этого ученика? Все занятия также будут удалены.')) {
-            return
-        }
+    const handleDelete = () => {
+        setDeleteStudentConfirm(true)
+    }
 
+    const confirmDeleteStudent = async () => {
         try {
             const response = await fetch(`/api/students/${id}`, {
                 method: 'DELETE',
@@ -121,14 +126,20 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             }
         } catch (error) {
             toast.error('Произошла ошибка при удалении')
+        } finally {
+            setDeleteStudentConfirm(false)
         }
     }
 
-    const handleDeleteSubject = async (subjectId: string) => {
-        if (!confirm('Удалить предмет у этого ученика?')) return
+    const handleDeleteSubject = (subjectId: string) => {
+        setDeleteSubjectConfirm(subjectId)
+    }
+
+    const confirmDeleteSubject = async () => {
+        if (!deleteSubjectConfirm) return
 
         try {
-            const response = await fetch(`/api/subjects/${subjectId}/students/link`, {
+            const response = await fetch(`/api/subjects/${deleteSubjectConfirm}/students/link`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ studentId: id }),
@@ -143,6 +154,8 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             }
         } catch (error) {
             toast.error('Произошла ошибка')
+        } finally {
+            setDeleteSubjectConfirm(null)
         }
     }
 
@@ -615,6 +628,28 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmDialog
+                isOpen={deleteStudentConfirm}
+                onClose={() => setDeleteStudentConfirm(false)}
+                onConfirm={confirmDeleteStudent}
+                title="Удалить ученика?"
+                message="Вы уверены, что хотите удалить этого ученика? Все занятия и история оплат также будут удалены. Это действие нельзя отменить."
+                confirmText="Удалить"
+                cancelText="Отмена"
+                variant="danger"
+            />
+
+            <ConfirmDialog
+                isOpen={!!deleteSubjectConfirm}
+                onClose={() => setDeleteSubjectConfirm(null)}
+                onConfirm={confirmDeleteSubject}
+                title="Удалить предмет?"
+                message="Вы уверены, что хотите удалить этот предмет у ученика?"
+                confirmText="Удалить"
+                cancelText="Отмена"
+                variant="danger"
+            />
         </div>
     )
 }

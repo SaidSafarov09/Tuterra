@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useModalStore } from '@/store/useModalStore'
 import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon, EditIcon, DeleteIcon } from '@/components/icons/Icons'
 import { ColorPicker } from '@/components/ui/ColorPicker'
@@ -91,6 +92,10 @@ export default function SubjectsPage() {
     })
 
     const { isOpen, openModal, closeModal } = useModalStore()
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; subject: Subject | null }>({
+        isOpen: false,
+        subject: null,
+    })
 
     useEffect(() => {
         fetchSubjects()
@@ -405,13 +410,15 @@ export default function SubjectsPage() {
         }
     }
 
-    const handleDeleteSubject = async (subject: Subject) => {
-        if (!confirm(`Вы уверены, что хотите удалить предмет "${subject.name}"? Это действие нельзя отменить.`)) {
-            return
-        }
+    const handleDeleteSubject = (subject: Subject) => {
+        setDeleteConfirm({ isOpen: true, subject })
+    }
+
+    const confirmDeleteSubject = async () => {
+        if (!deleteConfirm.subject) return
 
         try {
-            const response = await fetch(`/api/subjects/${subject.id}`, {
+            const response = await fetch(`/api/subjects/${deleteConfirm.subject.id}`, {
                 method: 'DELETE',
             })
 
@@ -828,6 +835,17 @@ export default function SubjectsPage() {
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmDialog
+                isOpen={deleteConfirm.isOpen}
+                onClose={() => setDeleteConfirm({ isOpen: false, subject: null })}
+                onConfirm={confirmDeleteSubject}
+                title="Удалить предмет?"
+                message={`Вы уверены, что хотите удалить предмет "${deleteConfirm.subject?.name}"? Это действие нельзя отменить. Все связанные занятия также будут удалены.`}
+                confirmText="Удалить"
+                cancelText="Отмена"
+                variant="danger"
+            />
         </div>
     )
 }

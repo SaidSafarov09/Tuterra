@@ -1,0 +1,26 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.message {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.dangerButton {
+    background: var(--error) !important;
+
+    &:hover {
+        background: #dc2626 !important;
+    }
+}

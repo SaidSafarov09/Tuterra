@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Dropdown, DropdownOption } from '@/components/ui/Dropdown'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useModalStore } from '@/store/useModalStore'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { EditIcon, DeleteIcon, CheckIcon, XCircleIcon } from '@/components/icons/Icons'
@@ -75,6 +76,10 @@ export default function LessonsPage() {
     const [error, setError] = useState('')
 
     const { isOpen, openModal, closeModal } = useModalStore()
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; lessonId: string | null }>({
+        isOpen: false,
+        lessonId: null,
+    })
 
     useEffect(() => {
         fetchStudents()
@@ -235,11 +240,15 @@ export default function LessonsPage() {
         openModal('create') // We reuse the create modal
     }
 
-    const handleDeleteLesson = async (lessonId: string) => {
-        if (!confirm('Вы уверены, что хотите удалить это занятие?')) return
+    const handleDeleteLesson = (lessonId: string) => {
+        setDeleteConfirm({ isOpen: true, lessonId })
+    }
+
+    const confirmDeleteLesson = async () => {
+        if (!deleteConfirm.lessonId) return
 
         try {
-            const response = await fetch(`/api/lessons/${lessonId}`, {
+            const response = await fetch(`/api/lessons/${deleteConfirm.lessonId}`, {
                 method: 'DELETE',
             })
 
@@ -251,6 +260,8 @@ export default function LessonsPage() {
             }
         } catch (error) {
             toast.error('Ошибка при удалении занятия')
+        } finally {
+            setDeleteConfirm({ isOpen: false, lessonId: null })
         }
     }
 
@@ -369,11 +380,36 @@ export default function LessonsPage() {
             {lessons.length === 0 ? (
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateIcon}><BookIcon size={64} color="#9CA3AF" /></div>
-                    <h2 className={styles.emptyStateTitle}>Нет занятий</h2>
-                    <p className={styles.emptyStateText}>
-                        Добавьте первое занятие, чтобы начать работу
-                    </p>
-                    <Button onClick={handleOpenModal}>Добавить занятие</Button>
+                    {filter === 'upcoming' ? (
+                        <>
+                            <h2 className={styles.emptyStateTitle}>Нет занятий</h2>
+                            <p className={styles.emptyStateText}>
+                                Добавьте первое занятие, чтобы начать работу
+                            </p>
+                            <Button onClick={handleOpenModal}>Добавить занятие</Button>
+                        </>
+                    ) : filter === 'past' ? (
+                        <>
+                            <h2 className={styles.emptyStateTitle}>Нет прошедших занятий</h2>
+                            <p className={styles.emptyStateText}>
+                                Здесь будут отображаться завершенные занятия
+                            </p>
+                        </>
+                    ) : filter === 'unpaid' ? (
+                        <>
+                            <h2 className={styles.emptyStateTitle}>Нет неоплаченных занятий</h2>
+                            <p className={styles.emptyStateText}>
+                                Все занятия оплачены! 🎉
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <h2 className={styles.emptyStateTitle}>Нет отмененных занятий</h2>
+                            <p className={styles.emptyStateText}>
+                                Здесь будут отображаться отмененные занятия
+                            </p>
+                        </>
+                    )}
                 </div>
             ) : (
                 <div className={styles.lessonsList}>
@@ -546,6 +582,17 @@ export default function LessonsPage() {
                     </label>
                 </form>
             </Modal>
+
+            <ConfirmDialog
+                isOpen={deleteConfirm.isOpen}
+                onClose={() => setDeleteConfirm({ isOpen: false, lessonId: null })}
+                onConfirm={confirmDeleteLesson}
+                title="Удалить занятие?"
+                message="Вы уверены, что хотите удалить это занятие? Это действие нельзя отменить."
+                confirmText="Удалить"
+                cancelText="Отмена"
+                variant="danger"
+            />
         </div>
     )
 }

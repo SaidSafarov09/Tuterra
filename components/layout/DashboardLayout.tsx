@@ -29,7 +29,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     aria-label="Toggle menu"
                 >
-                    {isMobileMenuOpen ? <CloseIcon size={24} /> : <MenuIcon size={24} />}
+                    <MenuIcon size={20} />
+                    <span>Меню</span>
                 </button>
 
                 <div className={styles.content}>{children}</div>

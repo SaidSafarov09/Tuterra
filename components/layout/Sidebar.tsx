@@ -17,6 +17,7 @@ import {
     SubjectsIcon,
     PaymentsIcon,
     LogoutIcon,
+    CloseIcon,
 } from '@/components/icons/Icons'
 
 const navigation = [
@@ -63,9 +64,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
     return (
         <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
+            {onClose && (
+                <button
+                    className={styles.closeButton}
+                    onClick={onClose}
+                    aria-label="Close menu"
+                >
+                    <CloseIcon size={20} />
+                </button>
+            )}
             <div className={styles.logo}>
                 <Logo size={32} />
-                <h1 className={styles.logoText}>SkillTrack</h1>
+                <h1 className={styles.logoText}>Название</h1>
             </div>
 
             <nav className={styles.nav}>

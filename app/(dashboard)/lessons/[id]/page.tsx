@@ -8,6 +8,8 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import styles from './page.module.scss'
 
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+
 interface Lesson {
     id: string
     date: string
@@ -25,6 +27,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const [lesson, setLesson] = useState<Lesson | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [isUpdating, setIsUpdating] = useState(false)
+    const [deleteConfirm, setDeleteConfirm] = useState(false)
 
     useEffect(() => {
         if (!id) return
@@ -77,9 +80,11 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         }
     }
 
-    const handleDelete = async () => {
-        if (!confirm('Вы уверены, что хотите удалить это занятие?')) return
+    const handleDelete = () => {
+        setDeleteConfirm(true)
+    }
 
+    const confirmDelete = async () => {
         try {
             const response = await fetch(`/api/lessons/${id}`, {
                 method: 'DELETE',
@@ -93,6 +98,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
             }
         } catch (error) {
             toast.error('Произошла ошибка при удалении')
+        } finally {
+            setDeleteConfirm(false)
         }
     }
 
@@ -160,6 +167,17 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                     </div>
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={deleteConfirm}
+                onClose={() => setDeleteConfirm(false)}
+                onConfirm={confirmDelete}
+                title="Удалить занятие?"
+                message="Вы уверены, что хотите удалить это занятие? Это действие нельзя отменить."
+                confirmText="Удалить"
+                cancelText="Отмена"
+                variant="danger"
+            />
         </div>
     )
 }

@@ -135,14 +135,47 @@
     text-overflow: ellipsis;
 }
 
+.closeButton {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .sidebar {
-        width: 100%;
+        width: 80%;
+        max-width: 320px;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
+        box-shadow: var(--shadow-lg);
     }
 
     .sidebarOpen {
         transform: translateX(0);
+    }
+
+    .closeButton {
+        display: flex;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: var(--radius-md);
+        background: var(--background);
+        color: var(--text-secondary);
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        z-index: 101;
+
+        &:hover {
+            background: var(--border-light);
+            color: var(--text-primary);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
     }
 }
