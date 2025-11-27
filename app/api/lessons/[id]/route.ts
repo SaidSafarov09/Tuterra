@@ -16,6 +16,7 @@ export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    
     try {
         const { id } = await params
         const session = await getServerSession(authOptions)
