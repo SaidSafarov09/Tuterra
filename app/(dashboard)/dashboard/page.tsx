@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { UsersGroupIcon, BookIcon, AlertIcon, MoneyIcon, CelebrationIcon } from '@/components/icons/Icons'
+import { UsersGroupIcon, BookIcon, AlertIcon, MoneyIcon, CelebrationIcon, ClockIcon } from '@/components/icons/Icons'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { formatSmartDate } from '@/lib/dateUtils'
@@ -121,9 +121,6 @@ export default function DashboardPage() {
                                     <div className={styles.lessonHeader}>
                                         <div className={styles.lessonInfo}>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
-                                            <p className={styles.lessonDate}>
-                                                {formatSmartDate(lesson.date)}
-                                            </p>
                                             {lesson.subject && (
                                                 <span
                                                     className={styles.subjectBadge}
@@ -136,6 +133,10 @@ export default function DashboardPage() {
                                                     {lesson.subject.name}
                                                 </span>
                                             )}
+                                            <p className={styles.lessonDate}>
+                                                <ClockIcon size={14} color="var(--text-secondary)" />
+                                                {formatSmartDate(lesson.date)}
+                                            </p>
                                         </div>
                                         <div className={styles.lessonPriceContainer}>
                                             <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
@@ -179,9 +180,6 @@ export default function DashboardPage() {
                                     <div className={styles.lessonHeader}>
                                         <div className={styles.lessonInfo}>
                                             <h4 className={styles.studentName}>{lesson.student.name}</h4>
-                                            <p className={styles.lessonDate}>
-                                                {formatSmartDate(lesson.date)}
-                                            </p>
                                             {lesson.subject && (
                                                 <span
                                                     className={styles.subjectBadge}
@@ -194,6 +192,10 @@ export default function DashboardPage() {
                                                     {lesson.subject.name}
                                                 </span>
                                             )}
+                                            <p className={styles.lessonDate}>
+                                                <ClockIcon size={14} color="var(--text-secondary)" />
+                                                {formatSmartDate(lesson.date)}
+                                            </p>
                                         </div>
                                         <div className={styles.lessonPriceContainer}>
                                             <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
