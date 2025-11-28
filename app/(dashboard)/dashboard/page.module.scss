@@ -102,7 +102,6 @@
 .lessonsList {
     display: flex;
     flex-direction: column;
-    gap: 12px;
 }
 
 .lessonItem {
@@ -110,6 +109,12 @@
     background: var(--background);
     border-radius: var(--radius-md);
     transition: all 0.2s ease;
+    text-decoration: none;
+    display: block;
+
+    &:last-child {
+        border-bottom: none;
+    }
 
     &:hover {
         background: var(--border-light);
@@ -119,90 +124,97 @@
 .lessonHeader {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
 }
 
 .lessonInfo {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .studentName {
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .lessonDate {
-    font-size: 14px;
-    font-weight: 600;
-    color: #6366f1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
     margin: 0;
-    background: rgba(99, 102, 241, 0.08);
-    padding: 4px 10px;
-    border-radius: 6px;
-    display: inline-block;
-    width: fit-content;
+    display: flex;
+    align-items: center;
+
+    &::before {
+        content: "•";
+        margin-right: 8px;
+        color: var(--text-muted);
+    }
 }
 
 .subjectBadge {
     font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 4px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 6px;
     white-space: nowrap;
     display: inline-block;
     width: fit-content;
+    border: 1px solid transparent;
 }
 
 .lessonPriceContainer {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
+    align-items: center;
+    gap: 12px;
 }
 
 .lessonPrice {
-    font-weight: 700;
-    font-size: 18px;
+    font-weight: 600;
+    font-size: 15px;
     text-align: end;
 }
 
 .pricePaid {
-    color: var(--success);
+    color: var(--text-secondary);
 }
 
 .priceUnpaid {
-    color: #f97316;
+    color: var(--text-primary);
 }
 
 .badge {
     display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .badgeUnpaid {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--error);
+    background: #FEF2F2;
+    color: #EF4444;
+    border: 1px solid #FECACA;
 }
 
 .emptyState {
     text-align: center;
     padding: 40px 20px;
     color: var(--text-muted);
+    font-size: 14px;
 }
 
 .loading {
     text-align: center;
     padding: 40px;
     color: var(--text-secondary);
+    font-size: 14px;
 }
 
 @media (max-width: 768px) {

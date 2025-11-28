@@ -37,7 +37,8 @@ import {
     Phone,
     GraduationCap,
     PieChart,
-    XCircle
+    XCircle,
+    FileText
 } from 'lucide-react'
 
 interface IconProps {
@@ -80,6 +81,7 @@ export const ChevronRightIcon: React.FC<IconProps> = (props) => <ChevronRight {.
 export const ClockIcon: React.FC<IconProps> = (props) => <Clock {...props} />
 export const MailIcon: React.FC<IconProps> = (props) => <Mail {...props} />
 export const PhoneIcon: React.FC<IconProps> = (props) => <Phone {...props} />
+export const NoteIcon: React.FC<IconProps> = (props) => <FileText {...props} />
 
 // Dashboard & Stats Icons
 export const UsersGroupIcon: React.FC<IconProps> = (props) => <Users {...props} />

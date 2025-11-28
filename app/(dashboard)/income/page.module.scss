@@ -132,12 +132,8 @@
 .statValue {
     font-size: 36px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--primary);
     margin: 0 0 12px 0;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .statDescription {
@@ -150,6 +146,66 @@
         color: var(--text-primary);
         font-weight: 600;
     }
+}
+
+.statDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+}
+
+.statDetailItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.statDetailLabel {
+    color: var(--text-secondary);
+}
+
+.statDetailValue {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.growthValue {
+    color: #22c55e !important;
+}
+
+.declineValue {
+    color: #ef4444 !important;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+}
+
+.emptyStateIcon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.emptyStateTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.emptyStateText {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
 }
 
 .badge {

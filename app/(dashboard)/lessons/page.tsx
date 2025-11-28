@@ -430,7 +430,8 @@ function LessonsContent() {
                                                 className={styles.subjectBadge}
                                                 style={{
                                                     color: lesson.subject.color,
-                                                    backgroundColor: `${lesson.subject.color}20`
+                                                    backgroundColor: lesson.subject.color + '15',
+                                                    borderColor: lesson.subject.color + '30',
                                                 }}
                                             >
                                                 {lesson.subject.name}
@@ -484,6 +485,7 @@ function LessonsContent() {
                                 <button
                                     className={`${styles.actionButton} ${styles.editButton}`}
                                     onClick={() => handleEditLesson(lesson)}
+                                    disabled={isPast(new Date(lesson.date))}
                                 >
                                     <EditIcon size={16} />
                                     Изменить

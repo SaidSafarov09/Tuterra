@@ -97,10 +97,11 @@
 
 .subjectBadge {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: 6px;
     white-space: nowrap;
+    border: 1px solid transparent;
 }
 
 .lessonDate {
@@ -224,6 +225,17 @@
 .editButton {
     &:hover {
         border-color: var(--border);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+            background: transparent;
+            color: var(--text-secondary);
+            border-color: transparent;
+        }
     }
 }
 

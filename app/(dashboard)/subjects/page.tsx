@@ -12,7 +12,7 @@ import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useModalStore } from '@/store/useModalStore'
-import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon, EditIcon, DeleteIcon } from '@/components/icons/Icons'
+import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon, EditIcon, DeleteIcon, BookIcon } from '@/components/icons/Icons'
 import { ColorPicker } from '@/components/ui/ColorPicker'
 import styles from './page.module.scss'
 
@@ -497,43 +497,54 @@ export default function SubjectsPage() {
                             className={styles.subjectCard}
                             onClick={() => handleSubjectClick(subject)}
                         >
-                            <div
-                                className={styles.cardHeader}
-                                style={{ backgroundColor: subject.color }}
-                            >
-                                <div className={styles.cardIcon}>
+                            <div className={styles.cardHeader}>
+                                <div
+                                    className={styles.subjectIcon}
+                                    style={{ backgroundColor: subject.color }}
+                                >
                                     {subject.name[0].toUpperCase()}
                                 </div>
-                            </div>
-                            <div className={styles.cardContent}>
-                                <h3 className={styles.cardTitle}>{subject.name}</h3>
-                                <div className={styles.cardStats}>
-                                    <div className={styles.cardStat}>
-                                        <UsersGroupIcon size={16} />
-                                        <span>{subject._count.students} учеников</span>
-                                    </div>
+                                <div className={styles.headerInfo}>
+                                    <h3 className={styles.subjectName}>{subject.name}</h3>
                                 </div>
-                                <div className={styles.cardActions}>
+                                <div className={styles.actions}>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation()
                                             handleOpenEditSubjectModal(subject)
                                         }}
-                                        className={styles.editButton}
+                                        className={styles.actionButton}
                                         title="Редактировать"
                                     >
-                                        <EditIcon size={16} />
+                                        <EditIcon size={14} />
                                     </button>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation()
                                             handleDeleteSubject(subject)
                                         }}
-                                        className={styles.deleteButton}
+                                        className={`${styles.actionButton} ${styles.deleteButton}`}
                                         title="Удалить"
                                     >
-                                        <DeleteIcon size={16} />
+                                        <DeleteIcon size={14} />
                                     </button>
+                                </div>
+                            </div>
+
+                            <div className={styles.cardBody}>
+                                {/* Spacer or future content */}
+                            </div>
+
+                            <div className={styles.cardFooter}>
+                                <div className={styles.statItem}>
+                                    <UsersGroupIcon size={14} className={styles.statIcon} />
+                                    <span className={styles.statValue}>{subject._count.students}</span>
+                                    <span className={styles.statLabel}>учеников</span>
+                                </div>
+                                <div className={styles.statItem}>
+                                    <BookIcon size={14} className={styles.statIcon} />
+                                    <span className={styles.statValue}>{subject._count.lessons}</span>
+                                    <span className={styles.statLabel}>занятий</span>
                                 </div>
                             </div>
                         </div>

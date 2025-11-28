@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { UsersGroupIcon, SearchIcon, PlusIcon } from '@/components/icons/Icons'
+import { UsersGroupIcon, SearchIcon, PlusIcon, PhoneIcon, NoteIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
@@ -302,16 +302,16 @@ export default function StudentsPage() {
                             className={styles.studentCard}
                             onClick={() => router.push(`/students/${student.id}`)}
                         >
-                            <div className={styles.studentHeader}>
+                            <div className={styles.cardHeader}>
                                 <div
                                     className={styles.studentAvatarFallback}
                                     style={{ backgroundColor: stringToColor(student.name) }}
                                 >
                                     {getInitials(student.name)}
                                 </div>
-                                <div className={styles.studentInfo}>
-                                    <div className={styles.nameRow}>
-                                        <h3 className={styles.studentName}>{student.name}</h3>
+                                <div className={styles.headerInfo}>
+                                    <h3 className={styles.studentName}>{student.name}</h3>
+                                    <div className={styles.subjectsList}>
                                         {student.subjects.length > 0 ? (
                                             student.subjects.map((subject) => (
                                                 <span
@@ -319,7 +319,8 @@ export default function StudentsPage() {
                                                     className={styles.subjectBadge}
                                                     style={{
                                                         color: subject.color,
-                                                        backgroundColor: subject.color + '20',
+                                                        backgroundColor: subject.color + '15',
+                                                        borderColor: subject.color + '30',
                                                     }}
                                                 >
                                                     {subject.name}
@@ -327,28 +328,37 @@ export default function StudentsPage() {
                                             ))
                                         ) : (
                                             <span className={styles.noSubjectHint}>
-                                                Добавьте предмет
+                                                Нет предметов
                                             </span>
                                         )}
                                     </div>
-                                    {student.contact && (
-                                        <p className={styles.studentContact}>
-                                            {student.contact}
-                                        </p>
-                                    )}
                                 </div>
                             </div>
 
-                            {student.note && (
-                                <p className={styles.studentNote}>{student.note}</p>
-                            )}
+                            <div className={styles.cardBody}>
+                                {student.contact && (
+                                    <div className={styles.infoRow}>
+                                        <div className={styles.iconWrapper}>
+                                            <PhoneIcon size={14} />
+                                        </div>
+                                        <span className={styles.infoText}>{student.contact}</span>
+                                    </div>
+                                )}
 
-                            <div className={styles.studentStats}>
-                                <div className={styles.stat}>
-                                    <p className={styles.statLabel}>Занятий</p>
-                                    <p className={styles.statValue}>
-                                        {student._count.lessons}
-                                    </p>
+                                {student.note && (
+                                    <div className={styles.infoRow}>
+                                        <div className={styles.iconWrapper}>
+                                            <NoteIcon size={14} />
+                                        </div>
+                                        <p className={styles.noteText}>{student.note}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={styles.cardFooter}>
+                                <div className={styles.statItem}>
+                                    <span className={styles.statLabel}>Занятий</span>
+                                    <span className={styles.statValue}>{student._count.lessons}</span>
                                 </div>
                             </div>
                         </div>

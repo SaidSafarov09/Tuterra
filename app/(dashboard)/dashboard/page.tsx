@@ -129,7 +129,8 @@ export default function DashboardPage() {
                                                     className={styles.subjectBadge}
                                                     style={{
                                                         color: lesson.subject.color,
-                                                        backgroundColor: `${lesson.subject.color}20`,
+                                                        backgroundColor: lesson.subject.color + '15',
+                                                        borderColor: lesson.subject.color + '30',
                                                     }}
                                                 >
                                                     {lesson.subject.name}
@@ -182,7 +183,8 @@ export default function DashboardPage() {
                                                     className={styles.subjectBadge}
                                                     style={{
                                                         color: lesson.subject.color,
-                                                        backgroundColor: `${lesson.subject.color}20`,
+                                                        backgroundColor: lesson.subject.color + '15',
+                                                        borderColor: lesson.subject.color + '30',
                                                     }}
                                                 >
                                                     {lesson.subject.name}

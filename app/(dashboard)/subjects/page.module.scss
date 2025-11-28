@@ -33,114 +33,129 @@
 
 .subjectCard {
     background: var(--surface);
-    border-radius: 8px;
-    border: 1px solid var(--border-light);
-    transition: all 0.15s ease;
+    border-radius: 16px;
+    padding: 20px;
     cursor: pointer;
-    overflow: hidden;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 16px;
     position: relative;
 
     &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
         border-color: var(--border);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
-        .editButton {
+        .actions {
             opacity: 1;
         }
     }
 }
 
 .cardHeader {
-    height: 120px;
-    position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 24px;
+    gap: 12px;
+    position: relative;
+    padding: 0;
+    height: auto;
+    justify-content: flex-start;
 }
 
-.cardIcon {
-    width: 56px;
-    height: 56px;
-    background: rgba(255, 255, 255, 0.95);
+.subjectIcon {
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    color: white;
+    font-size: 20px;
     font-weight: 600;
-    color: var(--text-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
 }
 
-.cardContent {
-    padding: 16px 20px 20px;
-    position: relative;
+.headerInfo {
+    flex: 1;
+    min-width: 0;
 }
 
-.cardTitle {
+.subjectName {
     font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 8px;
-    line-height: 1.4;
+    margin: 0;
+    line-height: 1.3;
 }
 
-.cardStats {
+.actions {
     display: flex;
-    gap: 16px;
-    color: var(--text-secondary);
-    font-size: 13px;
-}
-
-.cardStat {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.cardActions {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    display: flex;
-    gap: 6px;
+    gap: 4px;
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.2s ease;
 }
 
-.subjectCard:hover .cardActions {
-    opacity: 1;
-}
-
-.editButton,
-.deleteButton {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    padding: 6px;
-    cursor: pointer;
+.actionButton {
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+    background: var(--surface);
     color: var(--text-secondary);
-    transition: all 0.15s ease;
+    cursor: pointer;
+    transition: all 0.2s;
 
     &:hover {
-        background: var(--background);
+        background: var(--hover-bg);
         color: var(--text-primary);
         border-color: var(--border);
-    }
-
-    &:active {
-        transform: scale(0.95);
     }
 }
 
 .deleteButton:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--error);
-    border-color: var(--error);
+    background: #FEF2F2;
+    color: #EF4444;
+    border-color: #FECACA;
+}
+
+.cardBody {
+    flex: 1;
+}
+
+.cardFooter {
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.statIcon {
+    color: var(--text-muted);
+}
+
+.statValue {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.statLabel {
+    color: var(--text-secondary);
 }
 
 /* Modal Styles */

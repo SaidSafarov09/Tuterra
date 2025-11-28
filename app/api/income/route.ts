@@ -80,6 +80,7 @@ export async function GET(request: Request) {
             _sum: {
                 price: true,
             },
+            _count: true,
         })
 
         // Предыдущий месяц
@@ -100,10 +101,16 @@ export async function GET(request: Request) {
             },
         })
 
+        const currentIncome = currentMonthIncome._sum.price || 0
+        const currentLessonsCount = currentMonthIncome._count || 0
+        const averageCheck = currentLessonsCount > 0 ? Math.round(currentIncome / currentLessonsCount) : 0
+
         return NextResponse.json({
             monthlyData,
-            currentMonthIncome: currentMonthIncome._sum.price || 0,
+            currentMonthIncome: currentIncome,
             previousMonthIncome: previousMonthIncome._sum.price || 0,
+            currentLessonsCount,
+            averageCheck,
         })
     } catch (error) {
         console.error('Get income stats error:', error)

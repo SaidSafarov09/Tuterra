@@ -433,12 +433,15 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                             <span
                                 key={subject.id}
                                 style={{
-                                    padding: '4px 12px',
-                                    borderRadius: '12px',
-                                    fontSize: '13px',
+                                    padding: '2px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '11px',
                                     fontWeight: 500,
                                     color: subject.color,
-                                    backgroundColor: subject.color + '20',
+                                    backgroundColor: subject.color + '15',
+                                    borderColor: subject.color + '30',
+                                    borderWidth: '1px',
+                                    borderStyle: 'solid',
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '6px',
