@@ -15,6 +15,11 @@
     margin: 0;
 }
 
+.statsContainer {
+    display: flex;
+    flex-direction: column;
+}
+
 .statsGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
@@ -237,6 +242,10 @@
         margin-bottom: 18px;
     }
 
+    .statsContainer {
+        flex-direction: column-reverse;
+    }
+
     .sectionsGrid {
         grid-template-columns: 1fr;
         gap: 18px;
@@ -244,7 +253,8 @@
 
     .statsGrid {
         grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
-        margin-bottom: 24px;
+        margin-bottom: 0;
+        margin-top: 18px;
         gap: 18px;
     }
 

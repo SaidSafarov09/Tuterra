@@ -143,16 +143,30 @@
 }
 
 @media (max-width: 768px) {
+    .navItem {
+        padding: 12px;
+    }
+
+    .logo {
+        margin-bottom: 18px;
+        padding: 0 18px 18px;
+    }
+
     .sidebar {
         width: 80%;
         max-width: 320px;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         box-shadow: var(--shadow-lg);
+        padding: 18px 0;
     }
 
     .sidebarOpen {
         transform: translateX(0);
+    }
+
+    .userSection {
+        padding: 16px 16px 8px 16px;
     }
 
     .closeButton {
