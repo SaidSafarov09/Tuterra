@@ -233,12 +233,19 @@
 }
 
 @media (max-width: 768px) {
+    .header {
+        margin-bottom: 18px;
+    }
+
     .sectionsGrid {
         grid-template-columns: 1fr;
+        gap: 18px;
     }
 
     .statsGrid {
         grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+        margin-bottom: 24px;
+        gap: 18px;
     }
 
     .title,

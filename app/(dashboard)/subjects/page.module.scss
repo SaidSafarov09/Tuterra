@@ -29,6 +29,10 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(328px, 1fr));
     gap: 20px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+    }
 }
 
 .subjectCard {
@@ -59,10 +63,14 @@
 
 .cardContent {
     flex: 1;
-    padding: 28px 24px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 20px;
+
+    @media (max-width: 768px) {
+        padding: 18px;
+    }
 }
 
 .cardTop {
