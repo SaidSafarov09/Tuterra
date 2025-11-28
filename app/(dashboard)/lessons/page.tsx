@@ -452,51 +452,52 @@ function LessonsContent() {
                                     </span>
                                 </div>
                             </div>
-
-                            <div className={styles.lessonActions}>
-                                <button
-                                    className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
-                                    onClick={() => handleTogglePaid(lesson)}
-                                    disabled={lesson.isCanceled}
-                                >
-                                    <CheckIcon size={16} />
-                                    {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
-                                </button>
-
-                                {!isPast(new Date(lesson.date)) && (
+                            <div className={styles.actionsBlock}>
+                                <div className={styles.lessonActions}>
                                     <button
-                                        className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.cancelButton}`}
-                                        onClick={() => handleToggleCancel(lesson)}
+                                        className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
+                                        onClick={() => handleTogglePaid(lesson)}
+                                        disabled={lesson.isCanceled}
                                     >
-                                        {lesson.isCanceled ? (
-                                            <>
-                                                <CheckIcon size={16} />
-                                                Восстановить
-                                            </>
-                                        ) : (
-                                            <>
-                                                <XCircleIcon size={16} />
-                                                Отменить
-                                            </>
-                                        )}
+                                        <CheckIcon size={16} />
+                                        {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
                                     </button>
-                                )}
 
-                                <button
-                                    className={`${styles.actionButton} ${styles.editButton}`}
-                                    onClick={() => handleEditLesson(lesson)}
-                                    disabled={isPast(new Date(lesson.date))}
-                                >
-                                    <EditIcon size={16} />
-                                    Изменить
-                                </button>
-                                <button
-                                    className={`${styles.actionButton} ${styles.deleteButton}`}
-                                    onClick={() => handleDeleteLesson(lesson.id)}
-                                >
-                                    <DeleteIcon size={16} />
-                                    Удалить
-                                </button>
+                                    {!isPast(new Date(lesson.date)) && (
+                                        <button
+                                            className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.cancelButton}`}
+                                            onClick={() => handleToggleCancel(lesson)}
+                                        >
+                                            {lesson.isCanceled ? (
+                                                <>
+                                                    <CheckIcon size={16} />
+                                                    Восстановить
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <XCircleIcon size={16} />
+                                                    Отменить
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
+
+                                    <button
+                                        className={`${styles.actionButton} ${styles.editButton}`}
+                                        onClick={() => handleEditLesson(lesson)}
+                                        disabled={isPast(new Date(lesson.date))}
+                                    >
+                                        <EditIcon size={16} />
+                                        Изменить
+                                    </button>
+                                    <button
+                                        className={`${styles.actionButton} ${styles.deleteButton}`}
+                                        onClick={() => handleDeleteLesson(lesson.id)}
+                                    >
+                                        <DeleteIcon size={16} />
+                                        Удалить
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

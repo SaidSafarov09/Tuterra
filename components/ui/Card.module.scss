@@ -8,6 +8,10 @@
     &:hover {
         box-shadow: var(--shadow-md);
     }
+
+    @media (max-width: 768px) {
+        padding: 18px;
+    }
 }
 
 .cardClickable {
@@ -21,6 +25,7 @@
     &:active {
         transform: translateY(0);
     }
+
 }
 
 .cardHeader {

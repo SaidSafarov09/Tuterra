@@ -87,10 +87,10 @@ export default function IncomePage() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <button className={styles.backButton} onClick={() => router.back()}>
+                {/* <button className={styles.backButton} onClick={() => router.back()}>
                     <ArrowLeftIcon size={20} />
                     <span>Назад</span>
-                </button>
+                </button> */}
                 <div className={styles.headerText}>
                     <h1 className={styles.title}>Статистика доходов</h1>
                     <p className={styles.subtitle}>Анализ ваших доходов за период</p>
