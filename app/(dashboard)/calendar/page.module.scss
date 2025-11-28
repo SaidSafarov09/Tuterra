@@ -451,6 +451,48 @@
     }
 }
 
+.lessonsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lessonsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.lessonsScroll {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    /* Custom Scrollbar */
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--border);
+        border-radius: 3px;
+    }
+}
+
+.addLessonButtonSmall {
+    font-size: 13px;
+    padding: 6px 12px;
+    height: 32px;
+}
+
 .modalFooter {
     display: flex;
     justify-content: flex-end;

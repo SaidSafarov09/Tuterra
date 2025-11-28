@@ -562,7 +562,7 @@ export default function CalendarPage() {
                             showTime
                             required
                             disabled={isSubmitting}
-                            dropDirection="up"
+                            dropDirection="center"
                         />
 
                         <Input
@@ -626,72 +626,88 @@ export default function CalendarPage() {
                                 </div>
 
                                 {dayData.lessons.length > 0 ? (
-                                    <div className={styles.lessonsList}>
-                                        <h3 className={styles.lessonsTitle}>Занятия {dayData.lessons.length}</h3>
-                                        {dayData.lessons.map(lesson => (
-                                            <div
-                                                key={lesson.id}
-                                                className={`${styles.lessonCard} ${lesson.isCanceled ? styles.lessonCanceled : ''}`}
-                                            >
-                                                <div className={styles.lessonMain}>
-                                                    <div className={styles.lessonInfo}>
-                                                        <div className={styles.lessonStudent}>
-                                                            {lesson.student.name}
-                                                            {lesson.isCanceled && (
-                                                                <span className={styles.canceledBadge}>Отменено</span>
+                                    <div className={styles.lessonsContainer}>
+                                        <div className={styles.lessonsHeader}>
+                                            <h3 className={styles.lessonsTitle}>Занятия {dayData.lessons.length}</h3>
+                                            <Button onClick={handleCreateLesson} size="small" className={styles.addLessonButtonSmall}>
+                                                <PlusIcon size={16} />
+                                                Добавить
+                                            </Button>
+                                        </div>
+                                        <div className={styles.lessonsScroll}>
+                                            {dayData.lessons.map(lesson => (
+                                                <div
+                                                    key={lesson.id}
+                                                    className={`${styles.lessonCard} ${lesson.isCanceled ? styles.lessonCanceled : ''}`}
+                                                >
+                                                    <div className={styles.lessonMain}>
+                                                        <div className={styles.lessonInfo}>
+                                                            <div className={styles.lessonStudent}>
+                                                                {lesson.student.name}
+                                                                {lesson.isCanceled && (
+                                                                    <span className={styles.canceledBadge}>Отменено</span>
+                                                                )}
+                                                            </div>
+                                                            <div className={styles.lessonMeta}>
+                                                                <ClockIcon size={14} />
+                                                                {format(new Date(lesson.date), 'HH:mm')}
+                                                                {lesson.subject && (
+                                                                    <span
+                                                                        className={styles.lessonSubject}
+                                                                        style={{
+                                                                            color: lesson.subject.color,
+                                                                            backgroundColor: `${lesson.subject.color}20`
+                                                                        }}
+                                                                    >
+                                                                        {lesson.subject.name}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {lesson.notes && (
+                                                                <div className={styles.lessonNotes}>{lesson.notes}</div>
                                                             )}
                                                         </div>
-                                                        <div className={styles.lessonMeta}>
-                                                            <ClockIcon size={14} />
-                                                            {format(new Date(lesson.date), 'HH:mm')}
-                                                            {lesson.subject && (
-                                                                <span
-                                                                    className={styles.lessonSubject}
-                                                                    style={{
-                                                                        color: lesson.subject.color,
-                                                                        backgroundColor: `${lesson.subject.color}20`
-                                                                    }}
-                                                                >
-                                                                    {lesson.subject.name}
-                                                                </span>
+                                                        <div className={styles.lessonPrice}>
+                                                            <div className={`${styles.price} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
+                                                                {lesson.price} ₽
+                                                            </div>
+                                                            {lesson.isPaid && (
+                                                                <span className={styles.paidBadge}>Оплачено</span>
                                                             )}
                                                         </div>
-                                                        {lesson.notes && (
-                                                            <div className={styles.lessonNotes}>{lesson.notes}</div>
-                                                        )}
                                                     </div>
-                                                    <div className={styles.lessonPrice}>
-                                                        <div className={`${styles.price} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
-                                                            {lesson.price} ₽
-                                                        </div>
-                                                        {lesson.isPaid && (
-                                                            <span className={styles.paidBadge}>Оплачено</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className={styles.lessonActions}>
-                                                    <button
-                                                        className={styles.actionButton}
-                                                        onClick={() => handleTogglePaid(lesson)}
-                                                        disabled={lesson.isCanceled}
-                                                    >
-                                                        <CheckIcon size={16} />
-                                                        {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
-
-                                                    </button>
-
-                                                    {!isPast(new Date(lesson.date)) && (
+                                                    <div className={styles.lessonActions}>
                                                         <button
-                                                            className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
-                                                            onClick={() => handleToggleCancel(lesson)}
-                                                            title={lesson.isCanceled ? 'Восстановить' : 'Отменить'}
+                                                            className={styles.actionButton}
+                                                            onClick={() => handleTogglePaid(lesson)}
+                                                            disabled={lesson.isCanceled}
                                                         >
-                                                            {lesson.isCanceled ? <CheckIcon size={16} /> : <XCircleIcon size={16} />}
+                                                            <CheckIcon size={16} />
+                                                            {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
                                                         </button>
-                                                    )}
+
+                                                        {!isPast(new Date(lesson.date)) && (
+                                                            <button
+                                                                className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
+                                                                onClick={() => handleToggleCancel(lesson)}
+                                                            >
+                                                                {lesson.isCanceled ? (
+                                                                    <>
+                                                                        <CheckIcon size={16} />
+                                                                        Восстановить
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <XCircleIcon size={16} />
+                                                                        Отменить
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className={styles.emptyDay}>
