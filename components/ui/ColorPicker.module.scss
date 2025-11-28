@@ -1,54 +1,62 @@
 .colorPicker {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+.colorsRow {
+    display: flex;
+    align-items: center;
     gap: 16px;
 }
 
 .presetColors {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 12px;
+    display: flex;
+    gap: 10px;
+    flex: 1;
 }
 
 .colorOption {
-    aspect-ratio: 1;
-    border-radius: 8px;
-    border: 2px solid transparent;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
     cursor: pointer;
     transition: all 0.2s ease;
     padding: 0;
+    flex-shrink: 0;
 
     &:hover {
-        transform: scale(1.1);
+        transform: scale(1.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     &.selected {
-        border-color: var(--text-primary);
-        box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--primary);
+        border-color: white;
+        box-shadow: 0 0 0 2px var(--text-primary);
+        transform: scale(1.1);
     }
 }
 
-.customSection {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.customToggle {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 13px;
-    font-weight: 500;
+.customButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px dashed var(--border);
+    background: var(--surface);
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
-    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 
     &:hover {
         background: var(--hover-bg);
-        color: var(--text-primary);
+        color: var(--primary);
+        border-color: var(--primary);
+        transform: scale(1.1);
     }
 }
 
@@ -56,11 +64,15 @@
     display: flex;
     gap: 12px;
     align-items: center;
+    padding: 12px;
+    background: var(--background);
+    border-radius: 8px;
+    border: 1px solid var(--border);
 }
 
 .colorInput {
-    width: 60px;
-    height: 40px;
+    width: 50px;
+    height: 36px;
     border: 1px solid var(--border);
     border-radius: 6px;
     cursor: pointer;
@@ -79,7 +91,7 @@
 
 .hexInput {
     flex: 1;
-    padding: 10px 12px;
+    padding: 8px 12px;
     border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 14px;
@@ -100,6 +112,16 @@
 
 @media (max-width: 768px) {
     .presetColors {
-        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    .colorOption {
+        width: 32px;
+        height: 32px;
+    }
+
+    .customButton {
+        width: 32px;
+        height: 32px;
     }
 }
