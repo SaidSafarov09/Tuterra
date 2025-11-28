@@ -509,12 +509,14 @@ export default function CalendarPage() {
                             cancelText="Назад"
                         />
                     ) : (
-                        <div className={styles.modalFooter}>
-                            <Button onClick={handleCreateLesson} className={styles.addLessonButton}>
-                                <PlusIcon size={20} />
-                                Добавить занятие
-                            </Button>
-                        </div>
+                        (!dayData || dayData.lessons.length === 0) ? (
+                            <div className={styles.modalFooter}>
+                                <Button onClick={handleCreateLesson} className={styles.addLessonButton}>
+                                    <PlusIcon size={20} />
+                                    Добавить занятие
+                                </Button>
+                            </div>
+                        ) : null
                     )
                 }
             >
@@ -649,8 +651,9 @@ export default function CalendarPage() {
                                                                 )}
                                                             </div>
                                                             <div className={styles.lessonMeta}>
-                                                                <ClockIcon size={14} />
-                                                                {format(new Date(lesson.date), 'HH:mm')}
+                                                                <span className={`${styles.metaPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
+                                                                    {lesson.price} ₽
+                                                                </span>
                                                                 {lesson.subject && (
                                                                     <span
                                                                         className={styles.lessonSubject}
@@ -667,12 +670,14 @@ export default function CalendarPage() {
                                                                 <div className={styles.lessonNotes}>{lesson.notes}</div>
                                                             )}
                                                         </div>
-                                                        <div className={styles.lessonPrice}>
-                                                            <div className={`${styles.price} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
-                                                                {lesson.price} ₽
+                                                        <div className={styles.lessonTimeContainer}>
+                                                            <div className={styles.timeBig}>
+                                                                {format(new Date(lesson.date), 'HH:mm')}
                                                             </div>
-                                                            {lesson.isPaid && (
+                                                            {lesson.isPaid ? (
                                                                 <span className={styles.paidBadge}>Оплачено</span>
+                                                            ) : (
+                                                                <span className={styles.unpaidBadge}>Не оплачено</span>
                                                             )}
                                                         </div>
                                                     </div>

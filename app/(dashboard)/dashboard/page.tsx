@@ -141,7 +141,11 @@ export default function DashboardPage() {
                                             <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
                                                 {lesson.price} ₽
                                             </div>
-                                            {!lesson.isPaid && (
+                                            {lesson.isPaid ? (
+                                                <span className={`${styles.badge} ${styles.badgePaid}`}>
+                                                    Оплачено
+                                                </span>
+                                            ) : (
                                                 <span className={`${styles.badge} ${styles.badgeUnpaid}`}>
                                                     Не оплачено
                                                 </span>
@@ -195,6 +199,9 @@ export default function DashboardPage() {
                                             <div className={`${styles.lessonPrice} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
                                                 {lesson.price} ₽
                                             </div>
+                                            <span className={`${styles.badge} ${styles.badgeUnpaid}`}>
+                                                Не оплачено
+                                            </span>
                                         </div>
                                     </div>
                                 </Link>

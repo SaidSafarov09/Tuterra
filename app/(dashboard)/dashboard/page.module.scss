@@ -102,6 +102,7 @@
 .lessonsList {
     display: flex;
     flex-direction: column;
+    gap: 16px;
 }
 
 .lessonItem {
@@ -171,36 +172,43 @@
 
 .lessonPriceContainer {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    min-width: 80px;
 }
 
 .lessonPrice {
-    font-weight: 600;
-    font-size: 15px;
+    font-weight: 700;
+    font-size: 16px;
     text-align: end;
 }
 
 .pricePaid {
-    color: var(--text-secondary);
+    color: var(--success);
 }
 
 .priceUnpaid {
-    color: var(--text-primary);
+    color: #f97316;
 }
 
 .badge {
     display: inline-block;
     padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 11px;
+    border-radius: 4px;
+    font-size: 10px;
     font-weight: 600;
+    line-height: 1.4;
+}
+
+.badgePaid {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
 }
 
 .badgeUnpaid {
-    background: #FEF2F2;
-    color: #EF4444;
-    border: 1px solid #FECACA;
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
 }
 
 .emptyState {
