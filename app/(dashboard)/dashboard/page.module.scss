@@ -1,23 +1,8 @@
-.header {
-    margin-bottom: 32px;
-}
-
-.title {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 8px;
-}
-
-.subtitle {
-    font-size: 16px;
+.loading {
+    text-align: center;
+    padding: 40px;
     color: var(--text-secondary);
-    margin: 0;
-}
-
-.statsContainer {
-    display: flex;
-    flex-direction: column;
+    font-size: 14px;
 }
 
 .statsGrid {
@@ -27,89 +12,10 @@
     margin-bottom: 32px;
 }
 
-.statCardLink {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
-
-.statCard {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s ease;
-    cursor: pointer;
-
-    &:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-md);
-    }
-
-    @media (max-width: 768px) {
-        padding: 18px;
-    }
-}
-
-.statIcon {
-    font-size: 32px;
-    margin-bottom: 12px;
-}
-
-.statLabel {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 0 0 8px;
-    font-weight: 500;
-}
-
-.statValue {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-}
-
 .sectionsGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
     gap: 24px;
-}
-
-.section {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    box-shadow: var(--shadow-sm);
-
-    @media (max-width: 768px) {
-        padding: 18px;
-    }
-}
-
-.sectionHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 20px;
-}
-
-.sectionTitle {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.viewAll {
-    color: var(--primary);
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: underline;
-    }
 }
 
 .lessonsList {
@@ -118,161 +24,12 @@
     gap: 16px;
 }
 
-.lessonItem {
-    padding: 16px;
-    background: var(--background);
-    border-radius: var(--radius-md);
-    transition: all 0.2s ease;
-    text-decoration: none;
-    display: block;
-
-    &:last-child {
-        border-bottom: none;
-    }
-
-    &:hover {
-        background: var(--border-light);
-    }
-}
-
-.lessonHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-}
-
-.lessonInfo {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-}
-
-.studentName {
-    font-weight: 500;
-    color: var(--text-primary);
-    margin: 0;
-    font-size: 16px;
-}
-
-.lessonDate {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-top: 4px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    &::before {
-        display: none;
-    }
-}
-
-.subjectBadge {
-    font-size: 11px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 6px;
-    white-space: nowrap;
-    display: inline-block;
-    width: fit-content;
-    border: 1px solid transparent;
-}
-
-.lessonPriceContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-    min-width: 80px;
-}
-
-.lessonPrice {
-    font-weight: 700;
-    font-size: 16px;
-    text-align: end;
-}
-
-.pricePaid {
-    color: var(--success);
-}
-
-.priceUnpaid {
-    color: #f97316;
-}
-
-.badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 600;
-    line-height: 1.4;
-}
-
-.badgePaid {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
-}
-
-.badgeUnpaid {
-    background: rgba(249, 115, 22, 0.1);
-    color: #f97316;
-}
-
-.emptyState {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-    font-size: 14px;
-}
-
-.loading {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
 @media (max-width: 768px) {
-    .header {
-        margin-bottom: 18px;
-    }
-
-    .statsContainer {
-        flex-direction: column-reverse;
-    }
-
     .sectionsGrid {
         grid-template-columns: 1fr;
-        gap: 18px;
     }
 
     .statsGrid {
         grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
-        margin-bottom: 0;
-        margin-top: 18px;
-        gap: 18px;
-    }
-
-    .title,
-    .statValue {
-        font-size: 24px;
-    }
-
-    .sectionTitle {
-        font-size: 18px;
-    }
-
-    .badge {
-        font-size: 12px;
-    }
-
-    .sectionHeader {
-        flex-wrap: wrap;
-        gap: 8px;
     }
 }
