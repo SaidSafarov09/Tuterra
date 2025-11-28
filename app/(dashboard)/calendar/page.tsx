@@ -682,14 +682,14 @@ export default function CalendarPage() {
                                                         </div>
                                                     </div>
                                                     <div className={styles.lessonActions}>
-                                                        <button
+                                                        {!lesson.isCanceled && (<button
                                                             className={styles.actionButton}
                                                             onClick={() => handleTogglePaid(lesson)}
                                                             disabled={lesson.isCanceled}
                                                         >
                                                             <CheckIcon size={16} />
                                                             {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
-                                                        </button>
+                                                        </button>)}
 
                                                         {!isPast(new Date(lesson.date)) && (
                                                             <button
