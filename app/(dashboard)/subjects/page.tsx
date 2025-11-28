@@ -497,54 +497,62 @@ export default function SubjectsPage() {
                             className={styles.subjectCard}
                             onClick={() => handleSubjectClick(subject)}
                         >
-                            <div className={styles.cardHeader}>
-                                <div
-                                    className={styles.subjectIcon}
-                                    style={{ backgroundColor: subject.color }}
-                                >
-                                    {subject.name[0].toUpperCase()}
-                                </div>
-                                <div className={styles.headerInfo}>
-                                    <h3 className={styles.subjectName}>{subject.name}</h3>
-                                </div>
-                                <div className={styles.actions}>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleOpenEditSubjectModal(subject)
-                                        }}
-                                        className={styles.actionButton}
-                                        title="Редактировать"
-                                    >
-                                        <EditIcon size={14} />
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleDeleteSubject(subject)
-                                        }}
-                                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                                        title="Удалить"
-                                    >
-                                        <DeleteIcon size={14} />
-                                    </button>
-                                </div>
-                            </div>
+                            <div
+                                className={styles.colorAccent}
+                                style={{ backgroundColor: subject.color }}
+                            />
 
-                            <div className={styles.cardBody}>
-                                {/* Spacer or future content */}
-                            </div>
+                            <div className={styles.cardContent}>
+                                <div className={styles.cardTop}>
+                                    <div className={styles.subjectInfo}>
+                                        <div
+                                            className={styles.subjectIconSmall}
+                                            style={{
+                                                backgroundColor: subject.color + '20',
+                                                color: subject.color
+                                            }}
+                                        >
+                                            {subject.name[0].toUpperCase()}
+                                        </div>
+                                        <h3 className={styles.subjectName}>{subject.name}</h3>
+                                    </div>
 
-                            <div className={styles.cardFooter}>
-                                <div className={styles.statItem}>
-                                    <UsersGroupIcon size={14} className={styles.statIcon} />
-                                    <span className={styles.statValue}>{subject._count.students}</span>
-                                    <span className={styles.statLabel}>учеников</span>
+                                    <div className={styles.actions}>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleOpenEditSubjectModal(subject)
+                                            }}
+                                            className={styles.actionButton}
+                                            title="Редактировать"
+                                        >
+                                            <EditIcon size={16} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleDeleteSubject(subject)
+                                            }}
+                                            className={`${styles.actionButton} ${styles.deleteButton}`}
+                                            title="Удалить"
+                                        >
+                                            <DeleteIcon size={16} />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className={styles.statItem}>
-                                    <BookIcon size={14} className={styles.statIcon} />
-                                    <span className={styles.statValue}>{subject._count.lessons}</span>
-                                    <span className={styles.statLabel}>занятий</span>
+
+                                <div className={styles.statsRow}>
+                                    <div className={styles.stat}>
+                                        <UsersGroupIcon size={16} />
+                                        <span className={styles.statValue}>{subject._count.students}</span>
+                                        <span className={styles.statLabel}>учеников</span>
+                                    </div>
+                                    <div className={styles.statDivider}>•</div>
+                                    <div className={styles.stat}>
+                                        <BookIcon size={16} />
+                                        <span className={styles.statValue}>{subject._count.lessons}</span>
+                                        <span className={styles.statLabel}>занятий</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

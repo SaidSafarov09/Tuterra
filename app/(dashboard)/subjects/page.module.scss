@@ -27,28 +27,24 @@
 
 .subjectsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
 }
 
 .subjectCard {
     background: var(--surface);
     border-radius: 16px;
-    padding: 20px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     display: flex;
-    flex-direction: column;
-    height: 100%;
-    gap: 16px;
+    overflow: hidden;
     position: relative;
 
     &:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--border);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 
         .actions {
             opacity: 1;
@@ -56,61 +52,80 @@
     }
 }
 
-.cardHeader {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: relative;
-    padding: 0;
-    height: auto;
-    justify-content: flex-start;
-}
-
-.subjectIcon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-    font-weight: 600;
+.colorAccent {
+    width: 4px;
     flex-shrink: 0;
 }
 
-.headerInfo {
+.cardContent {
+    flex: 1;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cardTop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.subjectInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     flex: 1;
     min-width: 0;
 }
 
+.subjectIconSmall {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
 .subjectName {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
     line-height: 1.3;
+    word-break: break-word;
 }
 
 .actions {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     opacity: 0;
     transition: opacity 0.2s ease;
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+        opacity: 1;
+    }
 }
 
 .actionButton {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    border: 1px solid var(--border-light);
-    background: var(--surface);
-    color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
 
     &:hover {
         background: var(--hover-bg);
@@ -125,28 +140,20 @@
     border-color: #FECACA;
 }
 
-.cardBody {
-    flex: 1;
-}
-
-.cardFooter {
-    padding-top: 16px;
-    border-top: 1px solid var(--border-light);
-    margin-top: auto;
+.statsRow {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.statItem {
+.stat {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
-}
-
-.statIcon {
-    color: var(--text-muted);
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .statValue {
@@ -156,6 +163,11 @@
 
 .statLabel {
     color: var(--text-secondary);
+}
+
+.statDivider {
+    color: var(--border);
+    font-size: 12px;
 }
 
 /* Modal Styles */

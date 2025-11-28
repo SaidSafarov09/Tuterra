@@ -91,26 +91,26 @@
 .studentsGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
+    gap: 20px;
 }
 
 .studentCard {
     background: var(--surface);
-    border-radius: var(--radius-lg);
+    border-radius: 16px;
     padding: 24px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     height: 100%;
     gap: 16px;
 
     &:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--border);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+
     }
 }
 
@@ -121,16 +121,17 @@
 }
 
 .studentAvatarFallback {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .headerInfo {
@@ -216,7 +217,7 @@
 
 .cardFooter {
     padding-top: 16px;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
     margin-top: auto;
 }
 
