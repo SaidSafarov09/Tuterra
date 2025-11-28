@@ -159,3 +159,9 @@
     padding: 80px 20px;
     color: var(--text-secondary);
 }
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 24px;
+    }
+}
