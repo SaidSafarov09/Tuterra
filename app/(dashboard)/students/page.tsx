@@ -250,7 +250,7 @@ export default function StudentsPage() {
                             }`}
                         onClick={() => setSelectedSubjectFilter('all')}
                     >
-                        Все ({students.length})
+                        Все {students.length}
                     </button>
 
                     {subjects.map((subject) => {
@@ -277,7 +277,7 @@ export default function StudentsPage() {
                                 }}
                                 onClick={() => setSelectedSubjectFilter(subject.id)}
                             >
-                                {subject.name} ({count})
+                                {subject.name} {count}
                             </button>
                         )
                     })}

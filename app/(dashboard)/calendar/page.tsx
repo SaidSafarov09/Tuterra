@@ -10,9 +10,14 @@ import {
     MoneyIcon,
     DeleteIcon,
     CheckIcon,
-    XCircleIcon
+    XCircleIcon,
+    PlusIcon
 } from '@/components/icons/Icons'
-import { Modal } from '@/components/ui/Modal'
+import { Modal, ModalFooter } from '@/components/ui/Modal'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Dropdown } from '@/components/ui/Dropdown'
+import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import {
     format,
     startOfMonth,
@@ -50,6 +55,22 @@ interface Lesson {
     } | null
 }
 
+interface Student {
+    id: string
+    name: string
+    subjects: {
+        id: string
+        name: string
+        color: string
+    }[]
+}
+
+interface Subject {
+    id: string
+    name: string
+    color: string
+}
+
 interface DayData {
     lessons: Lesson[]
     totalEarned: number
@@ -61,12 +82,29 @@ export default function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [dayData, setDayData] = useState<DayData | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [modalView, setModalView] = useState<'details' | 'create'>('details')
     const [isLoadingDay, setIsLoadingDay] = useState(false)
     const [lessons, setLessons] = useState<Lesson[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
+    // Create Lesson State
+    const [students, setStudents] = useState<Student[]>([])
+    const [subjects, setSubjects] = useState<Subject[]>([])
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [error, setError] = useState('')
+    const [formData, setFormData] = useState({
+        studentId: '',
+        subjectId: '',
+        date: new Date(),
+        price: '',
+        isPaid: false,
+        notes: ''
+    })
+
     useEffect(() => {
         fetchLessons()
+        fetchStudents()
+        fetchSubjects()
     }, [currentMonth])
 
     const fetchLessons = async () => {
@@ -86,10 +124,183 @@ export default function CalendarPage() {
         }
     }
 
+    const fetchStudents = async () => {
+        try {
+            const response = await fetch('/api/students')
+            if (response.ok) {
+                const data = await response.json()
+                setStudents(data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch students', error)
+        }
+    }
+
+    const fetchSubjects = async () => {
+        try {
+            const response = await fetch('/api/subjects')
+            if (response.ok) {
+                const data = await response.json()
+                setSubjects(data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch subjects', error)
+        }
+    }
+
     const handleDateClick = (date: Date) => {
         setSelectedDate(date)
         loadDayData(date)
+        setModalView('details')
         setIsModalOpen(true)
+    }
+
+    const handleCreateLesson = () => {
+        if (!selectedDate) return
+
+        // Set time to current time but keep the selected date
+        const now = new Date()
+        const initialDate = new Date(selectedDate)
+        initialDate.setHours(now.getHours(), now.getMinutes())
+
+        setFormData({
+            studentId: '',
+            subjectId: '',
+            date: initialDate,
+            price: '',
+            isPaid: false,
+            notes: ''
+        })
+        setError('')
+        setModalView('create')
+    }
+
+    const handleBackToDetails = () => {
+        setModalView('details')
+        setError('')
+    }
+
+    const handleStudentChange = (studentId: string) => {
+        const student = students.find(s => s.id === studentId)
+        const preSelectedSubject = student?.subjects.length === 1 ? student.subjects[0].id : ''
+        setFormData(prev => ({
+            ...prev,
+            studentId,
+            subjectId: preSelectedSubject || prev.subjectId
+        }))
+    }
+
+    const handleCreateStudent = async (name: string) => {
+        try {
+            const response = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+            })
+
+            if (!response.ok) {
+                toast.error('Не удалось создать ученика')
+                return
+            }
+
+            const newStudent = await response.json()
+            await fetchStudents()
+            setFormData(prev => ({ ...prev, studentId: newStudent.id }))
+            toast.success(`Ученик "${name}" создан`)
+        } catch (error) {
+            toast.error('Ошибка при создании ученика')
+        }
+    }
+
+    const handleCreateSubject = async (name: string) => {
+        try {
+            const colors = ['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
+            const randomColor = colors[Math.floor(Math.random() * colors.length)]
+
+            const response = await fetch('/api/subjects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, color: randomColor }),
+            })
+
+            if (!response.ok) {
+                toast.error('Не удалось создать предмет')
+                return
+            }
+
+            const newSubject = await response.json()
+            await fetchSubjects()
+            setFormData(prev => ({ ...prev, subjectId: newSubject.id }))
+
+            if (formData.studentId) {
+                try {
+                    await fetch(`/api/subjects/${newSubject.id}/students/link`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId: formData.studentId }),
+                    })
+                    await fetchStudents()
+                } catch (error) {
+                    console.error('Failed to link subject to student:', error)
+                }
+            }
+
+            toast.success(`Предмет "${name}" создан`)
+        } catch (error) {
+            toast.error('Ошибка при создании предмета')
+        }
+    }
+
+    const handleSubmitLesson = async () => {
+        if (!formData.studentId || !formData.price) {
+            toast.error('Заполните все обязательные поля')
+            return
+        }
+
+        setIsSubmitting(true)
+        setError('')
+
+        try {
+            const response = await fetch('/api/lessons', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentId: formData.studentId,
+                    subjectId: formData.subjectId || undefined,
+                    date: formData.date.toISOString(),
+                    price: parseInt(formData.price),
+                    isPaid: formData.isPaid,
+                    notes: formData.notes
+                }),
+            })
+
+            if (response.ok) {
+                await fetchLessons()
+                if (selectedDate) {
+                    // We need to fetch the updated lessons list to update dayData correctly
+                    // Since fetchLessons updates state asynchronously, we can't rely on 'lessons' state immediately here
+                    // But we can manually update dayData with the new lesson if we want instant feedback
+                    // Or just re-fetch everything.
+                    // Let's just re-fetch lessons and then update day data.
+                    // Actually, fetchLessons is async.
+                    const newLessonsResponse = await fetch('/api/lessons')
+                    const newLessons = await newLessonsResponse.json()
+                    setLessons(newLessons)
+                    updateDayData(newLessons, selectedDate)
+                }
+
+                setModalView('details')
+                toast.success('Занятие успешно добавлено')
+            } else {
+                const data = await response.json()
+                setError(data.error || 'Произошла ошибка')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка при создании занятия')
+            setError('Произошла ошибка при создании занятия')
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     const updateDayData = (currentLessons: Lesson[], date: Date) => {
@@ -287,115 +498,214 @@ export default function CalendarPage() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: ru }) : ''}
+                title={modalView === 'create' ? 'Добавить занятие' : (selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: ru }) : '')}
+                footer={
+                    modalView === 'create' ? (
+                        <ModalFooter
+                            onCancel={handleBackToDetails}
+                            onSubmit={handleSubmitLesson}
+                            isLoading={isSubmitting}
+                            submitText="Добавить"
+                            cancelText="Назад"
+                        />
+                    ) : (
+                        <div className={styles.modalFooter}>
+                            <Button onClick={handleCreateLesson} className={styles.addLessonButton}>
+                                <PlusIcon size={20} />
+                                Добавить занятие
+                            </Button>
+                        </div>
+                    )
+                }
             >
-                {isLoadingDay ? (
-                    <div className={styles.modalLoading}>Загрузка...</div>
-                ) : dayData && dayData.lessons.length > 0 ? (
-                    <div className={styles.dayDetails}>
-                        <div className={styles.dayStats}>
-                            {selectedDate && isPast(selectedDate) ? (
-                                <div className={styles.statCard}>
-                                    <MoneyIcon size={24} color="#10B981" />
-                                    <div>
-                                        <div className={styles.statLabel}>Заработано</div>
-                                        <div className={styles.statValue}>{dayData.totalEarned} ₽</div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className={styles.statCard}>
-                                    <MoneyIcon size={24} color="#6366f1" />
-                                    <div>
-                                        <div className={styles.statLabel}>Возможный заработок</div>
-                                        <div className={styles.statValue}>
-                                            {dayData.totalEarned + dayData.potentialEarnings} ₽
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                {modalView === 'create' ? (
+                    <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+                        {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
 
-                        <div className={styles.lessonsList}>
-                            <h3 className={styles.lessonsTitle}>Занятия ({dayData.lessons.length})</h3>
-                            {dayData.lessons.map(lesson => (
-                                <div
-                                    key={lesson.id}
-                                    className={`${styles.lessonCard} ${lesson.isCanceled ? styles.lessonCanceled : ''}`}
-                                >
-                                    <div className={styles.lessonMain}>
-                                        <div className={styles.lessonInfo}>
-                                            <div className={styles.lessonStudent}>
-                                                {lesson.student.name}
-                                                {lesson.isCanceled && (
-                                                    <span className={styles.canceledBadge}>Отменено</span>
-                                                )}
-                                            </div>
-                                            <div className={styles.lessonMeta}>
-                                                <ClockIcon size={14} />
-                                                {format(new Date(lesson.date), 'HH:mm')}
-                                                {lesson.subject && (
-                                                    <span
-                                                        className={styles.lessonSubject}
-                                                        style={{
-                                                            color: lesson.subject.color,
-                                                            backgroundColor: `${lesson.subject.color}20`
-                                                        }}
-                                                    >
-                                                        {lesson.subject.name}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {lesson.notes && (
-                                                <div className={styles.lessonNotes}>{lesson.notes}</div>
-                                            )}
-                                        </div>
-                                        <div className={styles.lessonPrice}>
-                                            <div className={`${styles.price} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
-                                                {lesson.price} ₽
-                                            </div>
-                                            {lesson.isPaid && (
-                                                <span className={styles.paidBadge}>Оплачено</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className={styles.lessonActions}>
-                                        <button
-                                            className={styles.actionButton}
-                                            onClick={() => handleTogglePaid(lesson)}
-                                            disabled={lesson.isCanceled}
-                                        >
-                                            <CheckIcon size={16} />
-                                            {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
-                                        </button>
+                        <Dropdown
+                            label="Ученик"
+                            placeholder="Выберите или создайте ученика"
+                            value={formData.studentId}
+                            onChange={handleStudentChange}
+                            options={students.map((student) => ({
+                                value: student?.id,
+                                label: student.name,
+                            }))}
+                            searchable
+                            creatable
+                            onCreate={handleCreateStudent}
+                            menuPosition="relative"
+                            required
+                            disabled={isSubmitting}
+                        />
 
-                                        {!isPast(new Date(lesson.date)) && (
-                                            <button
-                                                className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
-                                                onClick={() => handleToggleCancel(lesson)}
-                                            >
-                                                {lesson.isCanceled ? (
-                                                    <>
-                                                        <CheckIcon size={16} />
-                                                        Восстановить
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <XCircleIcon size={16} />
-                                                        Отменить
-                                                    </>
-                                                )}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                        <Dropdown
+                            label="Предмет"
+                            placeholder="Выберите или создайте предмет"
+                            value={formData.subjectId}
+                            onChange={(value) => setFormData((prev) => ({ ...prev, subjectId: value }))}
+                            options={subjects.map((subject) => ({
+                                value: subject.id,
+                                label: subject.name,
+                            }))}
+                            searchable
+                            creatable
+                            onCreate={handleCreateSubject}
+                            menuPosition="relative"
+                            disabled={isSubmitting}
+                        />
+
+                        <DateTimePicker
+                            label="Время"
+                            value={formData.date}
+                            onChange={(date) => setFormData((prev) => ({ ...prev, date }))}
+                            showTime
+                            required
+                            disabled={isSubmitting}
+                            dropDirection="up"
+                        />
+
+                        <Input
+                            label="Цена"
+                            name="price"
+                            type="number"
+                            value={formData.price}
+                            onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                            required
+                            placeholder="1000"
+                            disabled={isSubmitting}
+                        />
+
+                        <Input
+                            label="Заметки"
+                            name="notes"
+                            value={formData.notes}
+                            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                            placeholder="Тема урока, домашнее задание..."
+                            disabled={isSubmitting}
+                        />
+
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                name="isPaid"
+                                checked={formData.isPaid}
+                                onChange={(e) => setFormData(prev => ({ ...prev, isPaid: e.target.checked }))}
+                                disabled={isSubmitting}
+                                style={{ width: '18px', height: '18px' }}
+                            />
+                            Оплачено
+                        </label>
+                    </form>
                 ) : (
-                    <div className={styles.emptyDay}>
-                        <CalendarIcon size={48} color="#9CA3AF" />
-                        <p>Нет занятий на этот день</p>
-                    </div>
+                    <>
+                        {isLoadingDay ? (
+                            <div className={styles.modalLoading}>Загрузка...</div>
+                        ) : dayData && (dayData.lessons.length > 0 || dayData.totalEarned > 0 || dayData.potentialEarnings > 0) ? (
+                            <div className={styles.dayDetails}>
+                                <div className={styles.dayStats}>
+                                    {selectedDate && isPast(selectedDate) ? (
+                                        <div className={styles.statCard}>
+                                            <MoneyIcon size={24} color="#10B981" />
+                                            <div>
+                                                <div className={styles.statLabel}>Заработано</div>
+                                                <div className={styles.statValue}>{dayData.totalEarned} ₽</div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className={styles.statCard}>
+                                            <MoneyIcon size={24} color="#6366f1" />
+                                            <div>
+                                                <div className={styles.statLabel}>Возможный заработок</div>
+                                                <div className={styles.statValue}>
+                                                    {dayData.totalEarned + dayData.potentialEarnings} ₽
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {dayData.lessons.length > 0 ? (
+                                    <div className={styles.lessonsList}>
+                                        <h3 className={styles.lessonsTitle}>Занятия {dayData.lessons.length}</h3>
+                                        {dayData.lessons.map(lesson => (
+                                            <div
+                                                key={lesson.id}
+                                                className={`${styles.lessonCard} ${lesson.isCanceled ? styles.lessonCanceled : ''}`}
+                                            >
+                                                <div className={styles.lessonMain}>
+                                                    <div className={styles.lessonInfo}>
+                                                        <div className={styles.lessonStudent}>
+                                                            {lesson.student.name}
+                                                            {lesson.isCanceled && (
+                                                                <span className={styles.canceledBadge}>Отменено</span>
+                                                            )}
+                                                        </div>
+                                                        <div className={styles.lessonMeta}>
+                                                            <ClockIcon size={14} />
+                                                            {format(new Date(lesson.date), 'HH:mm')}
+                                                            {lesson.subject && (
+                                                                <span
+                                                                    className={styles.lessonSubject}
+                                                                    style={{
+                                                                        color: lesson.subject.color,
+                                                                        backgroundColor: `${lesson.subject.color}20`
+                                                                    }}
+                                                                >
+                                                                    {lesson.subject.name}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {lesson.notes && (
+                                                            <div className={styles.lessonNotes}>{lesson.notes}</div>
+                                                        )}
+                                                    </div>
+                                                    <div className={styles.lessonPrice}>
+                                                        <div className={`${styles.price} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid}`}>
+                                                            {lesson.price} ₽
+                                                        </div>
+                                                        {lesson.isPaid && (
+                                                            <span className={styles.paidBadge}>Оплачено</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className={styles.lessonActions}>
+                                                    <button
+                                                        className={styles.actionButton}
+                                                        onClick={() => handleTogglePaid(lesson)}
+                                                        disabled={lesson.isCanceled}
+                                                    >
+                                                        <CheckIcon size={16} />
+                                                        {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
+
+                                                    </button>
+
+                                                    {!isPast(new Date(lesson.date)) && (
+                                                        <button
+                                                            className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
+                                                            onClick={() => handleToggleCancel(lesson)}
+                                                            title={lesson.isCanceled ? 'Восстановить' : 'Отменить'}
+                                                        >
+                                                            {lesson.isCanceled ? <CheckIcon size={16} /> : <XCircleIcon size={16} />}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className={styles.emptyDay}>
+                                        <p>Нет занятий</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className={styles.emptyDay}>
+                                <CalendarIcon size={48} color="#9CA3AF" />
+                                <p>Нет занятий на этот день</p>
+                            </div>
+                        )}
+                    </>
                 )}
             </Modal>
         </div>

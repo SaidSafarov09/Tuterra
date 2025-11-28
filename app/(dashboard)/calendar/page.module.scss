@@ -450,3 +450,22 @@
         flex-direction: column;
     }
 }
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.addLessonButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 0;
+}
