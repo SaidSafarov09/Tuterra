@@ -8,28 +8,8 @@ import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
+import { Student, Subject } from '@/types'
 import styles from './page.module.scss'
-
-interface Student {
-    id: string
-    name: string
-    contact?: string | null
-    note?: string | null
-    subjects: {
-        id: string
-        name: string
-        color: string
-    }[]
-    _count: {
-        lessons: number
-    }
-}
-
-interface Subject {
-    id: string
-    name: string
-    color: string
-}
 
 export default function StudentsPage() {
     const router = useRouter()
@@ -358,7 +338,7 @@ export default function StudentsPage() {
                             <div className={styles.cardFooter}>
                                 <div className={styles.statItem}>
                                     <span className={styles.statLabel}>Занятий</span>
-                                    <span className={styles.statValue}>{student._count.lessons}</span>
+                                    <span className={styles.statValue}>{student._count?.lessons || 0}</span>
                                 </div>
                             </div>
                         </div>

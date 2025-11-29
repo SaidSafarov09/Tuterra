@@ -11,32 +11,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { EditIcon, PlusIcon, ClockIcon } from '@/components/icons/Icons'
 import { formatSmartDate } from '@/lib/dateUtils'
+import { Lesson, Student, Subject } from '@/types'
 import styles from './page.module.scss'
-
-interface Lesson {
-    id: string
-    date: string
-    price: number
-    isPaid: boolean
-}
-
-interface Subject {
-    id: string
-    name: string
-    color: string
-}
-
-interface Student {
-    id: string
-    name: string
-    contact?: string | null
-    note?: string | null
-    subjects: Subject[]
-    lessons: Lesson[]
-    _count: {
-        lessons: number
-    }
-}
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter()
@@ -479,12 +455,12 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
             <div className={styles.section}>
                 <div className={styles.sectionHeader}>
-                    <h3 className={styles.sectionTitle}>Занятия ({student._count.lessons})</h3>
+                    <h3 className={styles.sectionTitle}>Занятия ({student._count?.lessons || 0})</h3>
                 </div>
 
-                {student.lessons.length > 0 ? (
+                {student.lessons && student.lessons.length > 0 ? (
                     <div className={styles.lessonsList}>
-                        {student.lessons.map((lesson) => (
+                        {student.lessons?.map((lesson) => (
                             <div
                                 key={lesson.id}
                                 className={styles.lessonItem}

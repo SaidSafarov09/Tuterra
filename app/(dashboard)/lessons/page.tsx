@@ -13,41 +13,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useModalStore } from '@/store/useModalStore'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { EditIcon, DeleteIcon, CheckIcon, XCircleIcon } from '@/components/icons/Icons'
+import { Lesson, Student, Subject } from '@/types'
 import styles from './page.module.scss'
 import { isPast } from 'date-fns'
-
-interface Lesson {
-    id: string
-    date: string
-    price: number
-    isPaid: boolean
-    isCanceled: boolean
-    student: {
-        id: string
-        name: string
-    }
-    subject?: {
-        id: string
-        name: string
-        color: string
-    }
-}
-
-interface Student {
-    id: string
-    name: string
-    subjects: {
-        id: string
-        name: string
-        color: string
-    }[]
-}
-
-interface Subject {
-    id: string
-    name: string
-    color: string
-}
 
 const TABS = [
     { id: 'upcoming', label: 'Предстоящие' },

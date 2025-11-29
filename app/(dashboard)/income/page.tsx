@@ -8,15 +8,8 @@ import { ru } from 'date-fns/locale'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
 import { ArrowLeftIcon, ArrowRightIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
+import { MonthlyData } from '@/types'
 import styles from './page.module.scss'
-
-interface MonthlyData {
-    month: string
-    income: number
-    lessons: number
-    paid: number
-    unpaid: number
-}
 
 export default function IncomePage() {
     const router = useRouter()

@@ -14,32 +14,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useModalStore } from '@/store/useModalStore'
 import { SubjectsIcon, PlusIcon, UsersGroupIcon, ClockIcon, EditIcon, DeleteIcon, BookIcon } from '@/components/icons/Icons'
 import { ColorPicker } from '@/components/ui/ColorPicker'
+import { Subject, Student } from '@/types'
 import styles from './page.module.scss'
-
-interface Subject {
-    id: string
-    name: string
-    color: string
-    _count: {
-        students: number
-        lessons: number
-    }
-}
-
-interface Student {
-    id: string
-    name: string
-    subjects: {
-        id: string
-        name: string
-        color: string
-    }[]
-    lessons: {
-        id: string
-        date: string
-        price: number
-    }[]
-}
 
 const COLORS = [
     '#4A6CF7', '#FF6B6B', '#4ECDC4', '#FFD93D', '#A8E6CF', '#FF8B94',
@@ -544,13 +520,13 @@ export default function SubjectsPage() {
                                 <div className={styles.statsRow}>
                                     <div className={styles.stat}>
                                         <UsersGroupIcon size={16} />
-                                        <span className={styles.statValue}>{subject._count.students}</span>
+                                        <span className={styles.statValue}>{subject._count?.students || 0}</span>
                                         <span className={styles.statLabel}>учеников</span>
                                     </div>
                                     <div className={styles.statDivider}>•</div>
                                     <div className={styles.stat}>
                                         <BookIcon size={16} />
-                                        <span className={styles.statValue}>{subject._count.lessons}</span>
+                                        <span className={styles.statValue}>{subject._count?.lessons || 0}</span>
                                         <span className={styles.statLabel}>занятий</span>
                                     </div>
                                 </div>
@@ -636,7 +612,7 @@ export default function SubjectsPage() {
                                         <span className={styles.studentName}>{student.name}</span>
                                     </div>
                                     <div className={styles.lessonInfo}>
-                                        {student.lessons.length > 0 ? (
+                                        {student.lessons && student.lessons.length > 0 ? (
                                             <div className={styles.nextLesson}>
                                                 <ClockIcon size={14} className={styles.clockIcon} />
                                                 <span>

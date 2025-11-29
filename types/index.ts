@@ -4,6 +4,10 @@ export interface Subject {
     id: string
     name: string
     color: string
+    _count?: {
+        students: number
+        lessons: number
+    }
 }
 
 export interface Student {
@@ -11,9 +15,20 @@ export interface Student {
     name: string
     email?: string
     phone?: string
+    contact?: string | null
     avatar?: string
     subjects: Subject[]
     notes?: string
+    note?: string | null
+    lessons?: {
+        id: string
+        date: string
+        price: number
+        isPaid: boolean
+    }[]
+    _count?: {
+        lessons: number
+    }
 }
 
 export interface Lesson {
@@ -46,6 +61,14 @@ export interface DayData {
     lessons: Lesson[]
     totalEarned: number
     potentialEarnings: number
+}
+
+export interface MonthlyData {
+    month: string
+    income: number
+    lessons: number
+    paid: number
+    unpaid: number
 }
 
 // Form types

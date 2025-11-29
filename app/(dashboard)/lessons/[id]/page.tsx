@@ -6,20 +6,10 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { Lesson } from '@/types'
 import styles from './page.module.scss'
 
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-
-interface Lesson {
-    id: string
-    date: string
-    price: number
-    isPaid: boolean
-    student: {
-        id: string
-        name: string
-    }
-}
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter()
     const { id } = usePromise(params)
