@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { addMonths, subMonths, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 
@@ -11,10 +11,9 @@ import { CalendarGrid } from '@/components/calendar/CalendarGrid'
 import { CalendarDayDetails } from '@/components/calendar/CalendarDayDetails'
 import { CalendarLessonForm } from '@/components/calendar/CalendarLessonForm'
 
-import { useLessonActions } from '@/hooks/useLessonActions'
 import { calculateDayEarnings } from '@/lib/lessonUtils'
 import { Lesson, DayData } from '@/types'
-import { useFetch } from '@/hooks/useFetch'
+import { toast } from 'sonner'
 
 import styles from './page.module.scss'
 
@@ -22,22 +21,96 @@ export default function CalendarPage() {
     // State
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+    const [lessons, setLessons] = useState<Lesson[]>([])
+    const [isLoading, setIsLoading] = useState(true)
 
     // Modal State
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
     // Data Fetching
-    const {
-        data: fetchedLessons,
-        isLoading,
-        refetch: fetchLessons
-    } = useFetch<Lesson[]>('/api/lessons')
+    useEffect(() => {
+        fetchLessons()
+    }, [])
 
-    const lessons = fetchedLessons || []
+    const fetchLessons = async () => {
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/lessons')
+            if (response.ok) {
+                const data = await response.json()
+                setLessons(data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch lessons:', error)
+            toast.error('Не удалось загрузить занятия')
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
-    // Hooks
-    const { togglePaid, toggleCancel } = useLessonActions(fetchLessons)
+    // Optimistic update functions
+    const updateLessonOptimistic = (lessonId: string, updates: Partial<Lesson>) => {
+        setLessons(prev => prev.map(lesson =>
+            lesson.id === lessonId ? { ...lesson, ...updates } : lesson
+        ))
+    }
+
+    const togglePaid = async (lesson: Lesson) => {
+        // Optimistic update
+        const newIsPaid = !lesson.isPaid
+        updateLessonOptimistic(lesson.id, { isPaid: newIsPaid })
+
+        try {
+            const response = await fetch(`/api/lessons/${lesson.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isPaid: newIsPaid }),
+            })
+
+            if (response.ok) {
+                toast.success(
+                    newIsPaid ? 'Отмечено как оплаченное' : 'Отмечено как неоплаченное'
+                )
+            } else {
+                // Rollback on error
+                updateLessonOptimistic(lesson.id, { isPaid: !newIsPaid })
+                toast.error('Не удалось обновить статус оплаты')
+            }
+        } catch (error) {
+            // Rollback on error
+            updateLessonOptimistic(lesson.id, { isPaid: !newIsPaid })
+            toast.error('Произошла ошибка')
+        }
+    }
+
+    const toggleCancel = async (lesson: Lesson) => {
+        // Optimistic update
+        const newIsCanceled = !lesson.isCanceled
+        updateLessonOptimistic(lesson.id, { isCanceled: newIsCanceled })
+
+        try {
+            const response = await fetch(`/api/lessons/${lesson.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isCanceled: newIsCanceled }),
+            })
+
+            if (response.ok) {
+                toast.success(
+                    newIsCanceled ? 'Занятие отменено' : 'Занятие восстановлено'
+                )
+            } else {
+                // Rollback on error
+                updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
+                toast.error('Не удалось обновить статус')
+            }
+        } catch (error) {
+            // Rollback on error
+            updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
+            toast.error('Произошла ошибка')
+        }
+    }
 
     // Handlers
     const handlePreviousMonth = () => setCurrentMonth(prev => subMonths(prev, 1))
