@@ -1,20 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-
-interface LessonFormData {
-    studentId: string
-    subjectId: string
-    date: Date
-    price: string
-    isPaid: boolean
-    notes?: string
-}
-
-interface Student {
-    id: string
-    name: string
-    subjects: { id: string; name: string; color: string }[]
-}
+import { LessonFormData, Student } from '@/types'
 
 export function useLessonForm(
     onSuccess: () => void,
