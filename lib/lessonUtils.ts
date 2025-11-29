@@ -1,58 +1,34 @@
-import { Lesson, LessonFilter } from '@/types'
-import { isPast, isFuture } from 'date-fns'
+import { isSameDay } from 'date-fns'
+import { Lesson, DayData } from '@/types'
 
 /**
- * Filters lessons based on the selected filter type
+ * Calculate earnings for a specific day
  */
-export function filterLessons(lessons: Lesson[], filter: LessonFilter): Lesson[] {
-    const now = new Date()
+export function calculateDayEarnings(lessons: Lesson[], date: Date): DayData {
+    const dayLessons = lessons.filter(lesson =>
+        isSameDay(new Date(lesson.date), date)
+    )
 
-    switch (filter) {
-        case 'upcoming':
-            return lessons.filter(
-                (lesson) => isFuture(new Date(lesson.date)) && !lesson.isCanceled
-            )
-        case 'past':
-            return lessons.filter(
-                (lesson) => isPast(new Date(lesson.date)) && !lesson.isCanceled
-            )
-        case 'unpaid':
-            return lessons.filter((lesson) => !lesson.isPaid && !lesson.isCanceled)
-        case 'canceled':
-            return lessons.filter((lesson) => lesson.isCanceled)
-        default:
-            return lessons
+    const totalEarned = dayLessons
+        .filter(l => l.isPaid)
+        .reduce((sum, l) => sum + l.price, 0)
+
+    const potentialEarnings = dayLessons
+        .filter(l => !l.isPaid && !l.isCanceled)
+        .reduce((sum, l) => sum + l.price, 0)
+
+    return {
+        lessons: dayLessons,
+        totalEarned,
+        potentialEarnings
     }
 }
 
 /**
- * Calculates total earnings from lessons
+ * Calculate total paid earnings for lessons on a specific day
  */
-export function calculateTotalEarnings(lessons: Lesson[]): number {
+export function calculateDayPaidEarnings(lessons: Lesson[], date: Date): number {
     return lessons
-        .filter((lesson) => lesson.isPaid)
+        .filter(lesson => isSameDay(new Date(lesson.date), date) && lesson.isPaid)
         .reduce((sum, lesson) => sum + lesson.price, 0)
-}
-
-/**
- * Calculates potential earnings from unpaid lessons
- */
-export function calculatePotentialEarnings(lessons: Lesson[]): number {
-    return lessons
-        .filter((lesson) => !lesson.isPaid && !lesson.isCanceled)
-        .reduce((sum, lesson) => sum + lesson.price, 0)
-}
-
-/**
- * Groups lessons by date
- */
-export function groupLessonsByDate(lessons: Lesson[]): Record<string, Lesson[]> {
-    return lessons.reduce((acc, lesson) => {
-        const date = new Date(lesson.date).toDateString()
-        if (!acc[date]) {
-            acc[date] = []
-        }
-        acc[date].push(lesson)
-        return acc
-    }, {} as Record<string, Lesson[]>)
 }

@@ -1,4 +1,11 @@
 // Core domain types
+
+export interface Subject {
+    id: string
+    name: string
+    color: string
+}
+
 export interface Student {
     id: string
     name: string
@@ -6,12 +13,7 @@ export interface Student {
     phone?: string
     avatar?: string
     subjects: Subject[]
-}
-
-export interface Subject {
-    id: string
-    name: string
-    color: string
+    notes?: string
 }
 
 export interface Lesson {

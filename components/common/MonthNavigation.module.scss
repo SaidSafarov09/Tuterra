@@ -1,0 +1,36 @@
+.navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
+
+.monthTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.navButton {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+
+    &:hover {
+        background: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}

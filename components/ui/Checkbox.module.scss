@@ -1,0 +1,99 @@
+.container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover .inputWrapper {
+        border-color: var(--primary);
+    }
+}
+
+.inputWrapper {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--text-tertiary);
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background);
+}
+
+.input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+
+    &:checked~.checkmark {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    &:checked+.checkmark {
+        background: var(--primary);
+        color: white;
+    }
+
+    // Parent selector hack via sibling for border color when checked
+    &:checked~.checkmark {
+        // This doesn't work directly in CSS modules without :has or similar
+        // Instead we style the wrapper based on input state if possible or rely on JS
+        // But standard CSS way:
+    }
+}
+
+// Correct way for custom checkbox styling
+.container input:checked~.checkmark {
+    opacity: 1;
+}
+
+.container input:checked~.inputWrapper {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--primary);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: all 0.2s;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.container input:checked+.checkmark {
+    // This selector is wrong based on HTML structure
+}
+
+// Fix based on actual structure:
+// input is inside wrapper, checkmark is sibling
+.input:checked+.checkmark {
+    opacity: 1;
+    transform: scale(1);
+    background: var(--primary);
+}
+
+.input:checked {
+    // We can't style the parent .inputWrapper from here easily without :has
+    // So we'll just style the checkmark to fill the box
+}
+
+.label {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}

@@ -1,0 +1,107 @@
+.calendarBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calendarWeek {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    flex: 1;
+}
+
+.calendarDay {
+    background: var(--background);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+
+    &:hover:not(.disabled) {
+        background: var(--border-light);
+        border-color: var(--border);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    &.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+
+        &:hover {
+            background: var(--background);
+            transform: none;
+        }
+    }
+
+    &.today {
+        border-color: var(--primary);
+        border-width: 2px;
+
+        .dayNumber {
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    &.hasLessons {
+        background: rgba(99, 102, 241, 0.03);
+    }
+}
+
+.dayNumber {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.dayIndicators {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: auto;
+}
+
+.subjectDots {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.subjectDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.moreDots {
+    font-size: 8px;
+    color: var(--text-secondary);
+    line-height: 6px;
+}
+
+.earnings {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    text-align: center;
+}

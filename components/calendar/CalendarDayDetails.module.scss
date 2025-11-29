@@ -1,0 +1,259 @@
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.dayDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dayStats {
+    display: flex;
+    gap: 16px;
+}
+
+.statCard {
+    flex: 1;
+    background: var(--background);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.statLabel {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.statValue {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.lessonsListHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.lessonsTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.lessonsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--border);
+        border-radius: 3px;
+    }
+}
+
+.lessonCard {
+    background: var(--background);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: var(--border);
+    }
+
+    &.canceled {
+        opacity: 0.7;
+        background: var(--background-secondary);
+
+        .lessonStudent {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .price {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+    }
+}
+
+.lessonMain {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.lessonInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lessonStudent {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lessonMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.lessonSubject {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.lessonNotes {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.lessonTimeContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    min-width: 60px;
+}
+
+.timeBig {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.paidBadge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.unpaidBadge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+}
+
+.price {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.pricePaid {
+    color: var(--success);
+}
+
+.priceUnpaid {
+    color: #f97316;
+}
+
+.lessonActions {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+
+    &:hover {
+        background: var(--background);
+        color: var(--text-primary);
+        border-color: var(--border);
+    }
+}
+
+.restoreButton {
+    &:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border-color: var(--success);
+    }
+}
+
+.deleteButton {
+    &:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+        border-color: var(--error);
+    }
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+
+    p {
+        margin-top: 16px;
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+}
+
+.addButtonSmall {
+    font-size: 13px;
+    padding: 6px 12px;
+    height: 32px;
+}
