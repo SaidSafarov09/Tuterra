@@ -344,10 +344,31 @@
 }
 
 .lessonTopic {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
     font-size: 13px;
-    color: var(--text-primary);
-    margin: 4px 0 0;
+    color: var(--text-secondary);
+    background: var(--background);
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: fit-content;
+}
+
+.topicIcon {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.topicLabel {
     font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.topicText {
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 .lessonPriceContainer {

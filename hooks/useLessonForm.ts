@@ -148,6 +148,7 @@ export function useLessonForm(
                     price: parseInt(formData.price),
                     isPaid: formData.isPaid,
                     notes: formData.notes,
+                    topic: formData.topic,
                 }),
             })
 

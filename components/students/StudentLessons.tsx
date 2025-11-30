@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { TabNav } from '@/components/ui/TabNav'
-import { PlusIcon } from '@/components/icons/Icons'
+import { PlusIcon, NoteIcon } from '@/components/icons/Icons'
 import { Lesson, Student, LessonFilter } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { LESSON_TABS } from '@/constants'
@@ -93,9 +93,13 @@ export function StudentLessons({
                                             {subject?.name || 'Без предмета'}
                                         </span>
                                         {lesson.topic && (
-                                            <p className={styles.lessonTopic}>
-                                                Тема: {lesson.topic.length > 30 ? `${lesson.topic.slice(0, 30)}...` : lesson.topic}
-                                            </p>
+                                            <div className={styles.lessonTopic}>
+                                                <NoteIcon size={14} className={styles.topicIcon} />
+                                                <span className={styles.topicLabel}>Тема урока:</span>
+                                                <span className={styles.topicText}>
+                                                    {lesson.topic.length > 50 ? `${lesson.topic.slice(0, 50)}...` : lesson.topic}
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
                                     <div className={styles.lessonPriceContainer}>

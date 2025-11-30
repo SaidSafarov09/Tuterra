@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { Lesson } from '@/types'
 import { LessonActions } from './LessonActions'
+import { NoteIcon } from '@/components/icons/Icons'
 import styles from '../../app/(dashboard)/lessons/page.module.scss'
 
 interface LessonCardProps {
@@ -47,9 +48,13 @@ export function LessonCard({ lesson, onTogglePaid, onToggleCancel, onEdit, onDel
                         {formatSmartDate(lesson.date)}
                     </p>
                     {lesson.topic && (
-                        <p className={styles.lessonTopic}>
-                            Тема: {lesson.topic.length > 30 ? `${lesson.topic.slice(0, 30)}...` : lesson.topic}
-                        </p>
+                        <div className={styles.lessonTopic}>
+                            <NoteIcon size={14} className={styles.topicIcon} />
+                            <span className={styles.topicLabel}>Тема урока:</span>
+                            <span className={styles.topicText}>
+                                {lesson.topic.length > 50 ? `${lesson.topic.slice(0, 50)}...` : lesson.topic}
+                            </span>
+                        </div>
                     )}
                 </div>
                 <div className={styles.lessonPriceContainer}>
