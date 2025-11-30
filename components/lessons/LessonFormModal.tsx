@@ -119,15 +119,6 @@ export function LessonFormModal({
                     disabled={isSubmitting}
                 />
 
-                <Input
-                    label="Заметки"
-                    name="notes"
-                    value={formData.notes || ''}
-                    onChange={(e) => handleChange('notes', e.target.value)}
-                    placeholder="Дополнительные заметки..."
-                    disabled={isSubmitting}
-                />
-
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input
                         type="checkbox"

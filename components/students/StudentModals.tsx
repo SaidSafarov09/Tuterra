@@ -30,7 +30,7 @@ interface StudentModalsProps {
     isCreateLessonModalOpen: boolean
     onCloseCreateLessonModal: () => void
     onSubmitCreateLesson: () => void
-    lessonFormData: { subjectId: string; date: Date; price: string; isPaid: boolean }
+    lessonFormData: { subjectId: string; date: Date; price: string; isPaid: boolean; topic: string; notes: string }
     setLessonFormData: (data: any) => void
     onCreateSubject: (name: string) => void
     // Edit Lesson Modal
@@ -187,6 +187,12 @@ export function StudentModals({
                         />
                         <label htmlFor="isPaid">Оплачено</label>
                     </div>
+                    <Input
+                        label="Тема урока"
+                        value={lessonFormData.topic || ''}
+                        onChange={(e) => setLessonFormData({ ...lessonFormData, topic: e.target.value })}
+                        placeholder="Например: Логарифмы"
+                    />
                 </form>
             </Modal>
 
@@ -242,6 +248,18 @@ export function StudentModals({
                         />
                         <label htmlFor="isPaidEdit">Оплачено</label>
                     </div>
+                    <Input
+                        label="Тема урока"
+                        value={lessonFormData.topic || ''}
+                        onChange={(e) => setLessonFormData({ ...lessonFormData, topic: e.target.value })}
+                        placeholder="Например: Введение в React"
+                    />
+                    <Input
+                        label="Заметки"
+                        value={lessonFormData.notes || ''}
+                        onChange={(e) => setLessonFormData({ ...lessonFormData, notes: e.target.value })}
+                        placeholder="Дополнительные заметки..."
+                    />
                 </form>
             </Modal>
         </>

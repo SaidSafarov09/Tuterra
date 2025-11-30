@@ -2,17 +2,12 @@ import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { TabNav } from '@/components/ui/TabNav'
-import { PlusIcon, EditIcon, DeleteIcon, CheckIcon, CloseIcon } from '@/components/icons/Icons'
+import { PlusIcon } from '@/components/icons/Icons'
 import { Lesson, Student, LessonFilter } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
+import { LESSON_TABS } from '@/constants'
+import { LessonActions } from '@/components/lessons/LessonActions'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
-
-const TABS = [
-    { id: 'upcoming', label: 'Предстоящие' },
-    { id: 'past', label: 'Прошедшие' },
-    { id: 'unpaid', label: 'Неоплаченные' },
-    { id: 'canceled', label: 'Отмененные' },
-]
 
 interface StudentLessonsProps {
     lessons: Lesson[]
@@ -63,7 +58,7 @@ export function StudentLessons({
             </div>
 
             <TabNav
-                tabs={TABS}
+                tabs={LESSON_TABS}
                 activeTab={activeTab}
                 onTabChange={(tab) => setActiveTab(tab as LessonFilter)}
             />
@@ -95,6 +90,11 @@ export function StudentLessons({
                                         <span className={styles.lessonSubject}>
                                             {subject?.name || 'Без предмета'}
                                         </span>
+                                        {lesson.topic && (
+                                            <p className={styles.lessonTopic}>
+                                                Тема: {lesson.topic.length > 30 ? `${lesson.topic.slice(0, 30)}...` : lesson.topic}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className={styles.lessonPriceContainer}>
                                         <span className={styles.lessonPrice}>
@@ -109,33 +109,14 @@ export function StudentLessons({
                                     </div>
                                 </div>
 
-                                <div className={styles.lessonActions} onClick={(e) => e.stopPropagation()}>
-                                    <button
-                                        className={styles.actionButton}
-                                        onClick={() => onTogglePaidStatus(lesson.id, !lesson.isPaid)}
-                                    >
-                                        {lesson.isPaid ? (
-                                            <>
-                                                <CloseIcon size={14} /> Отменить оплату
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CheckIcon size={14} /> Отметить оплату
-                                            </>
-                                        )}
-                                    </button>
-                                    <button
-                                        className={styles.actionButton}
-                                        onClick={() => onEditLesson(lesson)}
-                                    >
-                                        <EditIcon size={14} /> Редактировать
-                                    </button>
-                                    <button
-                                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                                        onClick={() => onDeleteLesson(lesson.id)}
-                                    >
-                                        <DeleteIcon size={14} /> Удалить
-                                    </button>
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    <LessonActions
+                                        lesson={lesson}
+                                        onTogglePaid={(l) => onTogglePaidStatus(l.id, !l.isPaid)}
+                                        onEdit={onEditLesson}
+                                        onDelete={onDeleteLesson}
+                                        showCancelButton={false}
+                                    />
                                 </div>
                             </div>
                         )
