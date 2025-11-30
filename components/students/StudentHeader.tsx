@@ -65,35 +65,34 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                     </div>
 
                     <div className={styles.headerActions}>
-                        <Button variant="secondary" onClick={onEdit}>
-                            <EditIcon size={18} />
+                        <Button variant="secondary" size="small" onClick={onEdit}>
+                            <EditIcon size={16} />
                             Редактировать
                         </Button>
-                        <Button onClick={onCreateLesson}>
-                            <PlusIcon size={18} />
+                        <Button size="small" onClick={onCreateLesson}>
+                            <PlusIcon size={16} />
                             Занятие
                         </Button>
-                        <Button variant="danger" onClick={onDelete}>
-                            <DeleteIcon size={18} />
+                        <Button variant="danger" size="small" onClick={onDelete}>
+                            <DeleteIcon size={16} />
                         </Button>
                     </div>
                 </div>
 
-                <div className={styles.headerStats}>
-                    <div className={styles.statItem}>
-                        <span className={styles.statLabel}>Всего занятий</span>
-                        <span className={styles.statValue}>{totalLessons}</span>
+                <div className={styles.headerMeta}>
+                    <div className={styles.metaItem}>
+                        Занятий: <strong>{totalLessons}</strong>
                     </div>
-                    <div className={styles.statItem}>
-                        <span className={styles.statLabel}>Предметов</span>
-                        <span className={styles.statValue}>{totalSubjects}</span>
+                    <div className={styles.metaDivider} />
+                    <div className={styles.metaItem}>
+                        Предметов: <strong>{totalSubjects}</strong>
                     </div>
                 </div>
 
                 {student.note && (
                     <div className={styles.studentNote}>
                         <strong>Заметка</strong>
-                        {student.note}
+                        <p>{student.note}</p>
                     </div>
                 )}
             </div>

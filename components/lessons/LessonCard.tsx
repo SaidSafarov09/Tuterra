@@ -1,4 +1,5 @@
 import React from 'react'
+import { useRouter } from 'next/navigation'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { isPast } from 'date-fns'
 import { CheckIcon, XCircleIcon, EditIcon, DeleteIcon } from '@/components/icons/Icons'
@@ -14,8 +15,18 @@ interface LessonCardProps {
 }
 
 export function LessonCard({ lesson, onTogglePaid, onToggleCancel, onEdit, onDelete }: LessonCardProps) {
+    const router = useRouter()
+
+    const handleCardClick = () => {
+        router.push(`/lessons/${lesson.id}`)
+    }
+
     return (
-        <div className={`${styles.lessonCard} ${lesson.isCanceled ? styles.canceled : ''}`}>
+        <div
+            className={`${styles.lessonCard} ${lesson.isCanceled ? styles.canceled : ''}`}
+            onClick={handleCardClick}
+            style={{ cursor: 'pointer' }}
+        >
             <div className={styles.lessonMain}>
                 <div className={styles.lessonInfo}>
                     <div className={styles.lessonHeader}>
@@ -47,7 +58,7 @@ export function LessonCard({ lesson, onTogglePaid, onToggleCancel, onEdit, onDel
                     </span>
                 </div>
             </div>
-            <div className={styles.actionsBlock}>
+            <div className={styles.actionsBlock} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.lessonActions}>
                     <button
                         className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
