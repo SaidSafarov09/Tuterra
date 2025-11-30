@@ -16,6 +16,7 @@ interface StudentLessonsProps {
     onEditLesson: (lesson: Lesson) => void
     onDeleteLesson: (lessonId: string) => void
     onTogglePaidStatus: (lessonId: string, isPaid: boolean) => void
+    onToggleCancelLesson: (lessonId: string, isCanceled: boolean) => void
 }
 
 export function StudentLessons({
@@ -24,7 +25,8 @@ export function StudentLessons({
     onCreateLesson,
     onEditLesson,
     onDeleteLesson,
-    onTogglePaidStatus
+    onTogglePaidStatus,
+    onToggleCancelLesson
 }: StudentLessonsProps) {
     const router = useRouter()
     const [activeTab, setActiveTab] = useState<LessonFilter>('upcoming')
@@ -113,9 +115,9 @@ export function StudentLessons({
                                     <LessonActions
                                         lesson={lesson}
                                         onTogglePaid={(l) => onTogglePaidStatus(l.id, !l.isPaid)}
+                                        onToggleCancel={(l) => onToggleCancelLesson(l.id, !l.isCanceled)}
                                         onEdit={onEditLesson}
                                         onDelete={onDeleteLesson}
-                                        showCancelButton={false}
                                     />
                                 </div>
                             </div>

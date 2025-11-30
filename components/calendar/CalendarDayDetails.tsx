@@ -29,12 +29,14 @@ export function CalendarDayDetails({
     if (!dayData || (dayData.lessons.length === 0 && dayData.totalEarned === 0 && dayData.potentialEarnings === 0)) {
         return (
             <div className={styles.emptyDay}>
-                <ClockIcon size={48} color="var(--text-tertiary)" />
+                <ClockIcon size={48} color="var(--text-secondary)" />
                 <p>Нет занятий на этот день</p>
-                <Button onClick={onAddLesson} variant="secondary" size="small">
-                    <PlusIcon size={16} />
-                    Добавить занятие
-                </Button>
+                <div style={{ marginTop: '16px' }}>
+                    <Button onClick={onAddLesson} variant="secondary" size="small">
+                        <PlusIcon size={16} />
+                        Добавить занятие
+                    </Button>
+                </div>
             </div>
         )
     }

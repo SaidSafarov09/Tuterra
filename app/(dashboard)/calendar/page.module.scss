@@ -483,6 +483,15 @@
     }
 }
 
+.mobileIndicator {
+    display: none;
+    width: 6px;
+    height: 6px;
+    background-color: var(--error);
+    border-radius: 50%;
+    margin-top: 2px;
+}
+
 @media (max-width: 768px) {
     .calendarContainer {
         padding: 16px;
@@ -493,12 +502,24 @@
     }
 
     .calendarDay {
-        min-height: 80px;
-        padding: 8px;
+        min-height: 0;
+        aspect-ratio: 1 / 1;
+        padding: 4px;
+        align-items: center;
+        justify-content: center;
     }
 
     .dayNumber {
-        font-size: 12px;
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+
+    .dayIndicators {
+        display: none;
+    }
+
+    .mobileIndicator {
+        display: block;
     }
 
     .dayStats {

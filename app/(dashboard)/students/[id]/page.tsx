@@ -40,6 +40,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         handleEditLesson,
         handleDeleteLesson,
         handleTogglePaidStatus,
+        handleToggleCancelLesson,
 
         // Openers
         openEditModal,
@@ -80,7 +81,6 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             <StudentLessons
                 lessons={(student.lessons || []).map(l => ({
                     ...l,
-                    isCanceled: false,
                     student: { id: student.id, name: student.name },
                     subject: l.subject || null
                 }))}
@@ -89,6 +89,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                 onEditLesson={handleEditLesson}
                 onDeleteLesson={handleDeleteLesson}
                 onTogglePaidStatus={handleTogglePaidStatus}
+                onToggleCancelLesson={handleToggleCancelLesson}
             />
 
             <StudentModals

@@ -11,6 +11,7 @@ import { Lesson, Student, Subject } from '@/types'
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
+import { LessonActions } from '@/components/lessons/LessonActions'
 import styles from './page.module.scss'
 
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -241,54 +242,13 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 )}
 
                 <div className={styles.lessonActions}>
-                    <button
-                        className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''
-                            }`}
-                        onClick={handleTogglePaid}
-                        disabled={isActionLoading || lesson.isCanceled}
-                    >
-                        <CheckIcon size={16} />
-                        {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
-                    </button>
-
-                    {!isLessonPast && (
-                        <button
-                            className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.cancelButton
-                                }`}
-                            onClick={() => setCancelConfirm(true)}
-                            disabled={isActionLoading}
-                        >
-                            {lesson.isCanceled ? (
-                                <>
-                                    <CheckIcon size={16} />
-                                    Восстановить
-                                </>
-                            ) : (
-                                <>
-                                    <XCircleIcon size={16} />
-                                    Отменить
-                                </>
-                            )}
-                        </button>
-                    )}
-
-                    <button
-                        className={`${styles.actionButton} ${styles.editButton}`}
-                        onClick={handleEditClick}
-                        disabled={isLessonPast}
-                    >
-                        <EditIcon size={16} />
-                        Изменить
-                    </button>
-
-                    <button
-                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                        onClick={() => setDeleteConfirm(true)}
-                        disabled={isActionLoading}
-                    >
-                        <DeleteIcon size={16} />
-                        Удалить
-                    </button>
+                    <LessonActions
+                        lesson={lesson}
+                        onTogglePaid={handleTogglePaid}
+                        onToggleCancel={() => setCancelConfirm(true)}
+                        onEdit={handleEditClick}
+                        onDelete={() => setDeleteConfirm(true)}
+                    />
                 </div>
             </div>
 

@@ -25,6 +25,9 @@ export interface Student {
         date: string
         price: number
         isPaid: boolean
+        isCanceled: boolean
+        topic?: string
+        notes?: string
         subject?: {
             id: string
             name: string

@@ -51,23 +51,26 @@ export function CalendarGrid({ currentMonth, lessons, onDateClick }: CalendarGri
                 >
                     <span className={styles.dayNumber}>{format(day, dateFormat)}</span>
                     {hasLessons && (
-                        <div className={styles.dayIndicators}>
-                            <div className={styles.subjectDots}>
-                                {dayLessons.slice(0, 4).map((lesson, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={styles.subjectDot}
-                                        style={{ backgroundColor: lesson.subject?.color || 'var(--primary)' }}
-                                    />
-                                ))}
-                                {dayLessons.length > 4 && (
-                                    <div className={styles.moreDots}>+</div>
+                        <>
+                            <div className={styles.dayIndicators}>
+                                <div className={styles.subjectDots}>
+                                    {dayLessons.slice(0, 4).map((lesson, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={styles.subjectDot}
+                                            style={{ backgroundColor: lesson.subject?.color || 'var(--primary)' }}
+                                        />
+                                    ))}
+                                    {dayLessons.length > 4 && (
+                                        <div className={styles.moreDots}>+</div>
+                                    )}
+                                </div>
+                                {dayEarnings > 0 && (
+                                    <div className={styles.earnings}>+{dayEarnings}₽</div>
                                 )}
                             </div>
-                            {dayEarnings > 0 && (
-                                <div className={styles.earnings}>+{dayEarnings}₽</div>
-                            )}
-                        </div>
+                            <div className={styles.mobileIndicator} />
+                        </>
                     )}
                 </div>
             )

@@ -349,6 +349,25 @@ export function useStudentDetail(studentId: string) {
         }
     }
 
+    const handleToggleCancelLesson = async (lessonId: string, isCanceled: boolean) => {
+        try {
+            const response = await fetch(`/api/lessons/${lessonId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isCanceled }),
+            })
+
+            if (response.ok) {
+                await fetchStudent()
+                toast.success(isCanceled ? 'Занятие отменено' : 'Занятие восстановлено')
+            } else {
+                toast.error('Не удалось обновить статус занятия')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка')
+        }
+    }
+
     // Helper to open modals with correct state
     const openEditModal = () => {
         if (!student) return
@@ -407,6 +426,7 @@ export function useStudentDetail(studentId: string) {
         handleEditLesson,
         handleDeleteLesson,
         handleTogglePaidStatus,
+        handleToggleCancelLesson,
 
         // Openers
         openEditModal,
