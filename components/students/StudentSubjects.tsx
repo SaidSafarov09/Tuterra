@@ -1,71 +1,52 @@
 import React from 'react'
 import { Button } from '@/components/ui/Button'
-import { PlusIcon } from '@/components/icons/Icons'
+import { PlusIcon, DeleteIcon } from '@/components/icons/Icons'
 import { Student } from '@/types'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
 
 interface StudentSubjectsProps {
     student: Student
     onAddSubject: () => void
-    onDeleteSubject: (subjectId: string) => void
+    onDeleteSubject: (subjectId: string, subjectName: string) => void
 }
 
 export function StudentSubjects({ student, onAddSubject, onDeleteSubject }: StudentSubjectsProps) {
     return (
         <div className={styles.section}>
             <div className={styles.sectionHeader}>
-                <h3 className={styles.sectionTitle}>Предметы</h3>
-                <Button variant="ghost" size="small" onClick={onAddSubject}>
-                    <PlusIcon size={16} />
-                </Button>
+                <h2 className={styles.sectionTitle}>Предметы</h2>
             </div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {student.subjects.length > 0 ? (
-                    student.subjects.map((subject) => (
-                        <span
-                            key={subject.id}
-                            style={{
-                                padding: '2px 8px',
-                                borderRadius: '6px',
-                                fontSize: '11px',
-                                fontWeight: 500,
-                                color: subject.color,
-                                backgroundColor: subject.color + '15',
-                                borderColor: subject.color + '30',
-                                borderWidth: '1px',
-                                borderStyle: 'solid',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                            }}
+
+            <div className={styles.subjectsGrid}>
+                {student.subjects.map((subject) => (
+                    <div
+                        key={subject.id}
+                        className={styles.subjectChip}
+                        style={{
+                            backgroundColor: subject.color + '15',
+                            color: subject.color,
+                            borderColor: subject.color + '30',
+                        }}
+                    >
+                        {subject.name}
+                        <button
+                            className={styles.deleteSubjectButton}
+                            style={{ color: subject.color }}
+                            onClick={() => onDeleteSubject(subject.id, subject.name)}
+                            title="Удалить предмет у ученика"
                         >
-                            {subject.name}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    onDeleteSubject(subject.id)
-                                }}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    padding: '0',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    color: subject.color,
-                                    opacity: 0.7,
-                                    fontSize: '16px',
-                                    lineHeight: 1,
-                                }}
-                                title="Удалить предмет"
-                            >
-                                ×
-                            </button>
-                        </span>
-                    ))
-                ) : (
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Нет предметов</span>
-                )}
+                            <DeleteIcon size={14} />
+                        </button>
+                    </div>
+                ))}
+
+                <button
+                    className={styles.addSubjectChip}
+                    onClick={onAddSubject}
+                >
+                    <PlusIcon size={14} />
+                    Добавить
+                </button>
             </div>
         </div>
     )

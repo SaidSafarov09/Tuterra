@@ -16,6 +16,8 @@ export function useStudentDetail(studentId: string) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false)
     const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
+    const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false)
+    const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
 
     // Form States
     const [editFormData, setEditFormData] = useState({
@@ -251,6 +253,47 @@ export function useStudentDetail(studentId: string) {
         }
     }
 
+    const handleEditLesson = async (lesson: any) => {
+        // TODO: Implement lesson editing
+        toast.info('Редактирование занятия скоро будет доступно')
+    }
+
+    const handleDeleteLesson = async (lessonId: string) => {
+        try {
+            const response = await fetch(`/api/lessons/${lessonId}`, {
+                method: 'DELETE',
+            })
+
+            if (response.ok) {
+                await fetchStudent()
+                toast.success('Занятие удалено')
+            } else {
+                toast.error('Не удалось удалить занятие')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка при удалении')
+        }
+    }
+
+    const handleTogglePaidStatus = async (lessonId: string, isPaid: boolean) => {
+        try {
+            const response = await fetch(`/api/lessons/${lessonId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isPaid }),
+            })
+
+            if (response.ok) {
+                await fetchStudent()
+                toast.success(isPaid ? 'Занятие отмечено как оплаченное' : 'Оплата отменена')
+            } else {
+                toast.error('Не удалось обновить статус оплаты')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка')
+        }
+    }
+
     // Helper to open modals with correct state
     const openEditModal = () => {
         if (!student) return
@@ -300,6 +343,9 @@ export function useStudentDetail(studentId: string) {
         handleAddSubject,
         handleCreateLesson,
         handleCreateSubject,
+        handleEditLesson,
+        handleDeleteLesson,
+        handleTogglePaidStatus,
 
         // Openers
         openEditModal,

@@ -39,7 +39,7 @@ function LessonsContent() {
         data: lessons = [],
         isLoading: isLessonsLoading,
         refetch: refetchLessons
-    } = useFetch<Lesson[]>(`/api/lessons?filter=${activeTab}`)
+    } = useFetch<Lesson[]>(`/api/lessons?filter=${activeTab}`, [activeTab])
 
     const {
         data: students = [],

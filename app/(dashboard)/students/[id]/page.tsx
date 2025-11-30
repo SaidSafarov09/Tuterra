@@ -8,6 +8,7 @@ import { StudentLessons } from '@/components/students/StudentLessons'
 import { StudentModals } from '@/components/students/StudentModals'
 import { useStudentDetail } from '@/hooks/useStudentDetail'
 import styles from './page.module.scss'
+import { Lesson } from '@/types'
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = usePromise(params)
@@ -36,6 +37,9 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         handleAddSubject,
         handleCreateLesson,
         handleCreateSubject,
+        handleEditLesson,
+        handleDeleteLesson,
+        handleTogglePaidStatus,
 
         // Openers
         openEditModal,
@@ -69,8 +73,17 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
             />
 
             <StudentLessons
+                lessons={(student.lessons || []).map(l => ({
+                    ...l,
+                    isCanceled: false,
+                    student: { id: student.id, name: student.name },
+                    subject: student.subjects.find(s => s.id === l.id) || null
+                }))}
                 student={student}
                 onCreateLesson={openCreateLessonModal}
+                onEditLesson={handleEditLesson}
+                onDeleteLesson={handleDeleteLesson}
+                onTogglePaidStatus={handleTogglePaidStatus}
             />
 
             <StudentModals
