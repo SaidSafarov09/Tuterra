@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { UsersGroupIcon, SearchIcon, PlusIcon, PhoneIcon, NoteIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
+import { Dropdown } from '@/components/ui/Dropdown'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { useModalStore } from '@/store/useModalStore'
 import { Student, Subject } from '@/types'
@@ -29,8 +30,6 @@ export default function StudentsPage() {
     })
 
     const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('all')
-    const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false)
-    const subjectInputRef = useRef<HTMLInputElement>(null)
 
     const { isOpen, openModal, closeModal } = useModalStore()
 
@@ -39,16 +38,6 @@ export default function StudentsPage() {
         fetchSubjects()
     }, [])
 
-    // Close suggestions on click outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (subjectInputRef.current && !subjectInputRef.current.contains(event.target as Node)) {
-                setShowSubjectSuggestions(false)
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [])
 
     const fetchStudents = async () => {
         try {
@@ -97,7 +86,6 @@ export default function StudentsPage() {
     const handleCloseModal = () => {
         closeModal()
         setError('')
-        setShowSubjectSuggestions(false)
     }
 
     // -----------------------------
@@ -112,23 +100,32 @@ export default function StudentsPage() {
         []
     )
 
-    const handleSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
-        setFormData(prev => ({
-            ...prev,
-            subjectName: value,
-            subjectId: '', // Reset ID when typing, will rely on name or selection
-        }))
-        setShowSubjectSuggestions(true)
-    }
+    const handleCreateSubject = async (name: string) => {
+        try {
+            const colors = ['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
+            const randomColor = colors[Math.floor(Math.random() * colors.length)]
 
-    const selectSubject = (subject: Subject) => {
-        setFormData(prev => ({
-            ...prev,
-            subjectId: subject.id,
-            subjectName: subject.name,
-        }))
-        setShowSubjectSuggestions(false)
+            const response = await fetch('/api/subjects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, color: randomColor }),
+            })
+
+            if (response.ok) {
+                const newSubject = await response.json()
+                await fetchSubjects()
+                setFormData(prev => ({
+                    ...prev,
+                    subjectId: newSubject.id,
+                    subjectName: newSubject.name
+                }))
+                toast.success(`Предмет "${name}" создан`)
+            } else {
+                toast.error('Не удалось создать предмет')
+            }
+        } catch (error) {
+            toast.error('Ошибка при создании предмета')
+        }
     }
 
     const handleSubmit = async () => {
@@ -195,10 +192,6 @@ export default function StudentsPage() {
         return students.filter((s) => s.subjects.some(subj => subj.id === selectedSubjectFilter))
     }, [students, selectedSubjectFilter])
 
-    const filteredSubjects = useMemo(() => {
-        if (!formData.subjectName) return subjects
-        return subjects.filter(s => s.name.toLowerCase().includes(formData.subjectName.toLowerCase()))
-    }, [subjects, formData.subjectName])
 
     // -----------------------------
     // RENDER
@@ -374,32 +367,24 @@ export default function StudentsPage() {
                             disabled={isSubmitting}
                         />
 
-                        <div className={styles.subjectInputWrapper} ref={subjectInputRef}>
-                            <Input
-                                label="Предмет"
-                                name="subjectName"
-                                value={formData.subjectName}
-                                onChange={handleSubjectChange}
-                                onFocus={() => setShowSubjectSuggestions(true)}
-                                placeholder="Выберите или введите новый предмет"
-                                disabled={isSubmitting}
-                                autoComplete="off"
-                            />
-                            {showSubjectSuggestions && filteredSubjects.length > 0 && (
-                                <div className={styles.suggestionsList}>
-                                    {filteredSubjects.map(subject => (
-                                        <div
-                                            key={subject.id}
-                                            className={styles.suggestionItem}
-                                            onClick={() => selectSubject(subject)}
-                                        >
-                                            <div className={styles.suggestionColor} style={{ backgroundColor: subject.color }} />
-                                            {subject.name}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <Dropdown
+                            label="Предмет"
+                            placeholder="Выберите или создайте предмет"
+                            value={formData.subjectId}
+                            onChange={(value) => {
+                                const subject = subjects.find(s => s.id === value)
+                                setFormData(prev => ({
+                                    ...prev,
+                                    subjectId: value,
+                                    subjectName: subject ? subject.name : ''
+                                }))
+                            }}
+                            options={subjects.map(s => ({ value: s.id, label: s.name }))}
+                            searchable
+                            creatable
+                            onCreate={handleCreateSubject}
+                            menuPosition="relative"
+                        />
 
                         <Input
                             label="Контакт"
