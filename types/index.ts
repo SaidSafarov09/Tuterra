@@ -25,6 +25,11 @@ export interface Student {
         date: string
         price: number
         isPaid: boolean
+        subject?: {
+            id: string
+            name: string
+            color: string
+        } | null
     }[]
     _count?: {
         lessons: number

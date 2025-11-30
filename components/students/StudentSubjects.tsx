@@ -31,7 +31,6 @@ export function StudentSubjects({ student, onAddSubject, onDeleteSubject }: Stud
                         {subject.name}
                         <button
                             className={styles.deleteSubjectButton}
-                            style={{ color: subject.color }}
                             onClick={() => onDeleteSubject(subject.id, subject.name)}
                             title="Удалить предмет у ученика"
                         >

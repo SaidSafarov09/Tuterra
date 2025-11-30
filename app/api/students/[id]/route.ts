@@ -33,6 +33,7 @@ export async function GET(
                 subjects: true,
                 lessons: {
                     orderBy: { date: 'desc' },
+                    include: { subject: true },
                 },
                 _count: {
                     select: { lessons: true },

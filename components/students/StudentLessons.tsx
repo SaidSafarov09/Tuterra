@@ -80,7 +80,7 @@ export function StudentLessons({
             ) : (
                 <div className={styles.lessonsList}>
                     {filteredLessons.map((lesson) => {
-                        const subject = student.subjects.find(s => s.id === lesson.subject?.id)
+                        const subject = lesson.subject
                         return (
                             <div
                                 key={lesson.id}
@@ -93,7 +93,7 @@ export function StudentLessons({
                                             {formatSmartDate(new Date(lesson.date))}
                                         </h3>
                                         <span className={styles.lessonSubject}>
-                                            {subject?.name || 'Без предмета'} • {lesson.notes || 'Без темы'}
+                                            {subject?.name || 'Без предмета'}
                                         </span>
                                     </div>
                                     <div className={styles.lessonPriceContainer}>

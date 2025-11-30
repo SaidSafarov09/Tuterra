@@ -77,7 +77,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                     ...l,
                     isCanceled: false,
                     student: { id: student.id, name: student.name },
-                    subject: student.subjects.find(s => s.id === l.id) || null
+                    subject: l.subject || null
                 }))}
                 student={student}
                 onCreateLesson={openCreateLessonModal}
