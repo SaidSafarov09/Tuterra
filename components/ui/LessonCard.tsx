@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { Lesson } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
-import { ClockIcon } from '@/components/icons/Icons'
+import { ClockIcon, NoteIcon } from '@/components/icons/Icons'
 import styles from './LessonCard.module.scss'
 
 interface LessonCardProps {
@@ -19,6 +19,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     variant = 'default',
     showActions = false,
 }) => {
+    const [showTopic, setShowTopic] = useState(false)
     const isPast = new Date(lesson.date) < new Date()
 
     return (
@@ -45,6 +46,26 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                         <ClockIcon size={14} color="var(--text-secondary)" />
                         {formatSmartDate(lesson.date)}
                     </p>
+                    {lesson.topic && (
+                        <div
+                            className={styles.topicTrigger}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                setShowTopic(!showTopic)
+                            }}
+                        >
+                            <span className={styles.topicLabel}>Тема:</span>
+                            <NoteIcon size={14} />
+
+                            {showTopic && (
+                                <div className={styles.topicPopup} onClick={(e) => e.stopPropagation()}>
+                                    <p>{lesson.topic.length > 50 ? `${lesson.topic.slice(0, 50)}...` : lesson.topic}</p>
+                                    <span className={styles.moreLink}>Подробнее</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className={styles.priceContainer}>

@@ -33,6 +33,10 @@ interface StudentModalsProps {
     lessonFormData: { subjectId: string; date: Date; price: string; isPaid: boolean }
     setLessonFormData: (data: any) => void
     onCreateSubject: (name: string) => void
+    // Edit Lesson Modal
+    isEditLessonModalOpen: boolean
+    onCloseEditLessonModal: () => void
+    onSubmitEditLesson: () => void
 }
 
 export function StudentModals({
@@ -58,7 +62,11 @@ export function StudentModals({
     onSubmitCreateLesson,
     lessonFormData,
     setLessonFormData,
-    onCreateSubject
+    onCreateSubject,
+
+    isEditLessonModalOpen,
+    onCloseEditLessonModal,
+    onSubmitEditLesson
 }: StudentModalsProps) {
     return (
         <>
@@ -178,6 +186,61 @@ export function StudentModals({
                             style={{ width: '16px', height: '16px' }}
                         />
                         <label htmlFor="isPaid">Оплачено</label>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Edit Lesson Modal */}
+            <Modal
+                isOpen={isEditLessonModalOpen}
+                onClose={onCloseEditLessonModal}
+                title="Редактировать занятие"
+                footer={
+                    <ModalFooter
+                        onCancel={onCloseEditLessonModal}
+                        onSubmit={onSubmitEditLesson}
+                        isLoading={isSubmitting}
+                        submitText="Сохранить"
+                    />
+                }
+            >
+                <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+                    <Dropdown
+                        label="Предмет"
+                        placeholder="Выберите или создайте предмет"
+                        value={lessonFormData.subjectId}
+                        onChange={(value) => setLessonFormData({ ...lessonFormData, subjectId: value })}
+                        options={allSubjects.map(s => ({ value: s.id, label: s.name }))}
+                        searchable
+                        creatable
+                        onCreate={onCreateSubject}
+                        menuPosition="relative"
+                    />
+
+                    <DateTimePicker
+                        label="Дата и время"
+                        value={lessonFormData.date}
+                        onChange={(date) => setLessonFormData({ ...lessonFormData, date: date || new Date() })}
+                        showTime
+                        required
+                        dropDirection="center"
+                    />
+                    <Input
+                        label="Стоимость"
+                        type="number"
+                        value={lessonFormData.price}
+                        onChange={(e) => setLessonFormData({ ...lessonFormData, price: e.target.value })}
+                        required
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                            type="checkbox"
+                            id="isPaidEdit"
+                            checked={lessonFormData.isPaid}
+                            onChange={(e) => setLessonFormData({ ...lessonFormData, isPaid: e.target.checked })}
+                            style={{ width: '16px', height: '16px' }}
+                        />
+                        <label htmlFor="isPaidEdit">Оплачено</label>
                     </div>
                 </form>
             </Modal>

@@ -10,6 +10,8 @@ const lessonSchema = z.object({
     price: z.number().positive('Цена должна быть положительной'),
     isPaid: z.boolean(),
     isCanceled: z.boolean().optional(),
+    notes: z.string().optional(),
+    topic: z.string().optional(),
 })
 
 export async function GET(
@@ -32,6 +34,7 @@ export async function GET(
             },
             include: {
                 student: true,
+                subject: true,
             },
         })
 
@@ -133,6 +136,8 @@ export async function PATCH(
         if (body.studentId !== undefined) updateData.studentId = body.studentId
         if (body.subjectId !== undefined) updateData.subjectId = body.subjectId
         if (body.isCanceled !== undefined) updateData.isCanceled = body.isCanceled
+        if (body.notes !== undefined) updateData.notes = body.notes
+        if (body.topic !== undefined) updateData.topic = body.topic
 
         const lesson = await prisma.lesson.updateMany({
             where: {

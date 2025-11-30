@@ -24,7 +24,8 @@ export function useCalendarLessonForm(options: UseCalendarLessonFormOptions = {}
         date: initialDate || new Date(),
         price: '',
         isPaid: false,
-        notes: ''
+        notes: '',
+        topic: ''
     })
 
     useEffect(() => {
@@ -146,7 +147,8 @@ export function useCalendarLessonForm(options: UseCalendarLessonFormOptions = {}
                     date: formData.date.toISOString(),
                     price: parseInt(formData.price),
                     isPaid: formData.isPaid,
-                    notes: formData.notes
+                    notes: formData.notes,
+                    topic: formData.topic
                 }),
             })
 
@@ -175,7 +177,8 @@ export function useCalendarLessonForm(options: UseCalendarLessonFormOptions = {}
             date: date || new Date(),
             price: '',
             isPaid: false,
-            notes: ''
+            notes: '',
+            topic: ''
         })
         setError('')
     }

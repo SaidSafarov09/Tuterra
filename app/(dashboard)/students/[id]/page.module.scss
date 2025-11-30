@@ -310,7 +310,6 @@
     &:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
-        border-color: var(--primary-light);
     }
 
     @media (max-width: 768px) {
@@ -417,6 +416,18 @@
     border: 1px solid transparent;
     background: transparent;
     color: var(--text-secondary);
+
+    &:hover {
+        background: var(--background);
+        color: var(--text-primary);
+    }
+}
+
+.deleteButton {
+    &:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+    }
 }
 
 .emptyState {

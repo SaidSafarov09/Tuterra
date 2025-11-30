@@ -149,12 +149,38 @@
     }
 }
 
+.topicSection {
+    background: var(--background);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border-left: 3px solid var(--primary);
+
+    strong {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    p {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-primary);
+        line-height: 1.5;
+        margin: 0;
+    }
+}
+
 .notesSection {
     background: var(--background);
     padding: 16px;
     border-radius: 8px;
     margin-bottom: 20px;
-    border-left: 3px solid var(--primary);
+    border-left: 3px solid var(--text-secondary);
 
     strong {
         display: block;
@@ -172,6 +198,34 @@
         line-height: 1.6;
         margin: 0;
     }
+}
+
+.statsSection {
+    display: flex;
+    gap: 24px;
+    padding: 16px;
+    background: var(--background);
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.statLabel {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.statValue {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
 .lessonActions {

@@ -31,11 +31,14 @@ export function useStudentDetail(studentId: string) {
         date: new Date(),
         price: '',
         isPaid: false,
+        topic: '',
+        notes: '',
     })
 
     // Confirmation States
     const [deleteStudentConfirm, setDeleteStudentConfirm] = useState(false)
     const [deleteSubjectConfirm, setDeleteSubjectConfirm] = useState<string | null>(null)
+    const [deleteLessonConfirm, setDeleteLessonConfirm] = useState<string | null>(null)
 
     // Fetch Data
     const fetchStudent = async () => {
@@ -197,6 +200,8 @@ export function useStudentDetail(studentId: string) {
                     date: lessonFormData.date.toISOString(),
                     price: Number(lessonFormData.price),
                     isPaid: lessonFormData.isPaid,
+                    topic: lessonFormData.topic,
+                    notes: lessonFormData.notes,
                 }),
             })
 
@@ -254,13 +259,61 @@ export function useStudentDetail(studentId: string) {
     }
 
     const handleEditLesson = async (lesson: any) => {
-        // TODO: Implement lesson editing
-        toast.info('Редактирование занятия скоро будет доступно')
+        setLessonFormData({
+            subjectId: lesson.subject?.id || '',
+            date: new Date(lesson.date),
+            price: lesson.price.toString(),
+            isPaid: lesson.isPaid,
+            topic: lesson.topic || '',
+            notes: lesson.notes || '',
+        })
+        setEditingLessonId(lesson.id)
+        setIsEditLessonModalOpen(true)
+    }
+
+    const handleUpdateLesson = async () => {
+        if (!editingLessonId) return
+
+        setIsSubmitting(true)
+        try {
+            const response = await fetch(`/api/lessons/${editingLessonId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentId,
+                    subjectId: lessonFormData.subjectId || undefined,
+                    date: lessonFormData.date.toISOString(),
+                    price: Number(lessonFormData.price),
+                    isPaid: lessonFormData.isPaid,
+                    topic: lessonFormData.topic,
+                    notes: lessonFormData.notes,
+                }),
+            })
+
+            if (response.ok) {
+                await fetchStudent()
+                setIsEditLessonModalOpen(false)
+                setEditingLessonId(null)
+                toast.success('Занятие обновлено')
+            } else {
+                toast.error('Не удалось обновить занятие')
+            }
+        } catch (error) {
+            toast.error('Произошла ошибка')
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     const handleDeleteLesson = async (lessonId: string) => {
+        setDeleteLessonConfirm(lessonId)
+    }
+
+    const confirmDeleteLesson = async () => {
+        if (!deleteLessonConfirm) return
+
         try {
-            const response = await fetch(`/api/lessons/${lessonId}`, {
+            const response = await fetch(`/api/lessons/${deleteLessonConfirm}`, {
                 method: 'DELETE',
             })
 
@@ -272,6 +325,8 @@ export function useStudentDetail(studentId: string) {
             }
         } catch (error) {
             toast.error('Произошла ошибка при удалении')
+        } finally {
+            setDeleteLessonConfirm(null)
         }
     }
 
@@ -312,6 +367,8 @@ export function useStudentDetail(studentId: string) {
             date: new Date(),
             price: '',
             isPaid: false,
+            topic: '',
+            notes: '',
         })
         setIsCreateLessonModalOpen(true)
     }
@@ -326,6 +383,7 @@ export function useStudentDetail(studentId: string) {
         isEditModalOpen, setIsEditModalOpen,
         isAddSubjectModalOpen, setIsAddSubjectModalOpen,
         isCreateLessonModalOpen, setIsCreateLessonModalOpen,
+        isEditLessonModalOpen, setIsEditLessonModalOpen,
 
         // Form Data
         editFormData, setEditFormData,
@@ -335,6 +393,7 @@ export function useStudentDetail(studentId: string) {
         // Confirm States
         deleteStudentConfirm, setDeleteStudentConfirm,
         deleteSubjectConfirm, setDeleteSubjectConfirm,
+        deleteLessonConfirm, setDeleteLessonConfirm,
 
         // Actions
         handleDeleteStudent,
@@ -342,6 +401,8 @@ export function useStudentDetail(studentId: string) {
         handleUpdateStudent,
         handleAddSubject,
         handleCreateLesson,
+        handleUpdateLesson,
+        confirmDeleteLesson,
         handleCreateSubject,
         handleEditLesson,
         handleDeleteLesson,

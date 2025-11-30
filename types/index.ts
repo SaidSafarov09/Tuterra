@@ -43,6 +43,7 @@ export interface Lesson {
     isPaid: boolean
     isCanceled: boolean
     notes?: string
+    topic?: string
     student: {
         id: string
         name: string
@@ -84,6 +85,7 @@ export interface LessonFormData {
     price: string
     isPaid: boolean
     notes: string
+    topic: string
 }
 
 // Filter types

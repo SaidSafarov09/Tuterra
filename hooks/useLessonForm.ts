@@ -14,6 +14,7 @@ export function useLessonForm(
         price: '',
         isPaid: false,
         notes: '',
+        topic: '',
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -26,6 +27,7 @@ export function useLessonForm(
             price: '',
             isPaid: false,
             notes: '',
+            topic: '',
         })
         setError('')
     }
@@ -38,6 +40,7 @@ export function useLessonForm(
             price: lesson.price.toString(),
             isPaid: lesson.isPaid,
             notes: lesson.notes || '',
+            topic: lesson.topic || '',
         })
     }
 

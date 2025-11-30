@@ -47,6 +47,11 @@ export function LessonCard({ lesson, onTogglePaid, onToggleCancel, onEdit, onDel
                     <p className={styles.lessonDate}>
                         {formatSmartDate(lesson.date)}
                     </p>
+                    {lesson.topic && (
+                        <p className={styles.lessonTopic}>
+                            Тема: {lesson.topic.length > 30 ? `${lesson.topic.slice(0, 30)}...` : lesson.topic}
+                        </p>
+                    )}
                 </div>
                 <div className={styles.lessonPriceContainer}>
                     <div className={styles.lessonPrice}>{lesson.price} ₽</div>

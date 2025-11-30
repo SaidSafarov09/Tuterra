@@ -110,6 +110,24 @@ export function LessonFormModal({
                     disabled={isSubmitting}
                 />
 
+                <Input
+                    label="Тема урока"
+                    name="topic"
+                    value={formData.topic || ''}
+                    onChange={(e) => handleChange('topic', e.target.value)}
+                    placeholder="Например: Введение в React"
+                    disabled={isSubmitting}
+                />
+
+                <Input
+                    label="Заметки"
+                    name="notes"
+                    value={formData.notes || ''}
+                    onChange={(e) => handleChange('notes', e.target.value)}
+                    placeholder="Дополнительные заметки..."
+                    disabled={isSubmitting}
+                />
+
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input
                         type="checkbox"

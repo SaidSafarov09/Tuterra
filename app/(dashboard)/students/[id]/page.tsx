@@ -43,7 +43,12 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
         // Openers
         openEditModal,
-        openCreateLessonModal
+        openCreateLessonModal,
+
+        // New exports
+        isEditLessonModalOpen, setIsEditLessonModalOpen,
+        deleteLessonConfirm, setDeleteLessonConfirm,
+        handleUpdateLesson, confirmDeleteLesson
     } = useStudentDetail(id)
 
     if (isLoading) {
@@ -110,6 +115,10 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                 lessonFormData={lessonFormData}
                 setLessonFormData={setLessonFormData}
                 onCreateSubject={(name) => handleCreateSubject(name, false)}
+
+                isEditLessonModalOpen={isEditLessonModalOpen}
+                onCloseEditLessonModal={() => setIsEditLessonModalOpen(false)}
+                onSubmitEditLesson={handleUpdateLesson}
             />
 
             <ConfirmDialog
@@ -129,6 +138,17 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                 onConfirm={handleDeleteSubject}
                 title="Удалить предмет?"
                 message="Вы уверены, что хотите удалить этот предмет у ученика?"
+                confirmText="Удалить"
+                cancelText="Отмена"
+                variant="danger"
+            />
+
+            <ConfirmDialog
+                isOpen={!!deleteLessonConfirm}
+                onClose={() => setDeleteLessonConfirm(null)}
+                onConfirm={confirmDeleteLesson}
+                title="Удалить занятие?"
+                message="Вы уверены, что хотите удалить это занятие?"
                 confirmText="Удалить"
                 cancelText="Отмена"
                 variant="danger"

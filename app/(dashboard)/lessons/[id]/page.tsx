@@ -6,9 +6,11 @@ import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { format, isPast } from 'date-fns'
 import { ru } from 'date-fns/locale'
-import { CheckIcon, XCircleIcon, EditIcon, DeleteIcon } from '@/components/icons/Icons'
-import { Lesson } from '@/types'
+import { CheckIcon, XCircleIcon, EditIcon, DeleteIcon, NoteIcon } from '@/components/icons/Icons'
+import { Lesson, Student, Subject } from '@/types'
 import { useLessonActions } from '@/hooks/useLessonActions'
+import { useLessonForm } from '@/hooks/useLessonForm'
+import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import styles from './page.module.scss'
 
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -19,13 +21,64 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const [isLoading, setIsLoading] = useState(true)
     const [deleteConfirm, setDeleteConfirm] = useState(false)
     const [cancelConfirm, setCancelConfirm] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+
+    const [students, setStudents] = useState<Student[]>([])
+    const [subjects, setSubjects] = useState<Subject[]>([])
+    const [studentStats, setStudentStats] = useState<any>(null)
 
     const { togglePaid, toggleCancel, deleteLesson, isLoading: isActionLoading } = useLessonActions(fetchLesson)
+
+    const fetchStudents = async () => {
+        try {
+            const res = await fetch('/api/students')
+            if (res.ok) setStudents(await res.json())
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const fetchSubjects = async () => {
+        try {
+            const res = await fetch('/api/subjects')
+            if (res.ok) setSubjects(await res.json())
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const {
+        formData,
+        setFormData,
+        isSubmitting,
+        error,
+        handleChange,
+        handleStudentChange,
+        handleCreateStudent,
+        handleCreateSubject,
+        handleSubmit,
+        loadLesson
+    } = useLessonForm(
+        () => {
+            setIsEditModalOpen(false)
+            fetchLesson()
+        },
+        fetchStudents,
+        fetchSubjects
+    )
 
     useEffect(() => {
         if (!id) return
         fetchLesson()
+        fetchStudents()
+        fetchSubjects()
     }, [id])
+
+    useEffect(() => {
+        if (lesson) {
+            fetchStudentStats(lesson.student.id)
+        }
+    }, [lesson])
 
     async function fetchLesson() {
         try {
@@ -43,6 +96,50 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
             router.push('/lessons')
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    async function fetchStudentStats(studentId: string) {
+        try {
+            const response = await fetch(`/api/students/${studentId}`)
+            if (response.ok) {
+                const data = await response.json()
+                setStudentStats(data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch student stats', error)
+        }
+    }
+
+    const handleEditClick = () => {
+        if (lesson) {
+            loadLesson(lesson)
+            setIsEditModalOpen(true)
+        }
+    }
+
+    const handleEditSubmit = async () => {
+        // We need to override handleSubmit to use PUT /api/lessons/[id] instead of POST /api/lessons
+        // But useLessonForm is designed for POST. 
+        // We can manually call the update API here using formData
+
+        try {
+            const response = await fetch(`/api/lessons/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            })
+
+            if (response.ok) {
+                toast.success('Занятие обновлено')
+                setIsEditModalOpen(false)
+                fetchLesson()
+            } else {
+                const data = await response.json()
+                toast.error(data.error || 'Ошибка при обновлении')
+            }
+        } catch (error) {
+            toast.error('Ошибка при обновлении')
         }
     }
 
@@ -102,7 +199,10 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                             )}
                         </div>
                         <p className={styles.lessonDate}>
-                            {format(lessonDate, 'dd MMMM yyyy, HH:mm', { locale: ru })}
+                            {isLessonPast
+                                ? `Занятие было ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
+                                : `Занятие запланировано на ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
+                            }
                         </p>
                     </div>
                     <div className={styles.lessonPriceContainer}>
@@ -116,10 +216,27 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                     </div>
                 </div>
 
+                {lesson.topic && (
+                    <div className={styles.topicSection}>
+                        <strong>Тема урока:</strong>
+                        <p>{lesson.topic}</p>
+                    </div>
+                )}
+
                 {lesson.notes && (
                     <div className={styles.notesSection}>
                         <strong>Заметки:</strong>
                         <p>{lesson.notes}</p>
+                    </div>
+                )}
+
+                {studentStats && (
+                    <div className={styles.statsSection}>
+                        <div className={styles.statItem}>
+                            <span className={styles.statLabel}>Всего занятий</span>
+                            <span className={styles.statValue}>{studentStats._count?.lessons || 0}</span>
+                        </div>
+                        {/* Add more stats if available */}
                     </div>
                 )}
 
@@ -157,7 +274,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
 
                     <button
                         className={`${styles.actionButton} ${styles.editButton}`}
-                        onClick={() => toast.info('Редактирование скоро будет доступно')}
+                        onClick={handleEditClick}
                         disabled={isLessonPast}
                     >
                         <EditIcon size={16} />
@@ -174,6 +291,23 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                     </button>
                 </div>
             </div>
+
+            <LessonFormModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                isEdit={true}
+                formData={formData}
+                setFormData={setFormData}
+                students={students}
+                subjects={subjects}
+                isSubmitting={isSubmitting}
+                error={error}
+                onSubmit={handleEditSubmit}
+                onStudentChange={handleStudentChange}
+                onCreateStudent={handleCreateStudent}
+                onCreateSubject={handleCreateSubject}
+                handleChange={handleChange}
+            />
 
             <ConfirmDialog
                 isOpen={deleteConfirm}
