@@ -601,7 +601,9 @@ export default function SubjectsPage() {
                     ) : (
                         <div className={styles.studentsList}>
                             {subjectStudents.map((student) => (
-                                <div key={student.id} className={styles.studentItem}>
+                                <div key={student.id} className={styles.studentItem}
+
+                                    onClick={() => router.push(`/students/${student.id}`)}>
                                     <div className={styles.studentInfo}>
                                         <div
                                             className={styles.studentAvatar}
@@ -648,12 +650,11 @@ export default function SubjectsPage() {
                 <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
                     {/* Mode selector */}
                     <div style={{ marginBottom: '16px' }}>
-                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                             <button
                                 type="button"
                                 onClick={() => setAddStudentMode('link')}
                                 style={{
-                                    flex: 1,
                                     padding: '8px 16px',
                                     borderRadius: '8px',
                                     border: '1px solid var(--border)',
@@ -669,7 +670,6 @@ export default function SubjectsPage() {
                                 type="button"
                                 onClick={() => setAddStudentMode('create')}
                                 style={{
-                                    flex: 1,
                                     padding: '8px 16px',
                                     borderRadius: '8px',
                                     border: '1px solid var(--border)',

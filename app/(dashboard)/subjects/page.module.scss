@@ -196,6 +196,7 @@
 }
 
 .studentItem {
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -206,6 +207,12 @@
 
     &:hover {
         background: var(--hover-bg);
+    }
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 }
 
@@ -307,6 +314,11 @@
     justify-content: flex-end;
     gap: 12px;
     width: 100%;
+
+    @media (max-width: 768px) {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 }
 
 

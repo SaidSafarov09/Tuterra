@@ -121,11 +121,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
-
-    @media (max-width: 768px) {
-        margin-bottom: 12px;
-    }
 }
 
 .statTitle {
@@ -135,6 +130,11 @@
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-bottom: 16px;
+
+    @media (max-width: 768px) {
+        margin-bottom: 12px;
+    }
 }
 
 .statValue {
@@ -195,6 +195,7 @@
     background: var(--surface);
     border-radius: 16px;
     border: 1px solid var(--border-light);
+
 }
 
 .emptyStateIcon {
