@@ -5,6 +5,7 @@ import * as Avatar from '@radix-ui/react-avatar'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { StatItem } from '@/components/ui/StatItem'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { statsApi } from '@/services/api'
 import { DashboardStats } from '@/types'
 import { declension, stringToColor, getInitials } from '@/lib/utils'
@@ -44,7 +45,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
     const memberSince = stats?.createdAt
         ? `Репетитор с ${memberSinceText}`
-        : 'Репетитор SkillTrack'
+        : <Skeleton width={120} height={16} />
 
     return (
         <Modal
@@ -70,10 +71,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                     </Avatar.Root>
                     <div className={styles.userInfo}>
                         <h3 className={styles.userName}>
-                            {session?.user?.name || 'Загрузка...'}
+                            {session?.user?.name || <Skeleton width={150} height={28} />}
                         </h3>
                         <p className={styles.userEmail}>
-                            {session?.user?.email || ''}
+                            {session?.user?.email || <Skeleton width={100} height={16} />}
                         </p>
                         <div className={styles.memberBadge}>
                             <span className={styles.activeDot}></span>
@@ -82,31 +83,32 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                     </div>
                 </div>
 
+                {/* Stats Grid */}
                 <div className={styles.statsGrid}>
                     <StatItem
-                        label={declension(stats?.studentsCount || 0, ['Ученик', 'Ученика', 'Учеников'])}
-                        value={stats?.studentsCount || 0}
+                        label={stats ? declension(stats.studentsCount, ['Ученик', 'Ученика', 'Учеников']) : 'Ученики'}
+                        value={stats ? stats.studentsCount : <Skeleton width={40} height={24} />}
                         icon={StudentsIcon}
                         href="/students"
                         onClick={onClose}
                     />
                     <StatItem
-                        label={declension(stats?.totalLessons || 0, ['Занятие', 'Занятия', 'Занятий'])}
-                        value={stats?.totalLessons || 0}
+                        label={stats ? declension(stats.totalLessons || 0, ['Занятие', 'Занятия', 'Занятий']) : 'Занятия'}
+                        value={stats ? stats.totalLessons || 0 : <Skeleton width={40} height={24} />}
                         icon={LessonsIcon}
                         href="/lessons"
                         onClick={onClose}
                     />
                     <StatItem
                         label="Доход за месяц"
-                        value={`${stats?.monthlyIncome?.toLocaleString() || 0} ₽`}
+                        value={stats ? `${stats.monthlyIncome?.toLocaleString() || 0} ₽` : <Skeleton width={80} height={24} />}
                         icon={PaymentsIcon}
                         href="/income"
                         onClick={onClose}
                     />
                     <StatItem
-                        label={declension(stats?.subjectsCount || 0, ['Предмет', 'Предмета', 'Предметов'])}
-                        value={stats?.subjectsCount || 0}
+                        label={stats ? declension(stats.subjectsCount || 0, ['Предмет', 'Предмета', 'Предметов']) : 'Предметы'}
+                        value={stats ? stats.subjectsCount || 0 : <Skeleton width={40} height={24} />}
                         icon={SubjectsIcon}
                         href="/subjects"
                         onClick={onClose}

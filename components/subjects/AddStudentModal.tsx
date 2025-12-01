@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -28,7 +28,7 @@ export function AddStudentModal({
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (isOpen) {
             setMode('link')
             setSelectedStudentId('')
