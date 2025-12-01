@@ -18,17 +18,14 @@ import { toast } from 'sonner'
 import styles from './page.module.scss'
 
 export default function CalendarPage() {
-    // State
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [lessons, setLessons] = useState<Lesson[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
-    // Modal State
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
-    // Data Fetching
     useEffect(() => {
         fetchLessons()
     }, [])
@@ -49,7 +46,6 @@ export default function CalendarPage() {
         }
     }
 
-    // Optimistic update functions
     const updateLessonOptimistic = (lessonId: string, updates: Partial<Lesson>) => {
         setLessons(prev => prev.map(lesson =>
             lesson.id === lessonId ? { ...lesson, ...updates } : lesson
@@ -57,7 +53,6 @@ export default function CalendarPage() {
     }
 
     const togglePaid = async (lesson: Lesson) => {
-        // Optimistic update
         const newIsPaid = !lesson.isPaid
         updateLessonOptimistic(lesson.id, { isPaid: newIsPaid })
 
@@ -73,19 +68,16 @@ export default function CalendarPage() {
                     newIsPaid ? 'Отмечено как оплаченное' : 'Отмечено как неоплаченное'
                 )
             } else {
-                // Rollback on error
                 updateLessonOptimistic(lesson.id, { isPaid: !newIsPaid })
                 toast.error('Не удалось обновить статус оплаты')
             }
         } catch (error) {
-            // Rollback on error
             updateLessonOptimistic(lesson.id, { isPaid: !newIsPaid })
             toast.error('Произошла ошибка')
         }
     }
 
     const toggleCancel = async (lesson: Lesson) => {
-        // Optimistic update
         const newIsCanceled = !lesson.isCanceled
         updateLessonOptimistic(lesson.id, { isCanceled: newIsCanceled })
 
@@ -101,18 +93,15 @@ export default function CalendarPage() {
                     newIsCanceled ? 'Занятие отменено' : 'Занятие восстановлено'
                 )
             } else {
-                // Rollback on error
                 updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
                 toast.error('Не удалось обновить статус')
             }
         } catch (error) {
-            // Rollback on error
             updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
             toast.error('Произошла ошибка')
         }
     }
 
-    // Handlers
     const handlePreviousMonth = () => setCurrentMonth(prev => subMonths(prev, 1))
     const handleNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1))
 
@@ -133,7 +122,6 @@ export default function CalendarPage() {
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false)
-        // Re-open details modal if we have a selected date
         if (selectedDate) {
             setIsDetailsModalOpen(true)
         }
@@ -147,7 +135,6 @@ export default function CalendarPage() {
         }
     }
 
-    // Derived Data
     const selectedDayData: DayData | null = selectedDate
         ? calculateDayEarnings(lessons, selectedDate)
         : null
@@ -176,7 +163,6 @@ export default function CalendarPage() {
                 />
             </div>
 
-            {/* Details Modal */}
             <Modal
                 isOpen={isDetailsModalOpen}
                 onClose={handleCloseDetails}
@@ -192,11 +178,10 @@ export default function CalendarPage() {
                 />
             </Modal>
 
-            {/* Create Lesson Modal */}
             <Modal
                 isOpen={isCreateModalOpen}
                 onClose={handleCloseCreateModal}
-                title="Новое занятие"
+                title={selectedDate ? `Новое занятие на ${format(selectedDate, 'd MMMM', { locale: ru })}` : 'Новое занятие'}
             >
                 {selectedDate && (
                     <CalendarLessonForm

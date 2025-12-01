@@ -14,6 +14,7 @@ interface DateTimePickerProps {
     minDate?: Date
     maxDate?: Date
     showTime?: boolean
+    timeOnly?: boolean // Показывать только выбор времени, без календаря
     disabled?: boolean
     required?: boolean
     error?: string
@@ -28,6 +29,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
     minDate,
     maxDate,
     showTime = true,
+    timeOnly = false,
     disabled = false,
     required = false,
     error,
@@ -129,18 +131,18 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 onClick={() => !disabled && setIsOpen(!isOpen)}
             >
                 <span className={styles.icon}>
-                    <CalendarIcon size={18} />
+                    {timeOnly ? <ClockIcon size={18} /> : <CalendarIcon size={18} />}
                 </span>
                 <span className={value ? styles.value : styles.placeholder}>
                     {value
                         ? format(
                             value,
-                            showTime ? 'dd MMMM yyyy, HH:mm' : 'dd MMMM yyyy',
+                            timeOnly ? 'HH:mm' : (showTime ? 'dd MMMM yyyy, HH:mm' : 'dd MMMM yyyy'),
                             { locale: ru }
                         )
                         : placeholder}
                 </span>
-                {showTime && (
+                {showTime && !timeOnly && (
                     <span className={styles.icon}>
                         <ClockIcon size={18} />
                     </span>
@@ -148,49 +150,53 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
             </div>
 
             {isOpen && (
-                <div className={`${styles.picker} ${dropDirection === 'center' ? styles.pickerCenter : ''}`}>
-                    <div className={styles.header}>
-                        <button
-                            className={styles.navButton}
-                            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                        >
-                            <ArrowLeftIcon size={16} />
-                        </button>
-                        <span className={styles.monthYear}>
-                            {format(currentMonth, 'LLLL yyyy', { locale: ru })}
-                        </span>
-                        <button
-                            className={styles.navButton}
-                            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                        >
-                            <ArrowRightIcon size={16} />
-                        </button>
-                    </div>
-
-                    <div className={styles.weekdays}>
-                        {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day) => (
-                            <div key={day} className={styles.weekday}>
-                                {day}
+                <div className={`${styles.picker} ${dropDirection === 'center' ? styles.pickerCenter : ''} ${timeOnly ? styles.timeOnlyPicker : ''}`}>
+                    {!timeOnly && (
+                        <>
+                            <div className={styles.header}>
+                                <button
+                                    className={styles.navButton}
+                                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                                >
+                                    <ArrowLeftIcon size={16} />
+                                </button>
+                                <span className={styles.monthYear}>
+                                    {format(currentMonth, 'LLLL yyyy', { locale: ru })}
+                                </span>
+                                <button
+                                    className={styles.navButton}
+                                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                                >
+                                    <ArrowRightIcon size={16} />
+                                </button>
                             </div>
-                        ))}
-                    </div>
 
-                    <div className={styles.days}>
-                        {calendarDays.map((day, index) => (
-                            <button
-                                key={index}
-                                className={`${styles.day} ${!isSameMonth(day, currentMonth) ? styles.otherMonth : ''
-                                    } ${value && isSameDay(day, value) ? styles.selected : ''} ${isToday(day) ? styles.today : ''
-                                    } ${isDayDisabled(day) ? styles.disabled : ''}`}
-                                onClick={() => !isDayDisabled(day) && handleDayClick(day)}
-                                disabled={isDayDisabled(day)}
-                            >
-                                {format(day, 'd')}
-                            </button>
-                        ))}
-                    </div>
+                            <div className={styles.weekdays}>
+                                {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day) => (
+                                    <div key={day} className={styles.weekday}>
+                                        {day}
+                                    </div>
+                                ))}
+                            </div>
 
-                    {showTime && (
+                            <div className={styles.days}>
+                                {calendarDays.map((day, index) => (
+                                    <button
+                                        key={index}
+                                        className={`${styles.day} ${!isSameMonth(day, currentMonth) ? styles.otherMonth : ''
+                                            } ${value && isSameDay(day, value) ? styles.selected : ''} ${isToday(day) ? styles.today : ''
+                                            } ${isDayDisabled(day) ? styles.disabled : ''}`}
+                                        onClick={() => !isDayDisabled(day) && handleDayClick(day)}
+                                        disabled={isDayDisabled(day)}
+                                    >
+                                        {format(day, 'd')}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {(showTime || timeOnly) && (
                         <div className={styles.timePicker}>
                             <div className={styles.timeLabel}>Время</div>
                             <div className={styles.timeInputs}>

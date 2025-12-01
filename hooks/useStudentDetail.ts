@@ -5,21 +5,17 @@ import { Student, Subject } from '@/types'
 
 export function useStudentDetail(studentId: string) {
     const router = useRouter()
-
-    // Data State
     const [student, setStudent] = useState<Student | null>(null)
     const [allSubjects, setAllSubjects] = useState<Subject[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    // Modal States
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false)
     const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
     const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false)
     const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
 
-    // Form States
     const [editFormData, setEditFormData] = useState({
         name: '',
         contact: '',
@@ -35,12 +31,10 @@ export function useStudentDetail(studentId: string) {
         notes: '',
     })
 
-    // Confirmation States
     const [deleteStudentConfirm, setDeleteStudentConfirm] = useState(false)
     const [deleteSubjectConfirm, setDeleteSubjectConfirm] = useState<string | null>(null)
     const [deleteLessonConfirm, setDeleteLessonConfirm] = useState<string | null>(null)
 
-    // Fetch Data
     const fetchStudent = async () => {
         try {
             const response = await fetch(`/api/students/${studentId}`)
@@ -77,7 +71,6 @@ export function useStudentDetail(studentId: string) {
         }
     }, [studentId])
 
-    // Actions
     const handleDeleteStudent = async () => {
         try {
             const response = await fetch(`/api/students/${studentId}`, {
@@ -368,7 +361,6 @@ export function useStudentDetail(studentId: string) {
         }
     }
 
-    // Helper to open modals with correct state
     const openEditModal = () => {
         if (!student) return
         setEditFormData({

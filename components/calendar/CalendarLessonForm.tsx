@@ -72,10 +72,10 @@ export function CalendarLessonForm({ initialDate, onSuccess, onCancel }: Calenda
 
             <div className={styles.formGroup}>
                 <DateTimePicker
-                    label="Дата и время"
+                    label="Время занятия"
                     value={formData.date}
                     onChange={(date) => setFormData(prev => ({ ...prev, date: date || new Date() }))}
-                    showTime
+                    timeOnly
                     required
                 />
             </div>
