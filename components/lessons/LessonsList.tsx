@@ -7,6 +7,7 @@ import styles from '../../app/(dashboard)/lessons/page.module.scss'
 interface LessonsListProps {
     lessons: Lesson[]
     isLoading: boolean
+    isRefreshing?: boolean
     onTogglePaid: (lesson: Lesson) => void
     onToggleCancel: (lesson: Lesson) => void
     onEdit: (lesson: Lesson) => void
@@ -16,6 +17,7 @@ interface LessonsListProps {
 export function LessonsList({
     lessons,
     isLoading,
+    isRefreshing = false,
     onTogglePaid,
     onToggleCancel,
     onEdit,
@@ -35,7 +37,7 @@ export function LessonsList({
     }
 
     return (
-        <div className={styles.lessonsList}>
+        <div className={`${styles.lessonsList} ${isRefreshing ? styles.refreshing : ''}`}>
             {lessons.map((lesson) => (
                 <LessonCard
                     key={lesson.id}

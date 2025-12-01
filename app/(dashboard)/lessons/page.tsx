@@ -11,15 +11,11 @@ import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { useFetch } from '@/hooks/useFetch'
+import { useLessonsByTab } from '@/hooks/useLessonsByTab'
 import { Lesson, Student, Subject, LessonFilter } from '@/types'
 import styles from './page.module.scss'
+import { LESSON_TABS } from '@/constants'
 
-const TABS = [
-    { id: 'upcoming', label: 'Предстоящие' },
-    { id: 'past', label: 'Прошедшие' },
-    { id: 'unpaid', label: 'Неоплаченные' },
-    { id: 'canceled', label: 'Отмененные' },
-]
 
 function LessonsContent() {
     const router = useRouter()
@@ -34,12 +30,13 @@ function LessonsContent() {
         lessonId: null,
     })
 
-    // Data Fetching
+    // Data Fetching with caching
     const {
-        data: lessons = [],
+        lessons,
         isLoading: isLessonsLoading,
+        isRefreshing: isLessonsRefreshing,
         refetch: refetchLessons
-    } = useFetch<Lesson[]>(`/api/lessons?filter=${activeTab}`, [activeTab])
+    } = useLessonsByTab(activeTab)
 
     const {
         data: students = [],
@@ -130,7 +127,7 @@ function LessonsContent() {
             </div>
 
             <TabNav
-                tabs={TABS}
+                tabs={LESSON_TABS}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 className={styles.tabs}
@@ -139,6 +136,7 @@ function LessonsContent() {
             <LessonsList
                 lessons={lessons || []}
                 isLoading={isLessonsLoading}
+                isRefreshing={isLessonsRefreshing}
                 onTogglePaid={togglePaid}
                 onToggleCancel={toggleCancel}
                 onEdit={handleEditLesson}
