@@ -22,6 +22,10 @@
     max-height: 90vh;
     overflow-y: auto;
     animation: modalAppear 0.2s ease;
+
+    @media (max-width: 768px) {
+        border-radius: 18px;
+    }
 }
 
 .modalLarge {
@@ -45,7 +49,19 @@
     border-bottom: 1px solid var(--border-light);
 
     @media (max-width: 768px) {
+        display: flex;
+        justify-content: space-between;
         padding: 18px;
+    }
+
+    .closeButton {
+        cursor: pointer;
+        color: var(--text-secondary);
+        display: none;
+
+        @media (max-width: 768px) {
+            display: flex;
+        }
     }
 }
 

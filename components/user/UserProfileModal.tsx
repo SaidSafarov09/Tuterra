@@ -19,6 +19,7 @@ import {
     LogoutIcon,
 } from '@/components/icons/Icons'
 import styles from './UserProfileModal.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface UserProfileModalProps {
     isOpen: boolean
@@ -26,6 +27,7 @@ interface UserProfileModalProps {
 }
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
+    const isMobile = useMediaQuery('(max-width: 768px)')
     const { data: session } = useSession()
     const [stats, setStats] = useState<DashboardStats | null>(null)
 
@@ -54,36 +56,36 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
             title="Профиль преподавателя"
         >
             <div className={styles.container}>
-                {/* Header Card */}
-                <div className={styles.headerCard}>
-                    <Avatar.Root className={styles.userAvatar} style={{ backgroundColor: avatarBgColor }}>
-                        <Avatar.Image
-                            className={styles.avatarImage}
-                            src={session?.user?.image || undefined}
-                            alt={session?.user?.name || 'User'}
-                        />
-                        <Avatar.Fallback
-                            className={styles.avatarFallback}
-                            style={{ backgroundColor: avatarBgColor, color: 'white' }}
-                        >
-                            {getInitials(session?.user?.name || '')}
-                        </Avatar.Fallback>
-                    </Avatar.Root>
-                    <div className={styles.userInfo}>
-                        <h3 className={styles.userName}>
-                            {session?.user?.name || <Skeleton width={150} height={28} />}
-                        </h3>
-                        <p className={styles.userEmail}>
-                            {session?.user?.email || <Skeleton width={100} height={16} />}
-                        </p>
-                        <div className={styles.memberBadge}>
-                            <span className={styles.activeDot}></span>
-                            {memberSince}
+                <div className={styles.header}>
+                    <div className={styles.headerCard}>
+                        <Avatar.Root className={styles.userAvatar} style={{ backgroundColor: avatarBgColor }}>
+                            <Avatar.Image
+                                className={styles.avatarImage}
+                                src={session?.user?.image || undefined}
+                                alt={session?.user?.name || 'User'}
+                            />
+                            <Avatar.Fallback
+                                className={styles.avatarFallback}
+                                style={{ backgroundColor: avatarBgColor, color: 'white' }}
+                            >
+                                {getInitials(session?.user?.name || '')}
+                            </Avatar.Fallback>
+                        </Avatar.Root>
+                        <div className={styles.userInfo}>
+                            <h3 className={styles.userName}>
+                                {session?.user?.name || <Skeleton width={150} height={28} />}
+                            </h3>
+                            <p className={styles.userEmail}>
+                                {session?.user?.email || <Skeleton width={100} height={16} />}
+                            </p>
                         </div>
+                    </div>
+                    <div className={styles.memberBadge}>
+                        <span className={styles.activeDot}></span>
+                        {memberSince}
                     </div>
                 </div>
 
-                {/* Stats Grid */}
                 <div className={styles.statsGrid}>
                     <StatItem
                         label={stats ? declension(stats.studentsCount, ['Ученик', 'Ученика', 'Учеников']) : 'Ученики'}
@@ -100,7 +102,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                         onClick={onClose}
                     />
                     <StatItem
-                        label="Доход за месяц"
+                        label="Этот месяц"
                         value={stats ? `${stats.monthlyIncome?.toLocaleString() || 0} ₽` : <Skeleton width={80} height={24} />}
                         icon={PaymentsIcon}
                         href="/income"
@@ -118,8 +120,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                 <div className={styles.footer}>
                     <Link href="/settings" onClick={onClose}>
                         <Button variant="secondary" size="small">
-                            <SettingsIcon size={16} style={{ marginRight: '8px' }} />
-                            Настройки
+                            <SettingsIcon size={16} style={{ marginRight: isMobile ? "0" : "8px" }} />
+                            {isMobile ? '' : 'Настройки'}
                         </Button>
                     </Link>
                     <Button
@@ -128,7 +130,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                         style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
                         <LogoutIcon size={18} />
-                        Выйти из аккаунта
+                        {isMobile ? 'Выйти' : 'Выйти из аккаунта'}
                     </Button>
                 </div>
             </div>

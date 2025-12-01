@@ -41,6 +41,10 @@
         background: var(--border-light);
         cursor: not-allowed;
     }
+
+    @media (max-width: 768px) {
+        padding: 12px;
+    }
 }
 
 .textarea {

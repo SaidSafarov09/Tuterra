@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import styles from './Modal.module.scss'
 import { Button } from './Button'
+import { XIcon } from 'lucide-react'
 
 interface ModalProps {
     isOpen: boolean
@@ -44,6 +45,9 @@ export const Modal: React.FC<ModalProps> = ({
             <div className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''}`} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.header}>
                     <h2 className={styles.title}>{title}</h2>
+                    <div className={styles.closeButton} onClick={onClose}>
+                        <XIcon size={24} />
+                    </div>
                 </div>
                 <div className={styles.content}>{children}</div>
                 {footer && <div className={styles.footer}>{footer}</div>}
