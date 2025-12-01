@@ -30,7 +30,7 @@ export default function IncomePage() {
             const response = await fetch(`/api/income?date=${currentDate.toISOString()}`)
             if (response.ok) {
                 const data = await response.json()
-                console.log('Income API Response:', data) // Для отладки
+                console.log('Income API Response:', data)
                 setMonthlyData(data.monthlyData || [])
                 setCurrentMonthIncome(data.currentMonthIncome || 0)
                 setPreviousMonthIncome(data.previousMonthIncome || 0)
@@ -70,8 +70,7 @@ export default function IncomePage() {
 
     const isGrowth = percentageChange >= 0
     const isNextMonthDisabled = addMonths(currentDate, 1) > new Date()
-    // Не позволяем переходить раньше ноября 2025 (когда приложение было создано)
-    const isPreviousMonthDisabled = subMonths(currentDate, 1) < new Date(2025, 10, 1) // 10 = ноябрь (месяцы с 0)
+    const isPreviousMonthDisabled = subMonths(currentDate, 1) < new Date(2025, 10, 1)
 
     if (isLoading) {
         return <div className={styles.loading}>Загрузка...</div>

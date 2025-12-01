@@ -101,9 +101,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     }
 
     const handleEditSubmit = async () => {
-        // We need to override handleSubmit to use PUT /api/lessons/[id] instead of POST /api/lessons
-        // But useLessonForm is designed for POST. 
-        // We can manually call the update API here using formData
 
         try {
             const response = await fetch(`/api/lessons/${id}`, {

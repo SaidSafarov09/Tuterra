@@ -14,6 +14,8 @@ import { CalendarLessonForm } from '@/components/calendar/CalendarLessonForm'
 import { calculateDayEarnings } from '@/lib/lessonUtils'
 import { Lesson, DayData } from '@/types'
 import { toast } from 'sonner'
+import { lessonsApi } from '@/services/api'
+import { LESSON_MESSAGES } from '@/constants/messages'
 
 import styles from './page.module.scss'
 
@@ -33,14 +35,11 @@ export default function CalendarPage() {
     const fetchLessons = async () => {
         setIsLoading(true)
         try {
-            const response = await fetch('/api/lessons')
-            if (response.ok) {
-                const data = await response.json()
-                setLessons(data)
-            }
+            const data = await lessonsApi.getAll()
+            setLessons(data)
         } catch (error) {
             console.error('Failed to fetch lessons:', error)
-            toast.error('Не удалось загрузить занятия')
+            toast.error(LESSON_MESSAGES.FETCH_ERROR)
         } finally {
             setIsLoading(false)
         }
@@ -57,23 +56,13 @@ export default function CalendarPage() {
         updateLessonOptimistic(lesson.id, { isPaid: newIsPaid })
 
         try {
-            const response = await fetch(`/api/lessons/${lesson.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isPaid: newIsPaid }),
-            })
-
-            if (response.ok) {
-                toast.success(
-                    newIsPaid ? 'Отмечено как оплаченное' : 'Отмечено как неоплаченное'
-                )
-            } else {
-                updateLessonOptimistic(lesson.id, { isPaid: !newIsPaid })
-                toast.error('Не удалось обновить статус оплаты')
-            }
+            await lessonsApi.update(lesson.id, { isPaid: newIsPaid })
+            toast.success(
+                newIsPaid ? LESSON_MESSAGES.MARKED_PAID : LESSON_MESSAGES.MARKED_UNPAID
+            )
         } catch (error) {
             updateLessonOptimistic(lesson.id, { isPaid: !newIsPaid })
-            toast.error('Произошла ошибка')
+            toast.error(LESSON_MESSAGES.PAYMENT_STATUS_ERROR)
         }
     }
 
@@ -82,23 +71,13 @@ export default function CalendarPage() {
         updateLessonOptimistic(lesson.id, { isCanceled: newIsCanceled })
 
         try {
-            const response = await fetch(`/api/lessons/${lesson.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isCanceled: newIsCanceled }),
-            })
-
-            if (response.ok) {
-                toast.success(
-                    newIsCanceled ? 'Занятие отменено' : 'Занятие восстановлено'
-                )
-            } else {
-                updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
-                toast.error('Не удалось обновить статус')
-            }
+            await lessonsApi.update(lesson.id, { isCanceled: newIsCanceled })
+            toast.success(
+                newIsCanceled ? LESSON_MESSAGES.CANCELED : LESSON_MESSAGES.RESTORED
+            )
         } catch (error) {
             updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
-            toast.error('Произошла ошибка')
+            toast.error(LESSON_MESSAGES.CANCEL_STATUS_ERROR)
         }
     }
 

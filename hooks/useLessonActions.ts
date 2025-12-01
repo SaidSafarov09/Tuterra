@@ -1,32 +1,23 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Lesson } from '@/types'
+import { lessonsApi } from '@/services/api'
+import { LESSON_MESSAGES, GENERAL_MESSAGES } from '@/constants/messages'
 
-/**
- * Hook for managing lesson operations (toggle paid, cancel, delete)
- */
+
 export function useLessonActions(onUpdate?: () => void) {
     const [isLoading, setIsLoading] = useState(false)
 
     const togglePaid = async (lesson: Lesson) => {
         setIsLoading(true)
         try {
-            const response = await fetch(`/api/lessons/${lesson.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isPaid: !lesson.isPaid }),
-            })
-
-            if (response.ok) {
-                toast.success(
-                    !lesson.isPaid ? 'Отмечено как оплаченное' : 'Отмечено как неоплаченное'
-                )
-                onUpdate?.()
-            } else {
-                toast.error('Не удалось обновить статус оплаты')
-            }
+            await lessonsApi.update(lesson.id, { isPaid: !lesson.isPaid })
+            toast.success(
+                !lesson.isPaid ? LESSON_MESSAGES.MARKED_PAID : LESSON_MESSAGES.MARKED_UNPAID
+            )
+            onUpdate?.()
         } catch (error) {
-            toast.error('Произошла ошибка')
+            toast.error(LESSON_MESSAGES.PAYMENT_STATUS_ERROR)
         } finally {
             setIsLoading(false)
         }
@@ -35,22 +26,13 @@ export function useLessonActions(onUpdate?: () => void) {
     const toggleCancel = async (lesson: Lesson) => {
         setIsLoading(true)
         try {
-            const response = await fetch(`/api/lessons/${lesson.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isCanceled: !lesson.isCanceled }),
-            })
-
-            if (response.ok) {
-                toast.success(
-                    !lesson.isCanceled ? 'Занятие отменено' : 'Занятие восстановлено'
-                )
-                onUpdate?.()
-            } else {
-                toast.error('Не удалось обновить статус')
-            }
+            await lessonsApi.update(lesson.id, { isCanceled: !lesson.isCanceled })
+            toast.success(
+                !lesson.isCanceled ? LESSON_MESSAGES.CANCELED : LESSON_MESSAGES.RESTORED
+            )
+            onUpdate?.()
         } catch (error) {
-            toast.error('Произошла ошибка')
+            toast.error(LESSON_MESSAGES.CANCEL_STATUS_ERROR)
         } finally {
             setIsLoading(false)
         }
@@ -59,18 +41,11 @@ export function useLessonActions(onUpdate?: () => void) {
     const deleteLesson = async (lessonId: string) => {
         setIsLoading(true)
         try {
-            const response = await fetch(`/api/lessons/${lessonId}`, {
-                method: 'DELETE',
-            })
-
-            if (response.ok) {
-                toast.success('Занятие удалено')
-                onUpdate?.()
-            } else {
-                toast.error('Не удалось удалить занятие')
-            }
+            await lessonsApi.delete(lessonId)
+            toast.success(LESSON_MESSAGES.DELETED)
+            onUpdate?.()
         } catch (error) {
-            toast.error('Произошла ошибка при удалении')
+            toast.error(LESSON_MESSAGES.DELETE_ERROR)
         } finally {
             setIsLoading(false)
         }

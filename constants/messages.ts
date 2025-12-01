@@ -1,0 +1,75 @@
+/**
+ * Centralized messages for toast notifications
+ */
+
+// Lesson messages
+export const LESSON_MESSAGES = {
+    CREATED: 'Занятие успешно создано',
+    UPDATED: 'Занятие обновлено',
+    DELETED: 'Занятие удалено',
+    CANCELED: 'Занятие отменено',
+    RESTORED: 'Занятие восстановлено',
+    MARKED_PAID: 'Отмечено как оплаченное',
+    MARKED_UNPAID: 'Отмечено как неоплаченное',
+    CREATE_ERROR: 'Не удалось создать занятие',
+    UPDATE_ERROR: 'Не удалось обновить занятие',
+    DELETE_ERROR: 'Не удалось удалить занятие',
+    FETCH_ERROR: 'Не удалось загрузить занятия',
+    PAYMENT_STATUS_ERROR: 'Не удалось обновить статус оплаты',
+    CANCEL_STATUS_ERROR: 'Не удалось обновить статус',
+} as const
+
+// Student messages
+export const STUDENT_MESSAGES = {
+    CREATED: 'Ученик успешно создан',
+    UPDATED: 'Данные ученика обновлены',
+    DELETED: 'Ученик удалён',
+    CREATE_ERROR: 'Не удалось создать ученика',
+    UPDATE_ERROR: 'Не удалось обновить данные',
+    DELETE_ERROR: 'Не удалось удалить ученика',
+    FETCH_ERROR: 'Не удалось загрузить учеников',
+    LINKED_TO_SUBJECT: 'Ученик успешно добавлен к предмету',
+    UNLINKED_FROM_SUBJECT: 'Ученик отвязан от предмета',
+} as const
+
+// Subject messages
+export const SUBJECT_MESSAGES = {
+    CREATED: 'Предмет успешно добавлен',
+    UPDATED: 'Предмет обновлён',
+    DELETED: 'Предмет успешно удалён',
+    DELETED_WITH_LESSONS: (count: number) =>
+        `Предмет успешно удалён. Также удалено занятий: ${count}`,
+    CREATE_ERROR: 'Не удалось создать предмет',
+    UPDATE_ERROR: 'Не удалось обновить предмет',
+    DELETE_ERROR: 'Не удалось удалить предмет',
+    FETCH_ERROR: 'Не удалось загрузить предметы',
+} as const
+
+// General messages
+export const GENERAL_MESSAGES = {
+    GENERIC_ERROR: 'Произошла ошибка',
+    NETWORK_ERROR: 'Ошибка сети',
+    LOADING: 'Загрузка...',
+    SAVED: 'Сохранено',
+    VALIDATION_ERROR: 'Заполните все обязательные поля',
+} as const
+
+// Form validation messages
+export const VALIDATION_MESSAGES = {
+    REQUIRED_FIELD: 'Это поле обязательно для заполнения',
+    INVALID_EMAIL: 'Неверный формат email',
+    INVALID_PHONE: 'Неверный формат телефона',
+    MIN_LENGTH: (min: number) => `Минимум ${min} символов`,
+    MAX_LENGTH: (max: number) => `Максимум ${max} символов`,
+    ENTER_STUDENT_NAME: 'Введите имя ученика',
+    ENTER_SUBJECT_NAME: 'Введите название предмета',
+    SELECT_STUDENT: 'Выберите ученика',
+    SELECT_SUBJECT: 'Выберите предмет',
+    PAST_DATE_ERROR: 'Нельзя создавать занятия в прошедшем времени',
+} as const
+
+// Success messages with dynamic content
+export const createStudentCreatedMessage = (name: string) => `Ученик "${name}" создан`
+export const createSubjectCreatedMessage = (name: string) => `Предмет "${name}" создан`
+export const createStudentLinkedMessage = (studentName: string) =>
+    `Ученик "${studentName}" добавлен к предмету`

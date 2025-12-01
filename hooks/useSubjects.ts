@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Subject } from '@/types'
+import { subjectsApi } from '@/services/api'
+import { SUBJECT_MESSAGES } from '@/constants/messages'
 
 export function useSubjects() {
     const [subjects, setSubjects] = useState<Subject[]>([])
@@ -9,18 +11,11 @@ export function useSubjects() {
 
     const fetchSubjects = async () => {
         try {
-            const response = await fetch('/api/subjects')
-            if (response.ok) {
-                const data = await response.json()
-                setSubjects(data)
-                setError(null)
-            } else {
-                const errorMessage = 'Не удалось загрузить предметы'
-                setError(errorMessage)
-                toast.error(errorMessage)
-            }
-        } catch (err) {
-            const errorMessage = 'Произошла ошибка при загрузке предметов'
+            const data = await subjectsApi.getAll()
+            setSubjects(data)
+            setError(null)
+        } catch (err: any) {
+            const errorMessage = SUBJECT_MESSAGES.FETCH_ERROR
             setError(errorMessage)
             toast.error(errorMessage)
         } finally {
@@ -30,74 +25,42 @@ export function useSubjects() {
 
     const createSubject = async (data: { name: string; color: string }) => {
         try {
-            const response = await fetch('/api/subjects', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            })
-
-            if (response.ok) {
-                await fetchSubjects()
-                toast.success('Предмет успешно добавлен')
-                return { success: true }
-            } else {
-                const result = await response.json()
-                toast.error(result.error || 'Произошла ошибка')
-                return { success: false, error: result.error }
-            }
-        } catch (err) {
-            toast.error('Произошла ошибка при создании предмета')
-            return { success: false, error: 'Произошла ошибка при создании предмета' }
+            await subjectsApi.create(data)
+            await fetchSubjects()
+            toast.success(SUBJECT_MESSAGES.CREATED)
+            return { success: true }
+        } catch (err: any) {
+            const errorMessage = err.message || SUBJECT_MESSAGES.CREATE_ERROR
+            toast.error(errorMessage)
+            return { success: false, error: errorMessage }
         }
     }
 
     const updateSubject = async (id: string, data: { name: string; color: string }) => {
         try {
-            const response = await fetch(`/api/subjects/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            })
-
-            if (response.ok) {
-                await fetchSubjects()
-                toast.success('Предмет обновлён')
-                return { success: true }
-            } else {
-                toast.error('Не удалось обновить предмет')
-                return { success: false }
-            }
+            await subjectsApi.update(id, data)
+            await fetchSubjects()
+            toast.success(SUBJECT_MESSAGES.UPDATED)
+            return { success: true }
         } catch (err) {
-            toast.error('Произошла ошибка')
+            toast.error(SUBJECT_MESSAGES.UPDATE_ERROR)
             return { success: false }
         }
     }
 
     const deleteSubject = async (id: string) => {
         try {
-            const response = await fetch(`/api/subjects/${id}`, {
-                method: 'DELETE',
-            })
+            const data = await subjectsApi.delete(id)
+            await fetchSubjects()
 
-            if (response.ok) {
-                const data = await response.json()
-                await fetchSubjects()
-
-                if (data.deletedLessonsCount > 0) {
-                    toast.success(
-                        `Предмет успешно удалён. Также удалено занятий: ${data.deletedLessonsCount}`,
-                        { duration: 4000 }
-                    )
-                } else {
-                    toast.success('Предмет успешно удалён')
-                }
-                return { success: true }
+            if (data.deletedLessonsCount && data.deletedLessonsCount > 0) {
+                toast.success(SUBJECT_MESSAGES.DELETED_WITH_LESSONS(data.deletedLessonsCount), { duration: 4000 })
             } else {
-                toast.error('Не удалось удалить предмет')
-                return { success: false }
+                toast.success(SUBJECT_MESSAGES.DELETED)
             }
+            return { success: true }
         } catch (err) {
-            toast.error('Произошла ошибка при удалении')
+            toast.error(SUBJECT_MESSAGES.DELETE_ERROR)
             return { success: false }
         }
     }
