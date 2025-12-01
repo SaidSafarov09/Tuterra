@@ -10,6 +10,7 @@ import { SubjectFormModal } from '@/components/subjects/SubjectFormModal'
 import { SubjectDetailsModal } from '@/components/subjects/SubjectDetailsModal'
 import { AddStudentModal } from '@/components/subjects/AddStudentModal'
 import { CreateLessonModal } from '@/components/subjects/CreateLessonModal'
+import { SubjectCardSkeleton } from '@/components/skeletons'
 import { useSubjects } from '@/hooks/useSubjects'
 import { useSubjectDetail } from '@/hooks/useSubjectDetail'
 import { useFetch } from '@/hooks/useFetch'
@@ -67,7 +68,7 @@ export default function SubjectsPage() {
         if (result.success && selectedSubject?.id === editSubjectData.id) {
             setSelectedSubject(prev => prev ? { ...prev, name: data.name, color: data.color } : null)
         }
-
+        setIsEditModalOpen(false)
         return result
     }
 
@@ -77,8 +78,13 @@ export default function SubjectsPage() {
 
     const confirmDelete = async () => {
         if (!deleteConfirm.subject) return
-        await deleteSubject(deleteConfirm.subject.id)
-        setDeleteConfirm({ isOpen: false, subject: null })
+        const result = await deleteSubject(deleteConfirm.subject.id)
+        if (result.success) {
+            setDeleteConfirm({ isOpen: false, subject: null })
+            if (selectedSubject?.id === deleteConfirm.subject.id) {
+                handleCloseDetailsModal()
+            }
+        }
     }
 
     const handleAddStudent = async (mode: 'create' | 'link', data: any) => {
@@ -107,10 +113,6 @@ export default function SubjectsPage() {
         return await createLesson(selectedSubject.id, data)
     }
 
-    if (isLoading) {
-        return <div className={styles.loading}>Загрузка...</div>
-    }
-
     return (
         <div>
             <div className={styles.header}>
@@ -124,7 +126,16 @@ export default function SubjectsPage() {
                 </Button>
             </div>
 
-            {subjects.length === 0 ? (
+            {isLoading ? (
+                <div className={styles.subjectsGrid}>
+                    <SubjectCardSkeleton />
+                    <SubjectCardSkeleton />
+                    <SubjectCardSkeleton />
+                    <SubjectCardSkeleton />
+                    <SubjectCardSkeleton />
+                    <SubjectCardSkeleton />
+                </div>
+            ) : subjects.length === 0 ? (
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateIcon}>
                         <SubjectsIcon size={64} color="#9CA3AF" />

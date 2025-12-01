@@ -64,7 +64,6 @@ export async function GET(request: Request) {
             })
         }
 
-        // Текущий месяц
         const currentMonthStart = startOfMonth(currentDate)
         const currentMonthEnd = endOfMonth(currentDate)
 

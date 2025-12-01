@@ -16,6 +16,7 @@ import { Lesson, DayData } from '@/types'
 import { toast } from 'sonner'
 import { lessonsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
+import { CalendarSkeleton } from '@/components/skeletons'
 
 import styles from './page.module.scss'
 
@@ -62,7 +63,7 @@ export default function CalendarPage() {
             )
         } catch (error) {
             updateLessonOptimistic(lesson.id, { isPaid: !newIsPaid })
-            toast.error(LESSON_MESSAGES.PAYMENT_STATUS_ERROR)
+            toast.error(LESSON_MESSAGES.UPDATE_ERROR)
         }
     }
 
@@ -77,19 +78,24 @@ export default function CalendarPage() {
             )
         } catch (error) {
             updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
-            toast.error(LESSON_MESSAGES.CANCEL_STATUS_ERROR)
+            toast.error(LESSON_MESSAGES.UPDATE_ERROR)
         }
     }
 
-    const handlePreviousMonth = () => setCurrentMonth(prev => subMonths(prev, 1))
-    const handleNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1))
+    const handlePreviousMonth = () => {
+        setCurrentMonth(subMonths(currentMonth, 1))
+    }
 
-    const handleDateClick = (date: Date) => {
+    const handleNextMonth = () => {
+        setCurrentMonth(addMonths(currentMonth, 1))
+    }
+
+    const handleDayClick = (date: Date) => {
         setSelectedDate(date)
         setIsDetailsModalOpen(true)
     }
 
-    const handleCloseDetails = () => {
+    const handleCloseDetailsModal = () => {
         setIsDetailsModalOpen(false)
         setSelectedDate(null)
     }
@@ -127,24 +133,28 @@ export default function CalendarPage() {
                 </div>
             </div>
 
-            <div className={styles.calendarContainer}>
-                <MonthNavigation
-                    currentMonth={currentMonth}
-                    onPreviousMonth={handlePreviousMonth}
-                    onNextMonth={handleNextMonth}
-                />
+            {isLoading ? (
+                <CalendarSkeleton />
+            ) : (
+                <div className={styles.calendarContainer}>
+                    <MonthNavigation
+                        currentMonth={currentMonth}
+                        onPreviousMonth={handlePreviousMonth}
+                        onNextMonth={handleNextMonth}
+                    />
 
-                <CalendarWeekDays />
-                <CalendarGrid
-                    currentMonth={currentMonth}
-                    lessons={lessons}
-                    onDateClick={handleDateClick}
-                />
-            </div>
+                    <CalendarWeekDays />
+                    <CalendarGrid
+                        currentMonth={currentMonth}
+                        lessons={lessons}
+                        onDateClick={handleDayClick}
+                    />
+                </div>
+            )}
 
             <Modal
                 isOpen={isDetailsModalOpen}
-                onClose={handleCloseDetails}
+                onClose={handleCloseDetailsModal}
                 title={selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: ru }) : ''}
             >
                 <CalendarDayDetails

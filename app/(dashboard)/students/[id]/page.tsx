@@ -7,6 +7,7 @@ import { StudentSubjects } from '@/components/students/StudentSubjects'
 import { StudentLessons } from '@/components/students/StudentLessons'
 import { StudentModals } from '@/components/students/StudentModals'
 import { useStudentDetail } from '@/hooks/useStudentDetail'
+import { StudentDetailSkeleton } from '@/components/skeletons'
 import styles from './page.module.scss'
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -52,7 +53,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
     } = useStudentDetail(id)
 
     if (isLoading) {
-        return <div className={styles.loading}>Загрузка...</div>
+        return <StudentDetailSkeleton />
     }
 
     if (!student) {

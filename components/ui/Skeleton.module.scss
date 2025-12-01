@@ -1,21 +1,23 @@
 .skeleton {
-    background-color: rgba(150, 150, 150, 0.2);
+    background: linear-gradient(90deg,
+            rgba(150, 150, 150, 0.15) 0%,
+            rgba(150, 150, 150, 0.25) 50%,
+            rgba(150, 150, 150, 0.15) 100%);
+    background-size: 200% 100%;
     border-radius: 8px;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: shimmer 1.5s ease-in-out infinite;
 }
 
 .circle {
     border-radius: 50%;
 }
 
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
     }
 
-    50% {
-        opacity: 0.5;
+    100% {
+        background-position: 200% 0;
     }
 }

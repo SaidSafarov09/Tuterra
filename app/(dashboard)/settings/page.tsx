@@ -9,6 +9,7 @@ import { Dropdown } from '@/components/ui/Dropdown'
 import { UserAvatarUpload } from '@/components/ui/UserAvatarUpload'
 import { settingsApi } from '@/services/api'
 import { GENERAL_MESSAGES } from '@/constants/messages'
+import { SettingsFormSkeleton } from '@/components/skeletons'
 import styles from './page.module.scss'
 import { TABS, TIMEZONES } from '@/constants'
 
@@ -64,15 +65,16 @@ export default function SettingsPage() {
         }
     }
 
+    const handleTimezoneChange = (value: string) => {
+        setFormData((prev) => ({ ...prev, timezone: value }))
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSaving(true)
 
         try {
-            const updatedUser = await settingsApi.update({
-                ...formData,
-                currency: 'RUB',
-            })
+            const updatedUser = await settingsApi.update(formData)
 
             await update({
                 ...session,
@@ -94,10 +96,6 @@ export default function SettingsPage() {
         }
     }
 
-    if (isLoading) {
-        return <div className={styles.loading}>Загрузка...</div>
-    }
-
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -117,81 +115,85 @@ export default function SettingsPage() {
                 ))}
             </div>
 
-            <form onSubmit={handleSubmit} className={styles.form}>
-                {activeTab === 'general' && (
-                    <>
-                        <div className={styles.section}>
-                            <h2 className={styles.sectionTitle}>Профиль</h2>
-                            <div className={styles.profileGrid}>
-                                <div className={styles.avatarColumn}>
-                                    <UserAvatarUpload
-                                        currentAvatar={formData.avatar}
-                                        userName={formData.name}
-                                        onAvatarChange={handleAvatarChange}
-                                    />
+            {isLoading ? (
+                <SettingsFormSkeleton />
+            ) : (
+                <form onSubmit={handleSubmit} className={styles.form}>
+                    {activeTab === 'general' && (
+                        <>
+                            <div className={styles.section}>
+                                <h2 className={styles.sectionTitle}>Профиль</h2>
+                                <div className={styles.profileGrid}>
+                                    <div className={styles.avatarColumn}>
+                                        <UserAvatarUpload
+                                            currentAvatar={formData.avatar}
+                                            userName={formData.name}
+                                            onAvatarChange={handleAvatarChange}
+                                        />
+                                    </div>
+                                    <div className={styles.fieldsColumn}>
+                                        <Input
+                                            label="Имя"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                        <Input
+                                            label="Email"
+                                            name="email"
+                                            value={formData.email}
+                                            disabled
+                                            hint="Email нельзя изменить"
+                                        />
+                                        <Input
+                                            label="Телефон"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            placeholder="+7 (999) 000-00-00"
+                                        />
+                                    </div>
                                 </div>
-                                <div className={styles.fieldsColumn}>
-                                    <Input
-                                        label="Имя"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <Input
-                                        label="Email"
-                                        name="email"
-                                        value={formData.email}
-                                        disabled
-                                        hint="Email нельзя изменить"
-                                    />
-                                    <Input
-                                        label="Телефон"
-                                        name="phone"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        placeholder="+7 (999) 000-00-00"
+                            </div>
+
+                            <div className={styles.section}>
+                                <h2 className={styles.sectionTitle}>Региональные настройки</h2>
+                                <div className={styles.appGrid}>
+                                    <Dropdown
+                                        label="Часовой пояс"
+                                        value={formData.timezone}
+                                        onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
+                                        options={TIMEZONES}
+                                        searchable
+                                        menuPosition="relative"
+                                        onOpen={() => {
+                                            setTimeout(() => {
+                                                window.scrollBy({ top: 250, behavior: 'smooth' })
+                                            }, 100)
+                                        }}
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </>
+                    )}
 
+                    {activeTab === 'appearance' && (
                         <div className={styles.section}>
-                            <h2 className={styles.sectionTitle}>Региональные настройки</h2>
-                            <div className={styles.appGrid}>
-                                <Dropdown
-                                    label="Часовой пояс"
-                                    value={formData.timezone}
-                                    onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
-                                    options={TIMEZONES}
-                                    searchable
-                                    menuPosition="relative"
-                                    onOpen={() => {
-                                        setTimeout(() => {
-                                            window.scrollBy({ top: 250, behavior: 'smooth' })
-                                        }, 100)
-                                    }}
-                                />
-                            </div>
+                            <h2 className={styles.sectionTitle}>Оформление</h2>
+                            <p style={{ color: 'var(--text-secondary)' }}>
+                                Настройки оформления будут доступны в ближайшее время.
+                            </p>
                         </div>
-                    </>
-                )}
+                    )}
 
-                {activeTab === 'appearance' && (
-                    <div className={styles.section}>
-                        <h2 className={styles.sectionTitle}>Оформление</h2>
-                        <p style={{ color: 'var(--text-secondary)' }}>
-                            Настройки оформления будут доступны в ближайшее время.
-                        </p>
+                    <div className={styles.submitSection}>
+                        <Button type="submit" disabled={isSaving}>
+                            {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
+                        </Button>
                     </div>
-                )}
-
-                <div className={styles.submitSection}>
-                    <Button type="submit" disabled={isSaving}>
-                        {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
-                    </Button>
-                </div>
-            </form>
+                </form>
+            )}
         </div>
     )
 }

@@ -9,8 +9,11 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ArrowLeftIcon, ArrowRightIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { MonthlyData } from '@/types'
+import { IncomeCardSkeleton } from '@/components/skeletons'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { incomeApi } from '@/services/api'
 import styles from './page.module.scss'
+import { HomeIcon } from 'lucide-react'
 
 export default function IncomePage() {
     const router = useRouter()
@@ -30,6 +33,7 @@ export default function IncomePage() {
 
     const fetchIncomeData = async () => {
         try {
+            setIsLoading(true) // Set loading to true at the start of fetch
             const data = await incomeApi.get(currentDate.toISOString())
             setMonthlyData(data.monthlyData || [])
             setCurrentMonthIncome(data.currentMonthIncome || 0)
@@ -71,20 +75,12 @@ export default function IncomePage() {
     const isNextMonthDisabled = addMonths(currentDate, 1) > new Date()
     const isPreviousMonthDisabled = subMonths(currentDate, 1) < new Date(2025, 10, 1)
 
-    if (isLoading) {
-        return <div className={styles.loading}>Загрузка...</div>
-    }
-
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                {/* <button className={styles.backButton} onClick={() => router.back()}>
-                    <ArrowLeftIcon size={20} />
-                    <span>Назад</span>
-                </button> */}
                 <div className={styles.headerText}>
-                    <h1 className={styles.title}>Статистика доходов</h1>
-                    <p className={styles.subtitle}>Анализ ваших доходов за период</p>
+                    <h1 className={styles.title}>Доходы</h1>
+                    <p className={styles.subtitle}>Аналитика ваших доходов</p>
                 </div>
             </div>
 
@@ -109,11 +105,37 @@ export default function IncomePage() {
                     <ArrowRightIcon size={18} />
                 </button>
                 <Button variant="ghost" size="small" onClick={handleToday}>
-                    Текущий месяц
+                    <HomeIcon size={18} />
                 </Button>
             </div>
 
-            {currentMonthIncome === 0 && monthlyData.every(m => m.income === 0) ? (
+            {isLoading ? (
+                <div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+                        <IncomeCardSkeleton />
+                        <IncomeCardSkeleton />
+                    </div>
+                    <div style={{
+                        background: 'var(--background)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        marginBottom: '24px'
+                    }}>
+                        <Skeleton width="30%" height={24} style={{ marginBottom: '24px' }} />
+                        <Skeleton width="100%" height={300} />
+                    </div>
+                    <div style={{
+                        background: 'var(--background)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '16px',
+                        padding: '24px'
+                    }}>
+                        <Skeleton width="30%" height={24} style={{ marginBottom: '24px' }} />
+                        <Skeleton width="100%" height={300} />
+                    </div>
+                </div>
+            ) : currentMonthIncome === 0 && monthlyData.every(m => m.income === 0) ? (
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateIcon}>💰</div>
                     <h2 className={styles.emptyStateTitle}>Нет данных о доходах</h2>

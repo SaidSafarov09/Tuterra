@@ -7,6 +7,7 @@ import { StudentsList } from '@/components/students/StudentsList'
 import { StudentFilters } from '@/components/students/StudentFilters'
 import { CreateStudentModal } from '@/components/students/CreateStudentModal'
 import { EmptyStudentsState } from '@/components/students/EmptyStudentsState'
+import { StudentCardSkeleton } from '@/components/skeletons'
 import { useStudents } from '@/hooks/useStudents'
 import styles from './page.module.scss'
 
@@ -30,10 +31,6 @@ export default function StudentsPage() {
         filteredStudents
     } = useStudents()
 
-    if (isLoading) {
-        return <div className={styles.loading}>Загрузка...</div>
-    }
-
     return (
         <div>
             <div className={styles.header}>
@@ -47,14 +44,25 @@ export default function StudentsPage() {
                 </Button>
             </div>
 
-            <StudentFilters
-                subjects={subjects}
-                students={students}
-                selectedSubjectFilter={selectedSubjectFilter}
-                onSelectFilter={setSelectedSubjectFilter}
-            />
+            {!isLoading && (
+                <StudentFilters
+                    subjects={subjects}
+                    students={students}
+                    selectedSubjectFilter={selectedSubjectFilter}
+                    onSelectFilter={setSelectedSubjectFilter}
+                />
+            )}
 
-            {students.length === 0 ? (
+            {isLoading ? (
+                <div className={styles.studentsGrid}>
+                    <StudentCardSkeleton />
+                    <StudentCardSkeleton />
+                    <StudentCardSkeleton />
+                    <StudentCardSkeleton />
+                    <StudentCardSkeleton />
+                    <StudentCardSkeleton />
+                </div>
+            ) : students.length === 0 ? (
                 <EmptyStudentsState onAddStudent={handleOpenModal} />
             ) : (
                 <StudentsList students={filteredStudents} />

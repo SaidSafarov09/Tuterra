@@ -2,6 +2,7 @@ import React from 'react'
 import { BookIcon } from '@/components/icons/Icons'
 import { Lesson } from '@/types'
 import { LessonCard } from './LessonCard'
+import { LessonCardSkeleton } from '@/components/skeletons'
 import styles from '../../app/(dashboard)/lessons/page.module.scss'
 
 interface LessonsListProps {
@@ -24,7 +25,15 @@ export function LessonsList({
     onDelete
 }: LessonsListProps) {
     if (isLoading) {
-        return <div className={styles.loading}>Загрузка...</div>
+        return (
+            <div className={styles.lessonsList}>
+                <LessonCardSkeleton />
+                <LessonCardSkeleton />
+                <LessonCardSkeleton />
+                <LessonCardSkeleton />
+                <LessonCardSkeleton />
+            </div>
+        )
     }
 
     if (lessons.length === 0) {

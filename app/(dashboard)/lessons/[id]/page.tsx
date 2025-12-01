@@ -15,6 +15,7 @@ import styles from './page.module.scss'
 
 import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
 import { LESSON_MESSAGES, STUDENT_MESSAGES, SUBJECT_MESSAGES } from '@/constants/messages'
+import { LessonDetailSkeleton } from '@/components/skeletons'
 
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter()
@@ -129,7 +130,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     }
 
     if (isLoading) {
-        return <div className={styles.loading}>Загрузка...</div>
+        return <LessonDetailSkeleton />
     }
 
     if (!lesson) return null
