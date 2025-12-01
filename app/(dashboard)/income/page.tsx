@@ -6,14 +6,13 @@ import { toast } from 'sonner'
 import { format, subMonths, addMonths } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
-import { ArrowLeftIcon, ArrowRightIcon } from '@/components/icons/Icons'
+import { ArrowLeftIcon, ArrowRightIcon, HomeIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { MonthlyData } from '@/types'
 import { IncomeCardSkeleton } from '@/components/skeletons'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { incomeApi } from '@/services/api'
 import styles from './page.module.scss'
-import { HomeIcon } from 'lucide-react'
 
 export default function IncomePage() {
     const router = useRouter()

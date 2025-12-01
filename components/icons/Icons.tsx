@@ -8,6 +8,7 @@ import {
     Calendar,
     Settings,
     Library,
+    Home,
     Wallet,
     LogOut,
     AlertTriangle,
@@ -83,6 +84,7 @@ export const ClockIcon: React.FC<IconProps> = (props) => <Clock {...props} />
 export const MailIcon: React.FC<IconProps> = (props) => <Mail {...props} />
 export const PhoneIcon: React.FC<IconProps> = (props) => <Phone {...props} />
 export const NoteIcon: React.FC<IconProps> = (props) => <FileText {...props} />
+export const HomeIcon: React.FC<IconProps> = (props) => <Home {...props} />
 
 // Dashboard & Stats Icons
 export const UsersGroupIcon: React.FC<IconProps> = (props) => <Users {...props} />

@@ -15,6 +15,7 @@ import {
 } from '@/components/icons/Icons'
 import { navigation } from '@/constants/links'
 import { getInitials, stringToColor } from '@/constants'
+import { SidebarUserSkeleton } from '@/components/skeletons'
 
 interface SidebarProps {
     isOpen?: boolean
@@ -23,7 +24,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     const pathname = usePathname()
-    const { data: session } = useSession()
+    const { data: session, status } = useSession()
     const [isUserModalOpen, setIsUserModalOpen] = useState(false)
 
     const avatarBgColor = session?.user?.name ? stringToColor(session.user.name) : 'var(--primary)'
@@ -66,29 +67,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                 </nav>
 
                 <div className={styles.userSection}>
-                    <div
-                        className={styles.userInfo}
-                        onClick={() => setIsUserModalOpen(true)}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <Avatar.Root className={styles.userAvatar}>
-                            <Avatar.Image
-                                className={styles.avatarImage}
-                                src={session?.user?.image || undefined}
-                                alt={session?.user?.name || 'User'}
-                            />
-                            <Avatar.Fallback
-                                className={styles.avatarFallback}
-                                style={{ backgroundColor: avatarBgColor }}
-                            >
-                                {getInitials(session?.user?.name)}
-                            </Avatar.Fallback>
-                        </Avatar.Root>
-                        <div className={styles.userDetails}>
-                            <p className={styles.userName}>{session?.user?.name || 'Пользователь'}</p>
-                            <p className={styles.userEmail}>{session?.user?.email}</p>
+                    {status === 'loading' ? (
+                        <SidebarUserSkeleton />
+                    ) : (
+                        <div
+                            className={styles.userInfo}
+                            onClick={() => setIsUserModalOpen(true)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <Avatar.Root className={styles.userAvatar}>
+                                <Avatar.Image
+                                    className={styles.avatarImage}
+                                    src={session?.user?.image || undefined}
+                                    alt={session?.user?.name || 'User'}
+                                />
+                                <Avatar.Fallback
+                                    className={styles.avatarFallback}
+                                    style={{ backgroundColor: avatarBgColor }}
+                                >
+                                    {getInitials(session?.user?.name)}
+                                </Avatar.Fallback>
+                            </Avatar.Root>
+                            <div className={styles.userDetails}>
+                                <p className={styles.userName}>{session?.user?.name || 'Пользователь'}</p>
+                                <p className={styles.userEmail}>{session?.user?.email}</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
                     <Button
                         variant="ghost"
                         size="small"
