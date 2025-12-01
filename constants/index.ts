@@ -1,4 +1,3 @@
-// Lesson tabs
 export const LESSON_TABS = [
     { id: 'upcoming' as const, label: 'Предстоящие' },
     { id: 'past' as const, label: 'Прошедшие' },
@@ -6,7 +5,6 @@ export const LESSON_TABS = [
     { id: 'canceled' as const, label: 'Отмененные' },
 ]
 
-// Subject colors
 export const SUBJECT_COLORS = [
     '#4A6CF7', // Синий
     '#10B981', // Зеленый
@@ -18,12 +16,27 @@ export const SUBJECT_COLORS = [
     '#F97316', // Оранжево-красный
 ]
 
-// Status colors
 export const STATUS_COLORS = {
     paid: '#10B981',
     unpaid: '#f97316',
     canceled: '#EF4444',
 } as const
 
-// Week days
 export const WEEK_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+export const TABS = [
+    { id: 'general', label: 'Основные' },
+    { id: 'appearance', label: 'Оформление' },
+]
+
+export const TIMEZONES = [
+    { value: 'Europe/Moscow', label: 'Москва (UTC+3)' },
+    { value: 'Europe/Kaliningrad', label: 'Калининград (UTC+2)' },
+    { value: 'Europe/Samara', label: 'Самара (UTC+4)' },
+    { value: 'Asia/Yekaterinburg', label: 'Екатеринбург (UTC+5)' },
+    { value: 'Asia/Omsk', label: 'Омск (UTC+6)' },
+    { value: 'Asia/Novosibirsk', label: 'Новосибирск (UTC+7)' },
+    { value: 'Asia/Irkutsk', label: 'Иркутск (UTC+8)' },
+    { value: 'Asia/Yakutsk', label: 'Якутск (UTC+9)' },
+    { value: 'Asia/Vladivostok', label: 'Владивосток (UTC+10)' },
+]

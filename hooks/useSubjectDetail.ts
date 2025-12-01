@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Subject, Student } from '@/types'
-import { subjectsApi, studentsApi, lessonsApi } from '@/services/api'
-import { STUDENT_MESSAGES, LESSON_MESSAGES, createStudentLinkedMessage } from '@/constants/messages'
+import { subjectsApi } from '@/services/api'
+import {
+    createStudent,
+    createLesson,
+    linkStudentToSubject,
+} from '@/services/actions'
+import { STUDENT_MESSAGES, createStudentLinkedMessage } from '@/constants/messages'
 
 export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void) {
     const [students, setStudents] = useState<Student[]>([])
@@ -21,39 +26,36 @@ export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void)
     }
 
     const linkStudent = async (subjectId: string, studentId: string) => {
-        try {
-            await subjectsApi.linkStudent(subjectId, studentId)
+        const success = await linkStudentToSubject(subjectId, studentId)
+
+        if (success) {
             await fetchStudents(subjectId)
             onUpdate?.()
-            toast.success(STUDENT_MESSAGES.LINKED_TO_SUBJECT)
-            return { success: true }
-        } catch (error) {
-            toast.error('Не удалось добавить ученика')
-            return { success: false }
         }
+
+        return { success }
     }
 
     const createAndLinkStudent = async (
         subjectId: string,
         studentData: { name: string; contact?: string; note?: string }
     ) => {
-        try {
-            const newStudent = await studentsApi.create({
-                ...studentData,
-                subjectId,
-            })
+        const newStudent = await createStudent({
+            ...studentData,
+            subjectId,
+        })
 
+        if (newStudent) {
             await fetchStudents(subjectId)
             onUpdate?.()
             toast.success(createStudentLinkedMessage(newStudent.name))
             return { success: true }
-        } catch (error) {
-            toast.error(STUDENT_MESSAGES.CREATE_ERROR)
-            return { success: false }
         }
+
+        return { success: false }
     }
 
-    const createLesson = async (
+    const createLessonForSubject = async (
         subjectId: string,
         lessonData: {
             studentId: string
@@ -62,23 +64,21 @@ export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void)
             isPaid: boolean
         }
     ) => {
-        try {
-            await lessonsApi.create({
-                studentId: lessonData.studentId,
-                subjectId,
-                date: lessonData.date.toISOString(),
-                price: parseInt(lessonData.price),
-                isPaid: lessonData.isPaid,
-            })
+        const lesson = await createLesson({
+            studentId: lessonData.studentId,
+            subjectId,
+            date: lessonData.date,
+            price: lessonData.price,
+            isPaid: lessonData.isPaid,
+        })
 
+        if (lesson) {
             await fetchStudents(subjectId)
             onUpdate?.()
-            toast.success(LESSON_MESSAGES.CREATED)
             return { success: true }
-        } catch (error) {
-            toast.error(LESSON_MESSAGES.CREATE_ERROR)
-            return { success: false }
         }
+
+        return { success: false }
     }
 
     return {
@@ -87,6 +87,6 @@ export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void)
         fetchStudents,
         linkStudent,
         createAndLinkStudent,
-        createLesson,
+        createLesson: createLessonForSubject,
     }
 }

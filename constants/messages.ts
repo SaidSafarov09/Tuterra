@@ -1,14 +1,11 @@
-/**
- * Centralized messages for toast notifications
- */
-
-// Lesson messages
 export const LESSON_MESSAGES = {
     CREATED: 'Занятие успешно создано',
     UPDATED: 'Занятие обновлено',
     DELETED: 'Занятие удалено',
     CANCELED: 'Занятие отменено',
     RESTORED: 'Занятие восстановлено',
+    PAID: 'Занятие отмечено как оплаченное',
+    UNPAID: 'Оплата отменена',
     MARKED_PAID: 'Отмечено как оплаченное',
     MARKED_UNPAID: 'Отмечено как неоплаченное',
     CREATE_ERROR: 'Не удалось создать занятие',
@@ -19,11 +16,11 @@ export const LESSON_MESSAGES = {
     CANCEL_STATUS_ERROR: 'Не удалось обновить статус',
 } as const
 
-// Student messages
 export const STUDENT_MESSAGES = {
     CREATED: 'Ученик успешно создан',
     UPDATED: 'Данные ученика обновлены',
     DELETED: 'Ученик удалён',
+    NOT_FOUND: 'Ученик не найден',
     CREATE_ERROR: 'Не удалось создать ученика',
     UPDATE_ERROR: 'Не удалось обновить данные',
     DELETE_ERROR: 'Не удалось удалить ученика',
@@ -32,7 +29,6 @@ export const STUDENT_MESSAGES = {
     UNLINKED_FROM_SUBJECT: 'Ученик отвязан от предмета',
 } as const
 
-// Subject messages
 export const SUBJECT_MESSAGES = {
     CREATED: 'Предмет успешно добавлен',
     UPDATED: 'Предмет обновлён',
@@ -45,16 +41,15 @@ export const SUBJECT_MESSAGES = {
     FETCH_ERROR: 'Не удалось загрузить предметы',
 } as const
 
-// General messages
 export const GENERAL_MESSAGES = {
     GENERIC_ERROR: 'Произошла ошибка',
     NETWORK_ERROR: 'Ошибка сети',
     LOADING: 'Загрузка...',
     SAVED: 'Сохранено',
     VALIDATION_ERROR: 'Заполните все обязательные поля',
+    FETCH_ERROR: 'Не удалось загрузить данные',
 } as const
 
-// Form validation messages
 export const VALIDATION_MESSAGES = {
     REQUIRED_FIELD: 'Это поле обязательно для заполнения',
     INVALID_EMAIL: 'Неверный формат email',
@@ -63,12 +58,13 @@ export const VALIDATION_MESSAGES = {
     MAX_LENGTH: (max: number) => `Максимум ${max} символов`,
     ENTER_STUDENT_NAME: 'Введите имя ученика',
     ENTER_SUBJECT_NAME: 'Введите название предмета',
+    ENTER_PRICE: 'Укажите цену',
     SELECT_STUDENT: 'Выберите ученика',
     SELECT_SUBJECT: 'Выберите предмет',
+    PAST_DATE: 'Нельзя создавать занятия в прошедшем времени',
     PAST_DATE_ERROR: 'Нельзя создавать занятия в прошедшем времени',
 } as const
 
-// Success messages with dynamic content
 export const createStudentCreatedMessage = (name: string) => `Ученик "${name}" создан`
 export const createSubjectCreatedMessage = (name: string) => `Предмет "${name}" создан`
 export const createStudentLinkedMessage = (studentName: string) =>

@@ -13,12 +13,29 @@ import { StatCard } from '@/components/ui/StatCard'
 import { Section } from '@/components/ui/Section'
 import { LessonCard } from '@/components/ui/LessonCard'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { useFetch } from '@/hooks/useFetch'
+import { statsApi } from '@/services/api'
+import { GENERAL_MESSAGES } from '@/constants/messages'
+import { toast } from 'sonner'
 import { DashboardStats } from '@/types'
 import styles from './page.module.scss'
 
 export default function DashboardPage() {
-    const { data: stats, isLoading } = useFetch<DashboardStats>('/api/stats')
+    const [stats, setStats] = React.useState<DashboardStats | null>(null)
+    const [isLoading, setIsLoading] = React.useState(true)
+
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const data = await statsApi.get()
+                setStats(data)
+            } catch (error) {
+                toast.error(GENERAL_MESSAGES.FETCH_ERROR || 'Не удалось загрузить статистику')
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchStats()
+    }, [])
 
     if (isLoading) {
         return <div className={styles.loading}>Загрузка...</div>

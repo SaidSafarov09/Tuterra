@@ -7,24 +7,11 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { UserAvatarUpload } from '@/components/ui/UserAvatarUpload'
+import { settingsApi } from '@/services/api'
+import { GENERAL_MESSAGES } from '@/constants/messages'
 import styles from './page.module.scss'
+import { TABS, TIMEZONES } from '@/constants'
 
-const TIMEZONES = [
-    { value: 'Europe/Moscow', label: 'Москва (UTC+3)' },
-    { value: 'Europe/Kaliningrad', label: 'Калининград (UTC+2)' },
-    { value: 'Europe/Samara', label: 'Самара (UTC+4)' },
-    { value: 'Asia/Yekaterinburg', label: 'Екатеринбург (UTC+5)' },
-    { value: 'Asia/Omsk', label: 'Омск (UTC+6)' },
-    { value: 'Asia/Novosibirsk', label: 'Новосибирск (UTC+7)' },
-    { value: 'Asia/Irkutsk', label: 'Иркутск (UTC+8)' },
-    { value: 'Asia/Yakutsk', label: 'Якутск (UTC+9)' },
-    { value: 'Asia/Vladivostok', label: 'Владивосток (UTC+10)' },
-]
-
-const TABS = [
-    { id: 'general', label: 'Основные' },
-    { id: 'appearance', label: 'Оформление' },
-]
 
 export default function SettingsPage() {
     const { data: session, update } = useSession()
@@ -45,21 +32,16 @@ export default function SettingsPage() {
 
     const fetchSettings = async () => {
         try {
-            const response = await fetch('/api/settings')
-            if (response.ok) {
-                const data = await response.json()
-                setFormData({
-                    name: data.name || '',
-                    email: data.email || '',
-                    phone: data.phone || '',
-                    avatar: data.avatar || null,
-                    timezone: data.timezone || 'Europe/Moscow',
-                })
-            } else {
-                toast.error('Не удалось загрузить настройки')
-            }
+            const data = await settingsApi.get()
+            setFormData({
+                name: data.name || '',
+                email: data.email || '',
+                phone: data.phone || '',
+                avatar: data.avatar || null,
+                timezone: data.timezone || 'Europe/Moscow',
+            })
         } catch (error) {
-            toast.error('Произошла ошибка при загрузке настроек')
+            toast.error('Не удалось загрузить настройки')
         } finally {
             setIsLoading(false)
         }
@@ -87,40 +69,26 @@ export default function SettingsPage() {
         setIsSaving(true)
 
         try {
-            const response = await fetch('/api/settings', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...formData,
-                    currency: 'RUB', // Default currency since we removed it from UI
-                }),
+            const updatedUser = await settingsApi.update({
+                ...formData,
+                currency: 'RUB',
             })
 
-            if (response.ok) {
-                const updatedUser = await response.json()
+            await update({
+                ...session,
+                user: {
+                    ...session?.user,
+                    name: updatedUser.name,
+                    image: `/api/user/avatar?t=${Date.now()}`,
+                },
+            })
 
-                // Force session update
-                await update({
-                    ...session,
-                    user: {
-                        ...session?.user,
-                        name: updatedUser.name,
-                        image: `/api/user/avatar?t=${Date.now()}`,
-                    },
-                })
+            const event = new Event('visibilitychange');
+            document.dispatchEvent(event);
 
-                // Trigger a hard reload of the session to ensure sidebar updates
-                // This is a workaround if update() doesn't propagate immediately
-                const event = new Event('visibilitychange');
-                document.dispatchEvent(event);
-
-                toast.success('Настройки успешно сохранены')
-            } else {
-                const data = await response.json()
-                toast.error(data.error || 'Произошла ошибка')
-            }
-        } catch (error) {
-            toast.error('Произошла ошибка при сохранении')
+            toast.success(GENERAL_MESSAGES.SAVED)
+        } catch (error: any) {
+            toast.error(error.message || GENERAL_MESSAGES.GENERIC_ERROR)
         } finally {
             setIsSaving(false)
         }

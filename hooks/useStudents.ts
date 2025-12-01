@@ -1,7 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { toast } from 'sonner'
 import { useModalStore } from '@/store/useModalStore'
 import { Student, Subject } from '@/types'
+import {
+    fetchStudents as loadStudents,
+    fetchSubjects as loadSubjects,
+    createStudent as createNewStudent,
+    createSubjectWithRandomColor,
+} from '@/services/actions'
 
 export function useStudents() {
     const [students, setStudents] = useState<Student[]>([])
@@ -23,31 +28,14 @@ export function useStudents() {
     const { isOpen, openModal, closeModal } = useModalStore()
 
     const fetchStudents = async () => {
-        try {
-            const response = await fetch('/api/students')
-            if (response.ok) {
-                setStudents(await response.json())
-            } else {
-                toast.error('Не удалось загрузить учеников')
-            }
-        } catch (e) {
-            toast.error('Произошла ошибка при загрузке учеников')
-        } finally {
-            setIsLoading(false)
-        }
+        const data = await loadStudents()
+        setStudents(data)
+        setIsLoading(false)
     }
 
     const fetchSubjects = async () => {
-        try {
-            const response = await fetch('/api/subjects')
-            if (response.ok) {
-                setSubjects(await response.json())
-            } else {
-                toast.error('Не удалось загрузить предметы')
-            }
-        } catch (e) {
-            toast.error('Произошла ошибка при загрузке предметов')
-        }
+        const data = await loadSubjects()
+        setSubjects(data)
     }
 
     useEffect(() => {
@@ -81,64 +69,31 @@ export function useStudents() {
     )
 
     const handleCreateSubject = async (name: string) => {
-        try {
-            const colors = ['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
-            const randomColor = colors[Math.floor(Math.random() * colors.length)]
+        const newSubject = await createSubjectWithRandomColor(name)
 
-            const response = await fetch('/api/subjects', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, color: randomColor }),
-            })
-
-            if (response.ok) {
-                const newSubject = await response.json()
-                await fetchSubjects()
-                setFormData(prev => ({
-                    ...prev,
-                    subjectId: newSubject.id,
-                    subjectName: newSubject.name
-                }))
-                toast.success(`Предмет "${name}" создан`)
-            } else {
-                toast.error('Не удалось создать предмет')
-            }
-        } catch (error) {
-            toast.error('Ошибка при создании предмета')
+        if (newSubject) {
+            await fetchSubjects()
+            setFormData(prev => ({
+                ...prev,
+                subjectId: newSubject.id,
+                subjectName: newSubject.name
+            }))
         }
     }
 
     const handleSubmit = async () => {
-        if (!formData.name.trim()) {
-            toast.error('Введите имя ученика')
-            return
-        }
-
         setIsSubmitting(true)
         setError('')
 
-        try {
-            const response = await fetch('/api/students', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            })
+        const student = await createNewStudent(formData)
 
-            if (response.ok) {
-                await fetchStudents()
-                await fetchSubjects()
-                handleCloseModal()
-                toast.success('Ученик успешно добавлен')
-            } else {
-                const data = await response.json()
-                setError(data.error || 'Произошла ошибка')
-            }
-        } catch (error) {
-            toast.error('Произошла ошибка при создании ученика')
-            setError('Произошла ошибка при создании ученика')
-        } finally {
-            setIsSubmitting(false)
+        if (student) {
+            await fetchStudents()
+            await fetchSubjects()
+            handleCloseModal()
         }
+
+        setIsSubmitting(false)
     }
 
     const filteredStudents = useMemo(() => {

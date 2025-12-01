@@ -9,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ArrowLeftIcon, ArrowRightIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { MonthlyData } from '@/types'
+import { incomeApi } from '@/services/api'
 import styles from './page.module.scss'
 
 export default function IncomePage() {
@@ -27,23 +28,15 @@ export default function IncomePage() {
 
     const fetchIncomeData = async () => {
         try {
-            const response = await fetch(`/api/income?date=${currentDate.toISOString()}`)
-            if (response.ok) {
-                const data = await response.json()
-                console.log('Income API Response:', data)
-                setMonthlyData(data.monthlyData || [])
-                setCurrentMonthIncome(data.currentMonthIncome || 0)
-                setPreviousMonthIncome(data.previousMonthIncome || 0)
-                setCurrentLessonsCount(data.currentLessonsCount || 0)
-                setAverageCheck(data.averageCheck || 0)
-            } else {
-                const errorText = await response.text()
-                console.error('Income API Error:', response.status, errorText)
-                toast.error('Не удалось загрузить данные о доходах')
-            }
+            const data = await incomeApi.get(currentDate.toISOString())
+            setMonthlyData(data.monthlyData || [])
+            setCurrentMonthIncome(data.currentMonthIncome || 0)
+            setPreviousMonthIncome(data.previousMonthIncome || 0)
+            setCurrentLessonsCount(data.currentLessonsCount || 0)
+            setAverageCheck(data.averageCheck || 0)
         } catch (error) {
             console.error('Income Fetch Error:', error)
-            toast.error('Произошла ошибка при загрузке данных')
+            toast.error('Не удалось загрузить данные о доходах')
         } finally {
             setIsLoading(false)
         }

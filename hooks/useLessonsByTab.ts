@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { Lesson, LessonFilter } from '@/types'
+import { lessonsApi } from '@/services/api'
+import { LESSON_MESSAGES } from '@/constants/messages'
 
 /**
  * Hook for fetching lessons with tab-based caching
@@ -30,21 +32,14 @@ export function useLessonsByTab(activeTab: LessonFilter) {
         setError(null)
 
         try {
-            const response = await fetch(`/api/lessons?filter=${tab}`)
-            if (response.ok) {
-                const result = await response.json()
-                setLessonsCache(prev => ({
-                    ...prev,
-                    [tab]: result
-                }))
-                loadedTabs.current.add(tab)
-            } else {
-                const errorMessage = 'Не удалось загрузить данные'
-                setError(errorMessage)
-                toast.error(errorMessage)
-            }
+            const result = await lessonsApi.getAll(tab)
+            setLessonsCache(prev => ({
+                ...prev,
+                [tab]: result
+            }))
+            loadedTabs.current.add(tab)
         } catch (err) {
-            const errorMessage = 'Произошла ошибка при загрузке'
+            const errorMessage = LESSON_MESSAGES.FETCH_ERROR
             setError(errorMessage)
             toast.error(errorMessage)
         } finally {

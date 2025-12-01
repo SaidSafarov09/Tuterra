@@ -13,6 +13,9 @@ import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { LessonActions } from '@/components/lessons/LessonActions'
 import styles from './page.module.scss'
 
+import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
+import { LESSON_MESSAGES, STUDENT_MESSAGES, SUBJECT_MESSAGES } from '@/constants/messages'
+
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter()
     const { id } = usePromise(params)
@@ -30,8 +33,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
 
     const fetchStudents = async () => {
         try {
-            const res = await fetch('/api/students')
-            if (res.ok) setStudents(await res.json())
+            const data = await studentsApi.getAll()
+            setStudents(data)
         } catch (e) {
             console.error(e)
         }
@@ -39,8 +42,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
 
     const fetchSubjects = async () => {
         try {
-            const res = await fetch('/api/subjects')
-            if (res.ok) setSubjects(await res.json())
+            const data = await subjectsApi.getAll()
+            setSubjects(data)
         } catch (e) {
             console.error(e)
         }
@@ -76,17 +79,10 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
 
     async function fetchLesson() {
         try {
-            const response = await fetch(`/api/lessons/${id}`)
-            if (!response.ok) {
-                toast.error('Занятие не найдено')
-                router.push('/lessons')
-                return
-            }
-
-            const data = await response.json()
+            const data = await lessonsApi.getById(id)
             setLesson(data)
         } catch (error) {
-            toast.error('Произошла ошибка при загрузке занятия')
+            toast.error('Занятие не найдено')
             router.push('/lessons')
         } finally {
             setIsLoading(false)
@@ -101,24 +97,17 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     }
 
     const handleEditSubmit = async () => {
-
         try {
-            const response = await fetch(`/api/lessons/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+            await lessonsApi.update(id, {
+                ...formData,
+                date: formData.date.toISOString(),
+                price: parseInt(formData.price),
             })
-
-            if (response.ok) {
-                toast.success('Занятие обновлено')
-                setIsEditModalOpen(false)
-                fetchLesson()
-            } else {
-                const data = await response.json()
-                toast.error(data.error || 'Ошибка при обновлении')
-            }
+            toast.success(LESSON_MESSAGES.UPDATED)
+            setIsEditModalOpen(false)
+            fetchLesson()
         } catch (error) {
-            toast.error('Ошибка при обновлении')
+            toast.error(LESSON_MESSAGES.UPDATE_ERROR)
         }
     }
 

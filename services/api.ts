@@ -123,4 +123,50 @@ export const subjectsApi = {
             headers,
             body: JSON.stringify({ studentId }),
         }).then(res => handleResponse<{ success: boolean }>(res)),
+
+    unlinkStudent: (subjectId: string, studentId: string) =>
+        fetch(`/api/subjects/${subjectId}/students/link`, {
+            method: 'DELETE',
+            headers,
+            body: JSON.stringify({ studentId }),
+        }).then(res => handleResponse<{ success: boolean }>(res)),
+}
+
+interface IncomeData {
+    monthlyData: any[]
+    currentMonthIncome: number
+    previousMonthIncome: number
+    currentLessonsCount: number
+    averageCheck: number
+}
+
+export const incomeApi = {
+    get: (date: string) =>
+        fetch(`/api/income?date=${date}`).then(res => handleResponse<IncomeData>(res)),
+}
+
+interface UserSettings {
+    name: string
+    email: string
+    phone?: string
+    avatar?: string | null
+    timezone?: string
+    currency?: string
+}
+
+export const settingsApi = {
+    get: () =>
+        fetch('/api/settings').then(res => handleResponse<UserSettings>(res)),
+
+    update: (data: Partial<UserSettings>) =>
+        fetch('/api/settings', {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(data),
+        }).then(res => handleResponse<UserSettings>(res)),
+}
+
+export const statsApi = {
+    get: () =>
+        fetch('/api/stats').then(res => handleResponse<import('@/types').DashboardStats>(res)),
 }
