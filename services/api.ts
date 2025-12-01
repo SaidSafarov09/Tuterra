@@ -137,7 +137,9 @@ interface IncomeData {
     currentMonthIncome: number
     previousMonthIncome: number
     currentLessonsCount: number
+    previousLessonsCount: number
     averageCheck: number
+    previousAverageCheck: number
 }
 
 export const incomeApi = {

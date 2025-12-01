@@ -19,7 +19,9 @@ export default function IncomePage() {
     const [currentMonthIncome, setCurrentMonthIncome] = useState(0)
     const [previousMonthIncome, setPreviousMonthIncome] = useState(0)
     const [currentLessonsCount, setCurrentLessonsCount] = useState(0)
+    const [previousLessonsCount, setPreviousLessonsCount] = useState(0)
     const [averageCheck, setAverageCheck] = useState(0)
+    const [previousAverageCheck, setPreviousAverageCheck] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
@@ -34,6 +36,10 @@ export default function IncomePage() {
             setPreviousMonthIncome(data.previousMonthIncome || 0)
             setCurrentLessonsCount(data.currentLessonsCount || 0)
             setAverageCheck(data.averageCheck || 0)
+
+            // Вычисляем данные для предыдущего месяца
+            setPreviousLessonsCount(data.previousLessonsCount || 0)
+            setPreviousAverageCheck(data.previousAverageCheck || 0)
         } catch (error) {
             console.error('Income Fetch Error:', error)
             toast.error('Не удалось загрузить данные о доходах')
@@ -164,6 +170,18 @@ export default function IncomePage() {
                                 <p className={styles.statDescription}>
                                     {format(subMonths(currentDate, 1), 'LLLL yyyy', { locale: ru })}
                                 </p>
+                                <div className={styles.statDetails}>
+                                    <div className={styles.statDetailItem}>
+                                        <span className={styles.statDetailLabel}>Оплаченных занятий:</span>
+                                        <span className={styles.statDetailValue}>{previousLessonsCount}</span>
+                                    </div>
+                                    <div className={styles.statDetailItem}>
+                                        <span className={styles.statDetailLabel}>Средний чек:</span>
+                                        <span className={styles.statDetailValue}>
+                                            {previousAverageCheck > 0 ? `${previousAverageCheck.toLocaleString()} ₽` : '—'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
