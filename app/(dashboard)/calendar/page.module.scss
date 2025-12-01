@@ -529,6 +529,21 @@
     .lessonActions {
         flex-direction: column;
     }
+
+    .monthTitle {
+        font-size: 18px;
+    }
+
+    .navButton {
+        padding: 8px;
+    }
+
+    .today {
+        .dayNumber {
+            width: 18px !important;
+            height: 18px !important;
+        }
+    }
 }
 
 .lessonsContainer {

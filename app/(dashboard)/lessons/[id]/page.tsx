@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { format, isPast } from 'date-fns'
 import { ru } from 'date-fns/locale'
-import { CheckIcon, XCircleIcon, EditIcon, DeleteIcon, NoteIcon } from '@/components/icons/Icons'
 import { Lesson, Student, Subject } from '@/types'
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
@@ -26,7 +25,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
 
     const [students, setStudents] = useState<Student[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
-    const [studentStats, setStudentStats] = useState<any>(null)
 
     const { togglePaid, toggleCancel, deleteLesson, isLoading: isActionLoading } = useLessonActions(fetchLesson)
 
@@ -75,11 +73,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         fetchSubjects()
     }, [id])
 
-    useEffect(() => {
-        if (lesson) {
-            fetchStudentStats(lesson.student.id)
-        }
-    }, [lesson])
 
     async function fetchLesson() {
         try {
@@ -97,18 +90,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
             router.push('/lessons')
         } finally {
             setIsLoading(false)
-        }
-    }
-
-    async function fetchStudentStats(studentId: string) {
-        try {
-            const response = await fetch(`/api/students/${studentId}`)
-            if (response.ok) {
-                const data = await response.json()
-                setStudentStats(data)
-            }
-        } catch (error) {
-            console.error('Failed to fetch student stats', error)
         }
     }
 
@@ -202,7 +183,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         <p className={styles.lessonDate}>
                             {isLessonPast
                                 ? `Занятие было ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
-                                : `Занятие запланировано на ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
+                                : `${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
                             }
                         </p>
                     </div>
@@ -228,16 +209,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                     <div className={styles.notesSection}>
                         <strong>Заметки:</strong>
                         <p>{lesson.notes}</p>
-                    </div>
-                )}
-
-                {studentStats && (
-                    <div className={styles.statsSection}>
-                        <div className={styles.statItem}>
-                            <span className={styles.statLabel}>Всего занятий</span>
-                            <span className={styles.statValue}>{studentStats._count?.lessons || 0}</span>
-                        </div>
-                        {/* Add more stats if available */}
                     </div>
                 )}
 

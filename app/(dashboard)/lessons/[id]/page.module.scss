@@ -84,9 +84,11 @@
 }
 
 .lessonDate {
-    font-size: 14px;
-    color: var(--text-secondary);
+    font-size: 16px;
+    color: var(--primary);
+    font-weight: 600;
     margin: 0;
+    padding: 12px 0;
 }
 
 .lessonPriceContainer {
@@ -102,6 +104,10 @@
     font-weight: 700;
     color: var(--primary);
     margin-bottom: 8px;
+
+    @media (max-width: 768px) {
+        padding-top: 12px;
+    }
 }
 
 .badge {

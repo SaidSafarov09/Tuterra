@@ -8,7 +8,6 @@ import { StudentLessons } from '@/components/students/StudentLessons'
 import { StudentModals } from '@/components/students/StudentModals'
 import { useStudentDetail } from '@/hooks/useStudentDetail'
 import styles from './page.module.scss'
-import { Lesson } from '@/types'
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = usePromise(params)

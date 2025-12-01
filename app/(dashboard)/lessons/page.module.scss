@@ -27,9 +27,9 @@
 
 .tabs {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     border-bottom: 1px solid var(--border-light);
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 
     @media (max-width: 768px) {
         display: grid;
@@ -116,16 +116,17 @@
 }
 
 .lessonDate {
-    font-size: 14px;
-    color: var(--text-secondary);
+    font-size: 16px;
+    color: var(--primary);
+    font-weight: 600;
     margin: 0;
+    padding: 12px 0;
 }
 
 .lessonTopic {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 8px;
     font-size: 13px;
     color: var(--text-secondary);
     background: var(--background);
@@ -229,6 +230,10 @@
 
     .badge {
         font-size: 12px;
+    }
+
+    .lessonPrice {
+        padding-top: 12px;
     }
 }
 

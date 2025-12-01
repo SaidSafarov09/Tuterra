@@ -14,10 +14,16 @@
         background: var(--border);
         border-radius: 2px;
     }
+
+    @media (max-width: 768px) {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(124px, 2fr));
+        margin-bottom: 28px;
+    }
 }
 
 .tab {
-    padding: 12px 20px;
+    padding: 8px 4px;
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
@@ -43,7 +49,6 @@
 
 @media (max-width: 768px) {
     .tab {
-        padding: 10px 16px;
-        font-size: 13px;
+        padding: 12px;
     }
 }
