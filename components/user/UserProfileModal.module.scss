@@ -1,0 +1,103 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.headerCard {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    background: #4A6CF7;
+    border-radius: 16px;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.userAvatar {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.avatarImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatarFallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.userInfo {
+    z-index: 10;
+    position: relative;
+}
+
+.userName {
+    margin: 0 0 4px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.userEmail {
+    margin: 0;
+    opacity: 1;
+    font-size: 15px;
+    color: #ffffff !important;
+}
+
+.memberBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.activeDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

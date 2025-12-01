@@ -109,7 +109,7 @@ export default function IncomePage() {
                     <ArrowRightIcon size={18} />
                 </button>
                 <Button variant="ghost" size="small" onClick={handleToday}>
-                    Сегодня
+                    Текущий месяц
                 </Button>
             </div>
 

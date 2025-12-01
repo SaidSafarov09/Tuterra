@@ -17,7 +17,7 @@ export async function GET(request: Request) {
         const monthEnd = endOfMonth(now)
 
         // Получаем статистику параллельно
-        const [studentsCount, upcomingLessons, unpaidLessons, monthlyIncome] = await Promise.all([
+        const [studentsCount, upcomingLessons, unpaidLessons, monthlyIncome, totalLessons, subjectsCount, userProfile] = await Promise.all([
             // Количество учеников
             prisma.student.count({
                 where: { ownerId: session.user.id },
@@ -66,6 +66,26 @@ export async function GET(request: Request) {
                     price: true,
                 },
             }),
+
+            // Всего проведенных занятий (прошедшие)
+            prisma.lesson.count({
+                where: {
+                    ownerId: session.user.id,
+                    date: { lte: now },
+                    isCanceled: false,
+                } as any,
+            }),
+
+            // Количество предметов
+            prisma.subject.count({
+                where: { userId: session.user.id },
+            }),
+
+            // Дата регистрации пользователя
+            prisma.user.findUnique({
+                where: { id: session.user.id },
+                select: { createdAt: true },
+            }),
         ])
 
         return NextResponse.json({
@@ -73,6 +93,9 @@ export async function GET(request: Request) {
             upcomingLessons,
             unpaidLessons,
             monthlyIncome: monthlyIncome._sum?.price || 0,
+            totalLessons,
+            subjectsCount,
+            createdAt: userProfile?.createdAt,
         })
     } catch (error) {
         console.error('Get stats error:', error)

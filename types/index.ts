@@ -64,6 +64,9 @@ export interface DashboardStats {
     upcomingLessons: Lesson[]
     unpaidLessons: Lesson[]
     monthlyIncome: number
+    totalLessons?: number
+    subjectsCount?: number
+    createdAt?: string
 }
 
 export interface DayData {

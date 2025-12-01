@@ -40,3 +40,23 @@ export const TIMEZONES = [
     { value: 'Asia/Yakutsk', label: 'Якутск (UTC+9)' },
     { value: 'Asia/Vladivostok', label: 'Владивосток (UTC+10)' },
 ]
+
+export const stringToColor = (str: string): string => {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    const hue = Math.abs(hash % 360)
+    return `hsl(${hue}, 65%, 55%)`
+}
+
+export const getInitials = (name?: string | null) => {
+    if (!name) return '?'
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+}
