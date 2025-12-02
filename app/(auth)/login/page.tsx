@@ -69,15 +69,20 @@ function LoginForm() {
 
             if (result?.error) {
                 setGeneralError(result.error)
+                toast.error(result.error)
                 return
             }
 
             if (result?.ok) {
+                toast.success('Вход выполнен успешно!')
                 router.push('/dashboard')
                 router.refresh()
             }
         } catch (error) {
-            toast.error('Произошла ошибка при входе')
+            console.error('Login error:', error)
+            const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при входе'
+            toast.error(errorMessage)
+            setGeneralError(errorMessage)
         } finally {
             setIsLoading(false)
         }

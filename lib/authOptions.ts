@@ -16,24 +16,30 @@ export const authOptions: AuthOptions = {
                     throw new Error('Введите email и пароль')
                 }
 
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email },
-                })
+                try {
+                    const user = await prisma.user.findUnique({
+                        where: { email: credentials.email },
+                    })
 
-                if (!user || !user.hashedPassword) {
-                    throw new Error('Неверный email или пароль')
-                }
+                    if (!user || !user.hashedPassword) {
+                        throw new Error('Неверный email или пароль')
+                    }
 
-                const isValidPassword = await bcrypt.compare(credentials.password, user.hashedPassword)
-                if (!isValidPassword) {
-                    throw new Error('Неверный email или пароль')
-                }
+                    const isValidPassword = await bcrypt.compare(credentials.password, user.hashedPassword)
 
-                return {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    image: user.avatar || undefined,
+                    if (!isValidPassword) {
+                        throw new Error('Неверный email или пароль')
+                    }
+
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        image: user.avatar || undefined,
+                    }
+                } catch (error) {
+                    console.error('Authorization error:', error)
+                    throw error
                 }
             },
         }),

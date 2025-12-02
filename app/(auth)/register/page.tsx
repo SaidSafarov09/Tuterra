@@ -67,14 +67,22 @@ export default function RegisterPage() {
             const data = await response.json()
 
             if (!response.ok) {
-                setGeneralError(data.error || 'Произошла ошибка при регистрации')
+                const errorMsg = data.error || 'Произошла ошибка при регистрации'
+                setGeneralError(errorMsg)
+                toast.error(errorMsg)
                 return
             }
 
-            // Успешная регистрация - перенаправляем на страницу входа
-            router.push('/login?registered=true')
+            // Успешная регистрация
+            toast.success('Регистрация успешна! Перенаправляем на страницу входа...')
+            setTimeout(() => {
+                router.push('/login?registered=true')
+            }, 1000)
         } catch (error) {
-            toast.error('Произошла ошибка при регистрации')
+            console.error('Registration error:', error)
+            const errorMsg = 'Произошла ошибка при регистрации'
+            setGeneralError(errorMsg)
+            toast.error(errorMsg)
         } finally {
             setIsLoading(false)
         }

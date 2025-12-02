@@ -1,7 +1,17 @@
 node_modules
 .next
+.env
 .env*.local
 dist
 build
 *.log
 .DS_Store
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-journal
+
+# Scripts
+scripts/create-test-user.js
