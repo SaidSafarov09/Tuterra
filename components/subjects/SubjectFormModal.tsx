@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { ColorPicker } from '@/components/ui/ColorPicker'
@@ -20,16 +20,16 @@ export function SubjectFormModal({
     submitText,
     initialData = { name: '', color: '#4A6CF7' }
 }: SubjectFormModalProps) {
-    const [formData, setFormData] = useState(initialData)
+    const [formData, setFormData] = useState(() => ({ ...initialData }))
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (isOpen) {
-            setFormData(initialData)
+            setFormData({ ...initialData })
             setError('')
         }
-    }, [isOpen, initialData])
+    }, [isOpen, initialData.name, initialData.color])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target

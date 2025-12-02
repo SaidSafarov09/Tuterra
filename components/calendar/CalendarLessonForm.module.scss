@@ -1,7 +1,13 @@
 .form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 20px;
+
+    @media (max-width: 768px) {
+        gap: 16px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
 }
 
 .error {

@@ -1,16 +1,12 @@
 .lessonActions {
     display: flex;
     gap: 8px;
-    margin-top: 16px;
     justify-content: flex-end;
-    border-top: 1px solid var(--border-light);
     padding-top: 16px;
     flex-wrap: wrap;
 
     @media (max-width: 768px) {
-        flex-wrap: nowrap;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(124px, 2fr));
+        justify-content: flex-start;
     }
 }
 

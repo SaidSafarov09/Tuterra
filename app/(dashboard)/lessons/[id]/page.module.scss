@@ -240,7 +240,6 @@
     flex-wrap: wrap;
 
     @media (max-width: 768px) {
-        flex-wrap: nowrap;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(124px, 2fr));
     }
