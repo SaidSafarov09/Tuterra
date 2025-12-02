@@ -3,6 +3,10 @@
     border-radius: var(--radius-lg);
     padding: 24px;
     box-shadow: var(--shadow-sm);
+
+    @media (max-width: 768px) {
+        padding: 18px;
+    }
 }
 
 .header {

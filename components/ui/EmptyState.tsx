@@ -11,7 +11,7 @@ interface EmptyStateProps {
 export const EmptyState: React.FC<EmptyStateProps> = ({
     title,
     description,
-    icon = <WalletIcon size={64} color="var(--text-secondary)" />
+    icon
 }) => {
     return (
         <div className={styles.container}>

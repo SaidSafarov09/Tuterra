@@ -16,6 +16,10 @@
         transform: translateY(-4px);
         box-shadow: var(--shadow-md);
     }
+
+    @media (max-width: 768px) {
+        padding: 18px;
+    }
 }
 
 .icon {

@@ -7,6 +7,7 @@ import {
     AlertIcon,
     MoneyIcon,
     CelebrationIcon,
+    CalendarIcon,
 } from '@/components/icons/Icons'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatCard } from '@/components/ui/StatCard'
@@ -96,7 +97,7 @@ export default function DashboardPage() {
                                 ))}
                             </div>
                         ) : (
-                            <EmptyState title="Нет ближайших занятий" />
+                            <EmptyState title="Нет ближайших занятий" description={undefined} icon={<CalendarIcon size={48} color="var(--primary)" />} />
                         )}
                     </Section>
 
@@ -120,8 +121,7 @@ export default function DashboardPage() {
                         ) : (
                             <EmptyState
                                 icon={<CelebrationIcon size={48} color="var(--success)" />}
-                                title="Все занятия оплачены!"
-                            />
+                                title="Все занятия оплачены!" description={undefined} />
                         )}
                     </Section>
                 </div>
