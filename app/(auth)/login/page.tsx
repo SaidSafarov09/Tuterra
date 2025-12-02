@@ -93,7 +93,7 @@ function LoginForm() {
         <div className={styles.container}>
             <div className={styles.card}>
                 <div className={styles.header}>
-                    <h1 className={styles.logo}>SkillTrack</h1>
+                    <h1 className={styles.logo}>Tuterra</h1>
                     <h2 className={styles.title}>Добро пожаловать</h2>
                     <p className={styles.subtitle}>Войдите в свой аккаунт</p>
                 </div>
@@ -147,7 +147,7 @@ export default function LoginPage() {
             <div className={styles.container}>
                 <div className={styles.card}>
                     <div className={styles.header}>
-                        <h1 className={styles.logo}>SkillTrack</h1>
+                        <h1 className={styles.logo}>Tuterra</h1>
                         <h2 className={styles.title}>Загрузка...</h2>
                     </div>
                 </div>

@@ -1,32 +1,28 @@
 .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
     text-align: center;
-    color: var(--text-muted);
+    padding: 80px 20px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
 }
 
-.icon {
+.iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 16px;
-    opacity: 0.5;
 }
 
 .title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin: 0 0 8px;
 }
 
 .description {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin: 0 0 24px;
-    max-width: 400px;
-}
-
-.action {
-    margin-top: 16px;
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
 }

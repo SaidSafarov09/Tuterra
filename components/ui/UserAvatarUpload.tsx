@@ -102,12 +102,12 @@ export const UserAvatarUpload: React.FC<UserAvatarUploadProps> = ({
                     onChange={handleFileSelect}
                     className={styles.fileInput}
                 />
-                <Button size="small" onClick={handleClick}>
+                <Button size="small" onClick={handleClick} type="button">
                     <UploadIcon size={16} />
                     Загрузить фото
                 </Button>
                 {preview && (
-                    <Button variant="ghost" size="small" onClick={handleRemove}>
+                    <Button variant="ghost" size="small" onClick={handleRemove} type="button">
                         Удалить
                     </Button>
                 )}

@@ -77,7 +77,7 @@ export const studentsApi = {
 
     update: (id: string, data: Partial<Student>) =>
         fetch(`/api/students/${id}`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers,
             body: JSON.stringify(data),
         }).then(res => handleResponse<Student>(res)),
@@ -140,6 +140,7 @@ interface IncomeData {
     previousLessonsCount: number
     averageCheck: number
     previousAverageCheck: number
+    hasAnyIncomeEver: boolean
 }
 
 export const incomeApi = {

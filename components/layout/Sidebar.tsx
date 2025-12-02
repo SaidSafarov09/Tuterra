@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                 )}
                 <div className={styles.logo}>
                     <Logo size={32} />
-                    <h1 className={styles.logoText}>Название</h1>
+                    <h1 className={styles.logoText}>Tuterra</h1>
                 </div>
 
                 <nav className={styles.nav}>
@@ -110,6 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
             <UserProfileModal
                 isOpen={isUserModalOpen}
                 onClose={() => setIsUserModalOpen(false)}
+                onSidebarClose={onClose}
             />
         </>
     )

@@ -89,7 +89,7 @@ export default function RegisterPage() {
         <div className={styles.container}>
             <div className={styles.card}>
                 <div className={styles.header}>
-                    <h1 className={styles.logo}>SkillTrack</h1>
+                    <h1 className={styles.logo}>Tuterra</h1>
                     <h2 className={styles.title}>Создать аккаунт</h2>
                     <p className={styles.subtitle}>Начните управлять своими учениками и занятиями</p>
                 </div>

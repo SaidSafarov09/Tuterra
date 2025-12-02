@@ -45,7 +45,7 @@ export const GENERAL_MESSAGES = {
     GENERIC_ERROR: 'Произошла ошибка',
     NETWORK_ERROR: 'Ошибка сети',
     LOADING: 'Загрузка...',
-    SAVED: 'Сохранено',
+    SAVED: 'Настройки сохранены',
     VALIDATION_ERROR: 'Заполните все обязательные поля',
     FETCH_ERROR: 'Не удалось загрузить данные',
 } as const
@@ -69,3 +69,12 @@ export const createStudentCreatedMessage = (name: string) => `Ученик "${na
 export const createSubjectCreatedMessage = (name: string) => `Предмет "${name}" создан`
 export const createStudentLinkedMessage = (studentName: string) =>
     `Ученик "${studentName}" добавлен к предмету`
+
+export const INCOME_MESSAGES = {
+    EMPTY_STATE: {
+        NO_DATA_TITLE: 'Нет данных о доходах',
+        NO_DATA_DESCRIPTION: 'Здесь будет отображаться статистика ваших доходов с занятий.\nНачните проводить занятия и отмечайте их как оплаченные.',
+        NO_INCOME_THIS_MONTH_TITLE: 'В этом месяце доходов нет',
+        NO_INCOME_THIS_MONTH_DESCRIPTION: (date: string) => `В ${date} пока нет оплаченных занятий.`,
+    },
+} as const

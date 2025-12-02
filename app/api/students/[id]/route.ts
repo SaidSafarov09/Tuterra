@@ -10,7 +10,7 @@ const studentSchema = z.object({
     name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
     contact: z.string().optional(),
     note: z.string().optional(),
-})
+}).passthrough()
 
 export async function GET(
     request: Request,

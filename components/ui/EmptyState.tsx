@@ -1,25 +1,35 @@
 import React from 'react'
+import { WalletIcon } from '@/components/icons/Icons'
 import styles from './EmptyState.module.scss'
 
 interface EmptyStateProps {
-    icon?: React.ReactNode
     title: string
-    description?: string
-    action?: React.ReactNode
+    description: React.ReactNode
+    icon?: React.ReactNode
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-    icon,
     title,
     description,
-    action,
+    icon = <WalletIcon size={64} color="var(--text-secondary)" />
 }) => {
     return (
         <div className={styles.container}>
-            {icon && <div className={styles.icon}>{icon}</div>}
-            <h3 className={styles.title}>{title}</h3>
-            {description && <p className={styles.description}>{description}</p>}
-            {action && <div className={styles.action}>{action}</div>}
+            <div className={styles.iconWrapper}>
+                {icon}
+            </div>
+            <h2 className={styles.title}>{title}</h2>
+            <p className={styles.description}>
+                {typeof description === 'string'
+                    ? description.split('\n').map((line, i) => (
+                        <React.Fragment key={i}>
+                            {line}
+                            {i < description.split('\n').length - 1 && <br />}
+                        </React.Fragment>
+                    ))
+                    : description
+                }
+            </p>
         </div>
     )
 }

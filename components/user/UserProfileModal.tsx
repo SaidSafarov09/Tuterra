@@ -24,9 +24,10 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 interface UserProfileModalProps {
     isOpen: boolean
     onClose: () => void
+    onSidebarClose?: () => void
 }
 
-export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
+export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose, onSidebarClose }) => {
     const isMobile = useMediaQuery('(max-width: 768px)')
     const { data: session } = useSession()
     const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -48,6 +49,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
     const memberSince = stats?.createdAt
         ? `Репетитор с ${memberSinceText}`
         : <Skeleton width={120} height={16} />
+
+    const handleNavigate = () => {
+        onClose()
+        onSidebarClose?.()
+    }
 
     return (
         <Modal
@@ -92,33 +98,33 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                         value={stats ? stats.studentsCount : <Skeleton width={40} height={24} />}
                         icon={StudentsIcon}
                         href="/students"
-                        onClick={onClose}
+                        onClick={handleNavigate}
                     />
                     <StatItem
                         label={stats ? declension(stats.totalLessons || 0, ['Занятие', 'Занятия', 'Занятий']) : 'Занятия'}
                         value={stats ? stats.totalLessons || 0 : <Skeleton width={40} height={24} />}
                         icon={LessonsIcon}
                         href="/lessons"
-                        onClick={onClose}
+                        onClick={handleNavigate}
                     />
                     <StatItem
                         label="Этот месяц"
                         value={stats ? `${stats.monthlyIncome?.toLocaleString() || 0} ₽` : <Skeleton width={80} height={24} />}
                         icon={PaymentsIcon}
                         href="/income"
-                        onClick={onClose}
+                        onClick={handleNavigate}
                     />
                     <StatItem
                         label={stats ? declension(stats.subjectsCount || 0, ['Предмет', 'Предмета', 'Предметов']) : 'Предметы'}
                         value={stats ? stats.subjectsCount || 0 : <Skeleton width={40} height={24} />}
                         icon={SubjectsIcon}
                         href="/subjects"
-                        onClick={onClose}
+                        onClick={handleNavigate}
                     />
                 </div>
 
                 <div className={styles.footer}>
-                    <Link href="/settings" onClick={onClose}>
+                    <Link href="/settings" onClick={handleNavigate}>
                         <Button variant="secondary" size="small">
                             <SettingsIcon size={16} style={{ marginRight: isMobile ? "0" : "8px" }} />
                             {isMobile ? '' : 'Настройки'}

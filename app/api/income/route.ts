@@ -109,6 +109,15 @@ export async function GET(request: Request) {
         const previousLessonsCount = previousMonthIncome._count || 0
         const previousAverageCheck = previousLessonsCount > 0 ? Math.round(previousIncome / previousLessonsCount) : 0
 
+        // Проверяем, есть ли вообще хоть один оплаченный урок за все время
+        const paidLessonsCount = await prisma.lesson.count({
+            where: {
+                ownerId: session.user?.id,
+                isPaid: true,
+            },
+        })
+        const hasAnyIncomeEver = paidLessonsCount > 0
+
         return NextResponse.json({
             monthlyData,
             currentMonthIncome: currentIncome,
@@ -117,6 +126,7 @@ export async function GET(request: Request) {
             previousLessonsCount,
             averageCheck,
             previousAverageCheck,
+            hasAnyIncomeEver,
         })
     } catch (error) {
         console.error('Get income stats error:', error)

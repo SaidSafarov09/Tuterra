@@ -68,8 +68,10 @@ export async function updateStudent(
         const student = await studentsApi.update(studentId, data)
         toast.success(STUDENT_MESSAGES.UPDATED)
         return student
-    } catch (error) {
-        toast.error(STUDENT_MESSAGES.UPDATE_ERROR)
+    } catch (error: any) {
+        console.error('Update student error:', error)
+        const errorMessage = error.message || STUDENT_MESSAGES.UPDATE_ERROR
+        toast.error(errorMessage)
         return null
     }
 }

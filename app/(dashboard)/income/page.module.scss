@@ -199,7 +199,9 @@
 }
 
 .emptyStateIcon {
-    font-size: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 16px;
 }
 

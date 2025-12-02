@@ -6,13 +6,16 @@ import { toast } from 'sonner'
 import { format, subMonths, addMonths } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
-import { ArrowLeftIcon, ArrowRightIcon, HomeIcon } from '@/components/icons/Icons'
+import { ArrowLeftIcon, ArrowRightIcon, HomeIcon, WalletIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { MonthlyData } from '@/types'
 import { IncomeCardSkeleton } from '@/components/skeletons'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { incomeApi } from '@/services/api'
 import styles from './page.module.scss'
+
+import { EmptyState } from '@/components/ui/EmptyState'
+import { INCOME_MESSAGES } from '@/constants/messages'
 
 export default function IncomePage() {
     const router = useRouter()
@@ -24,6 +27,7 @@ export default function IncomePage() {
     const [previousLessonsCount, setPreviousLessonsCount] = useState(0)
     const [averageCheck, setAverageCheck] = useState(0)
     const [previousAverageCheck, setPreviousAverageCheck] = useState(0)
+    const [hasAnyIncomeEver, setHasAnyIncomeEver] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
@@ -43,6 +47,13 @@ export default function IncomePage() {
             // Вычисляем данные для предыдущего месяца
             setPreviousLessonsCount(data.previousLessonsCount || 0)
             setPreviousAverageCheck(data.previousAverageCheck || 0)
+
+            console.log('Income Data:', {
+                currentMonthIncome: data.currentMonthIncome,
+                hasAnyIncomeEver: data.hasAnyIncomeEver
+            })
+
+            setHasAnyIncomeEver(Boolean(data.hasAnyIncomeEver))
         } catch (error) {
             console.error('Income Fetch Error:', error)
             toast.error('Не удалось загрузить данные о доходах')
@@ -74,8 +85,11 @@ export default function IncomePage() {
     const isNextMonthDisabled = addMonths(currentDate, 1) > new Date()
     const isPreviousMonthDisabled = subMonths(currentDate, 1) < new Date(2025, 10, 1)
 
+    const showEmptyState = currentMonthIncome === 0
+
     return (
         <div className={styles.container}>
+            {/* ... header and navigation ... */}
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <h1 className={styles.title}>Доходы</h1>
@@ -134,16 +148,20 @@ export default function IncomePage() {
                         <Skeleton width="100%" height={300} />
                     </div>
                 </div>
-            ) : currentMonthIncome === 0 && monthlyData.every(m => m.income === 0) ? (
-                <div className={styles.emptyState}>
-                    <div className={styles.emptyStateIcon}>💰</div>
-                    <h2 className={styles.emptyStateTitle}>Нет данных о доходах</h2>
-                    <p className={styles.emptyStateText}>
-                        Здесь будет отображаться статистика ваших доходов с занятий.
-                        <br />
-                        Начните проводить занятия и отмечайте их как оплаченные.
-                    </p>
-                </div>
+            ) : showEmptyState ? (
+                !hasAnyIncomeEver ? (
+                    <EmptyState
+                        title={INCOME_MESSAGES.EMPTY_STATE.NO_DATA_TITLE}
+                        description={INCOME_MESSAGES.EMPTY_STATE.NO_DATA_DESCRIPTION}
+                    />
+                ) : (
+                    <EmptyState
+                        title={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_TITLE}
+                        description={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_DESCRIPTION(
+                            format(currentDate, 'LLLL yyyy', { locale: ru })
+                        )}
+                    />
+                )
             ) : (
                 <>
                     <div className={styles.statsGrid}>
