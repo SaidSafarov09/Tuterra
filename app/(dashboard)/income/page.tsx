@@ -151,11 +151,13 @@ export default function IncomePage() {
                     <EmptyState
                         title={INCOME_MESSAGES.EMPTY_STATE.NO_DATA_TITLE}
                         description={INCOME_MESSAGES.EMPTY_STATE.NO_DATA_DESCRIPTION}
+                        icon={<WalletIcon size={48} color="var(--text-secondary)" />}
                     />
                 ) : (
                     <EmptyState
                         title={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_TITLE}
                         description={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_DESCRIPTION(currentDate)}
+                        icon={<WalletIcon size={48} color="var(--text-secondary)" />}
                     />
                 )
             ) : (
