@@ -3,6 +3,8 @@ import { format, isPast } from 'date-fns'
 import { MoneyIcon, ClockIcon, PlusIcon, CheckIcon, XCircleIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Lesson, DayData } from '@/types'
+import { LessonStatusBadge } from '@/components/lessons/LessonStatusBadge'
+import { isTrial } from '@/lib/lessonUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
 
 interface CalendarDayDetailsProps {
@@ -26,7 +28,7 @@ export function CalendarDayDetails({
         return <div className={styles.modalLoading}>Загрузка...</div>
     }
 
-    if (!dayData || (dayData.lessons.length === 0 && dayData.totalEarned === 0 && dayData.potentialEarnings === 0)) {
+    if (!dayData || (!dayData.lessons?.length && dayData.totalEarned === 0 && dayData.potentialEarnings === 0)) {
         return (
             <div className={styles.emptyDay}>
                 <ClockIcon size={48} color="var(--text-secondary)" />
@@ -112,16 +114,12 @@ export function CalendarDayDetails({
                                     <div className={styles.timeBig}>
                                         {format(new Date(lesson.date), 'HH:mm')}
                                     </div>
-                                    {lesson.isPaid ? (
-                                        <span className={styles.paidBadge}>Оплачено</span>
-                                    ) : (
-                                        <span className={styles.unpaidBadge}>Не оплачено</span>
-                                    )}
+                                    <LessonStatusBadge price={lesson.price} isPaid={lesson.isPaid} />
                                 </div>
                             </div>
 
                             <div className={styles.lessonActions}>
-                                {!lesson.isCanceled && (
+                                {!lesson.isCanceled && !isTrial(lesson.price) && (
                                     <button
                                         className={styles.actionButton}
                                         onClick={() => onTogglePaid(lesson)}

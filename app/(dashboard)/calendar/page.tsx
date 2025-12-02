@@ -11,7 +11,7 @@ import { CalendarGrid } from '@/components/calendar/CalendarGrid'
 import { CalendarDayDetails } from '@/components/calendar/CalendarDayDetails'
 import { CalendarLessonForm } from '@/components/calendar/CalendarLessonForm'
 
-import { calculateDayEarnings } from '@/lib/lessonUtils'
+import { calculateDayData } from '@/lib/lessonUtils'
 import { Lesson, DayData } from '@/types'
 import { toast } from 'sonner'
 import { lessonsApi } from '@/services/api'
@@ -121,7 +121,7 @@ export default function CalendarPage() {
     }
 
     const selectedDayData: DayData | null = selectedDate
-        ? calculateDayEarnings(lessons, selectedDate)
+        ? calculateDayData(lessons, selectedDate)
         : null
 
     return (

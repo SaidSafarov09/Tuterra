@@ -2,6 +2,7 @@ import React from 'react'
 import { isPast } from 'date-fns'
 import { CheckIcon, XCircleIcon, EditIcon, DeleteIcon } from '@/components/icons/Icons'
 import { Lesson } from '@/types'
+import { isTrial } from '@/lib/lessonUtils'
 import styles from './LessonActions.module.scss'
 
 interface LessonActionsProps {
@@ -22,17 +23,20 @@ export function LessonActions({
     showCancelButton = true
 }: LessonActionsProps) {
     const isLessonPast = isPast(new Date(lesson.date))
+    const isTrialLesson = isTrial(lesson.price)
 
     return (
         <div className={styles.lessonActions}>
-            <button
-                className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
-                onClick={() => onTogglePaid(lesson)}
-                disabled={lesson.isCanceled}
-            >
-                <CheckIcon size={16} />
-                {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
-            </button>
+            {!isTrialLesson && (
+                <button
+                    className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
+                    onClick={() => onTogglePaid(lesson)}
+                    disabled={lesson.isCanceled}
+                >
+                    <CheckIcon size={16} />
+                    {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
+                </button>
+            )}
 
             {showCancelButton && !isLessonPast && onToggleCancel && (
                 <button

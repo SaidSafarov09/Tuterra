@@ -4,6 +4,7 @@ import { formatSmartDate } from '@/lib/dateUtils'
 import { Lesson } from '@/types'
 import { LessonActions } from './LessonActions'
 import { NoteIcon } from '@/components/icons/Icons'
+import { LessonStatusBadge } from './LessonStatusBadge'
 import styles from '../../app/(dashboard)/lessons/page.module.scss'
 
 interface LessonCardProps {
@@ -59,12 +60,7 @@ export function LessonCard({ lesson, onTogglePaid, onToggleCancel, onEdit, onDel
                 </div>
                 <div className={styles.lessonPriceContainer}>
                     <div className={styles.lessonPrice}>{lesson.price} ₽</div>
-                    <span
-                        className={`${styles.badge} ${lesson.isPaid ? styles.badgePaid : styles.badgeUnpaid
-                            }`}
-                    >
-                        {lesson.isPaid ? 'Оплачено' : 'Не оплачено'}
-                    </span>
+                    <LessonStatusBadge price={lesson.price} isPaid={lesson.isPaid} />
                 </div>
             </div>
             <div className={styles.actionsBlock} onClick={(e) => e.stopPropagation()}>

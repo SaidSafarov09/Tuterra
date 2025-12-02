@@ -60,3 +60,13 @@ export const getInitials = (name?: string | null) => {
         .toUpperCase()
         .slice(0, 2)
 }
+
+export const LESSON_TOPIC_EXAMPLES = [
+    'Present Simple',
+    'Квадратные уравнения',
+    'Подготовка к ЕГЭ',
+    'Введение в React',
+    'Глагол to be',
+    'Тригонометрия',
+    'Эссе по обществознанию',
+]

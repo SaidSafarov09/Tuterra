@@ -6,6 +6,11 @@ import { Input } from '@/components/ui/Input'
 import { Student, Subject, LessonFormData } from '@/types'
 import styles from '../../app/(dashboard)/lessons/page.module.scss'
 
+import { useTypewriter } from '@/hooks/useTypewriter'
+import { LESSON_TOPIC_EXAMPLES } from '@/constants'
+import { TrialToggle } from '@/components/lessons/TrialToggle'
+import { Checkbox } from '@/components/ui/Checkbox'
+
 interface LessonFormModalProps {
     isOpen: boolean
     onClose: () => void
@@ -39,6 +44,8 @@ export function LessonFormModal({
     onCreateSubject,
     handleChange
 }: LessonFormModalProps) {
+    const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
+
     return (
         <Modal
             isOpen={isOpen}
@@ -54,7 +61,6 @@ export function LessonFormModal({
             }
         >
             <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-                {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
 
                 <Dropdown
                     label="Ученик"
@@ -99,15 +105,28 @@ export function LessonFormModal({
                     dropDirection="center"
                 />
 
+                <TrialToggle
+                    isTrial={formData.price === '0'}
+                    onChange={(isTrial) => {
+                        if (isTrial) {
+                            handleChange('price', '0')
+                            handleChange('isPaid', true)
+                        } else {
+                            handleChange('price', '')
+                        }
+                    }}
+                    disabled={isSubmitting}
+                />
+
                 <Input
                     label="Цена"
                     name="price"
                     type="number"
                     value={formData.price}
                     onChange={(e) => handleChange('price', e.target.value)}
-                    required
+                    required={formData.price !== '0'}
                     placeholder="1000"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || formData.price === '0'}
                 />
 
                 <Input
@@ -115,20 +134,18 @@ export function LessonFormModal({
                     name="topic"
                     value={formData.topic || ''}
                     onChange={(e) => handleChange('topic', e.target.value)}
-                    placeholder="Например: Введение в React"
+                    placeholder={`Например: ${topicPlaceholder}`}
                     disabled={isSubmitting}
                 />
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <input
-                        type="checkbox"
-                        name="isPaid"
+                {formData.price !== '0' && (
+                    <Checkbox
                         checked={formData.isPaid}
                         onChange={(e) => handleChange('isPaid', e.target.checked)}
+                        label="Оплачено"
                         disabled={isSubmitting}
                     />
-                    Оплачено
-                </label>
+                )}
             </form>
         </Modal>
     )

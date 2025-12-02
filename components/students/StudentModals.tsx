@@ -5,6 +5,10 @@ import { Dropdown } from '@/components/ui/Dropdown'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Student, Subject } from '@/types'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
+import { useTypewriter } from '@/hooks/useTypewriter'
+import { LESSON_TOPIC_EXAMPLES } from '@/constants'
+import { TrialToggle } from '@/components/lessons/TrialToggle'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 interface StudentModalsProps {
     student: Student
@@ -68,6 +72,8 @@ export function StudentModals({
     onCloseEditLessonModal,
     onSubmitEditLesson
 }: StudentModalsProps) {
+    const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
+
     return (
         <>
             {/* Edit Student Modal */}
@@ -170,28 +176,39 @@ export function StudentModals({
                         required
                         dropDirection="center"
                     />
+                    <TrialToggle
+                        isTrial={lessonFormData.price === '0'}
+                        onChange={(isTrial) => {
+                            if (isTrial) {
+                                setLessonFormData({ ...lessonFormData, price: '0', isPaid: true })
+                            } else {
+                                setLessonFormData({ ...lessonFormData, price: '' })
+                            }
+                        }}
+                    />
+
                     <Input
                         label="Стоимость"
                         type="number"
                         value={lessonFormData.price}
                         onChange={(e) => setLessonFormData({ ...lessonFormData, price: e.target.value })}
-                        required
+                        required={lessonFormData.price !== '0'}
+                        disabled={lessonFormData.price === '0'}
                     />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <input
-                            type="checkbox"
-                            id="isPaid"
+
+                    {lessonFormData.price !== '0' && (
+                        <Checkbox
                             checked={lessonFormData.isPaid}
                             onChange={(e) => setLessonFormData({ ...lessonFormData, isPaid: e.target.checked })}
-                            style={{ width: '16px', height: '16px' }}
+                            label="Оплачено"
+                            id="isPaid"
                         />
-                        <label htmlFor="isPaid">Оплачено</label>
-                    </div>
+                    )}
                     <Input
                         label="Тема урока"
                         value={lessonFormData.topic || ''}
                         onChange={(e) => setLessonFormData({ ...lessonFormData, topic: e.target.value })}
-                        placeholder="Например: Логарифмы"
+                        placeholder={`Например: ${topicPlaceholder}`}
                     />
                 </form>
             </Modal>
@@ -231,28 +248,39 @@ export function StudentModals({
                         required
                         dropDirection="center"
                     />
+                    <TrialToggle
+                        isTrial={lessonFormData.price === '0'}
+                        onChange={(isTrial) => {
+                            if (isTrial) {
+                                setLessonFormData({ ...lessonFormData, price: '0', isPaid: true })
+                            } else {
+                                setLessonFormData({ ...lessonFormData, price: '' })
+                            }
+                        }}
+                    />
+
                     <Input
                         label="Стоимость"
                         type="number"
                         value={lessonFormData.price}
                         onChange={(e) => setLessonFormData({ ...lessonFormData, price: e.target.value })}
-                        required
+                        required={lessonFormData.price !== '0'}
+                        disabled={lessonFormData.price === '0'}
                     />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <input
-                            type="checkbox"
-                            id="isPaidEdit"
+
+                    {lessonFormData.price !== '0' && (
+                        <Checkbox
                             checked={lessonFormData.isPaid}
                             onChange={(e) => setLessonFormData({ ...lessonFormData, isPaid: e.target.checked })}
-                            style={{ width: '16px', height: '16px' }}
+                            label="Оплачено"
+                            id="isPaidEdit"
                         />
-                        <label htmlFor="isPaidEdit">Оплачено</label>
-                    </div>
+                    )}
                     <Input
                         label="Тема урока"
                         value={lessonFormData.topic || ''}
                         onChange={(e) => setLessonFormData({ ...lessonFormData, topic: e.target.value })}
-                        placeholder="Например: Введение в React"
+                        placeholder={`Например: ${topicPlaceholder}`}
                     />
                     <Input
                         label="Заметки"

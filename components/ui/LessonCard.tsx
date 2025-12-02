@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Lesson } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { ClockIcon, NoteIcon } from '@/components/icons/Icons'
+import { LessonStatusBadge } from '@/components/lessons/LessonStatusBadge'
 import styles from './LessonCard.module.scss'
 
 interface LessonCardProps {
@@ -75,15 +76,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                     >
                         {lesson.price} ₽
                     </div>
-                    {lesson.isPaid ? (
-                        <span className={`${styles.badge} ${styles.badgePaid}`}>
-                            Оплачено
-                        </span>
-                    ) : (
-                        <span className={`${styles.badge} ${styles.badgeUnpaid}`}>
-                            Не оплачено
-                        </span>
-                    )}
+                    <LessonStatusBadge price={lesson.price} isPaid={lesson.isPaid} />
                 </div>
             </div>
         </Link>

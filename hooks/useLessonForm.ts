@@ -126,11 +126,6 @@ export function useLessonForm(
             return
         }
 
-        if (!isEdit && formData.date < new Date()) {
-            toast.error('Нельзя создавать занятия в прошедшем времени')
-            return
-        }
-
         setIsSubmitting(true)
         setError('')
 

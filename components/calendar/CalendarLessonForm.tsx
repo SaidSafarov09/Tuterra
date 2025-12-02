@@ -8,6 +8,10 @@ import { PlusIcon } from '@/components/icons/Icons'
 import { useCalendarLessonForm } from '@/hooks/useCalendarLessonForm'
 import styles from './CalendarLessonForm.module.scss'
 
+import { useTypewriter } from '@/hooks/useTypewriter'
+import { LESSON_TOPIC_EXAMPLES } from '@/constants'
+import { TrialToggle } from '@/components/lessons/TrialToggle'
+
 interface CalendarLessonFormProps {
     initialDate: Date
     onSuccess: () => void
@@ -28,11 +32,10 @@ export function CalendarLessonForm({ initialDate, onSuccess, onCancel }: Calenda
         handleSubmit
     } = useCalendarLessonForm({ onSuccess, initialDate })
 
+    const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
+
     return (
         <div className={styles.form}>
-            {error && (
-                <div className={styles.error}>{error}</div>
-            )}
 
             <div className={styles.formGroup}>
                 <div style={{ marginBottom: '8px' }}>
@@ -81,13 +84,25 @@ export function CalendarLessonForm({ initialDate, onSuccess, onCancel }: Calenda
             </div>
 
             <div className={styles.formGroup}>
+                <TrialToggle
+                    isTrial={formData.price === '0'}
+                    onChange={(isTrial) => {
+                        if (isTrial) {
+                            setFormData(prev => ({ ...prev, price: '0', isPaid: true }))
+                        } else {
+                            setFormData(prev => ({ ...prev, price: '' }))
+                        }
+                    }}
+                />
+
                 <Input
                     label="Стоимость (₽)"
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                     placeholder="0"
-                    required
+                    required={formData.price !== '0'}
+                    disabled={formData.price === '0'}
                 />
             </div>
 
@@ -96,18 +111,20 @@ export function CalendarLessonForm({ initialDate, onSuccess, onCancel }: Calenda
                     label="Тема урока"
                     value={formData.topic}
                     onChange={(e) => setFormData(prev => ({ ...prev, topic: e.target.value }))}
-                    placeholder="Например: Логарифмы"
+                    placeholder={`Например: ${topicPlaceholder}`}
                 />
             </div>
 
-            <div className={styles.checkboxWrapper}>
-                <Checkbox
-                    checked={formData.isPaid}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isPaid: e.target.checked }))}
-                    label="Оплачено"
-                    id="isPaid"
-                />
-            </div>
+            {formData.price !== '0' && (
+                <div className={styles.checkboxWrapper}>
+                    <Checkbox
+                        checked={formData.isPaid}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isPaid: e.target.checked }))}
+                        label="Оплачено"
+                        id="isPaid"
+                    />
+                </div>
+            )}
 
             <div className={styles.actions}>
                 <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>

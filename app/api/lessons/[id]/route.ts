@@ -7,7 +7,7 @@ import { z } from 'zod'
 const lessonSchema = z.object({
     studentId: z.string(),
     date: z.string().transform((str) => new Date(str)),
-    price: z.number().positive('Цена должна быть положительной'),
+    price: z.number().nonnegative('Цена должна быть положительной'),
     isPaid: z.boolean(),
     isCanceled: z.boolean().optional(),
     notes: z.string().optional(),
