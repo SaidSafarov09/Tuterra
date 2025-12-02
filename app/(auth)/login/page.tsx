@@ -17,7 +17,6 @@ function LoginForm() {
         password: '',
     })
     const [errors, setErrors] = useState<Record<string, string>>({})
-    const [generalError, setGeneralError] = useState('')
     const [successMessage, setSuccessMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
@@ -51,7 +50,6 @@ function LoginForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setGeneralError('')
         setSuccessMessage('')
 
         if (!validateForm()) {
@@ -68,8 +66,13 @@ function LoginForm() {
             })
 
             if (result?.error) {
-                setGeneralError(result.error)
-                toast.error(result.error)
+                // Если ошибка от сервера понятная (например, "Неверный пароль"), показываем её
+                // Если нет - показываем общую
+                const message = result.error === 'CredentialsSignin'
+                    ? 'Неверный email или пароль'
+                    : 'Ошибка входа. Проверьте данные.'
+
+                toast.error(message)
                 return
             }
 
@@ -80,9 +83,7 @@ function LoginForm() {
             }
         } catch (error) {
             console.error('Login error:', error)
-            const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при входе'
-            toast.error(errorMessage)
-            setGeneralError(errorMessage)
+            toast.error('Сервис временно недоступен. Попробуйте позже.')
         } finally {
             setIsLoading(false)
         }
@@ -99,7 +100,6 @@ function LoginForm() {
 
                 <form onSubmit={handleSubmit} className={styles.form}>
                     {successMessage && <div className={styles.success}>{successMessage}</div>}
-                    {generalError && <div className={styles.error}>{generalError}</div>}
 
                     <Input
                         label="Email"

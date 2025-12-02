@@ -16,7 +16,6 @@ export default function RegisterPage() {
         password: '',
     })
     const [errors, setErrors] = useState<Record<string, string>>({})
-    const [generalError, setGeneralError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +48,6 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setGeneralError('')
 
         if (!validateForm()) {
             return
@@ -64,11 +62,12 @@ export default function RegisterPage() {
                 body: JSON.stringify(formData),
             })
 
-            const data = await response.json()
+            const data = await response.json().catch(() => null)
 
             if (!response.ok) {
-                const errorMsg = data.error || 'Произошла ошибка при регистрации'
-                setGeneralError(errorMsg)
+                // Если сервер вернул JSON с ошибкой - показываем её
+                // Если нет (например, 500 Internal Server Error без JSON) - показываем общую
+                const errorMsg = data?.error || 'Ошибка регистрации. Попробуйте позже.'
                 toast.error(errorMsg)
                 return
             }
@@ -80,9 +79,7 @@ export default function RegisterPage() {
             }, 1000)
         } catch (error) {
             console.error('Registration error:', error)
-            const errorMsg = 'Произошла ошибка при регистрации'
-            setGeneralError(errorMsg)
-            toast.error(errorMsg)
+            toast.error('Сервис временно недоступен. Попробуйте позже.')
         } finally {
             setIsLoading(false)
         }
@@ -98,8 +95,6 @@ export default function RegisterPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className={styles.form}>
-                    {generalError && <div className={styles.error}>{generalError}</div>}
-
                     <Input
                         label="Имя"
                         name="name"
