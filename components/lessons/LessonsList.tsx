@@ -1,7 +1,7 @@
 import React from 'react'
 import { BookIcon } from '@/components/icons/Icons'
 import { Lesson } from '@/types'
-import { LessonCard } from './LessonCard'
+import { LessonCard } from '@/components/ui/LessonCard'
 import { LessonCardSkeleton } from '@/components/skeletons'
 import styles from '../../app/(dashboard)/lessons/page.module.scss'
 
@@ -51,6 +51,7 @@ export function LessonsList({
                 <LessonCard
                     key={lesson.id}
                     lesson={lesson}
+                    showActions={true}
                     onTogglePaid={onTogglePaid}
                     onToggleCancel={onToggleCancel}
                     onEdit={onEdit}

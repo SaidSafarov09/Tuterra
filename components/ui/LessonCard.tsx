@@ -4,6 +4,7 @@ import { Lesson } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { ClockIcon, NoteIcon } from '@/components/icons/Icons'
 import { LessonStatusBadge } from '@/components/lessons/LessonStatusBadge'
+import { LessonActions } from '@/components/lessons/LessonActions'
 import styles from './LessonCard.module.scss'
 
 interface LessonCardProps {
@@ -12,6 +13,7 @@ interface LessonCardProps {
     showActions?: boolean
     onTogglePaid?: (lesson: Lesson) => void
     onToggleCancel?: (lesson: Lesson) => void
+    onEdit?: (lesson: Lesson) => void
     onDelete?: (lessonId: string) => void
 }
 
@@ -19,15 +21,15 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     lesson,
     variant = 'default',
     showActions = false,
+    onTogglePaid,
+    onToggleCancel,
+    onEdit,
+    onDelete,
 }) => {
     const [showTopic, setShowTopic] = useState(false)
-    const isPast = new Date(lesson.date) < new Date()
 
-    return (
-        <Link
-            href={`/lessons/${lesson.id}`}
-            className={`${styles.card} ${variant === 'compact' ? styles.compact : ''}`}
-        >
+    const CardContent = (
+        <div className={`${styles.card} ${variant === 'compact' ? styles.compact : ''} ${lesson.isCanceled ? styles.canceled : ''}`}>
             <div className={styles.header}>
                 <div className={styles.info}>
                     <h4 className={styles.studentName}>{lesson.student.name}</h4>
@@ -79,6 +81,33 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                     <LessonStatusBadge price={lesson.price} isPaid={lesson.isPaid} />
                 </div>
             </div>
+        </div>
+    )
+
+    if (showActions) {
+        return (
+            <div className={styles.cardWrapper}>
+                <Link href={`/lessons/${lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                    {CardContent}
+                </Link>
+                {onTogglePaid && onEdit && onDelete && (
+                    <div className={styles.actionsFooter} onClick={(e) => e.stopPropagation()}>
+                        <LessonActions
+                            lesson={lesson}
+                            onTogglePaid={onTogglePaid}
+                            onToggleCancel={onToggleCancel}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                        />
+                    </div>
+                )}
+            </div>
+        )
+    }
+
+    return (
+        <Link href={`/lessons/${lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+            {CardContent}
         </Link>
     )
 }
