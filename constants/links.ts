@@ -9,7 +9,7 @@ import {
 } from '@/components/icons/Icons'
 
 export const navigation = [
-    { name: 'Главная', href: '/dashboard', icon: DashboardIcon },
+    { name: 'Жопа', href: '/dashboard', icon: DashboardIcon },
     { name: 'Ученики', href: '/students', icon: StudentsIcon },
     { name: 'Занятия', href: '/lessons', icon: LessonsIcon },
     { name: 'Календарь', href: '/calendar', icon: CalendarIcon },
