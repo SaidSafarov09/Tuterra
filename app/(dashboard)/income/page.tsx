@@ -36,7 +36,7 @@ export default function IncomePage() {
 
     const fetchIncomeData = async () => {
         try {
-            setIsLoading(true) // Set loading to true at the start of fetch
+            setIsLoading(true)
             const data = await incomeApi.get(currentDate.toISOString())
             setMonthlyData(data.monthlyData || [])
             setCurrentMonthIncome(data.currentMonthIncome || 0)
@@ -44,7 +44,6 @@ export default function IncomePage() {
             setCurrentLessonsCount(data.currentLessonsCount || 0)
             setAverageCheck(data.averageCheck || 0)
 
-            // Вычисляем данные для предыдущего месяца
             setPreviousLessonsCount(data.previousLessonsCount || 0)
             setPreviousAverageCheck(data.previousAverageCheck || 0)
 
@@ -89,7 +88,6 @@ export default function IncomePage() {
 
     return (
         <div className={styles.container}>
-            {/* ... header and navigation ... */}
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <h1 className={styles.title}>Доходы</h1>
@@ -157,9 +155,7 @@ export default function IncomePage() {
                 ) : (
                     <EmptyState
                         title={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_TITLE}
-                        description={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_DESCRIPTION(
-                            format(currentDate, 'LLLL yyyy', { locale: ru })
-                        )}
+                        description={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_DESCRIPTION(currentDate)}
                     />
                 )
             ) : (

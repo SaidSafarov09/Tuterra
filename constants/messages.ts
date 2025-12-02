@@ -1,3 +1,21 @@
+import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
+
+const MONTHS_GENITIVE: Record<string, string> = {
+    январь: "январе",
+    февраль: "феврале",
+    март: "марте",
+    апрель: "апреле",
+    май: "мае",
+    июнь: "июне",
+    июль: "июле",
+    август: "августе",
+    сентябрь: "сентябре",
+    октябрь: "октябре",
+    ноябрь: "ноябре",
+    декабрь: "декабре",
+}
+
 export const LESSON_MESSAGES = {
     CREATED: 'Занятие успешно создано',
     UPDATED: 'Занятие обновлено',
@@ -70,11 +88,19 @@ export const createSubjectCreatedMessage = (name: string) => `Предмет "${
 export const createStudentLinkedMessage = (studentName: string) =>
     `Ученик "${studentName}" добавлен к предмету`
 
+function formatMonthGenitive(date: Date) {
+    const month = format(date, 'LLLL', { locale: ru }).toLowerCase() // "январь"
+    const year = format(date, 'yyyy')
+    return `${MONTHS_GENITIVE[month] ?? month} ${year}`
+}
+
 export const INCOME_MESSAGES = {
     EMPTY_STATE: {
         NO_DATA_TITLE: 'Нет данных о доходах',
-        NO_DATA_DESCRIPTION: 'Здесь будет отображаться статистика ваших доходов с занятий.\nНачните проводить занятия и отмечайте их как оплаченные.',
+        NO_DATA_DESCRIPTION:
+            'Здесь будет отображаться статистика ваших доходов с занятий.\nНачните проводить занятия и отмечайте их как оплаченные.',
         NO_INCOME_THIS_MONTH_TITLE: 'В этом месяце доходов нет',
-        NO_INCOME_THIS_MONTH_DESCRIPTION: (date: string) => `В ${date} пока нет оплаченных занятий.`,
+        NO_INCOME_THIS_MONTH_DESCRIPTION: (date: Date) =>
+            `В ${formatMonthGenitive(date)} пока нет оплаченных занятий.`,
     },
 } as const
