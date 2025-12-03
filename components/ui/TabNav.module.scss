@@ -23,7 +23,7 @@
 }
 
 .tab {
-    padding: 8px 4px;
+    padding: 10px 4px;
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
@@ -35,6 +35,11 @@
     white-space: nowrap;
     position: relative;
     bottom: -1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    justify-content: center;
 
     &:hover {
         color: var(--text-primary);
@@ -46,6 +51,11 @@
         border-bottom-color: var(--primary);
     }
 }
+
+.tabLabel {
+    display: inline-block;
+}
+
 
 @media (max-width: 768px) {
     .tab {

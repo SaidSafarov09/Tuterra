@@ -9,7 +9,7 @@ interface TrialToggleProps {
 
 export function TrialToggle({ isTrial, onChange, disabled }: TrialToggleProps) {
     return (
-        <div style={{ marginBottom: '12px' }}>
+        <div>
             <Checkbox
                 checked={isTrial}
                 onChange={(e) => onChange(e.target.checked)}

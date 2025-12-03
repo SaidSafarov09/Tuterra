@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { useEffect, useState, Suspense, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -15,6 +15,8 @@ import { useLessonsByTab } from '@/hooks/useLessonsByTab'
 import { Lesson, Student, Subject, LessonFilter } from '@/types'
 import styles from './page.module.scss'
 import { LESSON_TABS } from '@/constants'
+import { LessonDetailSkeleton } from '@/components/skeletons'
+import { EmptyLessonsState } from '@/components/lessons/EmptyLessonsState'
 
 
 function LessonsContent() {
@@ -33,6 +35,8 @@ function LessonsContent() {
     // Data Fetching with caching
     const {
         lessons,
+        allLessonsCount,
+        lessonsCounts,
         isLoading: isLessonsLoading,
         isRefreshing: isLessonsRefreshing,
         refetch: refetchLessons
@@ -52,7 +56,8 @@ function LessonsContent() {
     const {
         togglePaid,
         toggleCancel,
-        deleteLesson
+        deleteLesson,
+        isLoading,
     } = useLessonActions(refetchLessons)
 
     const {
@@ -74,6 +79,15 @@ function LessonsContent() {
         },
         refetchStudents,
         refetchSubjects
+    )
+
+    // Create tabs with counts using useMemo
+    const tabsWithCounts = useMemo(() =>
+        LESSON_TABS.map(tab => ({
+            ...tab,
+            count: lessonsCounts[tab.id as keyof typeof lessonsCounts]
+        })),
+        [lessonsCounts]
     )
 
     // Effects
@@ -127,21 +141,34 @@ function LessonsContent() {
             </div>
 
             <TabNav
-                tabs={LESSON_TABS}
+                tabs={tabsWithCounts}
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 className={styles.tabs}
             />
 
-            <LessonsList
-                lessons={lessons || []}
-                isLoading={isLessonsLoading}
-                isRefreshing={isLessonsRefreshing}
-                onTogglePaid={togglePaid}
-                onToggleCancel={toggleCancel}
-                onEdit={handleEditLesson}
-                onDelete={handleDeleteClick}
-            />
+            {isLessonsLoading ? (
+                <div className={styles.lessonsList}>
+                    <LessonDetailSkeleton />
+                    <LessonDetailSkeleton />
+                    <LessonDetailSkeleton />
+                </div>
+            ) : lessons.length === 0 ? (
+                <EmptyLessonsState
+                    onAddLesson={handleOpenModal}
+                    filter={allLessonsCount === 0 ? 'all' : activeTab}
+                />
+            ) : (
+                <LessonsList
+                    lessons={lessons || []}
+                    isLoading={isLessonsLoading}
+                    isRefreshing={isLessonsRefreshing}
+                    onTogglePaid={togglePaid}
+                    onToggleCancel={toggleCancel}
+                    onEdit={handleEditLesson}
+                    onDelete={handleDeleteClick}
+                />
+            )}
 
             <LessonFormModal
                 isOpen={isOpen}

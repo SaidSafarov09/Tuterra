@@ -20,6 +20,7 @@ export function useLessonsByTab(activeTab: LessonFilter) {
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const loadedTabs = useRef<Set<LessonFilter>>(new Set())
+    const hasPreloaded = useRef(false)
 
     const fetchLessons = useCallback(async (tab: LessonFilter, force = false) => {
         const isFirstLoad = !loadedTabs.current.has(tab)
@@ -52,12 +53,47 @@ export function useLessonsByTab(activeTab: LessonFilter) {
         fetchLessons(activeTab, true)
     }, [activeTab, fetchLessons])
 
+    // Load active tab data
     useEffect(() => {
         fetchLessons(activeTab)
     }, [activeTab, fetchLessons])
 
+    // Preload all tabs on initial mount for badge counts
+    useEffect(() => {
+        if (hasPreloaded.current) return
+
+        const preloadAllTabs = async () => {
+            const tabs: LessonFilter[] = ['upcoming', 'past', 'unpaid', 'canceled']
+            // Load all tabs in parallel
+            await Promise.all(
+                tabs.map(tab => {
+                    if (!loadedTabs.current.has(tab)) {
+                        return fetchLessons(tab)
+                    }
+                    return Promise.resolve()
+                })
+            )
+        }
+
+        hasPreloaded.current = true
+        preloadAllTabs()
+    }, [fetchLessons])
+
+    // Calculate total lessons count across all tabs
+    const allLessonsCount = Object.values(lessonsCache).reduce((total, lessons) => total + lessons.length, 0)
+
+    // Calculate counts for each tab
+    const lessonsCounts = {
+        upcoming: lessonsCache.upcoming.length,
+        past: lessonsCache.past.length,
+        unpaid: lessonsCache.unpaid.length,
+        canceled: lessonsCache.canceled.length
+    }
+
     return {
         lessons: lessonsCache[activeTab],
+        allLessonsCount,
+        lessonsCounts,
         isLoading,
         isRefreshing,
         error,

@@ -4,6 +4,7 @@ import styles from './TabNav.module.scss'
 interface Tab {
     id: string
     label: string
+    count?: number
 }
 
 interface TabNavProps {
@@ -22,7 +23,7 @@ export function TabNav({ tabs, activeTab, onTabChange, className = '' }: TabNavP
                     className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
                     onClick={() => onTabChange(tab.id)}
                 >
-                    {tab.label}
+                    <span className={styles.tabLabel}>{tab.label}</span>
                 </button>
             ))}
         </div>
