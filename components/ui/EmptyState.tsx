@@ -4,7 +4,7 @@ import styles from './EmptyState.module.scss'
 
 interface EmptyStateProps {
     title: string
-    description: React.ReactNode
+    description?: React.ReactNode
     icon?: React.ReactNode
 }
 
@@ -19,17 +19,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                 {icon}
             </div>
             <h2 className={styles.title}>{title}</h2>
-            <p className={styles.description}>
-                {typeof description === 'string'
-                    ? description.split('\n').map((line, i) => (
-                        <React.Fragment key={i}>
-                            {line}
-                            {i < description.split('\n').length - 1 && <br />}
-                        </React.Fragment>
-                    ))
-                    : description
-                }
-            </p>
+            {description && (
+                <p className={styles.description}>
+                    {typeof description === 'string'
+                        ? description.split('\n').map((line, i) => (
+                            <React.Fragment key={i}>
+                                {line}
+                                {i < description.split('\n').length - 1 && <br />}
+                            </React.Fragment>
+                        ))
+                        : description
+                    }
+                </p>
+            )}
         </div>
     )
 }

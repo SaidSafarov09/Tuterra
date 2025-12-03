@@ -64,11 +64,13 @@ export interface Stats {
 }
 
 export interface DashboardStats {
-  studentsCount: number;
-  totalLessons: number;
-  monthlyIncome: number;
-  subjectsCount: number;
- createdAt: string;
+    studentsCount: number;
+    totalLessons: number;
+    monthlyIncome: number;
+    subjectsCount: number;
+    upcomingLessons: Lesson[];
+    unpaidLessons: Lesson[];
+    createdAt: string;
 }
 
 export interface LessonFormData {
