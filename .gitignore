@@ -15,3 +15,6 @@ prisma/dev.db-journal
 
 # Scripts
 scripts/create-test-user.js
+
+# User Guide
+help.md

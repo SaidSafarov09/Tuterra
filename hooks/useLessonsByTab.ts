@@ -90,11 +90,15 @@ export function useLessonsByTab(activeTab: LessonFilter) {
         canceled: lessonsCache.canceled.length
     }
 
+    const isTabLoaded = loadedTabs.current.has(activeTab)
+    // Show loading if global loading is true OR if current tab hasn't been loaded yet
+    const shouldShowLoading = isLoading || !isTabLoaded
+
     return {
         lessons: lessonsCache[activeTab],
         allLessonsCount,
         lessonsCounts,
-        isLoading,
+        isLoading: shouldShowLoading,
         isRefreshing,
         error,
         refetch
