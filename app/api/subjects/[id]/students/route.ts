@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const user = await getCurrentUser(request)
@@ -13,7 +13,7 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const { id } = params
+        const { id } = await params
 
         const students = await prisma.student.findMany({
             where: {

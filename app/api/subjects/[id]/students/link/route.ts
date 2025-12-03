@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const user = await getCurrentUser(request)
@@ -13,7 +13,7 @@ export async function POST(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const { id: subjectId } = params
+        const { id: subjectId } = await params
         const { studentId } = await request.json()
 
         if (!studentId) {
@@ -66,7 +66,7 @@ export async function POST(
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const user = await getCurrentUser(request)
@@ -74,7 +74,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const { id: subjectId } = params
+        const { id: subjectId } = await params
         const { studentId } = await request.json()
 
         if (!studentId) {

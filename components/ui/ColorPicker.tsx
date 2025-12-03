@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { PaletteIcon } from 'lucide-react'
 import styles from './ColorPicker.module.scss'
+import { SUBJECT_COLORS } from '@/constants'
 
 interface ColorPickerProps {
     value: string
@@ -12,17 +13,7 @@ interface ColorPickerProps {
 
 export const ColorPicker: React.FC<ColorPickerProps> = ({
     value,
-    onChange,
-    presetColors = [
-        '#4A6CF7', // Синий
-        '#10B981', // Зеленый
-        '#F59E0B', // Оранжевый
-        '#EF4444', // Красный
-        '#8B5CF6', // Фиолетовый
-        '#EC4899', // Розовый
-        '#14B8A6', // Бирюзовый
-        '#F97316', // Оранжево-красный
-    ],
+    onChange
 }) => {
     const [customColor, setCustomColor] = useState(value)
     const [showCustom, setShowCustom] = useState(false)
@@ -37,7 +28,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
         <div className={styles.colorPicker}>
             <div className={styles.colorsRow}>
                 <div className={styles.presetColors}>
-                    {presetColors.map((color) => (
+                    {SUBJECT_COLORS.map((color) => (
                         <button
                             key={color}
                             type="button"
