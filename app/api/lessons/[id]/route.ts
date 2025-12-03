@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { getCurrentUser } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -21,16 +21,16 @@ export async function GET(
 
     try {
         const { id } = await params
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
         const lesson = await prisma.lesson.findFirst({
             where: {
                 id: id,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
             include: {
                 student: true,
@@ -58,9 +58,9 @@ export async function PUT(
 ) {
     try {
         const { id } = await params
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -69,7 +69,7 @@ export async function PUT(
         const student = await prisma.student.findFirst({
             where: {
                 id: validatedData.studentId,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
         })
 
@@ -83,7 +83,7 @@ export async function PUT(
         const lesson = await prisma.lesson.updateMany({
             where: {
                 id: id,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
             data: validatedData as any,
         })
@@ -120,9 +120,9 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -142,7 +142,7 @@ export async function PATCH(
         const lesson = await prisma.lesson.updateMany({
             where: {
                 id: id,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
             data: updateData as any,
         })
@@ -172,16 +172,16 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
         const deleted = await prisma.lesson.deleteMany({
             where: {
                 id: id,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
         })
 

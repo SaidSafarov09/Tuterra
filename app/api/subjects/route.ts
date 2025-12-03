@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { getCurrentUser } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -12,16 +12,16 @@ const subjectSchema = z.object({
     icon: z.string().optional(),
 })
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
         const subjects = await prisma.subject.findMany({
-            where: { userId: session.user.id },
+            where: { userId: user.id },
             include: {
                 _count: {
                     select: { students: true, lessons: true },
@@ -40,11 +40,11 @@ export async function GET(request: Request) {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         // Проверяем, не существует ли уже предмет с таким именем
         const existing = await prisma.subject.findFirst({
             where: {
-                userId: session.user.id,
+                userId: user.id,
                 name: validatedData.name,
             },
         })
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         const subject = await prisma.subject.create({
             data: {
                 ...validatedData,
-                userId: session.user.id,
+                userId: user.id,
             },
         })
 

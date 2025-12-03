@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useAuthStore } from '@/store/auth'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -15,7 +15,7 @@ import { TABS, TIMEZONES } from '@/constants'
 
 
 export default function SettingsPage() {
-    const { data: session, update } = useSession()
+    const { user, setUser } = useAuthStore()
     const [activeTab, setActiveTab] = useState('general')
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
@@ -76,13 +76,11 @@ export default function SettingsPage() {
         try {
             const updatedUser = await settingsApi.update(formData)
 
-            await update({
-                ...session,
-                user: {
-                    ...session?.user,
-                    name: updatedUser.name,
-                    image: `/api/user/avatar?t=${Date.now()}`,
-                },
+            setUser({
+                ...user!,
+                name: updatedUser.name,
+                phone: updatedUser.phone || null,
+                avatar: updatedUser.avatar || null,
             })
 
             const event = new Event('visibilitychange');

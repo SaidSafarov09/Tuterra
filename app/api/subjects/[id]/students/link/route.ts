@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { getCurrentUser } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 
 export async function POST(
@@ -8,8 +8,8 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session?.user?.id) {
+        const user = await getCurrentUser(request)
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -24,7 +24,7 @@ export async function POST(
         const subject = await prisma.subject.findFirst({
             where: {
                 id: subjectId,
-                userId: session.user.id,
+                userId: user.id,
             },
         })
 
@@ -36,7 +36,7 @@ export async function POST(
         const student = await prisma.student.findFirst({
             where: {
                 id: studentId,
-                ownerId: session.user.id,
+                ownerId: user.id,
             },
         })
 
@@ -69,8 +69,8 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session?.user?.id) {
+        const user = await getCurrentUser(request)
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -85,7 +85,7 @@ export async function DELETE(
         const subject = await prisma.subject.findFirst({
             where: {
                 id: subjectId,
-                userId: session.user.id,
+                userId: user.id,
             },
         })
 
@@ -97,7 +97,7 @@ export async function DELETE(
         const student = await prisma.student.findFirst({
             where: {
                 id: studentId,
-                ownerId: session.user.id,
+                ownerId: user.id,
             },
         })
 

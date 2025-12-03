@@ -1,6 +1,5 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { NextRequest, NextResponse } from 'next/server'
+import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -14,16 +13,16 @@ const studentSchema = z.object({
     subjectName: z.string().optional(),
 })
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
         const students = await prisma.student.findMany({
-            where: { ownerId: session.user?.id },
+            where: { ownerId: user.id },
             include: {
                 subjects: true,
                 lessons: {
@@ -47,11 +46,11 @@ export async function GET(request: Request) {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -65,10 +64,10 @@ export async function POST(request: Request) {
 
             const existingSubject = await prisma.subject.findFirst({
                 where: {
-                    userId: session.user.id,
+                    userId: user.id,
                     name: {
                         equals: name,
-                    } 
+                    }
                 }
             })
 
@@ -84,7 +83,7 @@ export async function POST(request: Request) {
                     data: {
                         name,
                         color: randomColor,
-                        userId: session.user.id,
+                        userId: user.id,
                     }
                 })
                 subjectId = newSubject.id
@@ -96,7 +95,7 @@ export async function POST(request: Request) {
                 name: validatedData.name,
                 contact: validatedData.contact,
                 note: validatedData.note,
-                ownerId: session.user.id,
+                ownerId: user.id,
                 subjects: subjectId ? {
                     connect: { id: subjectId }
                 } : undefined,

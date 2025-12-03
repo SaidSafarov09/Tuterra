@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { getCurrentUser } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return new NextResponse(null, { status: 401 })
         }
 
         const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
+            where: { id: user.id },
             select: { avatar: true }
         })
 

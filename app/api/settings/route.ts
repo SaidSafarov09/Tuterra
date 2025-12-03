@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { NextRequest, NextResponse } from 'next/server'
+import { getCurrentUser } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -12,16 +12,16 @@ const settingsSchema = z.object({
     timezone: z.string(),
 })
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
+        const currentUser = await prisma.user.findUnique({
+            where: { id: user.id },
             select: {
                 id: true,
                 name: true,
@@ -33,11 +33,11 @@ export async function GET(request: Request) {
             },
         })
 
-        if (!user) {
+        if (!currentUser) {
             return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
         }
 
-        return NextResponse.json(user)
+        return NextResponse.json(currentUser)
     } catch (error) {
         console.error('Get settings error:', error)
         return NextResponse.json(
@@ -47,11 +47,11 @@ export async function GET(request: Request) {
     }
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -64,7 +64,7 @@ export async function PUT(request: Request) {
                 where: {
                     phone: validatedData.phone,
                     NOT: {
-                        id: session.user.id
+                        id: user.id
                     }
                 }
             })
@@ -77,8 +77,8 @@ export async function PUT(request: Request) {
             }
         }
 
-        const user = await prisma.user.update({
-            where: { id: session.user.id },
+        const updatedUser = await prisma.user.update({
+            where: { id: user.id },
             data: validatedData,
             select: {
                 id: true,
@@ -91,7 +91,7 @@ export async function PUT(request: Request) {
             },
         })
 
-        return NextResponse.json(user)
+        return NextResponse.json(updatedUser)
     } catch (error) {
         if (error instanceof z.ZodError) {
             return NextResponse.json(

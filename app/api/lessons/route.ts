@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { getCurrentUser } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -17,11 +17,11 @@ const lessonSchema = z.object({
     topic: z.string().optional(),
 })
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
         const filter = searchParams.get('filter')
 
         const now = new Date()
-        let where: any = { ownerId: session.user?.id }
+        let where: any = { ownerId: user.id }
 
         if (filter === 'upcoming') {
             where.date = { gte: now }
@@ -63,11 +63,11 @@ export async function GET(request: Request) {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
         const student = await prisma.student.findFirst({
             where: {
                 id: validatedData.studentId,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
             include: {
                 subjects: true
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
         const lesson = await prisma.lesson.create({
             data: {
                 ...validatedData,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
             include: {
                 student: true,

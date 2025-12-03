@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSession, signOut } from 'next-auth/react'
+import { useAuthStore } from '@/store/auth'
 import * as Avatar from '@radix-ui/react-avatar'
 import styles from './Sidebar.module.scss'
 import { Button } from '@/components/ui/Button'
@@ -24,10 +24,10 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     const pathname = usePathname()
-    const { data: session, status } = useSession()
+    const { user, logout } = useAuthStore()
     const [isUserModalOpen, setIsUserModalOpen] = useState(false)
 
-    const avatarBgColor = session?.user?.name ? stringToColor(session.user.name) : 'var(--primary)'
+    const avatarBgColor = user?.name ? stringToColor(user.name) : 'var(--primary)'
 
     return (
         <>
@@ -67,38 +67,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                 </nav>
 
                 <div className={styles.userSection}>
-                    {status === 'loading' ? (
-                        <SidebarUserSkeleton />
-                    ) : (
-                        <div
-                            className={styles.userInfo}
-                            onClick={() => setIsUserModalOpen(true)}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <Avatar.Root className={styles.userAvatar}>
-                                <Avatar.Image
-                                    className={styles.avatarImage}
-                                    src={session?.user?.image || undefined}
-                                    alt={session?.user?.name || 'User'}
-                                />
-                                <Avatar.Fallback
-                                    className={styles.avatarFallback}
-                                    style={{ backgroundColor: avatarBgColor }}
-                                >
-                                    {getInitials(session?.user?.name)}
-                                </Avatar.Fallback>
-                            </Avatar.Root>
-                            <div className={styles.userDetails}>
-                                <p className={styles.userName}>{session?.user?.name || 'Пользователь'}</p>
-                                <p className={styles.userEmail}>{session?.user?.email}</p>
-                            </div>
+                    <div
+                        className={styles.userInfo}
+                        onClick={() => setIsUserModalOpen(true)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <Avatar.Root className={styles.userAvatar}>
+                            <Avatar.Image
+                                className={styles.avatarImage}
+                                src={user?.avatar || undefined}
+                                alt={user?.name || 'User'}
+                            />
+                            <Avatar.Fallback
+                                className={styles.avatarFallback}
+                                style={{ backgroundColor: avatarBgColor }}
+                            >
+                                {getInitials(user?.name)}
+                            </Avatar.Fallback>
+                        </Avatar.Root>
+                        <div className={styles.userDetails}>
+                            <p className={styles.userName}>{user?.name || 'Пользователь'}</p>
+                            <p className={styles.userEmail}>{user?.phone}</p>
                         </div>
-                    )}
+                    </div>
                     <Button
                         variant="ghost"
                         size="small"
                         fullWidth
-                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        onClick={async () => {
+                            await logout()
+                            window.location.href = '/auth'
+                        }}
                         className={styles.logoutButton}
                     >
                         <LogoutIcon size={16} />

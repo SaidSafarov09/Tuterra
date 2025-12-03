@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { getCurrentUser } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
             // Оплаченные занятия
             const paidLessons = await prisma.lesson.aggregate({
                 where: {
-                    ownerId: session.user?.id,
+                    ownerId: user.id,
                     isPaid: true,
                     date: {
                         gte: monthStart,
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
             // Неоплаченные занятия
             const unpaidLessons = await prisma.lesson.aggregate({
                 where: {
-                    ownerId: session.user?.id,
+                    ownerId: user.id,
                     isPaid: false,
                     date: {
                         gte: monthStart,
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
 
         const currentMonthIncome = await prisma.lesson.aggregate({
             where: {
-                ownerId: session.user?.id,
+                ownerId: user.id,
                 isPaid: true,
                 date: {
                     gte: currentMonthStart,
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
 
         const previousMonthIncome = await prisma.lesson.aggregate({
             where: {
-                ownerId: session.user?.id,
+                ownerId: user.id,
                 isPaid: true,
                 date: {
                     gte: prevMonthStart,
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
         // Проверяем, есть ли вообще хоть один оплаченный урок за все время
         const paidLessonsCount = await prisma.lesson.count({
             where: {
-                ownerId: session.user?.id,
+                ownerId: user.id,
                 isPaid: true,
             },
         })

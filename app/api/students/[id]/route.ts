@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/authOptions'
+import { getCurrentUser } from '@/lib/auth'
+
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -17,17 +17,17 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
         const { id } = await params
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
         const student = await prisma.student.findFirst({
             where: {
                 id: id,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
             include: {
                 subjects: true,
@@ -60,10 +60,10 @@ export async function PUT(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
         const { id } = await params
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -73,7 +73,7 @@ export async function PUT(
         const student = await prisma.student.updateMany({
             where: {
                 id: id,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
             data: validatedData,
         })
@@ -108,17 +108,17 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getCurrentUser(request)
         const { id } = await params
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
         const deleted = await prisma.student.deleteMany({
             where: {
                 id: id,
-                ownerId: session.user?.id,
+                ownerId: user.id,
             },
         })
 

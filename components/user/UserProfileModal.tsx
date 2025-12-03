@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useAuthStore } from '@/store/auth'
 import Link from 'next/link'
 import * as Avatar from '@radix-ui/react-avatar'
 import { Modal } from '@/components/ui/Modal'
@@ -29,7 +29,7 @@ interface UserProfileModalProps {
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose, onSidebarClose }) => {
     const isMobile = useMediaQuery('(max-width: 768px)')
-    const { data: session } = useSession()
+    const { user, logout } = useAuthStore()
     const [stats, setStats] = useState<DashboardStats | null>(null)
 
     useEffect(() => {
@@ -38,7 +38,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         }
     }, [isOpen])
 
-    const avatarBgColor = session?.user?.name ? stringToColor(session.user.name) : 'var(--primary)'
+    const avatarBgColor = user?.name ? stringToColor(user.name) : 'var(--primary)'
 
     const memberSinceDate = stats?.createdAt ? new Date(stats.createdAt) : null
 
@@ -67,22 +67,22 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                         <Avatar.Root className={styles.userAvatar} style={{ backgroundColor: avatarBgColor }}>
                             <Avatar.Image
                                 className={styles.avatarImage}
-                                src={session?.user?.image || undefined}
-                                alt={session?.user?.name || 'User'}
+                                src={user?.avatar || undefined}
+                                alt={user?.name || 'User'}
                             />
                             <Avatar.Fallback
                                 className={styles.avatarFallback}
                                 style={{ backgroundColor: avatarBgColor, color: 'white' }}
                             >
-                                {getInitials(session?.user?.name || '')}
+                                {getInitials(user?.name || '')}
                             </Avatar.Fallback>
                         </Avatar.Root>
                         <div className={styles.userInfo}>
                             <h3 className={styles.userName}>
-                                {session?.user?.name || <Skeleton width={150} height={28} />}
+                                {user?.name || <Skeleton width={150} height={28} />}
                             </h3>
                             <p className={styles.userEmail}>
-                                {session?.user?.email || <Skeleton width={100} height={16} />}
+                                {user?.phone || <Skeleton width={100} height={16} />}
                             </p>
                         </div>
                     </div>
@@ -132,7 +132,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                     </Link>
                     <Button
                         variant="danger"
-                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        onClick={async () => {
+                            await logout()
+                            window.location.href = '/auth'
+                        }}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
                         <LogoutIcon size={18} />
