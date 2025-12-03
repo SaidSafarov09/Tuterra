@@ -13,8 +13,6 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             )
         }
-
-        // Find verification session
         const session = await prisma.verificationSession.findUnique({
             where: { id: sessionId },
         })
@@ -25,8 +23,6 @@ export async function POST(request: NextRequest) {
                 { status: 404 }
             )
         }
-
-        // Check if session expired
         if (new Date() > session.expiresAt) {
             await prisma.verificationSession.delete({ where: { id: sessionId } })
             return NextResponse.json(
@@ -34,8 +30,6 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             )
         }
-
-        // Check attempts left
         if (session.attemptsLeft <= 0) {
             await prisma.verificationSession.delete({ where: { id: sessionId } })
             return NextResponse.json(
@@ -43,10 +37,7 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             )
         }
-
-        // Verify code
         if (session.code !== code) {
-            // Decrease attempts
             await prisma.verificationSession.update({
                 where: { id: sessionId },
                 data: { attemptsLeft: session.attemptsLeft - 1 },
@@ -61,38 +52,29 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Code is correct - find or create user
         let user = await prisma.user.findUnique({
             where: { phone: session.phone },
         })
 
         if (!user) {
-            // Create new user
             user = await prisma.user.create({
                 data: {
                     phone: session.phone,
                     phoneVerified: true,
-                    name: `Пользователь ${session.phone.slice(-4)}`,
+                    name: `Новый пользователь`,
                 },
             })
         } else {
-            // Update phone verification status
             user = await prisma.user.update({
                 where: { id: user.id },
                 data: { phoneVerified: true },
             })
         }
-
-        // Delete verification session
         await prisma.verificationSession.delete({ where: { id: sessionId } })
-
-        // Generate JWT token
         const token = await signToken({
             userId: user.id,
             phone: user.phone!,
         })
-
-        // Create response with httpOnly cookie
         const response = NextResponse.json({
             success: true,
             token,
@@ -103,13 +85,11 @@ export async function POST(request: NextRequest) {
                 avatar: user.avatar,
             },
         })
-
-        // Set httpOnly cookie
         response.cookies.set('auth-token', token, {
-            httpOnly: process.env.NODE_ENV === 'production', // false in development
+            httpOnly: process.env.NODE_ENV === 'production',
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 30 * 24 * 60 * 60, // 30 days
+            maxAge: 30 * 24 * 60 * 60,
             path: '/',
         })
 

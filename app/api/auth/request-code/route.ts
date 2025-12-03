@@ -16,7 +16,10 @@ export async function POST(request: NextRequest) {
         }
 
         // Generate verification code
-        const code = generateVerificationCode(6)
+        // Magic numbers for testing: code is always 111111
+        const testNumbers = ['+79990000000', '+79998887766']
+        const isTestPhone = testNumbers.includes(phone)
+        const code = isTestPhone ? '111111' : generateVerificationCode(6)
 
         // Create verification session
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
@@ -30,8 +33,10 @@ export async function POST(request: NextRequest) {
             },
         })
 
-        // Send SMS (fake for now)
-        await sendSMS(phone, code)
+        // Send SMS (skip for test phone)
+        if (!isTestPhone) {
+            await sendSMS(phone, code)
+        }
 
         return NextResponse.json({
             success: true,

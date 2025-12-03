@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './DateTimePicker.module.scss'
 import { CalendarIcon, ClockIcon, ArrowLeftIcon, ArrowRightIcon } from '@/components/icons/Icons'
 import { Button } from './Button'
@@ -14,7 +15,7 @@ interface DateTimePickerProps {
     minDate?: Date
     maxDate?: Date
     showTime?: boolean
-    timeOnly?: boolean // Показывать только выбор времени, без календаря
+    timeOnly?: boolean
     disabled?: boolean
     required?: boolean
     error?: string
@@ -116,6 +117,97 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
         return false
     }
 
+    const renderPickerContent = () => (
+        <>
+            {!timeOnly && (
+                <>
+                    <div className={styles.header}>
+                        <button
+                            className={styles.navButton}
+                            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                        >
+                            <ArrowLeftIcon size={16} />
+                        </button>
+                        <span className={styles.monthYear}>
+                            {format(currentMonth, 'LLLL yyyy', { locale: ru })}
+                        </span>
+                        <button
+                            className={styles.navButton}
+                            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                        >
+                            <ArrowRightIcon size={16} />
+                        </button>
+                    </div>
+
+                    <div className={styles.weekdays}>
+                        {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day) => (
+                            <div key={day} className={styles.weekday}>
+                                {day}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className={styles.days}>
+                        {calendarDays.map((day, index) => (
+                            <button
+                                key={index}
+                                className={`${styles.day} ${!isSameMonth(day, currentMonth) ? styles.otherMonth : ''
+                                    } ${value && isSameDay(day, value) ? styles.selected : ''} ${isToday(day) ? styles.today : ''
+                                    } ${isDayDisabled(day) ? styles.disabled : ''}`}
+                                onClick={() => !isDayDisabled(day) && handleDayClick(day)}
+                                disabled={isDayDisabled(day)}
+                            >
+                                {format(day, 'd')}
+                            </button>
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {(showTime || timeOnly) && (
+                <div className={styles.timePicker}>
+                    <div className={styles.timeLabel}>Время</div>
+                    <div className={styles.timeInputs}>
+                        <input
+                            type="number"
+                            className={styles.timeInput}
+                            value={hours}
+                            onChange={(e) => {
+                                const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0))
+                                setHours(val.toString().padStart(2, '0'))
+                                handleTimeChange()
+                            }}
+                            min="0"
+                            max="23"
+                        />
+                        <span className={styles.timeSeparator}>:</span>
+                        <input
+                            type="number"
+                            className={styles.timeInput}
+                            value={minutes}
+                            onChange={(e) => {
+                                const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
+                                setMinutes(val.toString().padStart(2, '0'))
+                                handleTimeChange()
+                            }}
+                            min="0"
+                            max="59"
+                        />
+                    </div>
+                </div>
+            )}
+
+            <div className={styles.footer}>
+                <Button variant="ghost" size="small" fullWidth onClick={() => setIsOpen(false)}>
+                    Отмена
+                </Button>
+                <Button size="small" fullWidth onClick={handleConfirm}>
+                    Готово
+                </Button>
+            </div>
+        </>
+    )
+
     return (
         <div className={styles.container} ref={containerRef}>
             {label && (
@@ -150,94 +242,26 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
             </div>
 
             {isOpen && (
-                <div className={`${styles.picker} ${dropDirection === 'center' ? styles.pickerCenter : ''} ${timeOnly ? styles.timeOnlyPicker : ''}`}>
-                    {!timeOnly && (
-                        <>
-                            <div className={styles.header}>
-                                <button
-                                    className={styles.navButton}
-                                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                                >
-                                    <ArrowLeftIcon size={16} />
-                                </button>
-                                <span className={styles.monthYear}>
-                                    {format(currentMonth, 'LLLL yyyy', { locale: ru })}
-                                </span>
-                                <button
-                                    className={styles.navButton}
-                                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                                >
-                                    <ArrowRightIcon size={16} />
-                                </button>
-                            </div>
-
-                            <div className={styles.weekdays}>
-                                {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day) => (
-                                    <div key={day} className={styles.weekday}>
-                                        {day}
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className={styles.days}>
-                                {calendarDays.map((day, index) => (
-                                    <button
-                                        key={index}
-                                        className={`${styles.day} ${!isSameMonth(day, currentMonth) ? styles.otherMonth : ''
-                                            } ${value && isSameDay(day, value) ? styles.selected : ''} ${isToday(day) ? styles.today : ''
-                                            } ${isDayDisabled(day) ? styles.disabled : ''}`}
-                                        onClick={() => !isDayDisabled(day) && handleDayClick(day)}
-                                        disabled={isDayDisabled(day)}
-                                    >
-                                        {format(day, 'd')}
-                                    </button>
-                                ))}
-                            </div>
-                        </>
+                <>
+                    {dropDirection === 'center' && (
+                        createPortal(
+                            <div className={styles.overlay} onClick={() => setIsOpen(false)} />,
+                            document.body
+                        )
                     )}
-
-                    {(showTime || timeOnly) && (
-                        <div className={styles.timePicker}>
-                            <div className={styles.timeLabel}>Время</div>
-                            <div className={styles.timeInputs}>
-                                <input
-                                    type="number"
-                                    className={styles.timeInput}
-                                    value={hours}
-                                    onChange={(e) => {
-                                        const val = Math.max(0, Math.min(23, parseInt(e.target.value) || 0))
-                                        setHours(val.toString().padStart(2, '0'))
-                                        handleTimeChange()
-                                    }}
-                                    min="0"
-                                    max="23"
-                                />
-                                <span className={styles.timeSeparator}>:</span>
-                                <input
-                                    type="number"
-                                    className={styles.timeInput}
-                                    value={minutes}
-                                    onChange={(e) => {
-                                        const val = Math.max(0, Math.min(59, parseInt(e.target.value) || 0))
-                                        setMinutes(val.toString().padStart(2, '0'))
-                                        handleTimeChange()
-                                    }}
-                                    min="0"
-                                    max="59"
-                                />
-                            </div>
+                    {dropDirection === 'center' ? (
+                        createPortal(
+                            <div className={`${styles.picker} ${styles.pickerCenter} ${timeOnly ? styles.timeOnlyPicker : ''}`}>
+                                {renderPickerContent()}
+                            </div>,
+                            document.body
+                        )
+                    ) : (
+                        <div className={`${styles.picker} ${timeOnly ? styles.timeOnlyPicker : ''}`}>
+                            {renderPickerContent()}
                         </div>
                     )}
-
-                    <div className={styles.footer}>
-                        <Button variant="ghost" size="small" fullWidth onClick={() => setIsOpen(false)}>
-                            Отмена
-                        </Button>
-                        <Button size="small" fullWidth onClick={handleConfirm}>
-                            Готово
-                        </Button>
-                    </div>
-                </div>
+                </>
             )}
 
             {error && <div className={styles.errorMessage}>{error}</div>}

@@ -105,12 +105,43 @@
     }
 }
 
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 2000;
+    animation: fadeIn 0.2s ease;
+    backdrop-filter: blur(2px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 .pickerCenter {
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     animation: pickerAppearCenter 0.2s ease;
-    z-index: 1001;
+    z-index: 2001;
+    margin: 0;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+    @media (max-width: 768px) {
+        top: 50%;
+        width: 90%;
+        max-width: 320px;
+    }
 }
 
 @keyframes pickerAppearCenter {

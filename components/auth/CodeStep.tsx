@@ -21,10 +21,7 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
     const { login } = useAuthStore()
 
     useEffect(() => {
-        // Focus first input on mount
         inputRefs.current[0]?.focus()
-
-        // Start countdown timer
         const interval = setInterval(() => {
             setTimer((prev) => {
                 if (prev <= 1) {
@@ -47,13 +44,9 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
         newCode[index] = value
 
         setCode(newCode)
-
-        // Auto-focus next input
         if (value && index < 5) {
             inputRefs.current[index + 1]?.focus()
         }
-
-        // Auto-submit when all filled
         if (newCode.every((digit) => digit !== '') && !isLoading) {
             handleSubmit(newCode.join(''))
         }
@@ -76,11 +69,8 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
 
         setCode(newCode)
 
-        // Focus last filled input or first empty
         const lastIndex = Math.min(pastedData.length, 5)
         inputRefs.current[lastIndex]?.focus()
-
-        // Auto-submit if complete
         if (pastedData.length === 6) {
             handleSubmit(pastedData)
         }
@@ -109,12 +99,8 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
                 throw new Error(data.error || 'Неверный код')
             }
 
-            // Save auth data
             login(data.token, data.user)
-
             toast.success('Вход выполнен успешно!')
-
-            // Use window.location instead of router.push to ensure cookies are sent
             window.location.href = '/dashboard'
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')
@@ -147,7 +133,6 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
             setCode(['', '', '', '', '', ''])
             inputRefs.current[0]?.focus()
 
-            // Restart timer
             const interval = setInterval(() => {
                 setTimer((prev) => {
                     if (prev <= 1) {
@@ -179,7 +164,9 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
                 {code.map((digit, index) => (
                     <input
                         key={index}
-                        ref={(el) => (inputRefs.current[index] = el)}
+                        ref={(el) => {
+                            inputRefs.current[index] = el;
+                        }}
                         type="text"
                         inputMode="numeric"
                         maxLength={1}

@@ -22,10 +22,10 @@
 }
 
 .studentHeader {
-    margin-bottom: 48px;
+    margin-bottom: 32px;
 
     @media (max-width: 768px) {
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }
 }
 
@@ -206,9 +206,8 @@
     }
 }
 
-/* Sections */
 .section {
-    margin-bottom: 40px;
+    margin-bottom: 24px;
 }
 
 .sectionHeader {
