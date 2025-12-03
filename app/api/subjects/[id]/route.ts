@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 
 import { prisma } from '@/lib/prisma'
@@ -11,12 +11,12 @@ const subjectSchema = z.object({
 })
 
 export async function GET(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
         const user = await getCurrentUser(request)
-        const { id } = await params
+        const { id } = params
 
         if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -54,12 +54,12 @@ export async function GET(
 }
 
 export async function PUT(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
         const user = await getCurrentUser(request)
-        const { id } = await params
+        const { id } = params
 
         if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -102,12 +102,12 @@ export async function PUT(
 }
 
 export async function PATCH(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
         const user = await getCurrentUser(request)
-        const { id } = await params
+        const { id } = params
 
         if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -148,12 +148,12 @@ export async function PATCH(
 }
 
 export async function DELETE(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
         const user = await getCurrentUser(request)
-        const { id } = await params
+        const { id } = params
 
         if (!user) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })

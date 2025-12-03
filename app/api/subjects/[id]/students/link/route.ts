@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 
 import { prisma } from '@/lib/prisma'
 
 export async function POST(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
         const user = await getCurrentUser(request)
@@ -13,7 +13,7 @@ export async function POST(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const { id: subjectId } = await params
+        const { id: subjectId } = params
         const { studentId } = await request.json()
 
         if (!studentId) {
@@ -65,8 +65,8 @@ export async function POST(
 }
 
 export async function DELETE(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
         const user = await getCurrentUser(request)
@@ -74,7 +74,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const { id: subjectId } = await params
+        const { id: subjectId } = params
         const { studentId } = await request.json()
 
         if (!studentId) {

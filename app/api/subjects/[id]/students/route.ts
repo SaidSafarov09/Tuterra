@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
         const user = await getCurrentUser(request)
@@ -13,7 +13,7 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const { id } = await params
+        const { id } = params
 
         const students = await prisma.student.findMany({
             where: {

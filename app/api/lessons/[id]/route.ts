@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 
 import { prisma } from '@/lib/prisma'
@@ -15,12 +15,12 @@ const lessonSchema = z.object({
 })
 
 export async function GET(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
 
     try {
-        const { id } = await params
+        const { id } = params
         const user = await getCurrentUser(request)
 
         if (!user) {
@@ -53,11 +53,11 @@ export async function GET(
 }
 
 export async function PUT(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = await params
+        const { id } = params
         const user = await getCurrentUser(request)
 
         if (!user) {
@@ -115,11 +115,11 @@ export async function PUT(
 }
 
 export async function PATCH(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = await params
+        const { id } = params
         const user = await getCurrentUser(request)
 
         if (!user) {
@@ -167,11 +167,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = await params
+        const { id } = params
         const user = await getCurrentUser(request)
 
         if (!user) {
