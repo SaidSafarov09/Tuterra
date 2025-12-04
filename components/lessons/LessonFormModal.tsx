@@ -47,7 +47,6 @@ export function LessonFormModal({
 }: LessonFormModalProps) {
     const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
 
-    // Default recurrence rule
     const defaultRecurrence: RecurrenceRule = {
         enabled: false,
         type: 'weekly',
@@ -165,7 +164,7 @@ export function LessonFormModal({
                     name="topic"
                     value={formData.topic || ''}
                     onChange={(e) => handleChange('topic', e.target.value)}
-                    placeholder="Например: Present Simple"
+                    placeholder={`Например: ${topicPlaceholder}`}
                     disabled={isSubmitting}
                 />)}
 

@@ -41,7 +41,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
         <div>
             <div className={styles.header}>
                 <button className={styles.backButton} onClick={() => router.back()}>
-                    ← Назад к списку
+                    ← Назад к ученикам
                 </button>
             </div>
 
