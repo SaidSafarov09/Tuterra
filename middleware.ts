@@ -11,11 +11,20 @@ const protectedPaths = ['/dashboard', '/students', '/subjects', '/lessons', '/ca
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
+    // Debug logging (remove after fixing production issue)
+    const token = request.cookies.get('auth-token')?.value
+    console.log('[Middleware]', {
+        pathname,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
+    })
+
     // Handle root path
     if (pathname === '/') {
-        const token = request.cookies.get('auth-token')?.value
         const payload = token ? await verifyToken(token) : null
         const isAuthenticated = payload !== null
+
+        console.log('[Middleware] Root path:', { isAuthenticated, payload: payload ? 'valid' : 'invalid' })
 
         if (isAuthenticated) {
             return NextResponse.redirect(new URL('/dashboard', request.url))
@@ -28,25 +37,33 @@ export async function middleware(request: NextRequest) {
     const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
     const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
 
-    // Get token from cookie
-    const token = request.cookies.get('auth-token')?.value
-
     // Verify token
     const payload = token ? await verifyToken(token) : null
     const isAuthenticated = payload !== null
 
+    console.log('[Middleware] Auth check:', {
+        pathname,
+        isProtectedPath,
+        isPublicPath,
+        isAuthenticated,
+        payloadValid: !!payload
+    })
+
     // Redirect to auth if trying to access protected route without auth
     if (isProtectedPath && !isAuthenticated) {
+        console.log('[Middleware] Redirecting to /auth - no valid token')
         const url = new URL('/auth', request.url)
         return NextResponse.redirect(url)
     }
 
     // Redirect to dashboard if trying to access auth page while authenticated
     if (isPublicPath && isAuthenticated) {
+        console.log('[Middleware] Redirecting to /dashboard - already authenticated')
         const url = new URL('/dashboard', request.url)
         return NextResponse.redirect(url)
     }
 
+    console.log('[Middleware] Allowing request to proceed')
     return NextResponse.next()
 }
 
