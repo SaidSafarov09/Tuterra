@@ -27,6 +27,7 @@ model User {
   subjects  Subject[]
   lessons   Lesson[]
   students  Student[]
+  lessonSeries LessonSeries[]
   verificationCodes VerificationCode[]
   authProviders AuthProvider[]
 
@@ -46,6 +47,7 @@ model Subject {
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   students Student[]
   lessons  Lesson[]
+  lessonSeries LessonSeries[]
 
   @@unique([userId, name])
 }
@@ -68,6 +70,7 @@ model Student {
   owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   subjects Subject[]
   lessons Lesson[]
+  lessonSeries LessonSeries[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,25 +79,58 @@ model Student {
 }
 
 model Lesson {
-  id        String   @id @default(cuid())
-  date      DateTime
-  price     Int
-  isPaid    Boolean  @default(false)
-  isCanceled Boolean @default(false)
-  notes     String?
-  topic     String?
-  ownerId   String
-  studentId String
-  subjectId String?
+  id         String   @id @default(cuid())
+  date       DateTime
+  price      Int
+  isPaid     Boolean  @default(false)
+  isCanceled Boolean  @default(false)
+  notes      String?
+  topic      String?
+  ownerId    String
+  studentId  String
+  subjectId  String?
+  seriesId   String?  // Link to recurring series
 
-  owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  owner   User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  student Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject Subject?      @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  series  LessonSeries? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
+  @@index([studentId])
+  @@index([subjectId])
+  @@index([seriesId])
+}
+
+model LessonSeries {
+  id              String   @id @default(cuid())
+  userId          String
+  type            String   // "weekly" | "daily" | "every_x_weeks"
+  interval        Int      @default(1) // For "every X weeks"
+  daysOfWeek      Int[]    // Array of 0-6 (Sunday-Saturday)
+  startDate       DateTime
+  endDate         DateTime?
+  occurrencesCount Int?
+  
+  // Lesson template data
+  studentId String
+  subjectId String?
+  price     Int
+  topic     String?
+  notes     String?
+
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  student Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  lessons Lesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
   @@index([studentId])
   @@index([subjectId])
 }

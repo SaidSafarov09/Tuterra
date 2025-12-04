@@ -3,12 +3,14 @@ import Link from 'next/link'
 import { Lesson } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { ClockIcon, NoteIcon } from '@/components/icons/Icons'
+import { Repeat } from 'lucide-react'
 import { LessonStatusBadge } from '@/components/lessons/LessonStatusBadge'
 import { LessonActions } from '@/components/lessons/LessonActions'
+import { getRecurrenceDescription } from '@/lib/recurring-lessons'
 import styles from './LessonCard.module.scss'
 
 interface LessonCardProps {
-    lesson: Lesson
+    lesson: Lesson & { series?: any } // Extended with series data
     variant?: 'default' | 'compact'
     showActions?: boolean
     onTogglePaid?: (lesson: Lesson) => void
@@ -27,6 +29,20 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     onDelete,
 }) => {
     const [showTopic, setShowTopic] = useState(false)
+
+    // Get recurrence description if lesson is part of a series
+    const recurrenceText = lesson.series ? getRecurrenceDescription(
+        {
+            enabled: true,
+            type: lesson.series.type,
+            interval: lesson.series.interval,
+            daysOfWeek: lesson.series.daysOfWeek,
+            endType: lesson.series.endDate ? 'until_date' : lesson.series.occurrencesCount ? 'count' : 'never',
+            endDate: lesson.series.endDate,
+            occurrencesCount: lesson.series.occurrencesCount,
+        },
+        new Date(lesson.date)
+    ) : null
 
     const CardContent = (
         <div className={`${styles.card} ${variant === 'compact' ? styles.compact : ''} ${lesson.isCanceled ? styles.canceled : ''}`}>
@@ -49,6 +65,12 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                         <ClockIcon size={14} color="var(--text-secondary)" />
                         {formatSmartDate(lesson.date)}
                     </p>
+                    {recurrenceText && (
+                        <p className={styles.recurrence}>
+                            <Repeat size={14} />
+                            {recurrenceText}
+                        </p>
+                    )}
                     {lesson.topic && (
                         <div
                             className={styles.topicTrigger}

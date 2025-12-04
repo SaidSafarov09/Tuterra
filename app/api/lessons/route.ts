@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { generateRecurringDates, validateRecurrenceRule } from '@/lib/recurring-lessons'
+import type { RecurrenceRule } from '@/types/recurring'
 
 export const dynamic = 'force-dynamic'
+
+// DRY: Reusable schema for recurrence rule
+const recurrenceRuleSchema = z.object({
+    enabled: z.boolean(),
+    type: z.enum(['weekly', 'daily', 'every_x_weeks']),
+    interval: z.number().int().min(1).default(1),
+    daysOfWeek: z.array(z.number().int().min(0).max(6)).default([]),
+    endType: z.enum(['never', 'until_date', 'count']),
+    endDate: z.string().optional().transform(str => str ? new Date(str) : undefined),
+    occurrencesCount: z.number().int().min(1).optional(),
+})
 
 const lessonSchema = z.object({
     studentId: z.string(),
@@ -15,6 +27,8 @@ const lessonSchema = z.object({
     isCanceled: z.boolean().optional(),
     notes: z.string().optional(),
     topic: z.string().optional(),
+    recurrence: recurrenceRuleSchema.optional(),
+    isPaidAll: z.boolean().optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -49,6 +63,7 @@ export async function GET(request: NextRequest) {
             include: {
                 student: true,
                 subject: true,
+                // series: true, // TODO: Uncomment after TS server restart
             },
             orderBy: { date: filter === 'past' ? 'desc' : 'asc' },
         })
@@ -73,6 +88,8 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json()
         const validatedData = lessonSchema.parse(body)
+
+        // Verify student ownership
         const student = await prisma.student.findFirst({
             where: {
                 id: validatedData.studentId,
@@ -90,32 +107,14 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const lesson = await prisma.lesson.create({
-            data: {
-                ...validatedData,
-                ownerId: user.id,
-            },
-            include: {
-                student: true,
-                subject: true,
-            },
-        })
-        if (validatedData.subjectId) {
-            try {
-                await prisma.student.update({
-                    where: { id: validatedData.studentId },
-                    data: {
-                        subjects: {
-                            connect: { id: validatedData.subjectId },
-                        },
-                    } as any,
-                })
-            } catch (error) {
-                console.log('Subject linking attempt result:', error)
-            }
+        // DRY: Handle recurring lessons
+        if (validatedData.recurrence?.enabled) {
+            return await createRecurringLesson(user.id, validatedData)
         }
 
-        return NextResponse.json(lesson, { status: 201 })
+        // DRY: Handle single lesson
+        return await createSingleLesson(user.id, validatedData)
+
     } catch (error) {
         if (error instanceof z.ZodError) {
             return NextResponse.json(
@@ -129,5 +128,135 @@ export async function POST(request: NextRequest) {
             { error: 'Произошла ошибка при создании занятия' },
             { status: 500 }
         )
+    }
+}
+
+// ============================================================================
+// DRY: Extracted helper functions
+// ============================================================================
+
+async function createSingleLesson(userId: string, data: z.infer<typeof lessonSchema>) {
+    const lesson = await prisma.lesson.create({
+        data: {
+            date: data.date,
+            price: data.price,
+            isPaid: data.isPaid || false,
+            isCanceled: data.isCanceled || false,
+            notes: data.notes,
+            topic: data.topic,
+            ownerId: userId,
+            studentId: data.studentId,
+            subjectId: data.subjectId,
+        },
+        include: {
+            student: true,
+            subject: true,
+        },
+    })
+
+    // Link subject to student if needed
+    if (data.subjectId) {
+        await linkSubjectToStudent(data.studentId, data.subjectId)
+    }
+
+    return NextResponse.json(lesson, { status: 201 })
+}
+
+async function createRecurringLesson(userId: string, data: z.infer<typeof lessonSchema>) {
+    const recurrence = data.recurrence!
+
+    // Validate recurrence rule
+    const validation = validateRecurrenceRule(recurrence)
+    if (!validation.valid) {
+        return NextResponse.json(
+            { error: validation.error },
+            { status: 400 }
+        )
+    }
+
+    // Create lesson series
+    const series = await (prisma as any).lessonSeries.create({
+        data: {
+            userId,
+            type: recurrence.type,
+            interval: recurrence.interval,
+            daysOfWeek: recurrence.daysOfWeek,
+            startDate: data.date,
+            endDate: recurrence.endDate,
+            occurrencesCount: recurrence.occurrencesCount,
+            studentId: data.studentId,
+            subjectId: data.subjectId,
+            price: data.price,
+            topic: data.topic,
+            notes: data.notes,
+        },
+    })
+
+    // Generate dates for next 3 months (or until end date)
+    const threeMonthsFromNow = new Date()
+    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3)
+
+    const dates = generateRecurringDates({
+        startDate: data.date,
+        rule: recurrence,
+        limit: 100,
+        endDate: threeMonthsFromNow,
+    })
+
+    // Create lessons for generated dates
+    const lessons = await prisma.lesson.createMany({
+        data: dates.map((date, index) => ({
+            date,
+            price: data.price,
+            // If isPaidAll is true, all are paid.
+            // Otherwise, only the first one (index 0) takes the isPaid value from the form
+            isPaid: data.isPaidAll ? true : (index === 0 ? (data.isPaid || false) : false),
+            isCanceled: false,
+            notes: data.notes,
+            topic: data.topic,
+            ownerId: userId,
+            studentId: data.studentId,
+            subjectId: data.subjectId,
+            seriesId: series.id,
+        })),
+    })
+
+    // Link subject to student if needed
+    if (data.subjectId) {
+        await linkSubjectToStudent(data.studentId, data.subjectId)
+    }
+
+    // Return first lesson with series info
+    const firstLesson = await prisma.lesson.findFirst({
+        where: { seriesId: series.id } as any,
+        include: {
+            student: true,
+            subject: true,
+            // series: true, // TODO: Uncomment after TS server restart
+        },
+        orderBy: { date: 'asc' },
+    })
+
+    return NextResponse.json({
+        ...firstLesson,
+        _meta: {
+            isRecurring: true,
+            totalLessons: lessons.count,
+        }
+    }, { status: 201 })
+}
+
+async function linkSubjectToStudent(studentId: string, subjectId: string) {
+    try {
+        await prisma.student.update({
+            where: { id: studentId },
+            data: {
+                subjects: {
+                    connect: { id: subjectId },
+                },
+            } as any,
+        })
+    } catch (error) {
+        console.log('Subject linking attempt result:', error)
     }
 }

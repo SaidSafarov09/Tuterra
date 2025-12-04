@@ -45,6 +45,7 @@ export interface Lesson {
     isCanceled: boolean
     notes?: string
     topic?: string
+    seriesId?: string | null
     student: {
         id: string
         name: string
@@ -80,14 +81,18 @@ export interface MonthlyData {
     unpaid: number
 }
 
+import type { RecurrenceRule } from './recurring'
+
 export interface LessonFormData {
     studentId: string
     subjectId: string
     date: Date
     price: string
     isPaid: boolean
+    isPaidAll?: boolean
     notes: string
     topic: string
+    recurrence?: RecurrenceRule
 }
 
 export type LessonFilter = 'all' | 'upcoming' | 'past' | 'unpaid' | 'canceled'

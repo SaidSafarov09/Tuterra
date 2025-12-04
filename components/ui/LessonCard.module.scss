@@ -72,6 +72,20 @@
     font-weight: 600;
 }
 
+.recurrence {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--primary);
+    margin: 0;
+    font-weight: 500;
+
+    svg {
+        flex-shrink: 0;
+    }
+}
+
 .priceContainer {
     display: flex;
     flex-direction: column;

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Lesson } from '@/types'
 import {
     toggleLessonPaid,
@@ -31,15 +32,24 @@ export function useLessonActions(onUpdate?: () => void) {
         setIsLoading(false)
     }
 
-    const deleteLesson = async (lessonId: string) => {
+    const deleteLesson = async (lessonId: string, scope: 'single' | 'series' = 'single') => {
         setIsLoading(true)
-        const success = await removeLesson(lessonId)
+        try {
+            const response = await fetch(`/api/lessons/${lessonId}?scope=${scope}`, {
+                method: 'DELETE',
+            })
 
-        if (success) {
-            onUpdate?.()
+            if (!response.ok) {
+                throw new Error('Failed to delete lesson')
+            }
+
+            toast.success(scope === 'series' ? 'Серия занятий удалена' : 'Занятие удалено')
+            if (onUpdate) onUpdate() // Changed onSuccess to onUpdate to match existing prop
+        } catch (error) {
+            toast.error('Не удалось удалить занятие')
+        } finally {
+            setIsLoading(false)
         }
-
-        setIsLoading(false)
     }
 
     return {
@@ -49,3 +59,4 @@ export function useLessonActions(onUpdate?: () => void) {
         isLoading,
     }
 }
+

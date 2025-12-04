@@ -176,15 +176,47 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const deleted = await prisma.lesson.deleteMany({
+        const { searchParams } = new URL(request.url)
+        const scope = searchParams.get('scope')
+
+        // First find the lesson to check ownership and series info
+        const lesson = await prisma.lesson.findFirst({
             where: {
                 id: id,
                 ownerId: user.id,
             },
         })
 
-        if (deleted.count === 0) {
+        if (!lesson) {
             return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+        }
+
+        const lessonWithSeries = lesson as any
+
+        if (scope === 'series' && lessonWithSeries.seriesId) {
+            // Delete entire series
+            // 1. Delete all lessons in series
+            await prisma.lesson.deleteMany({
+                where: {
+                    seriesId: lessonWithSeries.seriesId,
+                    ownerId: user.id,
+                } as any,
+            })
+
+            // 2. Delete the series record (using as any until TS update)
+            await (prisma as any).lessonSeries.delete({
+                where: {
+                    id: lessonWithSeries.seriesId,
+                    userId: user.id,
+                },
+            })
+        } else {
+            // Delete single lesson
+            await prisma.lesson.delete({
+                where: {
+                    id: id,
+                },
+            })
         }
 
         return NextResponse.json({ success: true })

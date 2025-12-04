@@ -5,11 +5,12 @@ import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { Input } from '@/components/ui/Input'
 import { Student, Subject, LessonFormData } from '@/types'
 import styles from '../../app/(dashboard)/lessons/page.module.scss'
-
 import { useTypewriter } from '@/hooks/useTypewriter'
 import { LESSON_TOPIC_EXAMPLES } from '@/constants'
 import { TrialToggle } from '@/components/lessons/TrialToggle'
 import { Checkbox } from '@/components/ui/Checkbox'
+import { RecurrenceSection } from '@/components/lessons/RecurrenceSection'
+import type { RecurrenceRule } from '@/types/recurring'
 
 interface LessonFormModalProps {
     isOpen: boolean
@@ -45,6 +46,15 @@ export function LessonFormModal({
     handleChange
 }: LessonFormModalProps) {
     const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
+
+    // Default recurrence rule
+    const defaultRecurrence: RecurrenceRule = {
+        enabled: false,
+        type: 'weekly',
+        interval: 1,
+        daysOfWeek: [],
+        endType: 'never',
+    }
 
     return (
         <Modal
@@ -138,13 +148,38 @@ export function LessonFormModal({
                     disabled={isSubmitting}
                 />
 
-                {formData.price !== '0' && (
-                    <Checkbox
-                        checked={formData.isPaid}
-                        onChange={(e) => handleChange('isPaid', e.target.checked)}
-                        label="Оплачено"
+                {!isEdit && (
+                    <RecurrenceSection
+                        value={formData.recurrence || defaultRecurrence}
+                        onChange={(recurrence) => setFormData((prev) => ({ ...prev, recurrence }))}
                         disabled={isSubmitting}
                     />
+                )}
+
+                {formData.price !== '0' && (
+                    <div className={styles.paymentSection}>
+                        <Checkbox
+                            checked={formData.isPaid}
+                            onChange={(e) => handleChange('isPaid', e.target.checked)}
+                            label={formData.recurrence?.enabled ? "Оплачено только первое занятие" : "Оплачено"}
+                            disabled={isSubmitting}
+                        />
+
+                        {formData.recurrence?.enabled && (
+                            <Checkbox
+                                checked={formData.isPaidAll || false}
+                                onChange={(e) => {
+                                    handleChange('isPaidAll', e.target.checked)
+                                    // If "Paid all" is checked, "Paid first" should also be visually checked or handled
+                                    if (e.target.checked) {
+                                        handleChange('isPaid', true)
+                                    }
+                                }}
+                                label="Оплачены все занятия серии"
+                                disabled={isSubmitting}
+                            />
+                        )}
+                    </div>
                 )}
             </form>
         </Modal>

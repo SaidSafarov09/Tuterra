@@ -28,6 +28,8 @@ export function useLessonForm(
             isPaid: false,
             notes: '',
             topic: '',
+            recurrence: undefined,
+            isPaidAll: false,
         })
         setError('')
     }
@@ -144,6 +146,8 @@ export function useLessonForm(
                     isPaid: formData.isPaid,
                     notes: formData.notes,
                     topic: formData.topic,
+                    recurrence: formData.recurrence,
+                    isPaidAll: formData.isPaidAll,
                 }),
             })
 

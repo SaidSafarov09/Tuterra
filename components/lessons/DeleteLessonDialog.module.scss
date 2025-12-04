@@ -1,0 +1,45 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.message {
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface-secondary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+
+    input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--danger);
+        cursor: pointer;
+    }
+
+    span {
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    &:hover span {
+        color: var(--text-primary);
+    }
+}

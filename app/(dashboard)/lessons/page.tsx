@@ -3,11 +3,11 @@
 import React, { useEffect, useState, Suspense, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PlusIcon } from '@/components/icons/Icons'
 import { TabNav } from '@/components/ui/TabNav'
 import { LessonsList } from '@/components/lessons/LessonsList'
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
+import { DeleteLessonDialog } from '@/components/lessons/DeleteLessonDialog'
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { useFetch } from '@/hooks/useFetch'
@@ -27,9 +27,9 @@ function LessonsContent() {
     const [activeTab, setActiveTab] = useState<LessonFilter>('upcoming')
     const [isOpen, setIsOpen] = useState(false)
     const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
-    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; lessonId: string | null }>({
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; lesson: Lesson | null }>({
         isOpen: false,
-        lessonId: null,
+        lesson: null,
     })
 
     // Data Fetching with caching
@@ -117,13 +117,16 @@ function LessonsContent() {
     }
 
     const handleDeleteClick = (lessonId: string) => {
-        setDeleteConfirm({ isOpen: true, lessonId })
+        const lesson = lessons.find(l => l.id === lessonId)
+        if (lesson) {
+            setDeleteConfirm({ isOpen: true, lesson })
+        }
     }
 
-    const handleConfirmDelete = async () => {
-        if (deleteConfirm.lessonId) {
-            await deleteLesson(deleteConfirm.lessonId)
-            setDeleteConfirm({ isOpen: false, lessonId: null })
+    const handleConfirmDelete = async (scope: 'single' | 'series') => {
+        if (deleteConfirm.lesson) {
+            await deleteLesson(deleteConfirm.lesson.id, scope)
+            setDeleteConfirm({ isOpen: false, lesson: null })
         }
     }
 
@@ -187,15 +190,12 @@ function LessonsContent() {
                 handleChange={handleChange}
             />
 
-            <ConfirmDialog
+            <DeleteLessonDialog
                 isOpen={deleteConfirm.isOpen}
-                onClose={() => setDeleteConfirm({ isOpen: false, lessonId: null })}
+                onClose={() => setDeleteConfirm({ isOpen: false, lesson: null })}
                 onConfirm={handleConfirmDelete}
-                title="Удалить занятие?"
-                message="Вы уверены, что хотите удалить это занятие? Это действие нельзя отменить."
-                confirmText="Удалить"
-                cancelText="Отмена"
-                variant="danger"
+                isSeries={!!deleteConfirm.lesson?.seriesId}
+                isLoading={isLoading}
             />
         </div>
     )

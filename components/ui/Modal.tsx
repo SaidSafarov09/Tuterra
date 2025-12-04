@@ -111,6 +111,7 @@ interface ModalFooterProps {
     isLoading?: boolean
     submitText?: string
     cancelText?: string
+    variant?: 'primary' | 'secondary' | 'danger'
 }
 
 export const ModalFooter: React.FC<ModalFooterProps> = ({
@@ -119,13 +120,14 @@ export const ModalFooter: React.FC<ModalFooterProps> = ({
     isLoading = false,
     submitText = 'Сохранить',
     cancelText = 'Отмена',
+    variant = 'primary',
 }) => {
     return (
         <>
             <Button variant="secondary" onClick={onCancel} disabled={isLoading}>
                 {cancelText}
             </Button>
-            <Button onClick={onSubmit} disabled={isLoading}>
+            <Button variant={variant} onClick={onSubmit} disabled={isLoading}>
                 {isLoading ? 'Сохранение...' : submitText}
             </Button>
         </>
