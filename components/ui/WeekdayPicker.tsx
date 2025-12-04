@@ -25,17 +25,20 @@ export const WeekdayPicker: React.FC<WeekdayPickerProps> = ({
         onChange(newValue)
     }
 
+    // Order: Mon(1), Tue(2), Wed(3), Thu(4), Fri(5), Sat(6), Sun(0)
+    const orderedDays = [1, 2, 3, 4, 5, 6, 0]
+
     return (
         <div className={styles.container}>
-            {WEEKDAY_NAMES.map((name, index) => (
+            {orderedDays.map((dayIndex) => (
                 <button
-                    key={index}
+                    key={dayIndex}
                     type="button"
-                    className={`${styles.day} ${value.includes(index) ? styles.selected : ''} ${disabled ? styles.disabled : ''}`}
-                    onClick={() => toggleDay(index)}
+                    className={`${styles.day} ${value.includes(dayIndex) ? styles.selected : ''} ${disabled ? styles.disabled : ''}`}
+                    onClick={() => toggleDay(dayIndex)}
                     disabled={disabled}
                 >
-                    {name}
+                    {WEEKDAY_NAMES[dayIndex]}
                 </button>
             ))}
         </div>

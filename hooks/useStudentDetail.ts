@@ -39,12 +39,16 @@ export function useStudentDetail(studentId: string) {
     })
     const [selectedSubjectId, setSelectedSubjectId] = useState('')
     const [lessonFormData, setLessonFormData] = useState({
+        studentId: studentId,
         subjectId: '',
         date: new Date(),
         price: '',
         isPaid: false,
         topic: '',
         notes: '',
+        recurrence: undefined as any,
+        isPaidAll: false,
+        seriesPrice: undefined as string | undefined,
     })
 
     const [deleteStudentConfirm, setDeleteStudentConfirm] = useState(false)
@@ -154,12 +158,16 @@ export function useStudentDetail(studentId: string) {
 
     const handleEditLesson = async (lesson: any) => {
         setLessonFormData({
+            studentId: studentId,
             subjectId: lesson.subject?.id || '',
             date: new Date(lesson.date),
             price: lesson.price.toString(),
             isPaid: lesson.isPaid,
             topic: lesson.topic || '',
             notes: lesson.notes || '',
+            recurrence: undefined,
+            isPaidAll: false,
+            seriesPrice: undefined,
         })
         setEditingLessonId(lesson.id)
         setIsEditLessonModalOpen(true)
@@ -228,12 +236,16 @@ export function useStudentDetail(studentId: string) {
     const openCreateLessonModal = () => {
         const defaultSubjectId = student?.subjects.length === 1 ? student.subjects[0].id : ''
         setLessonFormData({
+            studentId: studentId,
             subjectId: defaultSubjectId,
             date: new Date(),
             price: '',
             isPaid: false,
             topic: '',
             notes: '',
+            recurrence: undefined,
+            isPaidAll: false,
+            seriesPrice: undefined,
         })
         setIsCreateLessonModalOpen(true)
     }

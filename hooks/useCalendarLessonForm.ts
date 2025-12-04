@@ -25,7 +25,10 @@ export function useCalendarLessonForm(options: UseCalendarLessonFormOptions = {}
         price: '',
         isPaid: false,
         notes: '',
-        topic: ''
+        topic: '',
+        recurrence: undefined,
+        isPaidAll: false,
+        seriesPrice: undefined,
     })
 
     useEffect(() => {
@@ -148,7 +151,10 @@ export function useCalendarLessonForm(options: UseCalendarLessonFormOptions = {}
                     price: parseInt(formData.price),
                     isPaid: formData.isPaid,
                     notes: formData.notes,
-                    topic: formData.topic
+                    topic: formData.topic,
+                    recurrence: formData.recurrence,
+                    isPaidAll: formData.isPaidAll,
+                    seriesPrice: formData.seriesPrice ? parseInt(formData.seriesPrice) : undefined,
                 }),
             })
 
@@ -178,7 +184,10 @@ export function useCalendarLessonForm(options: UseCalendarLessonFormOptions = {}
             price: '',
             isPaid: false,
             notes: '',
-            topic: ''
+            topic: '',
+            recurrence: undefined,
+            isPaidAll: false,
+            seriesPrice: undefined,
         })
         setError('')
     }

@@ -2,13 +2,9 @@ import React from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
-import { DateTimePicker } from '@/components/ui/DateTimePicker'
-import { Student, Subject } from '@/types'
+import { Student, Subject, LessonFormData } from '@/types'
+import { LessonFormWithDateTime } from '@/components/lessons/LessonFormWithDateTime'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
-import { useTypewriter } from '@/hooks/useTypewriter'
-import { LESSON_TOPIC_EXAMPLES } from '@/constants'
-import { TrialToggle } from '@/components/lessons/TrialToggle'
-import { Checkbox } from '@/components/ui/Checkbox'
 
 interface StudentModalsProps {
     student: Student
@@ -34,7 +30,7 @@ interface StudentModalsProps {
     isCreateLessonModalOpen: boolean
     onCloseCreateLessonModal: () => void
     onSubmitCreateLesson: () => void
-    lessonFormData: { subjectId: string; date: Date; price: string; isPaid: boolean; topic: string; notes: string }
+    lessonFormData: LessonFormData
     setLessonFormData: (data: any) => void
     onCreateSubject: (name: string) => void
     // Edit Lesson Modal
@@ -72,8 +68,6 @@ export function StudentModals({
     onCloseEditLessonModal,
     onSubmitEditLesson
 }: StudentModalsProps) {
-    const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
-
     return (
         <>
             {/* Edit Student Modal */}
@@ -156,59 +150,12 @@ export function StudentModals({
                 }
             >
                 <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-                    <Dropdown
-                        label="Предмет"
-                        placeholder="Выберите или создайте предмет"
-                        value={lessonFormData.subjectId}
-                        onChange={(value) => setLessonFormData({ ...lessonFormData, subjectId: value })}
-                        options={allSubjects.map(s => ({ value: s.id, label: s.name }))}
-                        searchable
-                        creatable
-                        onCreate={onCreateSubject}
-                        menuPosition="relative"
-                    />
-
-                    <DateTimePicker
-                        label="Дата и время"
-                        value={lessonFormData.date}
-                        onChange={(date) => setLessonFormData({ ...lessonFormData, date: date || new Date() })}
-                        showTime
-                        required
-                        dropDirection="center"
-                    />
-                    <TrialToggle
-                        isTrial={lessonFormData.price === '0'}
-                        onChange={(isTrial) => {
-                            if (isTrial) {
-                                setLessonFormData({ ...lessonFormData, price: '0', isPaid: true })
-                            } else {
-                                setLessonFormData({ ...lessonFormData, price: '' })
-                            }
-                        }}
-                    />
-
-                    <Input
-                        label="Стоимость"
-                        type="number"
-                        value={lessonFormData.price}
-                        onChange={(e) => setLessonFormData({ ...lessonFormData, price: e.target.value })}
-                        required={lessonFormData.price !== '0'}
-                        disabled={lessonFormData.price === '0'}
-                    />
-
-                    {lessonFormData.price !== '0' && (
-                        <Checkbox
-                            checked={lessonFormData.isPaid}
-                            onChange={(e) => setLessonFormData({ ...lessonFormData, isPaid: e.target.checked })}
-                            label="Оплачено"
-                            id="isPaid"
-                        />
-                    )}
-                    <Input
-                        label="Тема урока"
-                        value={lessonFormData.topic || ''}
-                        onChange={(e) => setLessonFormData({ ...lessonFormData, topic: e.target.value })}
-                        placeholder={`Например: ${topicPlaceholder}`}
+                    <LessonFormWithDateTime
+                        formData={lessonFormData}
+                        setFormData={setLessonFormData}
+                        subjects={allSubjects}
+                        onCreateSubject={onCreateSubject}
+                        isSubmitting={isSubmitting}
                     />
                 </form>
             </Modal>
@@ -228,59 +175,13 @@ export function StudentModals({
                 }
             >
                 <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-                    <Dropdown
-                        label="Предмет"
-                        placeholder="Выберите или создайте предмет"
-                        value={lessonFormData.subjectId}
-                        onChange={(value) => setLessonFormData({ ...lessonFormData, subjectId: value })}
-                        options={allSubjects.map(s => ({ value: s.id, label: s.name }))}
-                        searchable
-                        creatable
-                        onCreate={onCreateSubject}
-                        menuPosition="relative"
-                    />
-
-                    <DateTimePicker
-                        label="Дата и время"
-                        value={lessonFormData.date}
-                        onChange={(date) => setLessonFormData({ ...lessonFormData, date: date || new Date() })}
-                        showTime
-                        required
-                        dropDirection="center"
-                    />
-                    <TrialToggle
-                        isTrial={lessonFormData.price === '0'}
-                        onChange={(isTrial) => {
-                            if (isTrial) {
-                                setLessonFormData({ ...lessonFormData, price: '0', isPaid: true })
-                            } else {
-                                setLessonFormData({ ...lessonFormData, price: '' })
-                            }
-                        }}
-                    />
-
-                    <Input
-                        label="Стоимость"
-                        type="number"
-                        value={lessonFormData.price}
-                        onChange={(e) => setLessonFormData({ ...lessonFormData, price: e.target.value })}
-                        required={lessonFormData.price !== '0'}
-                        disabled={lessonFormData.price === '0'}
-                    />
-
-                    {lessonFormData.price !== '0' && (
-                        <Checkbox
-                            checked={lessonFormData.isPaid}
-                            onChange={(e) => setLessonFormData({ ...lessonFormData, isPaid: e.target.checked })}
-                            label="Оплачено"
-                            id="isPaidEdit"
-                        />
-                    )}
-                    <Input
-                        label="Тема урока"
-                        value={lessonFormData.topic || ''}
-                        onChange={(e) => setLessonFormData({ ...lessonFormData, topic: e.target.value })}
-                        placeholder={`Например: ${topicPlaceholder}`}
+                    <LessonFormWithDateTime
+                        formData={lessonFormData}
+                        setFormData={setLessonFormData}
+                        subjects={allSubjects}
+                        onCreateSubject={onCreateSubject}
+                        isEdit={true}
+                        isSubmitting={isSubmitting}
                     />
                     <Input
                         label="Заметки"

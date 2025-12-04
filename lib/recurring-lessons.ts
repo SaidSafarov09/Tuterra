@@ -8,42 +8,76 @@ interface GenerateRecurringDatesOptions {
     endDate?: Date
 }
 
-export function generateRecurringDates(options: GenerateRecurringDatesOptions): Date[] {
-    const { startDate, rule, limit = 100, endDate: hardEndDate } = options
-
+export function generateRecurringDates({
+    startDate,
+    rule,
+    limit = 100,
+    endDate: hardEndDate,
+}: GenerateRecurringDatesOptions): Date[] {
     if (!rule.enabled) {
         return [startDate]
     }
 
-    const dates: Date[] = []
-    // Don't use startOfDay here to preserve the time
-    const start = startDate
+    // Always include the start date as the first lesson
+    const dates: Date[] = [new Date(startDate)]
 
+    // Adjust limit for subsequent generation
     let effectiveLimit = limit
-    let calculatedEndDate = hardEndDate
-
     if (rule.endType === 'count' && rule.occurrencesCount) {
         effectiveLimit = Math.min(limit, rule.occurrencesCount)
-        // We don't need to calculate endDate based on count, we'll just use the limit
-    } else {
-        // Calculate end date for other types (until_date)
-        const recurrenceEndDate = getRecurrenceEndDate(start, rule, hardEndDate)
-        if (recurrenceEndDate) {
-            calculatedEndDate = recurrenceEndDate
-        }
+
+        // We always treat occurrencesCount as the number of *repetitions* AFTER the first lesson.
+        // Since we manually add the startDate as the first lesson, we need to increase the limit by 1
+        // so that the generator produces 'occurrencesCount' additional lessons.
+        effectiveLimit += 1
     }
+
+    // If we already reached the limit (e.g. count=1), return
+    if (dates.length >= effectiveLimit) {
+        return dates
+    }
+
+    let calculatedEndDate = hardEndDate
+
+    if (rule.endType === 'until_date' && rule.endDate) {
+        // Set end date time to end of day to include lessons on that day
+        const date = new Date(rule.endDate)
+        date.setHours(23, 59, 59, 999)
+        calculatedEndDate = date
+    } else if (rule.endType === 'count' && rule.occurrencesCount) {
+        // For count, we don't strictly need an end date, the limit handles it
+        // But we can calculate an approximate one for optimization if needed
+    }
+
+    if (hardEndDate && (!calculatedEndDate || isAfter(calculatedEndDate, hardEndDate))) {
+        calculatedEndDate = hardEndDate
+    }
+
+    // Generate subsequent dates
+    // We start looking from the next day to avoid duplicating startDate
+    // (unless it's daily, but even then we want the NEXT day)
+
+    // Note: The generator functions need to be updated to NOT clear the dates array
+    // and to respect the "strictly after startDate" logic
 
     switch (rule.type) {
         case 'daily':
-            generateDailyDates(start, calculatedEndDate || null, dates, effectiveLimit)
+            generateDailyDates(startDate, calculatedEndDate || null, dates, effectiveLimit)
             break
 
         case 'weekly':
-            generateWeeklyDates(start, calculatedEndDate || null, rule.daysOfWeek, dates, effectiveLimit)
+            generateWeeklyDates(startDate, calculatedEndDate || null, rule.daysOfWeek, dates, effectiveLimit)
             break
 
         case 'every_x_weeks':
-            generateEveryXWeeksDates(start, calculatedEndDate || null, rule.interval, rule.daysOfWeek, dates, effectiveLimit)
+            generateEveryXWeeksDates(
+                startDate,
+                calculatedEndDate || null,
+                rule.interval || 1,
+                rule.daysOfWeek,
+                dates,
+                effectiveLimit
+            )
             break
     }
 
@@ -157,15 +191,14 @@ function generateDailyDates(
     dates: Date[],
     limit: number
 ): void {
-    let currentDate = startDate
+    let currentDate = addDays(startDate, 1) // Start from next day
 
     while (dates.length < limit) {
-        dates.push(new Date(currentDate))
-
         if (endDate && isAfter(currentDate, endDate)) {
             break
         }
 
+        dates.push(new Date(currentDate))
         currentDate = addDays(currentDate, 1)
     }
 }
@@ -180,32 +213,22 @@ function generateWeeklyDates(
     if (daysOfWeek.length === 0) return
 
     const sortedDays = [...daysOfWeek].sort((a, b) => a - b)
-    // We need to find the first occurrence that matches the day of week
-    // starting from startDate (preserving time)
-
-    // Start checking from the beginning of the week of startDate
     let currentWeekStart = startOfDay(startDate)
-    // Adjust to Sunday (0)
     currentWeekStart = addDays(currentWeekStart, -currentWeekStart.getDay())
 
-    // We need to preserve the time from startDate
     const hours = startDate.getHours()
     const minutes = startDate.getMinutes()
 
-    // Safety counter to prevent infinite loops
     let weeksChecked = 0
-    const maxWeeksToCheck = 1000 // approx 20 years
+    const maxWeeksToCheck = 1000
+    const normalizedStart = new Date(startDate)
+    normalizedStart.setSeconds(0, 0)
 
     while (dates.length < limit && weeksChecked < maxWeeksToCheck) {
         for (const dayOfWeek of sortedDays) {
-            // Calculate date for this day of week in current week
             let targetDate = addDays(currentWeekStart, dayOfWeek)
-
-            // Set the correct time
             targetDate.setHours(hours, minutes, 0, 0)
-
-            // Only include dates on or after start date
-            if (!isBefore(targetDate, startDate)) {
+            if (targetDate > normalizedStart) {
                 if (endDate && isAfter(targetDate, endDate)) {
                     return
                 }
@@ -244,12 +267,17 @@ function generateEveryXWeeksDates(
     let weeksChecked = 0
     const maxWeeksToCheck = 1000
 
+    // Normalize startDate to minute precision for comparison
+    const normalizedStart = new Date(startDate)
+    normalizedStart.setSeconds(0, 0)
+
     while (dates.length < limit && weeksChecked < maxWeeksToCheck) {
         for (const dayOfWeek of sortedDays) {
             let targetDate = addDays(currentWeekStart, dayOfWeek)
             targetDate.setHours(hours, minutes, 0, 0)
 
-            if (!isBefore(targetDate, startDate)) {
+            // Only include dates STRICTLY AFTER start date
+            if (targetDate > normalizedStart) {
                 if (endDate && isAfter(targetDate, endDate)) {
                     return
                 }

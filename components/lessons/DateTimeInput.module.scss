@@ -1,0 +1,52 @@
+.dateInput,
+.timeInput {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    outline: none;
+
+    &:hover {
+        border-color: var(--border-hover);
+    }
+
+    &:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: var(--background);
+    }
+
+    // Стилизация календаря браузера
+    &::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    // Стилизация для темной темы
+    @media (prefers-color-scheme: dark) {
+        color-scheme: dark;
+    }
+}
+
+.dateInput {
+    flex: 1.5;
+}
+
+.timeInput {
+    flex: 1;
+}

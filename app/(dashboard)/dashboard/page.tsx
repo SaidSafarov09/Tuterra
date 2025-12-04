@@ -70,7 +70,7 @@ export default function DashboardPage() {
                                 icon={<AlertIcon size={32} color="#F59E0B" />}
                                 label="Неоплаченных"
                                 value={stats?.unpaidLessons?.length || 0}
-                                href="/lessons?filter=unpaid"
+                                href="/lessons?tab=unpaid"
                             />
                             <StatCard
                                 icon={<MoneyIcon size={32} color="#14B8A6" />}
