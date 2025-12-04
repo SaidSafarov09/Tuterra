@@ -101,7 +101,7 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
 
             login(data.token, data.user)
             toast.success('Вход выполнен успешно!')
-            router.push('/dashboard')
+            window.location.href = '/dashboard'
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')
             setCode(['', '', '', '', '', ''])
