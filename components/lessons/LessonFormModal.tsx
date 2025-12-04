@@ -115,6 +115,16 @@ export function LessonFormModal({
                     dropDirection="center"
                 />
 
+
+
+                {!isEdit && (
+                    <RecurrenceSection
+                        value={formData.recurrence || defaultRecurrence}
+                        onChange={(recurrence) => setFormData((prev) => ({ ...prev, recurrence }))}
+                        disabled={isSubmitting}
+                    />
+                )}
+
                 <TrialToggle
                     isTrial={formData.price === '0'}
                     onChange={(isTrial) => {
@@ -150,22 +160,14 @@ export function LessonFormModal({
                     />
                 )}
 
-                <Input
+                {!formData.recurrence?.enabled && (<Input
                     label="Тема урока"
                     name="topic"
                     value={formData.topic || ''}
                     onChange={(e) => handleChange('topic', e.target.value)}
                     placeholder="Например: Present Simple"
                     disabled={isSubmitting}
-                />
-
-                {!isEdit && (
-                    <RecurrenceSection
-                        value={formData.recurrence || defaultRecurrence}
-                        onChange={(recurrence) => setFormData((prev) => ({ ...prev, recurrence }))}
-                        disabled={isSubmitting}
-                    />
-                )}
+                />)}
 
                 {formData.price !== '0' && (
                     <div className={styles.paymentSection}>
@@ -181,7 +183,6 @@ export function LessonFormModal({
                                 checked={formData.isPaidAll || false}
                                 onChange={(e) => {
                                     handleChange('isPaidAll', e.target.checked)
-                                    // If "Paid all" is checked, "Paid first" should also be visually checked or handled
                                     if (e.target.checked) {
                                         handleChange('isPaid', true)
                                     }

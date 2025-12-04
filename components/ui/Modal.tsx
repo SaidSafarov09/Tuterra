@@ -21,8 +21,6 @@ export const Modal: React.FC<ModalProps> = ({
     size = 'default',
 }) => {
     const modalRef = useRef<HTMLDivElement>(null)
-    const [showTopGradient, setShowTopGradient] = useState(false)
-    const [showBottomGradient, setShowBottomGradient] = useState(true) // Start with true for testing
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -42,43 +40,6 @@ export const Modal: React.FC<ModalProps> = ({
         }
     }, [isOpen, onClose])
 
-    useEffect(() => {
-        const handleScroll = () => {
-            if (!modalRef.current) {
-                return
-            }
-
-            const { scrollTop, scrollHeight, clientHeight } = modalRef.current
-
-            const hasScroll = scrollHeight > clientHeight
-            const shouldShowTop = hasScroll && scrollTop > 10
-            const shouldShowBottom = hasScroll && (scrollTop + clientHeight < scrollHeight - 10)
-
-
-            // Show top gradient if scrolled down
-            setShowTopGradient(shouldShowTop)
-
-            // Show bottom gradient if not at bottom
-            setShowBottomGradient(shouldShowBottom)
-        }
-
-        const modalElement = modalRef.current
-        if (modalElement && isOpen) {
-            handleScroll()
-            setTimeout(() => {
-                handleScroll()
-            }, 100)
-
-            modalElement.addEventListener('scroll', handleScroll)
-            window.addEventListener('resize', handleScroll)
-
-            return () => {
-                modalElement.removeEventListener('scroll', handleScroll)
-                window.removeEventListener('resize', handleScroll)
-            }
-        }
-    }, [isOpen])
-
     if (!isOpen) return null
 
     return (
@@ -88,7 +49,6 @@ export const Modal: React.FC<ModalProps> = ({
                 className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''}`}
                 onClick={(e) => e.stopPropagation()}
             >
-                {showTopGradient && <div className={styles.gradientTop} />}
 
                 <div className={styles.header}>
                     <h2 className={styles.title}>{title}</h2>
@@ -98,8 +58,6 @@ export const Modal: React.FC<ModalProps> = ({
                 </div>
                 <div className={styles.content}>{children}</div>
                 {footer && <div className={styles.footer}>{footer}</div>}
-
-                {showBottomGradient && <div className={styles.gradientBottom} />}
             </div>
         </div>
     )

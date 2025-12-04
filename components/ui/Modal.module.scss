@@ -29,35 +29,6 @@
     }
 }
 
-.gradientTop,
-.gradientBottom {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 60px;
-    pointer-events: none;
-    z-index: 10;
-    transition: opacity 0.3s ease;
-}
-
-.gradientTop {
-    top: 0;
-    background: linear-gradient(to bottom,
-            rgba(255, 0, 0, 0.5) 0%,
-            rgba(255, 0, 0, 0.3) 40%,
-            transparent 100%);
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-.gradientBottom {
-    bottom: 0;
-    background: linear-gradient(to top,
-            rgba(255, 0, 0, 0.5) 0%,
-            rgba(255, 0, 0, 0.3) 40%,
-            transparent 100%);
-    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-}
-
 .modalLarge {
     max-width: 700px;
 }
