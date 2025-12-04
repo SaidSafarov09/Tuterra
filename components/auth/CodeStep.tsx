@@ -101,11 +101,7 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
 
             login(data.token, data.user)
             toast.success('Вход выполнен успешно!')
-
-            // Give Zustand persist time to save to localStorage
-            setTimeout(() => {
-                window.location.href = '/dashboard'
-            }, 100)
+            router.push('/dashboard')
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')
             setCode(['', '', '', '', '', ''])
