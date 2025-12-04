@@ -13,7 +13,6 @@ const headers = {
     'Content-Type': 'application/json',
 }
 
-// DTO types for creation
 interface CreateLessonDTO {
     studentId: string
     subjectId: string
@@ -149,7 +148,9 @@ export const incomeApi = {
 }
 
 interface UserSettings {
-    name: string
+    firstName: string
+    lastName: string
+    name?: string  // Оставлено для совместимости
     email: string
     phone?: string
     avatar?: string | null

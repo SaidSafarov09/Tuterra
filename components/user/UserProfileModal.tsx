@@ -38,7 +38,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         }
     }, [isOpen])
 
-    const avatarBgColor = user?.name ? stringToColor(user.name) : 'var(--primary)'
+    const avatarBgColor = user?.firstName ? stringToColor(user.firstName) : user?.name ? stringToColor(user.name.split(' ')[0]) : 'var(--primary)'
 
     const memberSinceDate = stats?.createdAt ? new Date(stats.createdAt) : null
 
@@ -68,18 +68,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                             <Avatar.Image
                                 className={styles.avatarImage}
                                 src={user?.avatar || undefined}
-                                alt={user?.name || 'User'}
+                                alt={user?.firstName || user?.lastName ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim() : user?.name || 'User'}
                             />
                             <Avatar.Fallback
                                 className={styles.avatarFallback}
                                 style={{ backgroundColor: avatarBgColor, color: 'white' }}
                             >
-                                {getInitials(user?.name || '')}
+                                {getInitials(user?.firstName || user?.lastName ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim() : user?.name || '')}
                             </Avatar.Fallback>
                         </Avatar.Root>
                         <div className={styles.userInfo}>
                             <h3 className={styles.userName}>
-                                {user?.name || <Skeleton width={150} height={28} />}
+                                {user?.firstName || user?.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : user?.name || <Skeleton width={150} height={28} />}
                             </h3>
                             <p className={styles.userEmail}>
                                 {user?.phone || <Skeleton width={100} height={16} />}

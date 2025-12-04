@@ -1,158 +1,170 @@
-'use client'
+"use client";
 
-import React, { use as usePromise } from 'react'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { StudentHeader } from '@/components/students/StudentHeader'
-import { StudentSubjects } from '@/components/students/StudentSubjects'
-import { StudentLessons } from '@/components/students/StudentLessons'
-import { StudentModals } from '@/components/students/StudentModals'
-import { useStudentDetail } from '@/hooks/useStudentDetail'
-import { StudentDetailSkeleton } from '@/components/skeletons'
+import React, { use as usePromise } from "react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { StudentHeader } from "@/components/students/StudentHeader";
+import { StudentSubjects } from "@/components/students/StudentSubjects";
+import { StudentLessons } from "@/components/students/StudentLessons";
+import { StudentModals } from "@/components/students/StudentModals";
+import { useStudentDetail } from "@/hooks/useStudentDetail";
+import { StudentDetailSkeleton } from "@/components/skeletons";
+import { StudentNote } from "@/components/students/StudentNote";
 
-export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = usePromise(params)
+export default function StudentDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = usePromise(params);
 
-    const {
-        student,
-        allSubjects,
-        isLoading,
-        isSubmitting,
+  const {
+    student,
+    allSubjects,
+    isLoading,
+    isSubmitting,
 
+    isEditModalOpen,
+    setIsEditModalOpen,
+    isAddSubjectModalOpen,
+    setIsAddSubjectModalOpen,
+    isCreateLessonModalOpen,
+    setIsCreateLessonModalOpen,
 
-        isEditModalOpen, setIsEditModalOpen,
-        isAddSubjectModalOpen, setIsAddSubjectModalOpen,
-        isCreateLessonModalOpen, setIsCreateLessonModalOpen,
+    editFormData,
+    setEditFormData,
+    selectedSubjectId,
+    setSelectedSubjectId,
+    lessonFormData,
+    setLessonFormData,
 
-        editFormData, setEditFormData,
-        selectedSubjectId, setSelectedSubjectId,
-        lessonFormData, setLessonFormData,
+    deleteStudentConfirm,
+    setDeleteStudentConfirm,
+    deleteSubjectConfirm,
+    setDeleteSubjectConfirm,
 
-        deleteStudentConfirm, setDeleteStudentConfirm,
-        deleteSubjectConfirm, setDeleteSubjectConfirm,
+    handleDeleteStudent,
+    handleDeleteSubject,
+    handleUpdateStudent,
+    handleAddSubject,
+    handleCreateLesson,
+    handleCreateSubject,
+    handleEditLesson,
+    handleDeleteLesson,
+    handleTogglePaidStatus,
+    handleToggleCancelLesson,
 
-        handleDeleteStudent,
-        handleDeleteSubject,
-        handleUpdateStudent,
-        handleAddSubject,
-        handleCreateLesson,
-        handleCreateSubject,
-        handleEditLesson,
-        handleDeleteLesson,
-        handleTogglePaidStatus,
-        handleToggleCancelLesson,
+    // Openers
+    openEditModal,
+    openCreateLessonModal,
 
-        // Openers
-        openEditModal,
-        openCreateLessonModal,
+    // New exports
+    isEditLessonModalOpen,
+    setIsEditLessonModalOpen,
+    deleteLessonConfirm,
+    setDeleteLessonConfirm,
+    handleUpdateLesson,
+    confirmDeleteLesson,
+  } = useStudentDetail(id);
 
-        // New exports
-        isEditLessonModalOpen, setIsEditLessonModalOpen,
-        deleteLessonConfirm, setDeleteLessonConfirm,
-        handleUpdateLesson, confirmDeleteLesson
-    } = useStudentDetail(id)
+  if (isLoading) {
+    return <StudentDetailSkeleton />;
+  }
 
-    if (isLoading) {
-        return <StudentDetailSkeleton />
-    }
+  if (!student) {
+    return null;
+  }
 
-    if (!student) {
-        return null
-    }
+  return (
+    <div>
+      <StudentHeader
+        student={student}
+        onEdit={openEditModal}
+        onCreateLesson={openCreateLessonModal}
+        onDelete={() => setDeleteStudentConfirm(true)}
+      />
+      <StudentSubjects
+        student={student}
+        onAddSubject={() => {
+          setSelectedSubjectId("");
+          setIsAddSubjectModalOpen(true);
+        }}
+        onDeleteSubject={(subjectId) => setDeleteSubjectConfirm(subjectId)}
+      />
 
-    return (
-        <div>
-            <StudentHeader
-                student={student}
-                onEdit={openEditModal}
-                onCreateLesson={openCreateLessonModal}
-                onDelete={() => setDeleteStudentConfirm(true)}
-            />
+      <StudentNote student={student} />
 
-            <StudentSubjects
-                student={student}
-                onAddSubject={() => {
-                    setSelectedSubjectId('')
-                    setIsAddSubjectModalOpen(true)
-                }}
-                onDeleteSubject={(subjectId) => setDeleteSubjectConfirm(subjectId)}
-            />
+      <StudentLessons
+        lessons={(student.lessons || []).map((l) => ({
+          ...l,
+          student: { id: student.id, name: student.name },
+          subject: l.subject || null,
+        }))}
+        student={student}
+        onCreateLesson={openCreateLessonModal}
+        onEditLesson={handleEditLesson}
+        onDeleteLesson={handleDeleteLesson}
+        onTogglePaidStatus={handleTogglePaidStatus}
+        onToggleCancelLesson={handleToggleCancelLesson}
+      />
 
-            <StudentLessons
-                lessons={(student.lessons || []).map(l => ({
-                    ...l,
-                    student: { id: student.id, name: student.name },
-                    subject: l.subject || null
-                }))}
-                student={student}
-                onCreateLesson={openCreateLessonModal}
-                onEditLesson={handleEditLesson}
-                onDeleteLesson={handleDeleteLesson}
-                onTogglePaidStatus={handleTogglePaidStatus}
-                onToggleCancelLesson={handleToggleCancelLesson}
-            />
+      <StudentModals
+        student={student}
+        allSubjects={allSubjects}
+        isSubmitting={isSubmitting}
+        isEditModalOpen={isEditModalOpen}
+        onCloseEditModal={() => setIsEditModalOpen(false)}
+        onSubmitEdit={handleUpdateStudent}
+        editFormData={editFormData}
+        setEditFormData={setEditFormData}
+        isAddSubjectModalOpen={isAddSubjectModalOpen}
+        onCloseAddSubjectModal={() => setIsAddSubjectModalOpen(false)}
+        onSubmitAddSubject={handleAddSubject}
+        selectedSubjectId={selectedSubjectId}
+        setSelectedSubjectId={setSelectedSubjectId}
+        onCreateSubjectForLink={(name) => handleCreateSubject(name, true)}
+        isCreateLessonModalOpen={isCreateLessonModalOpen}
+        onCloseCreateLessonModal={() => setIsCreateLessonModalOpen(false)}
+        onSubmitCreateLesson={handleCreateLesson}
+        lessonFormData={lessonFormData}
+        setLessonFormData={setLessonFormData}
+        onCreateSubject={(name) => handleCreateSubject(name, false)}
+        isEditLessonModalOpen={isEditLessonModalOpen}
+        onCloseEditLessonModal={() => setIsEditLessonModalOpen(false)}
+        onSubmitEditLesson={handleUpdateLesson}
+      />
 
-            <StudentModals
-                student={student}
-                allSubjects={allSubjects}
-                isSubmitting={isSubmitting}
+      <ConfirmDialog
+        isOpen={deleteStudentConfirm}
+        onClose={() => setDeleteStudentConfirm(false)}
+        onConfirm={handleDeleteStudent}
+        title="Удалить ученика?"
+        message="Вы уверены, что хотите удалить этого ученика? Все занятия и история оплат также будут удалены. Это действие нельзя отменить."
+        confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+      />
 
-                isEditModalOpen={isEditModalOpen}
-                onCloseEditModal={() => setIsEditModalOpen(false)}
-                onSubmitEdit={handleUpdateStudent}
-                editFormData={editFormData}
-                setEditFormData={setEditFormData}
+      <ConfirmDialog
+        isOpen={!!deleteSubjectConfirm}
+        onClose={() => setDeleteSubjectConfirm(null)}
+        onConfirm={handleDeleteSubject}
+        title="Удалить предмет?"
+        message="Вы уверены, что хотите удалить этот предмет у ученика?"
+        confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+      />
 
-                isAddSubjectModalOpen={isAddSubjectModalOpen}
-                onCloseAddSubjectModal={() => setIsAddSubjectModalOpen(false)}
-                onSubmitAddSubject={handleAddSubject}
-                selectedSubjectId={selectedSubjectId}
-                setSelectedSubjectId={setSelectedSubjectId}
-                onCreateSubjectForLink={(name) => handleCreateSubject(name, true)}
-
-                isCreateLessonModalOpen={isCreateLessonModalOpen}
-                onCloseCreateLessonModal={() => setIsCreateLessonModalOpen(false)}
-                onSubmitCreateLesson={handleCreateLesson}
-                lessonFormData={lessonFormData}
-                setLessonFormData={setLessonFormData}
-                onCreateSubject={(name) => handleCreateSubject(name, false)}
-
-                isEditLessonModalOpen={isEditLessonModalOpen}
-                onCloseEditLessonModal={() => setIsEditLessonModalOpen(false)}
-                onSubmitEditLesson={handleUpdateLesson}
-            />
-
-            <ConfirmDialog
-                isOpen={deleteStudentConfirm}
-                onClose={() => setDeleteStudentConfirm(false)}
-                onConfirm={handleDeleteStudent}
-                title="Удалить ученика?"
-                message="Вы уверены, что хотите удалить этого ученика? Все занятия и история оплат также будут удалены. Это действие нельзя отменить."
-                confirmText="Удалить"
-                cancelText="Отмена"
-                variant="danger"
-            />
-
-            <ConfirmDialog
-                isOpen={!!deleteSubjectConfirm}
-                onClose={() => setDeleteSubjectConfirm(null)}
-                onConfirm={handleDeleteSubject}
-                title="Удалить предмет?"
-                message="Вы уверены, что хотите удалить этот предмет у ученика?"
-                confirmText="Удалить"
-                cancelText="Отмена"
-                variant="danger"
-            />
-
-            <ConfirmDialog
-                isOpen={!!deleteLessonConfirm}
-                onClose={() => setDeleteLessonConfirm(null)}
-                onConfirm={confirmDeleteLesson}
-                title="Удалить занятие?"
-                message="Вы уверены, что хотите удалить это занятие?"
-                confirmText="Удалить"
-                cancelText="Отмена"
-                variant="danger"
-            />
-        </div>
-    )
+      <ConfirmDialog
+        isOpen={!!deleteLessonConfirm}
+        onClose={() => setDeleteLessonConfirm(null)}
+        onConfirm={confirmDeleteLesson}
+        title="Удалить занятие?"
+        message="Вы уверены, что хотите удалить это занятие?"
+        confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+      />
+    </div>
+  );
 }

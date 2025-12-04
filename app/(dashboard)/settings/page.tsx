@@ -20,7 +20,8 @@ export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const [formData, setFormData] = useState({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         phone: '',
         avatar: null as string | null,
@@ -35,7 +36,8 @@ export default function SettingsPage() {
         try {
             const data = await settingsApi.get()
             setFormData({
-                name: data.name || '',
+                firstName: data.firstName || (data.name ? data.name.split(' ')[0] || '' : ''),
+                lastName: data.lastName || (data.name ? data.name.split(' ').slice(1).join(' ') || '' : ''),
                 email: data.email || '',
                 phone: data.phone || '',
                 avatar: data.avatar || null,
@@ -78,7 +80,9 @@ export default function SettingsPage() {
 
             setUser({
                 ...user!,
-                name: updatedUser.name,
+                firstName: updatedUser.firstName,
+                lastName: updatedUser.lastName,
+                name: updatedUser.name || null,
                 phone: updatedUser.phone || null,
                 avatar: updatedUser.avatar || null,
             })
@@ -125,18 +129,27 @@ export default function SettingsPage() {
                                     <div className={styles.avatarColumn}>
                                         <UserAvatarUpload
                                             currentAvatar={formData.avatar}
-                                            userName={formData.name}
+                                            userName={`${formData.firstName} ${formData.lastName}`.trim()}
                                             onAvatarChange={handleAvatarChange}
                                         />
                                     </div>
                                     <div className={styles.fieldsColumn}>
-                                        <Input
+                                        <div className={styles.nameFields}>
+                                            <Input
                                             label="Имя"
-                                            name="name"
-                                            value={formData.name}
+                                            name="firstName"
+                                            value={formData.firstName}
                                             onChange={handleChange}
                                             required
                                         />
+                                        <Input
+                                            label="Фамилия"
+                                            name="lastName"
+                                            value={formData.lastName}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                        </div>
                                         <Input
                                             label="Email"
                                             name="email"

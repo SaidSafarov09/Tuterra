@@ -1,6 +1,3 @@
-// Prisma schema for SkillTrack application
-// Learn more at https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,93 +8,85 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String?  @unique
-  hashedPassword String?
-  phone     String?  @unique
-  avatar    String?
-  currency  String   @default("₽")
-  timezone  String   @default("Europe/Moscow")
-
-  emailVerified   Boolean @default(false)
-  phoneVerified   Boolean @default(false)
-  twoFactorEnabled Boolean @default(false)
-
-  subjects  Subject[]
-  lessons   Lesson[]
-  students  Student[]
-  lessonSeries LessonSeries[]
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  hashedPassword    String?
+  phone             String?            @unique
+  avatar            String?
+  currency          String             @default("₽")
+  timezone          String             @default("Europe/Moscow")
+  emailVerified     Boolean            @default(false)
+  phoneVerified     Boolean            @default(false)
+  twoFactorEnabled  Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  firstName         String?
+  lastName          String?
+  authProviders     AuthProvider[]
+  lessons           Lesson[]
+  lessonSeries      LessonSeries[]
+  students          Student[]
+  subjects          Subject[]
   verificationCodes VerificationCode[]
-  authProviders AuthProvider[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Subject {
-  id        String   @id @default(cuid())
-  name      String
-  color     String   @default("#4A6CF7")
-  icon      String?
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  students Student[]
-  lessons  Lesson[]
+  id           String         @id @default(cuid())
+  name         String
+  color        String         @default("#4A6CF7")
+  icon         String?
+  userId       String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  lessons      Lesson[]
   lessonSeries LessonSeries[]
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students     Student[]      @relation("StudentToSubject")
 
   @@unique([userId, name])
 }
 
 model Student {
-  id        String   @id @default(cuid())
-  name      String
-  contact   String?
-  note      String?
-  ownerId   String
-
-  // Avatar customization fields
-  skinColor String? @default("#F4C2A6")
-  hairStyle String? @default("short")
-  hairColor String? @default("#2C1B18")
-  eyeStyle  String? @default("default")
-  accessory String? @default("none")
-  bgColor   String? @default("#E3F2FD")
-
-  owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  subjects Subject[]
-  lessons Lesson[]
+  id           String         @id @default(cuid())
+  name         String
+  contact      String?
+  note         String?
+  ownerId      String
+  skinColor    String?        @default("#F4C2A6")
+  hairStyle    String?        @default("short")
+  hairColor    String?        @default("#2C1B18")
+  eyeStyle     String?        @default("default")
+  accessory    String?        @default("none")
+  bgColor      String?        @default("#E3F2FD")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  lessons      Lesson[]
   lessonSeries LessonSeries[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  subjects     Subject[]      @relation("StudentToSubject")
 
   @@index([ownerId])
 }
 
 model Lesson {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   date       DateTime
   price      Int
-  isPaid     Boolean  @default(false)
-  isCanceled Boolean  @default(false)
+  isPaid     Boolean       @default(false)
+  isCanceled Boolean       @default(false)
   notes      String?
-  topic      String?
   ownerId    String
   studentId  String
   subjectId  String?
-  seriesId   String?  // Link to recurring series
-
-  owner   User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  student Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  subject Subject?      @relation(fields: [subjectId], references: [id], onDelete: SetNull)
-  series  LessonSeries? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  topic      String?
+  seriesId   String?
+  owner      User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  series     LessonSeries? @relation(fields: [seriesId], references: [id])
+  student    Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject    Subject?      @relation(fields: [subjectId], references: [id])
 
   @@index([ownerId])
   @@index([studentId])
@@ -106,29 +95,25 @@ model Lesson {
 }
 
 model LessonSeries {
-  id              String   @id @default(cuid())
-  userId          String
-  type            String   // "weekly" | "daily" | "every_x_weeks"
-  interval        Int      @default(1) // For "every X weeks"
-  daysOfWeek      Int[]    // Array of 0-6 (Sunday-Saturday)
-  startDate       DateTime
-  endDate         DateTime?
+  id               String    @id @default(cuid())
+  userId           String
+  type             String
+  interval         Int       @default(1)
+  daysOfWeek       Int[]
+  startDate        DateTime
+  endDate          DateTime?
   occurrencesCount Int?
-  
-  // Lesson template data
-  studentId String
-  subjectId String?
-  price     Int
-  topic     String?
-  notes     String?
-
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  student Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  subject Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
-  lessons Lesson[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  studentId        String
+  subjectId        String?
+  price            Int
+  topic            String?
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  lessons          Lesson[]
+  student          Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject          Subject?  @relation(fields: [subjectId], references: [id])
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([studentId])
@@ -140,10 +125,9 @@ model VerificationCode {
   userId    String
   code      String
   expiresAt DateTime
-  type      String   // e.g., 'email', 'phone', 'password-reset'
+  type      String
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
 }
@@ -162,11 +146,10 @@ model VerificationSession {
 model AuthProvider {
   id         String   @id @default(cuid())
   userId     String
-  provider   String   // e.g., 'google', 'yandex', 'telegram'
+  provider   String
   providerId String
   createdAt  DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerId])
   @@index([userId])

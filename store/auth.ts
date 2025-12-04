@@ -3,7 +3,9 @@ import { persist } from 'zustand/middleware'
 
 interface User {
     id: string
-    name: string | null
+    firstName: string | null
+    lastName: string | null
+    name: string | null | undefined  // Оставлено для совместимости
     phone: string | null
     avatar: string | null
 }

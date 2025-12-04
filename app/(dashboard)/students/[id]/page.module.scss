@@ -1,495 +1,494 @@
 .header {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .backButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-    padding: 8px 0;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-    &:hover {
-        color: var(--text-primary);
-        transform: translateX(-4px);
-    }
+  &:hover {
+    color: var(--text-primary);
+    transform: translateX(-4px);
+  }
 }
 
 .studentHeader {
-    margin-bottom: 32px;
-
-    @media (max-width: 768px) {
-        margin-bottom: 24px;
-    }
+  margin-bottom: 24px;
+  @media (max-width: 768px) {
+    margin-bottom: 18px;
+  }
 }
 
 .headerTop {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 
-    @media (max-width: 768px) {
-        flex-direction: column;
-        gap: 20px;
-    }
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 20px;
+  }
 }
 
 .studentProfile {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    flex: 1;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex: 1;
 }
 
 .studentAvatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 20px;
-    flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 24px;
+  flex-shrink: 0;
 
-    @media (max-width: 768px) {
-        width: 48px;
-        height: 48px;
-        font-size: 18px;
-    }
+  @media (max-width: 768px) {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
 }
 
 .studentInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
 }
 
 .studentName {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--text-primary);
-    margin: 0;
-    line-height: 1.1;
-    letter-spacing: -0.8px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.8px;
 
-    @media (max-width: 768px) {
-        font-size: 26px;
-        letter-spacing: -0.5px;
-    }
+  @media (max-width: 768px) {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+  }
 }
 
 .studentContact {
-    font-size: 15px;
-    color: var(--text-secondary);
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .headerActions {
-    display: flex;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    width: 100%;
     gap: 8px;
-    flex-shrink: 0;
 
-    @media (max-width: 768px) {
-        flex-wrap: wrap;
-        width: 100%;
-        gap: 8px;
+    button {
+      justify-content: center;
+      font-size: 14px;
+      padding: 9px 13px;
 
-        button {
-            justify-content: center;
-            font-size: 14px;
-            padding: 9px 13px;
-
-            svg {
-                width: 16px;
-                height: 16px;
-            }
-        }
+      svg {
+        width: 16px;
+        height: 16px;
+      }
     }
+  }
 }
 
 .headerMeta {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border-light);
-    margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 16px;
 
-    @media (max-width: 768px) {
-        gap: 16px;
-        flex-wrap: wrap;
-    }
+  @media (max-width: 768px) {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
 }
 
 .metaItem {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
 
-    strong {
-        color: var(--text-primary);
-        font-weight: 600;
-    }
+  strong {
+    color: var(--text-primary);
+  }
 }
 
 .metaDivider {
-    width: 1px;
-    height: 16px;
-    background: var(--border-light);
+  width: 1px;
+  height: 16px;
+  background: var(--border-light);
 
-    @media (max-width: 768px) {
-        display: none;
-    }
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .studentNote {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 20px 24px;
-    border: 1px solid var(--border);
-    margin-bottom: 16px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 
-    &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        background: var(--primary);
-    }
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary);
+  }
 
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
 
-    strong {
-        display: block;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--text-secondary);
-        margin-bottom: 8px;
-    }
+  strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
 
-    p {
-        font-size: 15px;
-        color: var(--text-primary);
-        line-height: 1.6;
-        margin: 0;
-    }
+  p {
+    font-size: 15px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+  }
 
-    @media (max-width: 768px) {
-        padding: 16px 20px;
-    }
+  @media (max-width: 768px) {
+    padding: 16px 20px;
+  }
 }
 
 .section {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .sectionHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .sectionTitle {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-    letter-spacing: -0.5px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
 }
 
 /* Subjects */
 .subjectsGrid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .subjectChip {
-    padding: 10px 18px;
-    border-radius: 100px;
-    font-size: 14px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid transparent;
-    transition: all 0.2s;
-    cursor: default;
+  padding: 10px 18px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  cursor: default;
 
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 
-    @media (max-width: 768px) {
-        padding: 6px 16px;
-    }
+  @media (max-width: 768px) {
+    padding: 6px 16px;
+  }
 }
 
 .deleteSubjectButton {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    color: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: inherit;
 
-    &:hover {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--error);
-    }
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+  }
 }
 
 .addSubjectChip {
-    padding: 10px 20px;
-    border-radius: 100px;
-    font-size: 14px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px dashed var(--border);
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
 
-    &:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        background: rgba(var(--primary-rgb), 0.05);
-        transform: translateY(-2px);
-    }
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(var(--primary-rgb), 0.05);
+    transform: translateY(-2px);
+  }
 
-    @media (max-width: 768px) {
-        padding: 6px 16px;
-    }
+  @media (max-width: 768px) {
+    padding: 6px 16px;
+  }
 }
 
 /* Lessons */
 .lessonsList {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 400px;
 }
 
 .lessonCard {
-    background: var(--surface);
-    border-radius: 20px;
-    padding: 24px;
-    border: 1px solid var(--border);
-    transition: all 0.2s ease;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
 
-    @media (max-width: 768px) {
-        padding: 20px;
-    }
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
 }
 
 .lessonHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
 
-    @media (max-width: 768px) {
-        flex-direction: column;
-        gap: 12px;
-    }
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .lessonDate {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
 }
 
 .lessonSubject {
-    font-size: 14px;
-    color: var(--text-secondary);
-    font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .lessonTopic {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--text-secondary);
-    background: var(--background);
-    padding: 6px 10px;
-    border-radius: 6px;
-    width: fit-content;
-    margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--background);
+  padding: 6px 10px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-top: 12px;
 }
 
 .topicIcon {
-    color: var(--primary);
-    flex-shrink: 0;
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
 .topicLabel {
-    font-weight: 500;
-    color: var(--text-secondary);
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .topicText {
-    font-weight: 500;
-    color: var(--text-primary);
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .lessonPriceContainer {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
 
-    @media (max-width: 768px) {
-        flex-direction: row;
-        align-items: center;
-        width: 100%;
-        justify-content: space-between;
-        text-align: left;
-        margin-top: 8px;
-        padding-top: 12px;
-        border-top: 1px solid var(--border-light);
-    }
+  @media (max-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+    text-align: left;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
+  }
 }
 
 .lessonPrice {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 500;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .badgePaid {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
 }
 
 .badgeUnpaid {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
 }
 
 .lessonActions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    border-top: 1px solid var(--border-light);
-    padding-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-light);
+  padding-top: 16px;
 
-    @media (max-width: 768px) {
-        justify-content: space-between;
+  @media (max-width: 768px) {
+    justify-content: space-between;
 
-        button {
-            flex: 1;
-            justify-content: center;
-        }
+    button {
+      flex: 1;
+      justify-content: center;
     }
+  }
 }
 
 .actionButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
 
-    &:hover {
-        background: var(--background);
-        color: var(--text-primary);
-    }
+  &:hover {
+    background: var(--background);
+    color: var(--text-primary);
+  }
 }
 
 .deleteButton {
-    &:hover {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--error);
-    }
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+  }
 }
 
 .emptyState {
-    text-align: center;
-    padding: 60px 20px;
-    background: var(--surface);
-    border-radius: 20px;
-    border: 1px dashed var(--border);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    min-height: 400px;
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--surface);
+  border-radius: 20px;
+  border: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 400px;
 }
 
 .emptyText {
-    color: var(--text-secondary);
-    font-size: 16px;
-    margin: 0;
-    font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 16px;
+  margin: 0;
+  font-weight: 500;
 }
 
 .form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }

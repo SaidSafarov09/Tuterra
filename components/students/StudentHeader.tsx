@@ -88,13 +88,6 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                         Предметов: <strong>{totalSubjects}</strong>
                     </div>
                 </div>
-
-                {student.note && (
-                    <div className={styles.studentNote}>
-                        <strong>Заметка</strong>
-                        <p>{student.note}</p>
-                    </div>
-                )}
             </div>
         </div>
     )

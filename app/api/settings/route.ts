@@ -5,7 +5,9 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 const settingsSchema = z.object({
-    name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
+    firstName: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
+    lastName: z.string().min(2, 'Фамилия должна содержать минимум 2 символа'),
+    name: z.string().optional(),
     phone: z.string().optional().nullable().transform(v => v === '' ? null : v),
     avatar: z.string().nullable().optional(),
     currency: z.string().optional(),
@@ -24,6 +26,8 @@ export async function GET(request: NextRequest) {
             where: { id: user.id },
             select: {
                 id: true,
+                firstName: true,
+                lastName: true,
                 name: true,
                 email: true,
                 phone: true,
@@ -79,9 +83,14 @@ export async function PUT(request: NextRequest) {
 
         const updatedUser = await prisma.user.update({
             where: { id: user.id },
-            data: validatedData,
+            data: {
+                ...validatedData,
+                name: validatedData.firstName ? `${validatedData.firstName}${validatedData.lastName ? ' ' + validatedData.lastName : ''}` : null,
+            },
             select: {
                 id: true,
+                firstName: true,
+                lastName: true,
                 name: true,
                 email: true,
                 phone: true,
