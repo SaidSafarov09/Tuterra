@@ -29,6 +29,7 @@ const lessonSchema = z.object({
     topic: z.string().optional(),
     recurrence: recurrenceRuleSchema.optional(),
     isPaidAll: z.boolean().optional(),
+    seriesPrice: z.number().optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -207,7 +208,8 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
     const lessons = await prisma.lesson.createMany({
         data: dates.map((date, index) => ({
             date,
-            price: data.price,
+            // Use seriesPrice for subsequent lessons if provided, otherwise use standard price
+            price: index === 0 ? data.price : (data.seriesPrice !== undefined ? data.seriesPrice : data.price),
             // If isPaidAll is true, all are paid.
             // Otherwise, only the first one (index 0) takes the isPaid value from the form
             isPaid: data.isPaidAll ? true : (index === 0 ? (data.isPaid || false) : false),

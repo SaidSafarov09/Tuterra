@@ -30,6 +30,7 @@ export function useLessonForm(
             topic: '',
             recurrence: undefined,
             isPaidAll: false,
+            seriesPrice: undefined,
         })
         setError('')
     }
@@ -148,6 +149,7 @@ export function useLessonForm(
                     topic: formData.topic,
                     recurrence: formData.recurrence,
                     isPaidAll: formData.isPaidAll,
+                    seriesPrice: formData.seriesPrice ? parseInt(formData.seriesPrice) : undefined,
                 }),
             })
 

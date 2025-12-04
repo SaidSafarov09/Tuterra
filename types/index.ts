@@ -93,6 +93,7 @@ export interface LessonFormData {
     notes: string
     topic: string
     recurrence?: RecurrenceRule
+    seriesPrice?: string
 }
 
 export type LessonFilter = 'all' | 'upcoming' | 'past' | 'unpaid' | 'canceled'

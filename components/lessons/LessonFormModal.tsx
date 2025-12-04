@@ -134,17 +134,28 @@ export function LessonFormModal({
                     type="number"
                     value={formData.price}
                     onChange={(e) => handleChange('price', e.target.value)}
-                    required={formData.price !== '0'}
-                    placeholder="1000"
-                    disabled={isSubmitting || formData.price === '0'}
+                    placeholder="0"
+                    required
+                    disabled={isSubmitting}
                 />
+
+                {formData.price === '0' && formData.recurrence?.enabled && (
+                    <Input
+                        label="Стоимость следующих занятий (₽)"
+                        type="number"
+                        value={formData.seriesPrice || ''}
+                        onChange={(e) => handleChange('seriesPrice', e.target.value)}
+                        placeholder="Оставьте пустым, если тоже бесплатно"
+                        disabled={isSubmitting}
+                    />
+                )}
 
                 <Input
                     label="Тема урока"
                     name="topic"
                     value={formData.topic || ''}
                     onChange={(e) => handleChange('topic', e.target.value)}
-                    placeholder={`Например: ${topicPlaceholder}`}
+                    placeholder="Например: Present Simple"
                     disabled={isSubmitting}
                 />
 

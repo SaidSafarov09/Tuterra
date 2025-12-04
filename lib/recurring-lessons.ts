@@ -16,25 +16,40 @@ export function generateRecurringDates(options: GenerateRecurringDatesOptions): 
     }
 
     const dates: Date[] = []
-    const start = startOfDay(startDate)
+    // Don't use startOfDay here to preserve the time
+    const start = startDate
 
-    const endDate = getRecurrenceEndDate(start, rule, hardEndDate)
+    let effectiveLimit = limit
+    let calculatedEndDate = hardEndDate
+
+    if (rule.endType === 'count' && rule.occurrencesCount) {
+        effectiveLimit = Math.min(limit, rule.occurrencesCount)
+        // We don't need to calculate endDate based on count, we'll just use the limit
+    } else {
+        // Calculate end date for other types (until_date)
+        const recurrenceEndDate = getRecurrenceEndDate(start, rule, hardEndDate)
+        if (recurrenceEndDate) {
+            calculatedEndDate = recurrenceEndDate
+        }
+    }
+
     switch (rule.type) {
         case 'daily':
-            generateDailyDates(start, endDate, dates, limit)
+            generateDailyDates(start, calculatedEndDate || null, dates, effectiveLimit)
             break
 
         case 'weekly':
-            generateWeeklyDates(start, endDate, rule.daysOfWeek, dates, limit)
+            generateWeeklyDates(start, calculatedEndDate || null, rule.daysOfWeek, dates, effectiveLimit)
             break
 
         case 'every_x_weeks':
-            generateEveryXWeeksDates(start, endDate, rule.interval, rule.daysOfWeek, dates, limit)
+            generateEveryXWeeksDates(start, calculatedEndDate || null, rule.interval, rule.daysOfWeek, dates, effectiveLimit)
             break
     }
 
     return dates
 }
+
 export function getRecurrenceDescription(rule: RecurrenceRule, startDate: Date): string {
     if (!rule.enabled) {
         return ''
@@ -120,7 +135,10 @@ function getRecurrenceEndDate(
     let endDate: Date | null = null
 
     if (rule.endType === 'until_date' && rule.endDate) {
-        endDate = new Date(rule.endDate)
+        // Set end date time to end of day to include lessons on that day
+        const date = new Date(rule.endDate)
+        date.setHours(23, 59, 59, 999)
+        endDate = date
     } else if (rule.endType === 'count' && rule.occurrencesCount) {
         const daysToAdd = rule.occurrencesCount * (rule.type === 'daily' ? 1 : 7)
         endDate = addDays(startDate, daysToAdd)
@@ -162,11 +180,29 @@ function generateWeeklyDates(
     if (daysOfWeek.length === 0) return
 
     const sortedDays = [...daysOfWeek].sort((a, b) => a - b)
-    let currentWeekStart = startOfDay(startDate)
+    // We need to find the first occurrence that matches the day of week
+    // starting from startDate (preserving time)
 
-    while (dates.length < limit) {
+    // Start checking from the beginning of the week of startDate
+    let currentWeekStart = startOfDay(startDate)
+    // Adjust to Sunday (0)
+    currentWeekStart = addDays(currentWeekStart, -currentWeekStart.getDay())
+
+    // We need to preserve the time from startDate
+    const hours = startDate.getHours()
+    const minutes = startDate.getMinutes()
+
+    // Safety counter to prevent infinite loops
+    let weeksChecked = 0
+    const maxWeeksToCheck = 1000 // approx 20 years
+
+    while (dates.length < limit && weeksChecked < maxWeeksToCheck) {
         for (const dayOfWeek of sortedDays) {
-            const targetDate = getDateForDayOfWeek(currentWeekStart, dayOfWeek)
+            // Calculate date for this day of week in current week
+            let targetDate = addDays(currentWeekStart, dayOfWeek)
+
+            // Set the correct time
+            targetDate.setHours(hours, minutes, 0, 0)
 
             // Only include dates on or after start date
             if (!isBefore(targetDate, startDate)) {
@@ -183,6 +219,7 @@ function generateWeeklyDates(
         }
 
         currentWeekStart = addWeeks(currentWeekStart, 1)
+        weeksChecked++
     }
 }
 
@@ -197,11 +234,20 @@ function generateEveryXWeeksDates(
     if (daysOfWeek.length === 0) return
 
     const sortedDays = [...daysOfWeek].sort((a, b) => a - b)
-    let currentWeekStart = startOfDay(startDate)
 
-    while (dates.length < limit) {
+    let currentWeekStart = startOfDay(startDate)
+    currentWeekStart = addDays(currentWeekStart, -currentWeekStart.getDay())
+
+    const hours = startDate.getHours()
+    const minutes = startDate.getMinutes()
+
+    let weeksChecked = 0
+    const maxWeeksToCheck = 1000
+
+    while (dates.length < limit && weeksChecked < maxWeeksToCheck) {
         for (const dayOfWeek of sortedDays) {
-            const targetDate = getDateForDayOfWeek(currentWeekStart, dayOfWeek)
+            let targetDate = addDays(currentWeekStart, dayOfWeek)
+            targetDate.setHours(hours, minutes, 0, 0)
 
             if (!isBefore(targetDate, startDate)) {
                 if (endDate && isAfter(targetDate, endDate)) {
@@ -217,6 +263,7 @@ function generateEveryXWeeksDates(
         }
 
         currentWeekStart = addWeeks(currentWeekStart, interval)
+        weeksChecked++
     }
 }
 
