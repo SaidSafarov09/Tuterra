@@ -1,24 +1,32 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { UserAvatarUpload } from '@/components/ui/UserAvatarUpload'
+import { UnsavedChangesModal } from '@/components/ui/UnsavedChangesModal'
 import { settingsApi } from '@/services/api'
 import { GENERAL_MESSAGES } from '@/constants/messages'
 import { SettingsFormSkeleton } from '@/components/skeletons'
+import { formatPhoneNumber } from '@/lib/validation'
 import styles from './page.module.scss'
 import { TABS, TIMEZONES } from '@/constants'
 
 
 export default function SettingsPage() {
+    const router = useRouter()
     const { user, setUser } = useAuthStore()
     const [activeTab, setActiveTab] = useState('general')
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+    const [showUnsavedModal, setShowUnsavedModal] = useState(false)
+    const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+    const initialDataRef = useRef<any>(null)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -35,14 +43,16 @@ export default function SettingsPage() {
     const fetchSettings = async () => {
         try {
             const data = await settingsApi.get()
-            setFormData({
+            const initialData = {
                 firstName: data.firstName || (data.name ? data.name.split(' ')[0] || '' : ''),
                 lastName: data.lastName || (data.name ? data.name.split(' ').slice(1).join(' ') || '' : ''),
                 email: data.email || '',
                 phone: data.phone || '',
                 avatar: data.avatar || null,
                 timezone: data.timezone || 'Europe/Moscow',
-            })
+            }
+            setFormData(initialData)
+            initialDataRef.current = initialData
         } catch (error) {
             toast.error('Не удалось загрузить настройки')
         } finally {
@@ -50,9 +60,56 @@ export default function SettingsPage() {
         }
     }
 
+    // Detect changes
+    useEffect(() => {
+        if (!initialDataRef.current) return
+
+        const hasChanges = JSON.stringify(formData) !== JSON.stringify(initialDataRef.current)
+        setHasUnsavedChanges(hasChanges)
+    }, [formData])
+
+    // Block navigation if there are unsaved changes
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (hasUnsavedChanges) {
+                e.preventDefault()
+                e.returnValue = ''
+            }
+        }
+
+        const handleClick = (e: MouseEvent) => {
+            if (!hasUnsavedChanges) return
+
+            const target = e.target as HTMLElement
+            const link = target.closest('a')
+
+            if (link && link.href && !link.href.includes('/settings')) {
+                e.preventDefault()
+                e.stopPropagation()
+                setPendingNavigation(link.pathname || link.href)
+                setShowUnsavedModal(true)
+            }
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload)
+        document.addEventListener('click', handleClick, true)
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload)
+            document.removeEventListener('click', handleClick, true)
+        }
+    }, [hasUnsavedChanges])
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
-        setFormData((prev) => ({ ...prev, [name]: value }))
+
+        if (name === 'phone') {
+            // Format phone number automatically
+            const formatted = formatPhoneNumber(value)
+            setFormData((prev) => ({ ...prev, [name]: formatted }))
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: value }))
+        }
     }
 
     const handleAvatarChange = (file: File | null) => {
@@ -87,6 +144,10 @@ export default function SettingsPage() {
                 avatar: updatedUser.avatar || null,
             })
 
+            // Update initial data ref to current data
+            initialDataRef.current = { ...formData }
+            setHasUnsavedChanges(false)
+
             const event = new Event('visibilitychange');
             document.dispatchEvent(event);
 
@@ -95,6 +156,14 @@ export default function SettingsPage() {
             toast.error(error.message || GENERAL_MESSAGES.GENERIC_ERROR)
         } finally {
             setIsSaving(false)
+        }
+    }
+
+    const handleDiscardChanges = () => {
+        setShowUnsavedModal(false)
+        setHasUnsavedChanges(false)
+        if (pendingNavigation) {
+            router.push(pendingNavigation)
         }
     }
 
@@ -136,19 +205,19 @@ export default function SettingsPage() {
                                     <div className={styles.fieldsColumn}>
                                         <div className={styles.nameFields}>
                                             <Input
-                                            label="Имя"
-                                            name="firstName"
-                                            value={formData.firstName}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        <Input
-                                            label="Фамилия"
-                                            name="lastName"
-                                            value={formData.lastName}
-                                            onChange={handleChange}
-                                            required
-                                        />
+                                                label="Имя"
+                                                name="firstName"
+                                                value={formData.firstName}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                            <Input
+                                                label="Фамилия"
+                                                name="lastName"
+                                                value={formData.lastName}
+                                                onChange={handleChange}
+                                                required
+                                            />
                                         </div>
                                         <Input
                                             label="Email"
@@ -162,7 +231,7 @@ export default function SettingsPage() {
                                             name="phone"
                                             value={formData.phone}
                                             onChange={handleChange}
-                                            placeholder="+7 (999) 000-00-00"
+                                            placeholder="+7XXXXXXXXXX"
                                         />
                                     </div>
                                 </div>
@@ -205,6 +274,12 @@ export default function SettingsPage() {
                     </div>
                 </form>
             )}
+
+            <UnsavedChangesModal
+                isOpen={showUnsavedModal}
+                onClose={() => setShowUnsavedModal(false)}
+                onDiscard={handleDiscardChanges}
+            />
         </div>
     )
 }

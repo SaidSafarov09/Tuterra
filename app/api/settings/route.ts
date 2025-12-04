@@ -3,12 +3,26 @@ import { getCurrentUser } from '@/lib/auth'
 
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { validatePhoneNumber, capitalizeFirstLetter, isSingleWord } from '@/lib/validation'
 
 const settingsSchema = z.object({
-    firstName: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
-    lastName: z.string().min(2, 'Фамилия должна содержать минимум 2 символа'),
+    firstName: z.string()
+        .min(2, 'Имя должно содержать минимум 2 символа')
+        .refine(isSingleWord, 'Имя должно быть одним словом без пробелов')
+        .transform(capitalizeFirstLetter),
+    lastName: z.string()
+        .min(2, 'Фамилия должна содержать минимум 2 символа')
+        .refine(isSingleWord, 'Фамилия должна быть одним словом без пробелов')
+        .transform(capitalizeFirstLetter),
     name: z.string().optional(),
-    phone: z.string().optional().nullable().transform(v => v === '' ? null : v),
+    phone: z.string()
+        .optional()
+        .nullable()
+        .transform(v => v === '' ? null : v)
+        .refine(
+            (v) => !v || validatePhoneNumber(v),
+            'Неверный формат телефона. Используйте формат +7XXXXXXXXXX'
+        ),
     avatar: z.string().nullable().optional(),
     currency: z.string().optional(),
     timezone: z.string(),

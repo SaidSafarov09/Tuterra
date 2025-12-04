@@ -61,8 +61,9 @@ export async function POST(request: NextRequest) {
                 data: {
                     phone: session.phone,
                     phoneVerified: true,
-                    firstName: `Новый`,
-                    lastName: `Пользователь`,
+                    firstName: 'Новый',
+                    lastName: 'Пользователь',
+                    name: 'Новый Пользователь',
                 },
             })
         } else {
