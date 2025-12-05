@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
     const clientId = process.env.YANDEX_CLIENT_ID
     const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/yandex/callback`
+    console.log('Yandex Auth Redirect URI:', redirectUri)
 
     // Scopes: access to login, name, email, phone, birthday, avatar
     // login:email, login:info, login:avatar, login:birthday, login:default_phone
