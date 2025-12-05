@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { UserAvatarUpload } from '@/components/ui/UserAvatarUpload'
 import { UnsavedChangesModal } from '@/components/ui/UnsavedChangesModal'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { settingsApi } from '@/services/api'
 import { GENERAL_MESSAGES } from '@/constants/messages'
 import { SettingsFormSkeleton } from '@/components/skeletons'
@@ -265,9 +266,9 @@ export default function SettingsPage() {
                     {activeTab === 'appearance' && (
                         <div className={styles.section}>
                             <h2 className={styles.sectionTitle}>Оформление</h2>
-                            <p style={{ color: 'var(--text-secondary)' }}>
-                                Настройки оформления будут доступны в ближайшее время.
-                            </p>
+                            <div className={styles.appGrid}>
+                                <ThemeToggle />
+                            </div>
                         </div>
                     )}
 

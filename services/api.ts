@@ -158,6 +158,7 @@ interface UserSettings {
     timezone?: string
     currency?: string
     hasOAuthProvider?: boolean
+    theme?: string
 }
 
 export const settingsApi = {

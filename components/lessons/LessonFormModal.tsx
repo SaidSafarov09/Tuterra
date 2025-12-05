@@ -179,14 +179,15 @@ export function LessonFormModal({
                         />
                     )}
 
-                    <Input
-                        label="Тема урока"
-                        name="topic"
-                        value={formData.topic || ''}
-                        onChange={(e) => handleChange('topic', e.target.value)}
-                        placeholder={`Например: ${topicPlaceholder}`}
-                        disabled={isSubmitting}
-                    />
+                    {!formData.recurrence?.enabled && (
+                        <Input
+                            label="Тема урока"
+                            name="topic"
+                            value={formData.topic || ''}
+                            onChange={(e) => handleChange('topic', e.target.value)}
+                            placeholder={`Например: ${topicPlaceholder}`}
+                            disabled={isSubmitting}
+                        />)}
 
                     <div className={styles.paymentSection}>
                         <Checkbox

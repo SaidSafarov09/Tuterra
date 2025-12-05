@@ -16,6 +16,7 @@ model User {
   avatar            String?
   currency          String             @default("₽")
   timezone          String             @default("Europe/Moscow")
+  theme             String             @default("system")
   emailVerified     Boolean            @default(false)
   phoneVerified     Boolean            @default(false)
   twoFactorEnabled  Boolean            @default(false)

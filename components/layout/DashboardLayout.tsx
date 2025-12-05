@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar'
 import { MenuIcon, CloseIcon } from '@/components/icons/Icons'
 import { useAuthStore } from '@/store/auth'
 import { settingsApi } from '@/services/api'
+import { useTheme } from 'next-themes'
 import styles from './DashboardLayout.module.scss'
 
 interface DashboardLayoutProps {
@@ -14,6 +15,7 @@ interface DashboardLayoutProps {
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const { user, setUser } = useAuthStore()
+    const { setTheme } = useTheme()
 
     // Fetch user data on mount if not already loaded
     useEffect(() => {
@@ -30,6 +32,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         phone: data.phone || null,
                         avatar: data.avatar || null,
                     })
+
+                    // Sync theme if provided
+                    if (data.theme) {
+                        setTheme(data.theme)
+                    }
                 } catch (error) {
                     console.error('Failed to fetch user data:', error)
                 }
@@ -37,7 +44,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         }
 
         fetchUserData()
-    }, [user, setUser])
+    }, [user, setUser, setTheme])
 
     return (
         <div className={styles.layout}>

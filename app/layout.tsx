@@ -13,16 +13,20 @@ export const metadata: Metadata = {
     },
 }
 
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
+
 export default function RootLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
     return (
-        <html lang="ru">
+        <html lang="ru" suppressHydrationWarning>
             <body>
-                {children}
-                <Toaster position="bottom-right" richColors />
+                <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
+                    {children}
+                    <Toaster position="bottom-right" richColors />
+                </ThemeProvider>
             </body>
         </html>
     )

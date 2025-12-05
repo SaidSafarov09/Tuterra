@@ -50,8 +50,6 @@ export async function GET(request: NextRequest) {
         if (!payload) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
-
-        // Single optimized query with all needed data
         const currentUser = await prisma.user.findUnique({
             where: { id: payload.userId },
             select: {
@@ -64,6 +62,7 @@ export async function GET(request: NextRequest) {
                 avatar: true,
                 currency: true,
                 timezone: true,
+                theme: true,
                 authProviders: {
                     select: {
                         provider: true,
@@ -75,14 +74,12 @@ export async function GET(request: NextRequest) {
         if (!currentUser) {
             return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
         }
-
-        // Check if user has OAuth providers
         const hasOAuthProvider = currentUser.authProviders.length > 0
 
         return NextResponse.json({
             ...currentUser,
             hasOAuthProvider,
-            authProviders: undefined, // Don't send providers list to client
+            authProviders: undefined,
         })
     } catch (error) {
         console.error('Get settings error:', error)
@@ -95,14 +92,11 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     try {
-        // Get token from cookie
         const token = request.cookies.get('auth-token')?.value
 
         if (!token) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
-
-        // Verify token
         const payload = await verifyToken(token)
 
         if (!payload) {
@@ -111,8 +105,6 @@ export async function PUT(request: NextRequest) {
 
         const body = await request.json()
         const validatedData = settingsSchema.parse(body)
-
-        // Check if user has OAuth providers
         const userWithProviders = await prisma.user.findUnique({
             where: { id: payload.userId },
             select: {
@@ -127,15 +119,12 @@ export async function PUT(request: NextRequest) {
 
         const hasOAuthProvider = userWithProviders?.authProviders.length ?? 0 > 0
 
-        // Prevent email change for OAuth users
         if (hasOAuthProvider && validatedData.email && validatedData.email !== userWithProviders?.email) {
             return NextResponse.json(
                 { error: 'Нельзя изменить email для аккаунта, привязанного к соцсети' },
                 { status: 400 }
             )
         }
-
-        // Check if email is taken by another user
         if (validatedData.email) {
             const existingUser = await prisma.user.findFirst({
                 where: {
@@ -153,8 +142,6 @@ export async function PUT(request: NextRequest) {
                 )
             }
         }
-
-        // Check if phone is taken by another user
         if (validatedData.phone) {
             const existingUser = await prisma.user.findFirst({
                 where: {

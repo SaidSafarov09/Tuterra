@@ -146,13 +146,14 @@ export function LessonFormWithDateTime({
                     />
                 )}
 
-                <Input
-                    label="Тема урока"
-                    value={formData.topic || ''}
-                    onChange={(e) => handleChange('topic', e.target.value)}
-                    placeholder={`Например: ${topicPlaceholder}`}
-                    disabled={isSubmitting}
-                />
+                {!formData.recurrence?.enabled && (
+                    <Input
+                        label="Тема урока"
+                        value={formData.topic || ''}
+                        onChange={(e) => handleChange('topic', e.target.value)}
+                        placeholder={`Например: ${topicPlaceholder}`}
+                        disabled={isSubmitting}
+                    />)}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
                     <Checkbox
