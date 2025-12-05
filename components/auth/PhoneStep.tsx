@@ -2,7 +2,10 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { toast } from 'sonner'
+import { YandexLogo } from '@/components/icons/YandexLogo'
+import { GoogleLogo } from '@/components/icons/GoogleLogo'
 import styles from './Auth.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface PhoneStepProps {
     onSuccess: (sessionId: string, phone: string) => void
@@ -11,12 +14,9 @@ interface PhoneStepProps {
 export function PhoneStep({ onSuccess }: PhoneStepProps) {
     const [phone, setPhone] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-
+    const isDesk = useMediaQuery('(min-width: 768px)')
     const formatPhoneNumber = (value: string) => {
-        // Remove all non-digits
         const digits = value.replace(/\D/g, '')
-
-        // Start with +7
         if (!digits) return '+7'
         if (digits[0] === '7') {
             return '+7' + digits.slice(1, 11)
@@ -92,9 +92,30 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                 </Button>
             </form>
 
-            <p className={styles.hint}>
-                Мы отправим вам SMS с кодом подтверждения
-            </p>
+            <div className={styles.divider}>
+                или
+            </div>
+
+            <div className={styles.socialButtons}>
+                <button
+                    className={styles.socialYandex}
+                    onClick={() => window.location.href = '/api/auth/yandex/login'}
+                >
+                    <div className={styles.yandex}>
+                        <YandexLogo />
+                        <p>{isDesk && "Войти с"} Яндекс ID</p>
+                    </div>
+                </button>
+                <button
+                    className={styles.socialGoogle}
+                    onClick={() => window.location.href = '/api/auth/google/login'}
+                >
+                    <div className={styles.google}>
+                        <GoogleLogo />
+                        <p>{isDesk && "Войти с"} Google</p>
+                    </div>
+                </button>
+            </div>
         </div>
     )
 }

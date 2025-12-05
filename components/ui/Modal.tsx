@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './Modal.module.scss'
 import { Button } from './Button'
 import { XIcon } from 'lucide-react'
@@ -23,16 +24,16 @@ export const Modal: React.FC<ModalProps> = ({
     const modalRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
+        if (!isOpen) return
+
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 onClose()
             }
         }
 
-        if (isOpen) {
-            document.addEventListener('keydown', handleEscape)
-            document.body.style.overflow = 'hidden'
-        }
+        document.addEventListener('keydown', handleEscape)
+        document.body.style.overflow = 'hidden'
 
         return () => {
             document.removeEventListener('keydown', handleEscape)
@@ -42,7 +43,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     if (!isOpen) return null
 
-    return (
+    const modalContent = (
         <div className={styles.overlay} onClick={onClose}>
             <div
                 ref={modalRef}
@@ -61,6 +62,13 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
         </div>
     )
+
+    // Use portal to render modal at document.body level
+    if (typeof document !== 'undefined') {
+        return createPortal(modalContent, document.body)
+    }
+
+    return null
 }
 
 interface ModalFooterProps {

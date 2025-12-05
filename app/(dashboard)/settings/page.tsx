@@ -26,6 +26,7 @@ export default function SettingsPage() {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
     const [showUnsavedModal, setShowUnsavedModal] = useState(false)
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+    const [hasOAuthProvider, setHasOAuthProvider] = useState(false)
     const initialDataRef = useRef<any>(null)
     const [formData, setFormData] = useState({
         firstName: '',
@@ -53,6 +54,7 @@ export default function SettingsPage() {
             }
             setFormData(initialData)
             initialDataRef.current = initialData
+            setHasOAuthProvider(data.hasOAuthProvider || false)
         } catch (error) {
             toast.error('Не удалось загрузить настройки')
         } finally {
@@ -140,6 +142,7 @@ export default function SettingsPage() {
                 firstName: updatedUser.firstName,
                 lastName: updatedUser.lastName,
                 name: updatedUser.name || null,
+                email: updatedUser.email || null,
                 phone: updatedUser.phone || null,
                 avatar: updatedUser.avatar || null,
             })
@@ -223,8 +226,9 @@ export default function SettingsPage() {
                                             label="Email"
                                             name="email"
                                             value={formData.email}
-                                            disabled
-                                            hint="Email нельзя изменить"
+                                            onChange={handleChange}
+                                            disabled={hasOAuthProvider}
+                                            hint={hasOAuthProvider ? "Email нельзя изменить (вход через соцсеть)" : undefined}
                                         />
                                         <Input
                                             label="Телефон"

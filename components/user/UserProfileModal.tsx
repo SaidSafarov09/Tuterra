@@ -81,9 +81,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                             <h3 className={styles.userName}>
                                 {user?.firstName || user?.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : user?.name || <Skeleton width={150} height={28} />}
                             </h3>
-                            <p className={styles.userEmail}>
-                                {user?.phone || <Skeleton width={100} height={16} />}
-                            </p>
+                            <div className={styles.userEmail}>
+                                {user?.phone || user?.email || <Skeleton width={100} height={16} />}
+                            </div>
                         </div>
                     </div>
                     <div className={styles.memberBadge}>

@@ -148,6 +148,7 @@ export const incomeApi = {
 }
 
 interface UserSettings {
+    id: string
     firstName: string
     lastName: string
     name?: string  // Оставлено для совместимости
@@ -156,6 +157,7 @@ interface UserSettings {
     avatar?: string | null
     timezone?: string
     currency?: string
+    hasOAuthProvider?: boolean
 }
 
 export const settingsApi = {

@@ -87,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                         </Avatar.Root>
                         <div className={styles.userDetails}>
                             <p className={styles.userName}>{user?.name || 'Пользователь'}</p>
-                            <p className={styles.userEmail}>{user?.phone}</p>
+                            <p className={styles.userEmail}>{user?.phone || user?.email || ''}</p>
                         </div>
                     </div>
                     <Button
