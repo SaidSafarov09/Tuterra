@@ -67,7 +67,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
     return (
         <div className={styles.stepContainer}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Вход в Tuterra</h1>
+                <h1 className={styles.title}>Добро пожаловать в Tuterra</h1>
                 <p className={styles.subtitle}>
                     Введите номер телефона для входа или регистрации
                 </p>

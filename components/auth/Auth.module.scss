@@ -13,12 +13,13 @@
     box-shadow: var(--shadow-2xl);
     padding: 48px;
     width: 100%;
-    max-width: 440px;
+    max-width: 484px;
     animation: slideUp 0.4s ease;
 
     @media (max-width: 768px) {
         padding: 32px 24px;
         border-radius: var(--radius-lg);
+        max-width: 400px;
     }
 }
 

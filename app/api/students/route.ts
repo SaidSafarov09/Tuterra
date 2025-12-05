@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth'
+import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -15,14 +15,14 @@ const studentSchema = z.object({
 
 export async function GET(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        const token = request.cookies.get('auth-token')?.value
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!user) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        const payload = await verifyToken(token)
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const students = await prisma.student.findMany({
-            where: { ownerId: user.id },
+            where: { ownerId: payload.userId },
             include: {
                 subjects: true,
                 lessons: {
@@ -48,11 +48,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        const token = request.cookies.get('auth-token')?.value
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!user) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        const payload = await verifyToken(token)
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const body = await request.json()
         const validatedData = studentSchema.parse(body)
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
             const existingSubject = await prisma.subject.findFirst({
                 where: {
-                    userId: user.id,
+                    userId: payload.userId,
                     name: {
                         equals: name,
                     }
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
                     data: {
                         name,
                         color: randomColor,
-                        userId: user.id,
+                        userId: payload.userId,
                     }
                 })
                 subjectId = newSubject.id
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
                 name: validatedData.name,
                 contact: validatedData.contact,
                 note: validatedData.note,
-                ownerId: user.id,
+                ownerId: payload.userId,
                 subjects: subjectId ? {
                     connect: { id: subjectId }
                 } : undefined,

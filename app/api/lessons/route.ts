@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth'
+import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateRecurringDates, validateRecurrenceRule } from '@/lib/recurring-lessons'
@@ -34,17 +34,17 @@ const lessonSchema = z.object({
 
 export async function GET(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        const token = request.cookies.get('auth-token')?.value
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!user) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        const payload = await verifyToken(token)
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const { searchParams } = new URL(request.url)
         const filter = searchParams.get('filter')
 
         const now = new Date()
-        let where: any = { ownerId: user.id }
+        let where: any = { ownerId: payload.userId }
 
         if (filter === 'upcoming') {
             where.date = { gte: now }
@@ -81,11 +81,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        const token = request.cookies.get('auth-token')?.value
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!user) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        const payload = await verifyToken(token)
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const body = await request.json()
         const validatedData = lessonSchema.parse(body)
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         const student = await prisma.student.findFirst({
             where: {
                 id: validatedData.studentId,
-                ownerId: user.id,
+                ownerId: payload.userId,
             },
             include: {
                 subjects: true
@@ -110,11 +110,11 @@ export async function POST(request: NextRequest) {
 
         // DRY: Handle recurring lessons
         if (validatedData.recurrence?.enabled) {
-            return await createRecurringLesson(user.id, validatedData)
+            return await createRecurringLesson(payload.userId, validatedData)
         }
 
         // DRY: Handle single lesson
-        return await createSingleLesson(user.id, validatedData)
+        return await createSingleLesson(payload.userId, validatedData)
 
     } catch (error) {
         if (error instanceof z.ZodError) {

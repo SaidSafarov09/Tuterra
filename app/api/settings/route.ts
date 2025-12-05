@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth'
-
+import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { validatePhoneNumber, validateEmail, capitalizeFirstLetter, isSingleWord } from '@/lib/validation'
@@ -38,14 +37,23 @@ const settingsSchema = z.object({
 
 export async function GET(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        // Get token from cookie
+        const token = request.cookies.get('auth-token')?.value
 
-        if (!user) {
+        if (!token) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
+        // Verify token
+        const payload = await verifyToken(token)
+
+        if (!payload) {
+            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+        }
+
+        // Single optimized query with all needed data
         const currentUser = await prisma.user.findUnique({
-            where: { id: user.id },
+            where: { id: payload.userId },
             select: {
                 id: true,
                 firstName: true,
@@ -87,9 +95,17 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        // Get token from cookie
+        const token = request.cookies.get('auth-token')?.value
 
-        if (!user) {
+        if (!token) {
+            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+        }
+
+        // Verify token
+        const payload = await verifyToken(token)
+
+        if (!payload) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
@@ -98,7 +114,7 @@ export async function PUT(request: NextRequest) {
 
         // Check if user has OAuth providers
         const userWithProviders = await prisma.user.findUnique({
-            where: { id: user.id },
+            where: { id: payload.userId },
             select: {
                 email: true,
                 authProviders: {
@@ -125,7 +141,7 @@ export async function PUT(request: NextRequest) {
                 where: {
                     email: validatedData.email,
                     NOT: {
-                        id: user.id
+                        id: payload.userId
                     }
                 }
             })
@@ -144,7 +160,7 @@ export async function PUT(request: NextRequest) {
                 where: {
                     phone: validatedData.phone,
                     NOT: {
-                        id: user.id
+                        id: payload.userId
                     }
                 }
             })
@@ -158,7 +174,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const updatedUser = await prisma.user.update({
-            where: { id: user.id },
+            where: { id: payload.userId },
             data: {
                 ...validatedData,
                 name: validatedData.firstName ? `${validatedData.firstName}${validatedData.lastName ? ' ' + validatedData.lastName : ''}` : null,

@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth'
-
+import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { startOfMonth, endOfMonth } from 'date-fns'
 
 export async function GET(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        const token = request.cookies.get('auth-token')?.value
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!user) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        const payload = await verifyToken(token)
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const now = new Date()
         const monthStart = startOfMonth(now)
@@ -20,13 +19,13 @@ export async function GET(request: NextRequest) {
         const [studentsCount, upcomingLessons, unpaidLessons, monthlyIncome, totalLessons, subjectsCount, userProfile] = await Promise.all([
             // Количество учеников
             prisma.student.count({
-                where: { ownerId: user.id },
+                where: { ownerId: payload.userId },
             }),
 
             // Ближайшие занятия
             prisma.lesson.findMany({
                 where: {
-                    ownerId: user.id,
+                    ownerId: payload.userId,
                     date: { gte: now },
                     isCanceled: false,
                 } as any,
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest) {
             // Неоплаченные занятия
             prisma.lesson.findMany({
                 where: {
-                    ownerId: user.id,
+                    ownerId: payload.userId,
                     isPaid: false,
                     isCanceled: false,
                 } as any,
@@ -55,7 +54,7 @@ export async function GET(request: NextRequest) {
             // Доход за текущий месяц
             prisma.lesson.aggregate({
                 where: {
-                    ownerId: user.id,
+                    ownerId: payload.userId,
                     isPaid: true,
                     date: {
                         gte: monthStart,
@@ -70,7 +69,7 @@ export async function GET(request: NextRequest) {
             // Всего проведенных занятий (прошедшие)
             prisma.lesson.count({
                 where: {
-                    ownerId: user.id,
+                    ownerId: payload.userId,
                     date: { lte: now },
                     isCanceled: false,
                 } as any,
@@ -78,12 +77,12 @@ export async function GET(request: NextRequest) {
 
             // Количество предметов
             prisma.subject.count({
-                where: { userId: user.id },
+                where: { userId: payload.userId },
             }),
 
             // Дата регистрации пользователя
             prisma.user.findUnique({
-                where: { id: user.id },
+                where: { id: payload.userId },
                 select: { createdAt: true },
             }),
         ])

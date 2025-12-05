@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth'
-
+import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -14,14 +13,14 @@ const subjectSchema = z.object({
 
 export async function GET(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        const token = request.cookies.get('auth-token')?.value
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!user) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        const payload = await verifyToken(token)
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const subjects = await prisma.subject.findMany({
-            where: { userId: user.id },
+            where: { userId: payload.userId },
             include: {
                 _count: {
                     select: { students: true, lessons: true },
@@ -42,11 +41,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const user = await getCurrentUser(request)
+        const token = request.cookies.get('auth-token')?.value
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!user) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        const payload = await verifyToken(token)
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const body = await request.json()
         const validatedData = subjectSchema.parse(body)
@@ -54,7 +53,7 @@ export async function POST(request: NextRequest) {
         // Проверяем, не существует ли уже предмет с таким именем
         const existing = await prisma.subject.findFirst({
             where: {
-                userId: user.id,
+                userId: payload.userId,
                 name: validatedData.name,
             },
         })
@@ -69,7 +68,7 @@ export async function POST(request: NextRequest) {
         const subject = await prisma.subject.create({
             data: {
                 ...validatedData,
-                userId: user.id,
+                userId: payload.userId,
             },
         })
 
