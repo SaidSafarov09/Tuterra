@@ -16,6 +16,10 @@
     padding: 4px;
     border-radius: var(--radius-md);
     gap: 4px;
+
+    @media (max-width: 768px) {
+        flex-wrap: wrap;
+    }
 }
 
 .toggleButton {
