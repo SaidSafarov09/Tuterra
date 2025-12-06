@@ -67,8 +67,6 @@ export const UserAvatarUpload: React.FC<UserAvatarUploadProps> = ({
                             img.onerror = reject
                             img.src = url
                         })
-                        // If we get here, the browser supports it natively
-                        // We don't need to do anything, just proceed to reader
                         toast.dismiss(toastId)
                     } catch (imgError) {
                         toast.dismiss(toastId)
