@@ -1,5 +1,5 @@
 export const LESSON_TABS = [
-    { id: 'upcoming' as const, label: 'Предстоящие' },
+    { id: 'upcoming' as const, label: 'Ближайшие' },
     { id: 'past' as const, label: 'Прошедшие' },
     { id: 'unpaid' as const, label: 'Неоплаченные' },
     { id: 'canceled' as const, label: 'Отмененные' },

@@ -67,7 +67,7 @@
     max-height: 300px;
     overflow-y: auto;
     z-index: 100;
-    animation: dropdownAppear 0.15s ease;
+    animation: dropdownAppear 0.3s ease;
 
     &::-webkit-scrollbar {
         width: 6px;
@@ -80,15 +80,25 @@
 }
 
 .menuRelative {
-    position: relative;
-    top: 4px;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
     width: 100%;
     box-shadow: none;
     border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    border-radius: var(--radius-md);
     margin-top: -4px;
-    animation: dropdownExpand 0.2s ease;
+    animation: dropdownExpand 0.3s ease;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--text-muted);
+        border-radius: 3px;
+    }
 }
 
 @keyframes dropdownExpand {
