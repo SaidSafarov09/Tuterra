@@ -80,7 +80,8 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                     onChange={handlePhoneChange}
                     placeholder="+7 (___) ___-__-__"
                     autoFocus
-                    disabled={isLoading}
+                    // disabled={isLoading}
+                    disabled
                 />
 
                 <Button
@@ -90,6 +91,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                 >
                     {isLoading ? 'Загрузка...' : 'Далее'}
                 </Button>
+                <p className={styles.subtitleError}>Вход по номеру телефона временно недоступен</p>
             </form>
 
             <div className={styles.divider}>
