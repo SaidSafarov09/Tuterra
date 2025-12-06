@@ -12,7 +12,8 @@ export const StudentDetailSkeleton: React.FC = () => {
                 padding: '24px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '24px'
+                gap: '24px',
+                flexWrap: 'wrap'
             }}>
                 <Skeleton variant="circular" width={100} height={100} />
                 <div style={{ flex: 1 }}>
@@ -23,7 +24,7 @@ export const StudentDetailSkeleton: React.FC = () => {
                         <Skeleton width={100} height={24} style={{ borderRadius: '12px' }} />
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                     <Skeleton width={40} height={40} style={{ borderRadius: '8px' }} />
                     <Skeleton width={40} height={40} style={{ borderRadius: '8px' }} />
                 </div>
@@ -40,7 +41,7 @@ export const StudentDetailSkeleton: React.FC = () => {
                     <Skeleton width={150} height={24} />
                     <Skeleton width={120} height={32} style={{ borderRadius: '8px' }} />
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                     <Skeleton width={120} height={40} style={{ borderRadius: '20px' }} />
                     <Skeleton width={120} height={40} style={{ borderRadius: '20px' }} />
                     <Skeleton width={120} height={40} style={{ borderRadius: '20px' }} />

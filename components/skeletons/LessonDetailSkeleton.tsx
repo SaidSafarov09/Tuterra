@@ -7,19 +7,19 @@ export const LessonDetailSkeleton: React.FC = () => {
             background: 'var(--background)',
             border: '1px solid var(--border)',
             borderRadius: '16px',
-            padding: '32px',
+            padding: '16px',
             display: 'flex',
             flexDirection: 'column',
             gap: '24px'
         }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <Skeleton width={200} height={32} />
+                        <Skeleton width={150} height={32} />
                         <Skeleton width={100} height={24} style={{ borderRadius: '12px' }} />
                     </div>
-                    <Skeleton width={250} height={16} />
+                    <Skeleton width="80%" height={16} />
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <Skeleton width={80} height={32} style={{ marginBottom: '8px', marginLeft: 'auto' }} />
@@ -40,7 +40,7 @@ export const LessonDetailSkeleton: React.FC = () => {
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', gap: '12px', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', gap: '12px', paddingTop: '24px', borderTop: '1px solid var(--border)', flexWrap: 'wrap' }}>
                 <Skeleton width={120} height={40} style={{ borderRadius: '8px' }} />
                 <Skeleton width={120} height={40} style={{ borderRadius: '8px' }} />
                 <Skeleton width={120} height={40} style={{ borderRadius: '8px' }} />
