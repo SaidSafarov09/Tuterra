@@ -6,13 +6,14 @@ import { toast } from 'sonner'
 import { format, subMonths, addMonths } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
-import { ArrowLeftIcon, ArrowRightIcon, HomeIcon, WalletIcon } from '@/components/icons/Icons'
+import { ArrowLeftIcon, ArrowRightIcon, HomeIcon, WalletIcon, ClockIcon, HistoryIcon, ReceiptIcon, UserIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { MonthlyData } from '@/types'
 import { IncomeCardSkeleton } from '@/components/skeletons'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { incomeApi } from '@/services/api'
 import styles from './page.module.scss'
+import { formatDuration } from '@/lib/dateUtils'
 
 import { EmptyState } from '@/components/ui/EmptyState'
 import { INCOME_MESSAGES } from '@/constants/messages'
@@ -29,6 +30,9 @@ export default function IncomePage() {
     const [previousAverageCheck, setPreviousAverageCheck] = useState(0)
     const [hasAnyIncomeEver, setHasAnyIncomeEver] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+    const [currentMonthDuration, setCurrentMonthDuration] = useState(0)
+    const [previousMonthDuration, setPreviousMonthDuration] = useState(0)
+    const [recentTransactions, setRecentTransactions] = useState<any[]>([])
 
     useEffect(() => {
         fetchIncomeData()
@@ -46,6 +50,9 @@ export default function IncomePage() {
 
             setPreviousLessonsCount(data.previousLessonsCount || 0)
             setPreviousAverageCheck(data.previousAverageCheck || 0)
+            setCurrentMonthDuration(data.currentMonthDuration || 0)
+            setPreviousMonthDuration(data.previousMonthDuration || 0)
+            setRecentTransactions(data.recentTransactions || [])
 
             console.log('Income Data:', {
                 currentMonthIncome: data.currentMonthIncome,
@@ -176,6 +183,15 @@ export default function IncomePage() {
                             <p className={styles.statDescription}>
                                 Итого заработано за {format(currentDate, 'LLLL yyyy', { locale: ru })}
                             </p>
+
+                            <div className={styles.durationBlock}>
+                                <ClockIcon size={20} color="var(--primary)" />
+                                <div className={styles.durationText}>
+                                    Затрачено времени
+                                    <strong>{formatDuration(currentMonthDuration)}</strong>
+                                </div>
+                            </div>
+
                             <div className={styles.statDetails}>
                                 <div className={styles.statDetailItem}>
                                     <span className={styles.statDetailLabel}>Оплаченных занятий:</span>
@@ -200,27 +216,69 @@ export default function IncomePage() {
                             </div>
                         </div>
 
-                        {previousMonthIncome > 0 && (
-                            <div className={styles.statCard}>
+                        <div className={styles.statCard}>
+                            <div className={styles.statHeader}>
                                 <h3 className={styles.statTitle}>Предыдущий месяц</h3>
-                                <div className={styles.statValue}>{previousMonthIncome.toLocaleString()} ₽</div>
-                                <p className={styles.statDescription}>
-                                    {format(subMonths(currentDate, 1), 'LLLL yyyy', { locale: ru })}
-                                </p>
-                                <div className={styles.statDetails}>
-                                    <div className={styles.statDetailItem}>
-                                        <span className={styles.statDetailLabel}>Оплаченных занятий:</span>
-                                        <span className={styles.statDetailValue}>{previousLessonsCount}</span>
-                                    </div>
-                                    <div className={styles.statDetailItem}>
-                                        <span className={styles.statDetailLabel}>Средний чек:</span>
-                                        <span className={styles.statDetailValue}>
-                                            {previousAverageCheck > 0 ? `${previousAverageCheck.toLocaleString()} ₽` : '—'}
-                                        </span>
-                                    </div>
+                            </div>
+                            <div className={styles.statValue}>{previousMonthIncome.toLocaleString()} ₽</div>
+                            <p className={styles.statDescription}>
+                                {format(subMonths(currentDate, 1), 'LLLL yyyy', { locale: ru })}
+                            </p>
+
+                            <div className={styles.durationBlock}>
+                                <ClockIcon size={20} color="var(--primary)" />
+                                <div className={styles.durationText}>
+                                    Затрачено времени
+                                    <strong>{formatDuration(previousMonthDuration)}</strong>
                                 </div>
                             </div>
-                        )}
+
+                            <div className={styles.statDetails}>
+                                <div className={styles.statDetailItem}>
+                                    <span className={styles.statDetailLabel}>Оплаченных занятий:</span>
+                                    <span className={styles.statDetailValue}>{previousLessonsCount}</span>
+                                </div>
+                                <div className={styles.statDetailItem}>
+                                    <span className={styles.statDetailLabel}>Средний чек:</span>
+                                    <span className={styles.statDetailValue}>
+                                        {previousAverageCheck > 0 ? `${previousAverageCheck.toLocaleString()} ₽` : '—'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={styles.statCard}>
+                            <div className={styles.statHeader}>
+                                <h3 className={styles.statTitle}>Последние операции</h3>
+                                <HistoryIcon size={20} color="var(--text-secondary)" />
+                            </div>
+
+                            <div className={styles.transactionsList}>
+                                {recentTransactions.length === 0 ? (
+                                    <p className={styles.emptyStateText} style={{ textAlign: 'center', padding: '20px 0' }}>Нет операций</p>
+                                ) : (
+                                    recentTransactions.map((tx, i) => (
+                                        <div key={i} className={styles.transactionItem}>
+                                            <div className={styles.transactionInfo}>
+                                                <div className={styles.transactionIcon}>
+                                                    <UserIcon size={20} />
+                                                </div>
+                                                <div className={styles.transactionDetails}>
+                                                    <span className={styles.transactionStudent}>{tx.student.name}</span>
+                                                    <span className={styles.transactionSubject}>{tx.subject?.name || 'Без предмета'}</span>
+                                                </div>
+                                            </div>
+                                            <span className={styles.transactionAmount}>+{tx.price} ₽</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <a href="#" className={styles.allTransactionsLink} onClick={(e) => e.preventDefault()}>
+                                Все операции
+                                <ArrowRightIcon size={16} />
+                            </a>
+                        </div>
                     </div>
 
                     {monthlyData.length > 0 && (

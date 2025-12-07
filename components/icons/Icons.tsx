@@ -42,8 +42,15 @@ import {
     FileText,
     DollarSign,
     Send,
-    MessageCircle
+    MessageCircle,
+    History,
+    Receipt
 } from 'lucide-react'
+
+// ... (existing exports)
+
+export const HistoryIcon: React.FC<IconProps> = (props) => <History {...props} />
+export const ReceiptIcon: React.FC<IconProps> = (props) => <Receipt {...props} />
 
 interface IconProps {
     size?: number

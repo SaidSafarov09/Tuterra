@@ -143,6 +143,9 @@ interface IncomeData {
     averageCheck: number
     previousAverageCheck: number
     hasAnyIncomeEver: boolean
+    currentMonthDuration: number
+    previousMonthDuration: number
+    recentTransactions: any[]
 }
 
 export const incomeApi = {

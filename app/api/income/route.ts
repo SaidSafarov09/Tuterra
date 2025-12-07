@@ -118,6 +118,39 @@ export async function GET(request: NextRequest) {
         })
         const hasAnyIncomeEver = paidLessonsCount > 0
 
+        // Calculate durations
+        const currentMonthDuration = await prisma.lesson.aggregate({
+            where: {
+                ownerId: user.id,
+                isPaid: true,
+                date: { gte: currentMonthStart, lte: currentMonthEnd },
+            },
+            _sum: { duration: true } as any,
+        })
+
+        const previousMonthDuration = await prisma.lesson.aggregate({
+            where: {
+                ownerId: user.id,
+                isPaid: true,
+                date: { gte: prevMonthStart, lte: prevMonthEnd },
+            },
+            _sum: { duration: true } as any,
+        })
+
+        // Recent transactions
+        const recentTransactions = await prisma.lesson.findMany({
+            where: {
+                ownerId: user.id,
+                isPaid: true,
+            },
+            orderBy: { updatedAt: 'desc' },
+            take: 3,
+            include: {
+                student: { select: { name: true } },
+                subject: { select: { name: true, color: true, icon: true } },
+            },
+        })
+
         return NextResponse.json({
             monthlyData,
             currentMonthIncome: currentIncome,
@@ -127,6 +160,9 @@ export async function GET(request: NextRequest) {
             averageCheck,
             previousAverageCheck,
             hasAnyIncomeEver,
+            currentMonthDuration: (currentMonthDuration._sum as any)?.duration || 0,
+            previousMonthDuration: (previousMonthDuration._sum as any)?.duration || 0,
+            recentTransactions,
         })
     } catch (error) {
         console.error('Get income stats error:', error)
