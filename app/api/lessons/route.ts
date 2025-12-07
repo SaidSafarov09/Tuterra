@@ -29,6 +29,7 @@ const lessonSchema = z.object({
     isTrial: z.boolean().optional(),
     notes: z.string().optional(),
     topic: z.string().optional(),
+    duration: z.number().int().positive().default(60),
     recurrence: recurrenceRuleSchema.optional(),
     isPaidAll: z.boolean().optional(),
     seriesPrice: z.number().optional(),
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
 
         console.error('Create lesson error:', error)
         return NextResponse.json(
-            { error: 'Произошла ошибка при создании занятия' },
+            { error: 'Произошла ошибка при создании занятия: ' + (error as Error).message },
             { status: 500 }
         )
     }
@@ -141,6 +142,7 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             isTrial: data.isTrial || false,
             notes: data.notes,
             topic: data.topic,
+            duration: data.duration,
             ownerId: userId,
             studentId: data.studentId,
             subjectId: data.subjectId,
@@ -201,6 +203,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             subjectId: data.subjectId,
             price: data.price,
             topic: data.topic,
+            duration: data.duration,
             notes: data.notes,
         },
     })
@@ -227,6 +230,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             isCanceled: false,
             notes: data.notes,
             topic: data.topic,
+            duration: data.duration,
             ownerId: userId,
             studentId: data.studentId,
             subjectId: data.subjectId,

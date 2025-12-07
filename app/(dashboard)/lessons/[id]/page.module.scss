@@ -49,9 +49,6 @@
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border-light);
 
-    @media (max-width: 768px) {
-        flex-direction: column;
-    }
 }
 
 .studentNameRow {
@@ -89,14 +86,21 @@
     font-weight: 600;
     margin: 0;
     padding: 12px 0;
+    @media (max-width: 768px) {
+        font-size: 14px;
+        width: max-content;
+        padding: 6px 0;
+    }
+}
+
+.lessonTime {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 400;
 }
 
 .lessonPriceContainer {
     text-align: right;
-
-    @media (max-width: 768px) {
-        text-align: left;
-    }
 }
 
 .lessonPrice {

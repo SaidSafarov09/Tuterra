@@ -86,6 +86,7 @@ model Lesson {
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   topic      String?
+  duration   Int           @default(60)
   seriesId   String?
   owner      User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   series     LessonSeries? @relation(fields: [seriesId], references: [id])
@@ -111,6 +112,7 @@ model LessonSeries {
   subjectId        String?
   price            Int
   topic            String?
+  duration         Int       @default(60)
   notes            String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

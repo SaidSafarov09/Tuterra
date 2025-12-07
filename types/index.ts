@@ -48,6 +48,7 @@ export interface Lesson {
     isTrial?: boolean
     notes?: string
     topic?: string
+    duration?: number
     seriesId?: string | null
     student: {
         id: string
@@ -96,6 +97,7 @@ export interface LessonFormData {
     isTrial?: boolean
     notes: string
     topic: string
+    duration: number
     recurrence?: RecurrenceRule
     seriesPrice?: string
 }

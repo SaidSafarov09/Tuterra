@@ -12,6 +12,8 @@ import { useLessonForm } from '@/hooks/useLessonForm'
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { LessonActions } from '@/components/lessons/LessonActions'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
+import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
+import { ClockIcon } from '@/components/icons/Icons'
 import styles from './page.module.scss'
 
 import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
@@ -168,12 +170,20 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                                 <span className={styles.canceledBadge}>Отменено</span>
                             )}
                         </div>
-                        <p className={styles.lessonDate}>
-                            {isLessonPast
-                                ? `Занятие было ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
-                                : `${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
-                            }
-                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <p className={styles.lessonDate}>
+                                {isLessonPast
+                                    ? `Занятие было ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
+                                    : `${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
+                                }
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+                                <ClockIcon size={16} />
+                                <span className={styles.lessonTime}>
+                                    {getLessonTimeInfo(lessonDate, lesson.duration)}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <div className={styles.lessonPriceContainer}>
                         <div className={styles.lessonPrice}>{lesson.price} ₽</div>

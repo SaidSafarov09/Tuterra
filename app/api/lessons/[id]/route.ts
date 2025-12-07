@@ -13,6 +13,7 @@ const lessonSchema = z.object({
     isCanceled: z.boolean().optional(),
     notes: z.string().optional(),
     topic: z.string().optional(),
+    duration: z.number().int().positive().optional(),
 })
 
 export async function GET(
@@ -148,6 +149,7 @@ export async function PATCH(
         if (body.isCanceled !== undefined) updateData.isCanceled = body.isCanceled
         if (body.notes !== undefined) updateData.notes = body.notes
         if (body.topic !== undefined) updateData.topic = body.topic
+        if (body.duration !== undefined) updateData.duration = body.duration
 
         const lesson = await prisma.lesson.updateMany({
             where: {

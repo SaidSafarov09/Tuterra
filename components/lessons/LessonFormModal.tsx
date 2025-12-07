@@ -13,6 +13,9 @@ import { DateTimeRecurrenceModal } from '@/components/lessons/DateTimeRecurrence
 import type { RecurrenceRule } from '@/types/recurring'
 import { CalendarIcon, Repeat } from 'lucide-react'
 import { formatSmartDate } from '@/lib/dateUtils'
+import { DurationSelector } from '@/components/lessons/DurationSelector'
+import { formatLessonEndTime } from '@/lib/lessonTimeUtils'
+import { ClockIcon } from '@/components/icons/Icons'
 
 interface LessonFormModalProps {
     isOpen: boolean
@@ -157,22 +160,38 @@ export function LessonFormModal({
                         disabled={isSubmitting}
                     />
 
-                    <Input
-                        label="Стоимость (₽)"
-                        type="number"
-                        value={formData.price}
-                        onChange={(e) => {
-                            const newPrice = e.target.value
-                            handleChange('price', newPrice)
-                            // Если цена = 0, снимаем "Оплачено"
-                            if (newPrice === '0') {
-                                handleChange('isPaid', false)
-                            }
-                        }}
-                        placeholder="0"
-                        required
-                        disabled={isSubmitting}
-                    />
+                    <div className={styles.priceRow}>
+                        <Input
+                            label="Стоимость (₽)"
+                            type="number"
+                            value={formData.price}
+                            onChange={(e) => {
+                                const newPrice = e.target.value
+                                handleChange('price', newPrice)
+                                // Если цена = 0, снимаем "Оплачено"
+                                if (newPrice === '0') {
+                                    handleChange('isPaid', false)
+                                }
+                            }}
+                            placeholder="0"
+                            required
+                            disabled={isSubmitting}
+                        />
+
+                        <DurationSelector
+                            value={formData.duration}
+                            onChange={(value) => handleChange('duration', value)}
+                            disabled={isSubmitting}
+                        />
+
+                        <div className={styles.endTimeContainer}>
+                            <label className={styles.label}>Окончание</label>
+                            <div className={styles.endTimeValue}>
+                                <ClockIcon size={16} />
+                                {formData.date ? formatLessonEndTime(formData.date, formData.duration) : '—'}
+                            </div>
+                        </div>
+                    </div>
 
                     {formData.price === '0' && formData.recurrence?.enabled && (
                         <Input

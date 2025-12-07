@@ -314,6 +314,10 @@
     gap: 8px;
     font-size: 13px;
     color: var(--text-secondary);
+
+    @media(max-width: 480px) {
+        flex-wrap: wrap;
+    }
 }
 
 .lessonSubject {

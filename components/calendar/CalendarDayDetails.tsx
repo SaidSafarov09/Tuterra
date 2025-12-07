@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Lesson, DayData } from '@/types'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { isTrial } from '@/lib/lessonUtils'
+import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
 
 interface CalendarDayDetailsProps {
@@ -99,12 +100,17 @@ export function CalendarDayDetails({
                                                 className={styles.lessonSubject}
                                                 style={{
                                                     color: lesson.subject.color,
-                                                    backgroundColor: `${lesson.subject.color}20`
+                                                    backgroundColor: lesson.subject.color + '15',
+                                                    borderColor: lesson.subject.color + '30',
                                                 }}
                                             >
                                                 {lesson.subject.name}
                                             </span>
                                         )}
+                                        <span style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <ClockIcon size={12} />
+                                            {getLessonTimeInfo(new Date(lesson.date), lesson.duration)}
+                                        </span>
                                     </div>
                                     {lesson.notes && (
                                         <div className={styles.lessonNotes}>{lesson.notes}</div>
@@ -152,7 +158,7 @@ export function CalendarDayDetails({
                         </div>
                     ))}
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }

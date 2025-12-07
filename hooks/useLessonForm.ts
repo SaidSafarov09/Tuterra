@@ -16,6 +16,7 @@ export function useLessonForm(
         isTrial: false,
         notes: '',
         topic: '',
+        duration: 60,
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -30,6 +31,7 @@ export function useLessonForm(
             isTrial: false,
             notes: '',
             topic: '',
+            duration: 60,
             recurrence: undefined,
             isPaidAll: false,
             seriesPrice: undefined,
@@ -47,6 +49,7 @@ export function useLessonForm(
             isTrial: lesson.isTrial || false,
             notes: lesson.notes || '',
             topic: lesson.topic || '',
+            duration: lesson.duration || 60,
         })
     }
 
@@ -151,6 +154,7 @@ export function useLessonForm(
                     isTrial: formData.isTrial || false,
                     notes: formData.notes,
                     topic: formData.topic,
+                    duration: formData.duration,
                     recurrence: formData.recurrence,
                     isPaidAll: formData.isPaidAll,
                     seriesPrice: formData.seriesPrice ? parseInt(formData.seriesPrice) : undefined,

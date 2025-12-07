@@ -7,6 +7,7 @@ import { Repeat } from 'lucide-react'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { LessonActions } from '@/components/lessons/LessonActions'
 import { getRecurrenceDescription } from '@/lib/recurring-lessons'
+import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
 import styles from './LessonCard.module.scss'
 
 interface LessonCardProps {
@@ -61,10 +62,16 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                             {lesson.subject.name}
                         </span>
                     )}
-                    <p className={styles.date}>
-                        <ClockIcon size={14} color="var(--text-secondary)" />
-                        {formatSmartDate(lesson.date)}
-                    </p>
+                    <div className={styles.dateBlock}>
+                        <p className={styles.date}>
+                            <ClockIcon size={14} color="var(--text-secondary)" />
+                            {formatSmartDate(lesson.date)}
+                        </p>
+
+                        <span className={styles.duration}>
+                            {getLessonTimeInfo(new Date(lesson.date), lesson.duration)}
+                        </span>
+                    </div>
                     {recurrenceText && (
                         <p className={styles.recurrence}>
                             <Repeat size={14} />

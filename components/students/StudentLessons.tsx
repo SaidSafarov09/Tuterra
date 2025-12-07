@@ -1,23 +1,24 @@
-import React, { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
-import { TabNav } from '@/components/ui/TabNav'
-import { PlusIcon, NoteIcon } from '@/components/icons/Icons'
-import { Lesson, Student, LessonFilter } from '@/types'
-import { formatSmartDate } from '@/lib/dateUtils'
-import { LESSON_TABS } from '@/constants'
-import { LessonActions } from '@/components/lessons/LessonActions'
-import { LessonBadges } from '@/components/lessons/LessonBadges'
-import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
+import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { TabNav } from "@/components/ui/TabNav";
+import { PlusIcon, NoteIcon } from "@/components/icons/Icons";
+import { Lesson, Student, LessonFilter } from "@/types";
+import { formatSmartDate } from "@/lib/dateUtils";
+import { LESSON_TABS } from "@/constants";
+import { LessonActions } from "@/components/lessons/LessonActions";
+import { LessonBadges } from "@/components/lessons/LessonBadges";
+import { getLessonTimeInfo } from "@/lib/lessonTimeUtils";
+import styles from "../../app/(dashboard)/students/[id]/page.module.scss";
 
 interface StudentLessonsProps {
-    lessons: Lesson[]
-    student: Student
-    onCreateLesson: () => void
-    onEditLesson: (lesson: Lesson) => void
-    onDeleteLesson: (lessonId: string) => void
-    onTogglePaidStatus: (lessonId: string, isPaid: boolean) => void
-    onToggleCancelLesson: (lessonId: string, isCanceled: boolean) => void
+    lessons: Lesson[];
+    student: Student;
+    onCreateLesson: () => void;
+    onEditLesson: (lesson: Lesson) => void;
+    onDeleteLesson: (lessonId: string) => void;
+    onTogglePaidStatus: (lessonId: string, isPaid: boolean) => void;
+    onToggleCancelLesson: (lessonId: string, isCanceled: boolean) => void;
 }
 
 export function StudentLessons({
@@ -27,28 +28,28 @@ export function StudentLessons({
     onEditLesson,
     onDeleteLesson,
     onTogglePaidStatus,
-    onToggleCancelLesson
+    onToggleCancelLesson,
 }: StudentLessonsProps) {
-    const router = useRouter()
-    const [activeTab, setActiveTab] = useState<LessonFilter>('upcoming')
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
 
     // Filter lessons based on active tab
     const filteredLessons = useMemo(() => {
-        const now = new Date()
+        const now = new Date();
 
         switch (activeTab) {
-            case 'upcoming':
-                return lessons.filter(l => !l.isCanceled && new Date(l.date) >= now)
-            case 'past':
-                return lessons.filter(l => !l.isCanceled && new Date(l.date) < now)
-            case 'unpaid':
-                return lessons.filter(l => !l.isCanceled && !l.isPaid)
-            case 'canceled':
-                return lessons.filter(l => l.isCanceled)
+            case "upcoming":
+                return lessons.filter((l) => !l.isCanceled && new Date(l.date) >= now);
+            case "past":
+                return lessons.filter((l) => !l.isCanceled && new Date(l.date) < now);
+            case "unpaid":
+                return lessons.filter((l) => !l.isCanceled && !l.isPaid);
+            case "canceled":
+                return lessons.filter((l) => l.isCanceled);
             default:
-                return lessons
+                return lessons;
         }
-    }, [lessons, activeTab])
+    }, [lessons, activeTab]);
 
     return (
         <div className={styles.section}>
@@ -78,36 +79,65 @@ export function StudentLessons({
             ) : (
                 <div className={styles.lessonsList}>
                     {filteredLessons.map((lesson) => {
-                        const subject = lesson.subject
+                        const subject = lesson.subject;
                         return (
                             <div
                                 key={lesson.id}
                                 className={styles.lessonCard}
-                                onClick={() => router.push(`/lessons/${lesson.slug || lesson.id}`)}
+                                onClick={() =>
+                                    router.push(`/lessons/${lesson.slug || lesson.id}`)
+                                }
                             >
                                 <div className={styles.lessonHeader}>
                                     <div>
-                                        <h3 className={styles.lessonDate}>
-                                            {formatSmartDate(new Date(lesson.date))}
-                                        </h3>
-                                        <span className={styles.lessonSubject}>
-                                            {subject?.name || 'Без предмета'}
-                                        </span>
+                                        <div className={styles.lessonDateContainer}>
+                                            <h3 className={styles.lessonDate}>
+                                                {formatSmartDate(new Date(lesson.date))}
+                                            </h3>
+                                            <span
+                                                className={styles.lessonTime}
+                                            >
+                                                {getLessonTimeInfo(
+                                                    new Date(lesson.date),
+                                                    lesson.duration
+                                                )}
+                                            </span>
+                                            {subject ? (
+                                                <span
+                                                    className={styles.lessonSubject}
+                                                    style={{
+                                                        color: subject.color,
+                                                        backgroundColor: subject.color + '15',
+                                                        borderColor: subject.color + '30',
+                                                    }}
+                                                >
+                                                    {subject.name}
+                                                </span>
+                                            ) : (
+                                                <span className={styles.lessonSubject} style={{ color: 'var(--text-secondary)', background: 'var(--background)' }}>
+                                                    Без предмета
+                                                </span>
+                                            )}
+                                        </div>
                                         {lesson.topic && (
                                             <div className={styles.lessonTopic}>
                                                 <NoteIcon size={14} className={styles.topicIcon} />
                                                 <span className={styles.topicLabel}>Тема урока:</span>
                                                 <span className={styles.topicText}>
-                                                    {lesson.topic.length > 50 ? `${lesson.topic.slice(0, 50)}...` : lesson.topic}
+                                                    {lesson.topic.length > 50
+                                                        ? `${lesson.topic.slice(0, 50)}...`
+                                                        : lesson.topic}
                                                 </span>
                                             </div>
                                         )}
                                     </div>
                                     <div className={styles.lessonPriceContainer}>
-                                        <span className={styles.lessonPrice}>
-                                            {lesson.price} ₽
-                                        </span>
-                                        <LessonBadges price={lesson.price} isPaid={lesson.isPaid} isTrial={lesson.isTrial} />
+                                        <span className={styles.lessonPrice}>{lesson.price} ₽</span>
+                                        <LessonBadges
+                                            price={lesson.price}
+                                            isPaid={lesson.isPaid}
+                                            isTrial={lesson.isTrial}
+                                        />
                                     </div>
                                 </div>
 
@@ -115,16 +145,18 @@ export function StudentLessons({
                                     <LessonActions
                                         lesson={lesson}
                                         onTogglePaid={(l) => onTogglePaidStatus(l.id, !l.isPaid)}
-                                        onToggleCancel={(l) => onToggleCancelLesson(l.id, !l.isCanceled)}
+                                        onToggleCancel={(l) =>
+                                            onToggleCancelLesson(l.id, !l.isCanceled)
+                                        }
                                         onEdit={onEditLesson}
                                         onDelete={onDeleteLesson}
                                     />
                                 </div>
                             </div>
-                        )
+                        );
                     })}
                 </div>
             )}
         </div>
-    )
+    );
 }

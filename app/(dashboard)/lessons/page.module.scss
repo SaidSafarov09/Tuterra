@@ -439,3 +439,33 @@
     background: rgba(239, 68, 68, 0.1);
     border-radius: 8px;
 }
+.priceRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    align-items: flex-start;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.endTimeContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.endTimeValue {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px; /* Match input height */
+    padding: 0 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
