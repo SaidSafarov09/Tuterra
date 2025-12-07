@@ -13,6 +13,7 @@ export function useLessonForm(
         date: new Date(),
         price: '',
         isPaid: false,
+        isTrial: false,
         notes: '',
         topic: '',
     })
@@ -26,6 +27,7 @@ export function useLessonForm(
             date: new Date(),
             price: '',
             isPaid: false,
+            isTrial: false,
             notes: '',
             topic: '',
             recurrence: undefined,
@@ -42,6 +44,7 @@ export function useLessonForm(
             date: new Date(lesson.date),
             price: lesson.price.toString(),
             isPaid: lesson.isPaid,
+            isTrial: lesson.isTrial || false,
             notes: lesson.notes || '',
             topic: lesson.topic || '',
         })
@@ -145,6 +148,7 @@ export function useLessonForm(
                     date: formData.date.toISOString(),
                     price: parseInt(formData.price),
                     isPaid: formData.isPaid,
+                    isTrial: formData.isTrial || false,
                     notes: formData.notes,
                     topic: formData.topic,
                     recurrence: formData.recurrence,
@@ -158,7 +162,9 @@ export function useLessonForm(
                 toast.success(isEdit ? 'Занятие обновлено' : 'Занятие успешно добавлено')
             } else {
                 const data = await response.json()
-                setError(data.error || 'Произошла ошибка')
+                const errorMessage = data.error || 'Произошла ошибка'
+                setError(errorMessage)
+                toast.error(errorMessage)
             }
         } catch (error) {
             toast.error('Произошла ошибка при создании занятия')

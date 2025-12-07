@@ -3,7 +3,7 @@ import { format, isPast } from 'date-fns'
 import { MoneyIcon, ClockIcon, PlusIcon, CheckIcon, XCircleIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Lesson, DayData } from '@/types'
-import { LessonStatusBadge } from '@/components/lessons/LessonStatusBadge'
+import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { isTrial } from '@/lib/lessonUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
 
@@ -114,7 +114,7 @@ export function CalendarDayDetails({
                                     <div className={styles.timeBig}>
                                         {format(new Date(lesson.date), 'HH:mm')}
                                     </div>
-                                    <LessonStatusBadge price={lesson.price} isPaid={lesson.isPaid} />
+                                    <LessonBadges price={lesson.price} isPaid={lesson.isPaid} isTrial={lesson.isTrial} />
                                 </div>
                             </div>
 

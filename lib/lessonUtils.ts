@@ -1,9 +1,9 @@
 import type { Lesson, DayData } from '@/types'
 
-export type LessonStatus = 'trial' | 'paid' | 'unpaid'
+export type LessonStatus = 'free' | 'paid' | 'unpaid'
 
 export function getLessonStatus(price: number, isPaid: boolean): LessonStatus {
-    if (price === 0) return 'trial'
+    if (price === 0) return 'free'
     return isPaid ? 'paid' : 'unpaid'
 }
 
@@ -13,8 +13,8 @@ export function isTrial(price: number): boolean {
 
 export function getLessonStatusLabel(status: LessonStatus): string {
     switch (status) {
-        case 'trial':
-            return 'Пробный'
+        case 'free':
+            return 'Бесплатный'
         case 'paid':
             return 'Оплачено'
         case 'unpaid':
@@ -24,7 +24,7 @@ export function getLessonStatusLabel(status: LessonStatus): string {
 
 export function getLessonStatusColor(status: LessonStatus): string {
     switch (status) {
-        case 'trial':
+        case 'free':
             return '#4A6CF7' // Синий
         case 'paid':
             return '#10B981' // Зеленый

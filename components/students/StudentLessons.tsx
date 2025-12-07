@@ -7,7 +7,7 @@ import { Lesson, Student, LessonFilter } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { LESSON_TABS } from '@/constants'
 import { LessonActions } from '@/components/lessons/LessonActions'
-import { LessonStatusBadge } from '@/components/lessons/LessonStatusBadge'
+import { LessonBadges } from '@/components/lessons/LessonBadges'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
 
 interface StudentLessonsProps {
@@ -107,7 +107,7 @@ export function StudentLessons({
                                         <span className={styles.lessonPrice}>
                                             {lesson.price} ₽
                                         </span>
-                                        <LessonStatusBadge price={lesson.price} isPaid={lesson.isPaid} />
+                                        <LessonBadges price={lesson.price} isPaid={lesson.isPaid} isTrial={lesson.isTrial} />
                                     </div>
                                 </div>
 

@@ -4,7 +4,7 @@ import { Lesson } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { ClockIcon, NoteIcon } from '@/components/icons/Icons'
 import { Repeat } from 'lucide-react'
-import { LessonStatusBadge } from '@/components/lessons/LessonStatusBadge'
+import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { LessonActions } from '@/components/lessons/LessonActions'
 import { getRecurrenceDescription } from '@/lib/recurring-lessons'
 import styles from './LessonCard.module.scss'
@@ -100,7 +100,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                     >
                         {lesson.price} ₽
                     </div>
-                    <LessonStatusBadge price={lesson.price} isPaid={lesson.isPaid} />
+                    <LessonBadges price={lesson.price} isPaid={lesson.isPaid} isTrial={lesson.isTrial} />
                 </div>
             </div>
         </div>

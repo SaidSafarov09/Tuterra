@@ -76,6 +76,7 @@ model Lesson {
   price      Int
   isPaid     Boolean       @default(false)
   isCanceled Boolean       @default(false)
+  isTrial    Boolean       @default(false)
   notes      String?
   ownerId    String
   studentId  String

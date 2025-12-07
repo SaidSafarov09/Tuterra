@@ -11,6 +11,8 @@
     z-index: 1000;
     padding: 16px;
     backdrop-filter: blur(4px);
+    overflow: hidden;
+    touch-action: none;
 }
 
 .modal {
@@ -23,6 +25,7 @@
     overflow-y: auto;
     animation: modalAppear 0.2s ease;
     position: relative;
+    overscroll-behavior: contain;
 
     @media (max-width: 768px) {
         border-radius: 18px;

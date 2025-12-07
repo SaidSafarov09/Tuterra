@@ -146,13 +146,12 @@ export function LessonFormModal({
                     </div>
 
                     <TrialToggle
-                        isTrial={formData.price === '0'}
+                        isTrial={formData.isTrial || false}
                         onChange={(isTrial) => {
+                            handleChange('isTrial', isTrial)
                             if (isTrial) {
                                 handleChange('price', '0')
-                                handleChange('isPaid', true)
-                            } else {
-                                handleChange('price', '')
+                                handleChange('isPaid', false)
                             }
                         }}
                         disabled={isSubmitting}
@@ -162,7 +161,14 @@ export function LessonFormModal({
                         label="Стоимость (₽)"
                         type="number"
                         value={formData.price}
-                        onChange={(e) => handleChange('price', e.target.value)}
+                        onChange={(e) => {
+                            const newPrice = e.target.value
+                            handleChange('price', newPrice)
+                            // Если цена = 0, снимаем "Оплачено"
+                            if (newPrice === '0') {
+                                handleChange('isPaid', false)
+                            }
+                        }}
                         placeholder="0"
                         required
                         disabled={isSubmitting}
@@ -189,33 +195,35 @@ export function LessonFormModal({
                             disabled={isSubmitting}
                         />)}
 
-                    <div className={styles.paymentSection}>
-                        <Checkbox
-                            checked={formData.isPaid}
-                            onChange={(e) => handleChange('isPaid', e.target.checked)}
-                            label={
-                                formData.recurrence?.enabled
-                                    ? 'Оплачено только первое занятие'
-                                    : 'Оплачено'
-                            }
-                            disabled={isSubmitting || formData.price === '0'}
-                        />
-
-                        {formData.recurrence?.enabled && (
+                    {formData.price !== '0' && (
+                        <div className={styles.paymentSection}>
                             <Checkbox
-                                checked={formData.isPaidAll || false}
-                                onChange={(e) => {
-                                    const checked = e.target.checked
-                                    handleChange('isPaidAll', checked)
-                                    if (checked) {
-                                        handleChange('isPaid', true)
-                                    }
-                                }}
-                                label="Оплачены все занятия серии"
-                                disabled={isSubmitting || formData.price === '0'}
+                                checked={formData.isPaid}
+                                onChange={(e) => handleChange('isPaid', e.target.checked)}
+                                label={
+                                    formData.recurrence?.enabled
+                                        ? 'Оплачено только первое занятие'
+                                        : 'Оплачено'
+                                }
+                                disabled={isSubmitting}
                             />
-                        )}
-                    </div>
+
+                            {formData.recurrence?.enabled && (
+                                <Checkbox
+                                    checked={formData.isPaidAll || false}
+                                    onChange={(e) => {
+                                        const checked = e.target.checked
+                                        handleChange('isPaidAll', checked)
+                                        if (checked) {
+                                            handleChange('isPaid', true)
+                                        }
+                                    }}
+                                    label="Оплачены все занятия серии"
+                                    disabled={isSubmitting}
+                                />
+                            )}
+                        </div>
+                    )}
 
                     {error && <div className={styles.error}>{error}</div>}
                 </form>

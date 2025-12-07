@@ -43,6 +43,7 @@ export interface Lesson {
     price: number
     isPaid: boolean
     isCanceled: boolean
+    isTrial?: boolean
     notes?: string
     topic?: string
     seriesId?: string | null
@@ -90,6 +91,7 @@ export interface LessonFormData {
     price: string
     isPaid: boolean
     isPaidAll?: boolean
+    isTrial?: boolean
     notes: string
     topic: string
     recurrence?: RecurrenceRule

@@ -11,7 +11,7 @@ import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { LessonActions } from '@/components/lessons/LessonActions'
-import { LessonStatusBadge } from '@/components/lessons/LessonStatusBadge'
+import { LessonBadges } from '@/components/lessons/LessonBadges'
 import styles from './page.module.scss'
 
 import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
@@ -177,7 +177,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                     </div>
                     <div className={styles.lessonPriceContainer}>
                         <div className={styles.lessonPrice}>{lesson.price} ₽</div>
-                        <LessonStatusBadge price={lesson.price} isPaid={lesson.isPaid} />
+                        <LessonBadges price={lesson.price} isPaid={lesson.isPaid} isTrial={lesson.isTrial} />
                     </div>
                 </div>
 

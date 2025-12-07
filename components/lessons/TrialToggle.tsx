@@ -13,7 +13,7 @@ export function TrialToggle({ isTrial, onChange, disabled }: TrialToggleProps) {
             <Checkbox
                 checked={isTrial}
                 onChange={(e) => onChange(e.target.checked)}
-                label="Пробный урок (бесплатно)"
+                label="Пробный урок"
                 disabled={disabled}
             />
         </div>
