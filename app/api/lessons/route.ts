@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
         } else if (filter === 'unpaid') {
             where.isPaid = false
             where.isCanceled = false
+            where.price = { gt: 0 }
         } else if (filter === 'canceled') {
             where.isCanceled = true
         }

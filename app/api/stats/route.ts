@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
                     ownerId: payload.userId,
                     isPaid: false,
                     isCanceled: false,
+                    price: { gt: 0 },
                 } as any,
                 include: {
                     student: true,

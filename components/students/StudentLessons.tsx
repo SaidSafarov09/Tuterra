@@ -43,7 +43,7 @@ export function StudentLessons({
             case "past":
                 return lessons.filter((l) => !l.isCanceled && new Date(l.date) < now);
             case "unpaid":
-                return lessons.filter((l) => !l.isCanceled && !l.isPaid);
+                return lessons.filter((l) => !l.isCanceled && !l.isPaid && l.price > 0);
             case "canceled":
                 return lessons.filter((l) => l.isCanceled);
             default:
