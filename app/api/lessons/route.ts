@@ -5,10 +5,10 @@ import { z } from 'zod'
 import { generateRecurringDates, validateRecurrenceRule } from '@/lib/recurring-lessons'
 import type { RecurrenceRule } from '@/types/recurring'
 import { generateLessonSlug } from '@/lib/slugUtils'
+import { checkLessonOverlap, checkRecurringConflicts, formatConflictMessage } from '@/lib/lessonValidation'
 
 export const dynamic = 'force-dynamic'
 
-// DRY: Reusable schema for recurrence rule
 const recurrenceRuleSchema = z.object({
     enabled: z.boolean(),
     type: z.enum(['weekly', 'daily', 'every_x_weeks']),
@@ -133,6 +133,14 @@ export async function POST(request: NextRequest) {
     }
 }
 async function createSingleLesson(userId: string, data: z.infer<typeof lessonSchema>) {
+    const conflict = await checkLessonOverlap(userId, data.date, data.duration)
+    if (conflict) {
+        return NextResponse.json(
+            { error: formatConflictMessage(conflict, data.studentId) },
+            { status: 400 }
+        )
+    }
+
     const lesson = await prisma.lesson.create({
         data: {
             date: data.date,
@@ -152,13 +160,10 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             subject: true,
         },
     })
-
-    // Fetch student for slug generation
     const student = await prisma.student.findUnique({
         where: { id: lesson.studentId }
     })
 
-    // Generate and update slug
     const slug = generateLessonSlug(student!.name, new Date(lesson.date), lesson.topic || undefined)
     const updatedLesson = await prisma.lesson.update({
         where: { id: lesson.id },
@@ -168,8 +173,6 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             subject: true,
         },
     })
-
-    // Link subject to student if needed
     if (data.subjectId) {
         await linkSubjectToStudent(data.studentId, data.subjectId)
     }
@@ -179,8 +182,6 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
 
 async function createRecurringLesson(userId: string, data: z.infer<typeof lessonSchema>) {
     const recurrence = data.recurrence!
-
-    // Validate recurrence rule
     const validation = validateRecurrenceRule(recurrence)
     if (!validation.valid) {
         return NextResponse.json(
@@ -188,8 +189,23 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             { status: 400 }
         )
     }
+    const threeMonthsFromNow = new Date()
+    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3)
 
-    // Create lesson series
+    const dates = generateRecurringDates({
+        startDate: data.date,
+        rule: recurrence,
+        limit: 100,
+        endDate: threeMonthsFromNow,
+    })
+
+    const conflict = await checkRecurringConflicts(userId, dates, data.duration)
+    if (conflict) {
+        return NextResponse.json(
+            { error: formatConflictMessage(conflict, data.studentId) },
+            { status: 400 }
+        )
+    }
     const series = await (prisma as any).lessonSeries.create({
         data: {
             userId,
@@ -207,23 +223,9 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             notes: data.notes,
         },
     })
-
-    // Generate dates for next 3 months (or until end date)
-    const threeMonthsFromNow = new Date()
-    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3)
-
-    const dates = generateRecurringDates({
-        startDate: data.date,
-        rule: recurrence,
-        limit: 100,
-        endDate: threeMonthsFromNow,
-    })
-
-    // Create lessons for generated dates
     const lessons = await prisma.lesson.createMany({
         data: dates.map((date, index) => ({
             date,
-            // Use seriesPrice for subsequent lessons if provided, otherwise use standard price
             price: index === 0 ? data.price : (data.seriesPrice !== undefined ? data.seriesPrice : data.price),
 
             isPaid: data.isPaidAll ? true : (index === 0 ? (data.isPaid || false) : false),
@@ -238,19 +240,14 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             seriesId: series.id,
         })),
     })
-
-    // Link subject to student if needed
     if (data.subjectId) {
         await linkSubjectToStudent(data.studentId, data.subjectId)
     }
-
-    // Return first lesson with series info
     const firstLesson = await prisma.lesson.findFirst({
         where: { seriesId: series.id } as any,
         include: {
             student: true,
             subject: true,
-            // series: true, // TODO: Uncomment after TS server restart
         },
         orderBy: { date: 'asc' },
     })

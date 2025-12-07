@@ -167,12 +167,10 @@ export function useLessonForm(
             } else {
                 const data = await response.json()
                 const errorMessage = data.error || 'Произошла ошибка'
-                setError(errorMessage)
                 toast.error(errorMessage)
             }
         } catch (error) {
             toast.error('Произошла ошибка при создании занятия')
-            setError('Произошла ошибка при создании занятия')
         } finally {
             setIsSubmitting(false)
         }
