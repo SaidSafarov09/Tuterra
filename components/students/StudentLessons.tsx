@@ -83,7 +83,7 @@ export function StudentLessons({
                             <div
                                 key={lesson.id}
                                 className={styles.lessonCard}
-                                onClick={() => router.push(`/lessons/${lesson.id}`)}
+                                onClick={() => router.push(`/lessons/${lesson.slug || lesson.id}`)}
                             >
                                 <div className={styles.lessonHeader}>
                                     <div>

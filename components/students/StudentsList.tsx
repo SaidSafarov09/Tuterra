@@ -35,7 +35,7 @@ export function StudentsList({ students }: StudentsListProps) {
                 <div
                     key={student.id}
                     className={styles.studentCard}
-                    onClick={() => router.push(`/students/${student.id}`)}
+                    onClick={() => router.push(`/students/${student.slug || student.id}`)}
                 >
                     <div className={styles.cardHeader}>
                         <div

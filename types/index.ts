@@ -10,6 +10,7 @@ export interface Subject {
 
 export interface Student {
     id: string
+    slug?: string
     name: string
     email?: string
     phone?: string
@@ -39,6 +40,7 @@ export interface Student {
 
 export interface Lesson {
     id: string
+    slug?: string
     date: string
     price: number
     isPaid: boolean

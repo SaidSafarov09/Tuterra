@@ -109,7 +109,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     if (showActions) {
         return (
             <div className={styles.cardWrapper}>
-                <Link href={`/lessons/${lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                <Link href={`/lessons/${lesson.slug || lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
                     {CardContent}
                 </Link>
                 {onTogglePaid && onEdit && onDelete && (
@@ -128,7 +128,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     }
 
     return (
-        <Link href={`/lessons/${lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+        <Link href={`/lessons/${lesson.slug || lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
             {CardContent}
         </Link>
     )

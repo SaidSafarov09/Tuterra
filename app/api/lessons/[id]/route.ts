@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { isCuid } from '@/lib/slugUtils'
 
 const lessonSchema = z.object({
     studentId: z.string(),
@@ -27,11 +28,14 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
+        // Check if id is a CUID (old format) or slug
+        const isId = isCuid(id)
+        const whereClause = isId
+            ? { id: id, ownerId: user.id }
+            : { slug: id, ownerId: user.id }
+
         const lesson = await prisma.lesson.findFirst({
-            where: {
-                id: id,
-                ownerId: user.id,
-            },
+            where: whereClause,
             include: {
                 student: true,
                 subject: true,
@@ -40,6 +44,14 @@ export async function GET(
 
         if (!lesson) {
             return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+        }
+
+        // If accessed by old ID, redirect to slug URL
+        if (isId && lesson.slug) {
+            return NextResponse.redirect(
+                new URL(`/lessons/${lesson.slug}`, request.url),
+                { status: 301 }
+            )
         }
 
         return NextResponse.json(lesson)
@@ -179,7 +191,6 @@ export async function DELETE(
         const { searchParams } = new URL(request.url)
         const scope = searchParams.get('scope')
 
-        // First find the lesson to check ownership and series info
         const lesson = await prisma.lesson.findFirst({
             where: {
                 id: id,
@@ -194,16 +205,12 @@ export async function DELETE(
         const lessonWithSeries = lesson as any
 
         if (scope === 'series' && lessonWithSeries.seriesId) {
-            // Delete entire series
-            // 1. Delete all lessons in series
             await prisma.lesson.deleteMany({
                 where: {
                     seriesId: lessonWithSeries.seriesId,
                     ownerId: user.id,
                 } as any,
             })
-
-            // 2. Delete the series record (using as any until TS update)
             await (prisma as any).lessonSeries.delete({
                 where: {
                     id: lessonWithSeries.seriesId,
@@ -211,7 +218,6 @@ export async function DELETE(
                 },
             })
         } else {
-            // Delete single lesson
             await prisma.lesson.delete({
                 where: {
                     id: id,

@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { isCuid } from '@/lib/slugUtils'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,11 +25,14 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
+        // Check if id is a CUID (old format) or slug
+        const isId = isCuid(id)
+        const whereClause = isId
+            ? { id: id, ownerId: user.id }
+            : { slug: id, ownerId: user.id }
+
         const student = await prisma.student.findFirst({
-            where: {
-                id: id,
-                ownerId: user.id,
-            },
+            where: whereClause,
             include: {
                 subjects: true,
                 lessons: {
@@ -43,6 +47,14 @@ export async function GET(
 
         if (!student) {
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
+        }
+
+        // If accessed by old ID, redirect to slug URL
+        if (isId && student.slug) {
+            return NextResponse.redirect(
+                new URL(`/students/${student.slug}`, request.url),
+                { status: 301 }
+            )
         }
 
         return NextResponse.json(student)

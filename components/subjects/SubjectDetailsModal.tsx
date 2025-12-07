@@ -59,7 +59,7 @@ export function SubjectDetailsModal({
                             <div
                                 key={student.id}
                                 className={styles.studentItem}
-                                onClick={() => router.push(`/students/${student.id}`)}
+                                onClick={() => router.push(`/students/${student.slug || student.id}`)}
                             >
                                 <div className={styles.studentInfo}>
                                     <div

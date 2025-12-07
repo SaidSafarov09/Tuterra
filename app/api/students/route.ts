@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { generateStudentSlug } from '@/lib/slugUtils'
 
 export const dynamic = 'force-dynamic'
 
@@ -102,7 +103,14 @@ export async function POST(request: NextRequest) {
             } as any,
         })
 
-        return NextResponse.json(student, { status: 201 })
+        // Generate and update slug
+        const slug = generateStudentSlug(student.name, student.id)
+        const updatedStudent = await prisma.student.update({
+            where: { id: student.id },
+            data: { slug }
+        })
+
+        return NextResponse.json(updatedStudent, { status: 201 })
     } catch (error) {
         if (error instanceof z.ZodError) {
             return NextResponse.json(

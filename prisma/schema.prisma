@@ -51,6 +51,7 @@ model Subject {
 model Student {
   id           String         @id @default(cuid())
   name         String
+  slug         String?        @unique
   contact      String?
   note         String?
   ownerId      String
@@ -72,6 +73,7 @@ model Student {
 
 model Lesson {
   id         String        @id @default(cuid())
+  slug       String?       @unique
   date       DateTime
   price      Int
   isPaid     Boolean       @default(false)
