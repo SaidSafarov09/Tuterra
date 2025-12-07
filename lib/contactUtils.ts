@@ -40,6 +40,32 @@ export function getContactLink(type: ContactType, value: string): string {
 export function formatContactInput(type: ContactType, value: string): string {
     if (!value) return ''
 
+    if (type === 'phone') {
+        let digits = value.replace(/\D/g, '')
+        if (!digits) return ''
+        if (digits[0] === '7' || digits[0] === '8') {
+            digits = '7' + digits.substring(1)
+        } else {
+            digits = '7' + digits
+        }
+        digits = digits.substring(0, 11)
+        let formatted = '+7'
+        if (digits.length > 1) {
+            formatted += ' (' + digits.substring(1, 4)
+        }
+        if (digits.length >= 5) {
+            formatted += ') ' + digits.substring(4, 7)
+        }
+        if (digits.length >= 8) {
+            formatted += '-' + digits.substring(7, 9)
+        }
+        if (digits.length >= 10) {
+            formatted += '-' + digits.substring(9, 11)
+        }
+
+        return formatted
+    }
+
     if (type === 'telegram') {
         if (value.startsWith('https://t.me/')) return value.replace('https://', '')
         if (value.startsWith('@')) return `t.me/${value.substring(1)}`

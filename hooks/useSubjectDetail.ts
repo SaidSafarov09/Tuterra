@@ -8,6 +8,7 @@ import {
     linkStudentToSubject,
 } from '@/services/actions'
 import { STUDENT_MESSAGES, createStudentLinkedMessage } from '@/constants/messages'
+import { ContactType } from '@/lib/contactUtils'
 
 export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void) {
     const [students, setStudents] = useState<Student[]>([])
@@ -36,9 +37,18 @@ export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void)
         return { success }
     }
 
+    // ...
+
     const createAndLinkStudent = async (
         subjectId: string,
-        studentData: { name: string; contact?: string; note?: string }
+        studentData: {
+            name: string;
+            contact?: string;
+            contactType?: ContactType;
+            parentContact?: string;
+            parentContactType?: ContactType;
+            note?: string
+        }
     ) => {
         const newStudent = await createStudent({
             ...studentData,

@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
+import { ContactInput } from '@/components/ui/ContactInput'
 import { Student, Subject } from '@/types'
+import { ContactType } from '@/lib/contactUtils'
 
 interface AddStudentModalProps {
     isOpen: boolean
@@ -24,6 +26,9 @@ export function AddStudentModal({
     const [studentFormData, setStudentFormData] = useState({
         name: '',
         contact: '',
+        contactType: 'phone' as ContactType,
+        parentContact: '',
+        parentContactType: 'phone' as ContactType,
         note: '',
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -32,7 +37,14 @@ export function AddStudentModal({
         if (isOpen) {
             setMode('link')
             setSelectedStudentId('')
-            setStudentFormData({ name: '', contact: '', note: '' })
+            setStudentFormData({
+                name: '',
+                contact: '',
+                contactType: 'phone',
+                parentContact: '',
+                parentContactType: 'phone',
+                note: '',
+            })
         }
     }, [isOpen])
 
@@ -139,12 +151,18 @@ export function AddStudentModal({
                             placeholder="Иван Иванов"
                             disabled={isSubmitting}
                         />
-                        <Input
-                            label="Контакт"
-                            name="contact"
+                        <ContactInput
+                            label="Контакт ученика"
                             value={studentFormData.contact}
-                            onChange={handleStudentChange}
-                            placeholder="@telegram"
+                            type={studentFormData.contactType}
+                            onChange={(value, type) => setStudentFormData(prev => ({ ...prev, contact: value, contactType: type }))}
+                            disabled={isSubmitting}
+                        />
+                        <ContactInput
+                            label="Контакт родителя"
+                            value={studentFormData.parentContact}
+                            type={studentFormData.parentContactType}
+                            onChange={(value, type) => setStudentFormData(prev => ({ ...prev, parentContact: value, parentContactType: type }))}
                             disabled={isSubmitting}
                         />
                         <Input
