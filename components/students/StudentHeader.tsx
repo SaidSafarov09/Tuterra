@@ -85,21 +85,6 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                         </div>
                         <div className={styles.studentInfo}>
                             <h1 className={styles.studentName}>{student.name}</h1>
-                            <div className={styles.contactsContainer}>
-                                {student.contact && (
-                                    <ContactDisplay
-                                        value={student.contact}
-                                        type={student.contactType || 'phone'}
-                                    />
-                                )}
-                                {student.parentContact && (
-                                    <ContactDisplay
-                                        value={student.parentContact}
-                                        type={student.parentContactType || 'phone'}
-                                        label="Родитель"
-                                    />
-                                )}
-                            </div>
                         </div>
                     </div>
 
@@ -117,6 +102,30 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                         </Button>
                     </div>
                 </div>
+
+                {(student.contact || student.parentContact) && (
+                    <div className={styles.contactsBlock}>
+                        <div className={styles.contactsTitle}>Контакты ученика</div>
+                        {student.contact && (
+                            <div className={styles.contactItem}>
+                                <span className={styles.contactLabel}>Ученик:</span>
+                                <ContactDisplay
+                                    value={student.contact}
+                                    type={student.contactType || 'phone'}
+                                />
+                            </div>
+                        )}
+                        {student.parentContact && (
+                            <div className={styles.contactItem}>
+                                <span className={styles.contactLabel}>Родитель:</span>
+                                <ContactDisplay
+                                    value={student.parentContact}
+                                    type={student.parentContactType || 'phone'}
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <div className={styles.headerMeta}>
                     <div className={styles.metaItem}>
