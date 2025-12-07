@@ -32,6 +32,8 @@ interface LessonFormModalProps {
     onCreateStudent: (name: string) => void
     onCreateSubject: (name: string) => void
     handleChange: (name: string, value: any) => void
+    fixedSubjectId?: string
+    customTitle?: string
 }
 
 export function LessonFormModal({
@@ -48,7 +50,9 @@ export function LessonFormModal({
     onStudentChange,
     onCreateStudent,
     onCreateSubject,
-    handleChange
+    handleChange,
+    fixedSubjectId,
+    customTitle
 }: LessonFormModalProps) {
     const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
@@ -82,12 +86,14 @@ export function LessonFormModal({
         return formatSmartDate(formData.date)
     }
 
+    const title = customTitle || (isEdit ? "Редактировать занятие" : "Добавить занятие")
+
     return (
         <>
             <Modal
                 isOpen={isOpen}
                 onClose={onClose}
-                title={isEdit ? "Редактировать занятие" : "Добавить занятие"}
+                title={title}
                 footer={
                     <ModalFooter
                         onCancel={onClose}
@@ -103,7 +109,13 @@ export function LessonFormModal({
                         label="Ученик"
                         placeholder="Выберите или создайте ученика"
                         value={formData.studentId}
-                        onChange={(value) => onStudentChange(value, students)}
+                        onChange={(value) => {
+                            if (fixedSubjectId) {
+                                handleChange('studentId', value)
+                            } else {
+                                onStudentChange(value, students)
+                            }
+                        }}
                         options={students.map((student) => ({
                             value: student.id,
                             label: student.name,
@@ -126,10 +138,10 @@ export function LessonFormModal({
                             label: subject.name,
                         }))}
                         searchable
-                        creatable
+                        creatable={!fixedSubjectId}
                         onCreate={onCreateSubject}
                         menuPosition="relative"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !!fixedSubjectId}
                     />
 
                     <div className={styles.dateTimeButton}>

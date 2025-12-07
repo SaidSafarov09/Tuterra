@@ -227,6 +227,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             price: index === 0 ? data.price : (data.seriesPrice !== undefined ? data.seriesPrice : data.price),
 
             isPaid: data.isPaidAll ? true : (index === 0 ? (data.isPaid || false) : false),
+            isTrial: index === 0 ? (data.isTrial || false) : false,
             isCanceled: false,
             notes: data.notes,
             topic: data.topic,

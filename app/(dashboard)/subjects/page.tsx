@@ -9,17 +9,19 @@ import { SubjectCard } from '@/components/subjects/SubjectCard'
 import { SubjectFormModal } from '@/components/subjects/SubjectFormModal'
 import { SubjectDetailsModal } from '@/components/subjects/SubjectDetailsModal'
 import { AddStudentModal } from '@/components/subjects/AddStudentModal'
-import { CreateLessonModal } from '@/components/subjects/CreateLessonModal'
+import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { SubjectCardSkeleton } from '@/components/skeletons'
 import { useSubjects } from '@/hooks/useSubjects'
 import { useSubjectDetail } from '@/hooks/useSubjectDetail'
 import { useFetch } from '@/hooks/useFetch'
+import { useLessonForm } from '@/hooks/useLessonForm'
 import { Subject, Student } from '@/types'
 import styles from './page.module.scss'
 
 export default function SubjectsPage() {
     const { subjects, isLoading, createSubject, updateSubject, deleteSubject, refetch } = useSubjects()
-    const { data: allStudents = [] } = useFetch<Student[]>('/api/students')
+    const { data: studentsData, refetch: refetchStudents } = useFetch<Student[]>('/api/students')
+    const allStudents = studentsData || []
     const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
 
     const {
@@ -28,7 +30,6 @@ export default function SubjectsPage() {
         fetchStudents,
         linkStudent,
         createAndLinkStudent,
-        createLesson
     } = useSubjectDetail(selectedSubject, refetch)
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -41,6 +42,29 @@ export default function SubjectsPage() {
         subject: null,
     })
     const [editSubjectData, setEditSubjectData] = useState({ id: '', name: '', color: '#4A6CF7' })
+
+    const {
+        formData: lessonFormData,
+        setFormData: setLessonFormData,
+        isSubmitting: isLessonSubmitting,
+        error: lessonError,
+        resetForm: resetLessonForm,
+        handleChange: handleLessonChange,
+        handleStudentChange,
+        handleCreateStudent,
+        handleCreateSubject,
+        handleSubmit: submitLessonForm
+    } = useLessonForm(
+        () => {
+            setIsCreateLessonModalOpen(false)
+            if (selectedSubject) {
+                fetchStudents(selectedSubject.id)
+            }
+            refetch()
+        },
+        refetchStudents,
+        refetch
+    )
 
     const handleSubjectClick = (subject: Subject) => {
         setSelectedSubject(subject)
@@ -97,20 +121,12 @@ export default function SubjectsPage() {
         }
     }
 
-    const handleCreateLesson = async (data: {
-        studentId: string
-        date: Date
-        price: string
-        isPaid: boolean
-    }) => {
-        if (!selectedSubject) return { success: false }
-
-        if (data.date < new Date()) {
-            toast.error('Нельзя создавать занятия в прошедшем времени')
-            return { success: false }
+    const handleOpenCreateLessonModal = () => {
+        resetLessonForm()
+        if (selectedSubject) {
+            setLessonFormData(prev => ({ ...prev, subjectId: selectedSubject.id }))
         }
-
-        return await createLesson(selectedSubject.id, data)
+        setIsCreateLessonModalOpen(true)
     }
 
     return (
@@ -184,7 +200,7 @@ export default function SubjectsPage() {
                 students={subjectStudents}
                 isLoading={isLoadingStudents}
                 onAddStudent={() => setIsAddStudentModalOpen(true)}
-                onCreateLesson={() => setIsCreateLessonModalOpen(true)}
+                onCreateLesson={handleOpenCreateLessonModal}
             />
 
             <AddStudentModal
@@ -195,11 +211,23 @@ export default function SubjectsPage() {
                 onSubmit={handleAddStudent}
             />
 
-            <CreateLessonModal
+            <LessonFormModal
                 isOpen={isCreateLessonModalOpen}
                 onClose={() => setIsCreateLessonModalOpen(false)}
-                students={subjectStudents}
-                onSubmit={handleCreateLesson}
+                isEdit={false}
+                formData={lessonFormData}
+                setFormData={setLessonFormData}
+                students={allStudents}
+                subjects={subjects}
+                isSubmitting={isLessonSubmitting}
+                error={lessonError}
+                onSubmit={() => submitLessonForm(false)}
+                onStudentChange={handleStudentChange}
+                onCreateStudent={handleCreateStudent}
+                onCreateSubject={handleCreateSubject}
+                handleChange={handleLessonChange}
+                fixedSubjectId={selectedSubject?.id}
+                customTitle={selectedSubject ? `Добавить занятие по ${selectedSubject.name}` : undefined}
             />
 
             <ConfirmDialog
