@@ -45,7 +45,17 @@ export const Dropdown: React.FC<DropdownProps> = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
+    const [isMobile, setIsMobile] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.matchMedia('(max-width: 768px)').matches)
+        }
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
 
     const selectedOption = options.find((opt) => opt.value === value)
 
@@ -128,11 +138,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
                         <div className={styles.search}>
                             <input
                                 type="text"
-                                placeholder="Поиск..."
+                                placeholder="Найти/Создать"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onClick={(e) => e.stopPropagation()}
-                                autoFocus
+                                autoFocus={!isMobile}
                             />
                         </div>
                     )}
