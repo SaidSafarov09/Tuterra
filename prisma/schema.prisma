@@ -52,8 +52,11 @@ model Student {
   id           String         @id @default(cuid())
   name         String
   slug         String?        @unique
-  contact      String?
-  note         String?
+  contact           String?
+  contactType       String?        @default("phone") // phone, telegram, whatsapp
+  parentContact     String?
+  parentContactType String?        @default("phone")
+  note              String?
   ownerId      String
   skinColor    String?        @default("#F4C2A6")
   hairStyle    String?        @default("short")

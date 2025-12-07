@@ -508,3 +508,31 @@
   flex-direction: column;
   gap: 16px;
 }
+
+.contactLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+  width: fit-content;
+
+  &:hover {
+    background: var(--background);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+}
+
+.contactsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}

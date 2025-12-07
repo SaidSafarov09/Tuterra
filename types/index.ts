@@ -15,6 +15,9 @@ export interface Student {
     email?: string
     phone?: string
     contact?: string | null
+    contactType?: string | null
+    parentContact?: string | null
+    parentContactType?: string | null
     avatar?: string
     subjects: Subject[]
     notes?: string

@@ -27,6 +27,9 @@ interface CreateLessonDTO {
 interface CreateStudentDTO {
     name: string
     contact?: string
+    contactType?: string
+    parentContact?: string
+    parentContactType?: string
     note?: string
     subjectId?: string
     email?: string

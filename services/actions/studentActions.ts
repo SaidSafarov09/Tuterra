@@ -2,6 +2,7 @@ import { toast } from 'sonner'
 import { studentsApi } from '@/services/api'
 import { STUDENT_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages'
 import { Student } from '@/types'
+import { ContactType } from '@/lib/contactUtils'
 
 /**
  * Получить ученика по ID
@@ -33,6 +34,9 @@ export async function fetchStudents(): Promise<Student[]> {
 export async function createStudent(data: {
     name: string
     contact?: string
+    contactType?: ContactType
+    parentContact?: string
+    parentContactType?: ContactType
     note?: string
     subjectId?: string
 }): Promise<Student | null> {
@@ -57,7 +61,14 @@ export async function createStudent(data: {
  */
 export async function updateStudent(
     studentId: string,
-    data: { name: string; contact?: string; note?: string }
+    data: {
+        name: string
+        contact?: string
+        contactType?: ContactType
+        parentContact?: string
+        parentContactType?: ContactType
+        note?: string
+    }
 ): Promise<Student | null> {
     if (!data.name.trim()) {
         toast.error(VALIDATION_MESSAGES.ENTER_STUDENT_NAME)

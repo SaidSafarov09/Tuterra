@@ -40,7 +40,9 @@ import {
     PieChart,
     XCircle,
     FileText,
-    DollarSign
+    DollarSign,
+    Send,
+    MessageCircle
 } from 'lucide-react'
 
 interface IconProps {
@@ -100,3 +102,7 @@ export const UserIcon: React.FC<IconProps> = (props) => <User {...props} />
 export const ScissorsIcon: React.FC<IconProps> = (props) => <Scissors {...props} />
 export const EyeIcon: React.FC<IconProps> = (props) => <Eye {...props} />
 export const PaletteIcon: React.FC<IconProps> = (props) => <Palette {...props} />
+
+// Social Icons
+export const TelegramIcon: React.FC<IconProps> = (props) => <Send {...props} />
+export const WhatsAppIcon: React.FC<IconProps> = (props) => <MessageCircle {...props} />

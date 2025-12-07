@@ -19,6 +19,8 @@ import {
 import { STUDENT_MESSAGES } from '@/constants/messages'
 import { toast } from 'sonner'
 
+import { ContactType } from '@/lib/contactUtils'
+
 export function useStudentDetail(studentId: string) {
     const router = useRouter()
     const [student, setStudent] = useState<Student | null>(null)
@@ -35,6 +37,9 @@ export function useStudentDetail(studentId: string) {
     const [editFormData, setEditFormData] = useState({
         name: '',
         contact: '',
+        contactType: 'phone' as ContactType,
+        parentContact: '',
+        parentContactType: 'phone' as ContactType,
         note: '',
     })
     const [selectedSubjectId, setSelectedSubjectId] = useState('')
@@ -42,6 +47,7 @@ export function useStudentDetail(studentId: string) {
         studentId: studentId,
         subjectId: '',
         date: new Date(),
+        duration: 60,
         price: '',
         isPaid: false,
         topic: '',
@@ -161,6 +167,7 @@ export function useStudentDetail(studentId: string) {
             studentId: studentId,
             subjectId: lesson.subject?.id || '',
             date: new Date(lesson.date),
+            duration: lesson.duration || 60,
             price: lesson.price.toString(),
             isPaid: lesson.isPaid,
             topic: lesson.topic || '',
@@ -228,6 +235,9 @@ export function useStudentDetail(studentId: string) {
         setEditFormData({
             name: student.name,
             contact: student.contact || '',
+            contactType: (student.contactType as ContactType) || 'phone',
+            parentContact: student.parentContact || '',
+            parentContactType: (student.parentContactType as ContactType) || 'phone',
             note: student.note || '',
         })
         setIsEditModalOpen(true)
@@ -239,6 +249,7 @@ export function useStudentDetail(studentId: string) {
             studentId: studentId,
             subjectId: defaultSubjectId,
             date: new Date(),
+            duration: 60,
             price: '',
             isPaid: false,
             topic: '',

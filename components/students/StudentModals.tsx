@@ -2,8 +2,10 @@ import React from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
+import { ContactInput } from '@/components/ui/ContactInput'
 import { Student, Subject, LessonFormData } from '@/types'
 import { LessonFormWithDateTime } from '@/components/lessons/LessonFormWithDateTime'
+import { ContactType } from '@/lib/contactUtils'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
 
 interface StudentModalsProps {
@@ -15,7 +17,14 @@ interface StudentModalsProps {
     isEditModalOpen: boolean
     onCloseEditModal: () => void
     onSubmitEdit: () => void
-    editFormData: { name: string; contact: string; note: string }
+    editFormData: {
+        name: string
+        contact: string
+        contactType?: ContactType
+        parentContact?: string
+        parentContactType?: ContactType
+        note: string
+    }
     setEditFormData: (data: any) => void
 
     // Add Subject Modal
@@ -90,10 +99,17 @@ export function StudentModals({
                         onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                         required
                     />
-                    <Input
+                    <ContactInput
                         label="Контакт"
                         value={editFormData.contact}
-                        onChange={(e) => setEditFormData({ ...editFormData, contact: e.target.value })}
+                        type={editFormData.contactType || 'phone'}
+                        onChange={(value, type) => setEditFormData({ ...editFormData, contact: value, contactType: type })}
+                    />
+                    <ContactInput
+                        label="Контакт родителя"
+                        value={editFormData.parentContact || ''}
+                        type={editFormData.parentContactType || 'phone'}
+                        onChange={(value, type) => setEditFormData({ ...editFormData, parentContact: value, parentContactType: type })}
                     />
                     <Input
                         label="Заметка"

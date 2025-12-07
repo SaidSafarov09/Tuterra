@@ -2,7 +2,9 @@ import React from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
+import { ContactInput } from '@/components/ui/ContactInput'
 import { Subject } from '@/types'
+import { ContactType } from '@/lib/contactUtils'
 import styles from '../../app/(dashboard)/students/page.module.scss'
 
 interface CreateStudentModalProps {
@@ -14,6 +16,9 @@ interface CreateStudentModalProps {
     formData: {
         name: string
         contact: string
+        contactType?: ContactType
+        parentContact?: string
+        parentContactType?: ContactType
         note: string
         subjectId: string
         subjectName: string
@@ -83,12 +88,19 @@ export function CreateStudentModal({
                         menuPosition="relative"
                     />
 
-                    <Input
-                        label="Контакт"
-                        name="contact"
+                    <ContactInput
+                        label="Контакт ученика"
                         value={formData.contact}
-                        onChange={handleChange}
-                        placeholder="@telegram, телефон или email"
+                        type={formData.contactType || 'phone'}
+                        onChange={(value, type) => setFormData((prev: any) => ({ ...prev, contact: value, contactType: type }))}
+                        disabled={isSubmitting}
+                    />
+
+                    <ContactInput
+                        label="Контакт родителя"
+                        value={formData.parentContact || ''}
+                        type={formData.parentContactType || 'phone'}
+                        onChange={(value, type) => setFormData((prev: any) => ({ ...prev, parentContact: value, parentContactType: type }))}
                         disabled={isSubmitting}
                     />
 

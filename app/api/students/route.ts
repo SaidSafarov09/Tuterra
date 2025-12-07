@@ -9,6 +9,9 @@ export const dynamic = 'force-dynamic'
 const studentSchema = z.object({
     name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
     contact: z.string().optional(),
+    contactType: z.string().optional(),
+    parentContact: z.string().optional(),
+    parentContactType: z.string().optional(),
     note: z.string().optional(),
     subjectId: z.string().optional(),
     subjectName: z.string().optional(),
@@ -95,6 +98,9 @@ export async function POST(request: NextRequest) {
             data: {
                 name: validatedData.name,
                 contact: validatedData.contact,
+                contactType: validatedData.contactType,
+                parentContact: validatedData.parentContact,
+                parentContactType: validatedData.parentContactType,
                 note: validatedData.note,
                 ownerId: payload.userId,
                 subjects: subjectId ? {

@@ -10,6 +10,9 @@ export const dynamic = 'force-dynamic'
 const studentSchema = z.object({
     name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
     contact: z.string().optional(),
+    contactType: z.string().optional(),
+    parentContact: z.string().optional(),
+    parentContactType: z.string().optional(),
     note: z.string().optional(),
 }).passthrough()
 

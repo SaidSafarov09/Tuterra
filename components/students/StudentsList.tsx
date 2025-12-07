@@ -1,8 +1,9 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { PhoneIcon, NoteIcon } from '@/components/icons/Icons'
+import { PhoneIcon, NoteIcon, TelegramIcon, WhatsAppIcon } from '@/components/icons/Icons'
 import { Student } from '@/types'
 import styles from '../../app/(dashboard)/students/page.module.scss'
+import { ContactType, getContactLink } from '@/lib/contactUtils'
 
 interface StudentsListProps {
     students: Student[]
@@ -27,6 +28,15 @@ export function StudentsList({ students }: StudentsListProps) {
         }
         const hue = Math.abs(hash % 360)
         return `hsl(${hue}, 65%, 55%)`
+    }
+
+    const getContactIcon = (type: string) => {
+        switch (type) {
+            case 'phone': return <PhoneIcon size={14} />
+            case 'telegram': return <TelegramIcon size={14} />
+            case 'whatsapp': return <WhatsAppIcon size={14} />
+            default: return <PhoneIcon size={14} />
+        }
     }
 
     return (
@@ -72,11 +82,18 @@ export function StudentsList({ students }: StudentsListProps) {
 
                     <div className={styles.cardBody}>
                         {student.contact && (
-                            <div className={styles.infoRow}>
-                                <div className={styles.iconWrapper}>
-                                    <PhoneIcon size={14} />
-                                </div>
-                                <span className={styles.infoText}>{student.contact}</span>
+                            <div className={styles.infoRow} onClick={(e) => e.stopPropagation()}>
+                                <a
+                                    href={getContactLink(student.contactType as ContactType || 'phone', student.contact)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'inherit', textDecoration: 'none', width: '100%' }}
+                                >
+                                    <div className={styles.iconWrapper}>
+                                        {getContactIcon(student.contactType || 'phone')}
+                                    </div>
+                                    <span className={styles.infoText}>{student.contact}</span>
+                                </a>
                             </div>
                         )}
 

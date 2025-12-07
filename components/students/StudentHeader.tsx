@@ -1,8 +1,9 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { EditIcon, PlusIcon, DeleteIcon } from '@/components/icons/Icons'
+import { EditIcon, PlusIcon, DeleteIcon, PhoneIcon, TelegramIcon, WhatsAppIcon } from '@/components/icons/Icons'
 import { Student } from '@/types'
+import { ContactType, getContactLink } from '@/lib/contactUtils'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
 
 interface StudentHeaderProps {
@@ -37,6 +38,34 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
     const totalLessons = student._count?.lessons || 0
     const totalSubjects = student.subjects.length
 
+    const ContactDisplay = ({ value, type, label }: { value: string, type: string, label?: string }) => {
+        if (!value) return null
+
+        const contactType = (type || 'phone') as ContactType
+
+        const getIcon = (t: ContactType) => {
+            switch (t) {
+                case 'phone': return <PhoneIcon size={14} />
+                case 'telegram': return <TelegramIcon size={14} />
+                case 'whatsapp': return <WhatsAppIcon size={14} />
+                default: return <PhoneIcon size={14} />
+            }
+        }
+
+        return (
+            <a
+                href={getContactLink(contactType, value)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.contactLink}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {getIcon(contactType)}
+                <span>{label ? `${label}: ` : ''}{value}</span>
+            </a>
+        )
+    }
+
     return (
         <div>
             <div className={styles.header}>
@@ -56,11 +85,21 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                         </div>
                         <div className={styles.studentInfo}>
                             <h1 className={styles.studentName}>{student.name}</h1>
-                            {student.contact && (
-                                <div className={styles.studentContact}>
-                                    {student.contact}
-                                </div>
-                            )}
+                            <div className={styles.contactsContainer}>
+                                {student.contact && (
+                                    <ContactDisplay
+                                        value={student.contact}
+                                        type={student.contactType || 'phone'}
+                                    />
+                                )}
+                                {student.parentContact && (
+                                    <ContactDisplay
+                                        value={student.parentContact}
+                                        type={student.parentContactType || 'phone'}
+                                        label="Родитель"
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
 

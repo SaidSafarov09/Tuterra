@@ -7,6 +7,7 @@ import {
     createStudent as createNewStudent,
     createSubjectWithRandomColor,
 } from '@/services/actions'
+import { ContactType } from '@/lib/contactUtils'
 
 export function useStudents() {
     const [students, setStudents] = useState<Student[]>([])
@@ -18,6 +19,9 @@ export function useStudents() {
     const [formData, setFormData] = useState({
         name: '',
         contact: '',
+        contactType: 'phone' as ContactType,
+        parentContact: '',
+        parentContactType: 'phone' as ContactType,
         note: '',
         subjectId: '',
         subjectName: '',
@@ -47,6 +51,9 @@ export function useStudents() {
         setFormData({
             name: '',
             contact: '',
+            contactType: 'phone',
+            parentContact: '',
+            parentContactType: 'phone',
             note: '',
             subjectId: '',
             subjectName: '',
