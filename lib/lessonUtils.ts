@@ -52,7 +52,7 @@ export function calculateDayData(lessons: Lesson[], date: Date): DayData {
     })
 
     const totalEarned = dayLessons
-        .filter(lesson => lesson.isPaid && !lesson.isCanceled)
+        .filter(lesson => lesson.isPaid)
         .reduce((sum, lesson) => sum + lesson.price, 0)
 
     const potentialEarnings = dayLessons

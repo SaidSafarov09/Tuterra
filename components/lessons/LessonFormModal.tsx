@@ -205,13 +205,17 @@ export function LessonFormModal({
                         </div>
                     </div>
 
-                    {formData.price === '0' && formData.recurrence?.enabled && (
+                    {(formData.price === '0' || formData.isTrial) && formData.recurrence?.enabled && (
                         <Input
                             label="Стоимость следующих занятий (₽)"
                             type="number"
                             value={formData.seriesPrice || ''}
                             onChange={(e) => handleChange('seriesPrice', e.target.value)}
-                            placeholder="Оставьте пустым, если тоже бесплатно"
+                            placeholder={
+                                formData.price === '0'
+                                    ? "Оставьте пустым, если тоже бесплатно"
+                                    : "Оставьте пустым, если цена как у пробного"
+                            }
                             disabled={isSubmitting}
                         />
                     )}
