@@ -15,14 +15,14 @@ export async function GET(request: NextRequest) {
         const monthStart = startOfMonth(now)
         const monthEnd = endOfMonth(now)
 
-        // Получаем статистику параллельно
+        
         const [studentsCount, upcomingLessons, unpaidLessons, monthlyIncome, totalLessons, subjectsCount, userProfile] = await Promise.all([
-            // Количество учеников
+            
             prisma.student.count({
                 where: { ownerId: payload.userId },
             }),
 
-            // Ближайшие занятия
+            
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
                 take: 5,
             }),
 
-            // Неоплаченные занятия
+            
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
                 orderBy: { date: 'desc' },
             }),
 
-            // Доход за текущий месяц
+            
             prisma.lesson.aggregate({
                 where: {
                     ownerId: payload.userId,
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
                 },
             }),
 
-            // Всего проведенных занятий (прошедшие)
+            
             prisma.lesson.count({
                 where: {
                     ownerId: payload.userId,
@@ -76,12 +76,12 @@ export async function GET(request: NextRequest) {
                 } as any,
             }),
 
-            // Количество предметов
+            
             prisma.subject.count({
                 where: { userId: payload.userId },
             }),
 
-            // Дата регистрации пользователя
+            
             prisma.user.findUnique({
                 where: { id: payload.userId },
                 select: { createdAt: true },

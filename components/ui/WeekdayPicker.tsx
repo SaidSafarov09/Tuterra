@@ -5,7 +5,7 @@ import styles from './WeekdayPicker.module.scss'
 import { WEEKDAY_NAMES } from '@/types/recurring'
 
 interface WeekdayPickerProps {
-    value: number[] // Array of selected days (0-6)
+    value: number[] 
     onChange: (days: number[]) => void
     disabled?: boolean
 }
@@ -25,7 +25,7 @@ export const WeekdayPicker: React.FC<WeekdayPickerProps> = ({
         onChange(newValue)
     }
 
-    // Order: Mon(1), Tue(2), Wed(3), Thu(4), Fri(5), Sat(6), Sun(0)
+    
     const orderedDays = [1, 2, 3, 4, 5, 6, 0]
 
     return (

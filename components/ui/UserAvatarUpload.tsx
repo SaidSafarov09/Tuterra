@@ -93,7 +93,7 @@ export const UserAvatarUpload: React.FC<UserAvatarUploadProps> = ({
         setPreview(croppedImage)
         setSelectedImage(null)
 
-        // Convert base64 to File object
+        
         const res = await fetch(croppedImage)
         const blob = await res.blob()
         const file = new File([blob], "avatar.jpg", { type: "image/jpeg" })
@@ -118,7 +118,7 @@ export const UserAvatarUpload: React.FC<UserAvatarUploadProps> = ({
         setIsDeleteModalOpen(false)
     }
 
-    // Generate stable color from string
+    
     const stringToColor = (str: string): string => {
         let hash = 0
         for (let i = 0; i < str.length; i++) {

@@ -7,11 +7,11 @@ export const CONTACT_TYPES: { type: ContactType; label: string }[] = [
 ]
 
 export function validateContact(type: ContactType, value: string): boolean {
-    if (!value) return true // Empty is valid (optional)
+    if (!value) return true 
 
     switch (type) {
         case 'phone':
-            // Basic phone validation: allows +, spaces, dashes, parentheses, digits
+            
             return /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im.test(value)
         case 'telegram':
             return value.startsWith('t.me/') && value.length > 5
@@ -29,9 +29,9 @@ export function getContactLink(type: ContactType, value: string): string {
         case 'phone':
             return `tel:${value}`
         case 'telegram':
-            return `https://${value}` // value already has t.me/
+            return `https:
         case 'whatsapp':
-            return `https://${value}` // value already has wa.me/
+            return `https:
         default:
             return value
     }
@@ -67,13 +67,13 @@ export function formatContactInput(type: ContactType, value: string): string {
     }
 
     if (type === 'telegram') {
-        if (value.startsWith('https://t.me/')) return value.replace('https://', '')
+        if (value.startsWith('https:
         if (value.startsWith('@')) return `t.me/${value.substring(1)}`
         if (!value.startsWith('t.me/')) return `t.me/${value}`
     }
 
     if (type === 'whatsapp') {
-        if (value.startsWith('https://wa.me/')) return value.replace('https://', '')
+        if (value.startsWith('https:
         if (!value.startsWith('wa.me/')) return `wa.me/${value}`
     }
 

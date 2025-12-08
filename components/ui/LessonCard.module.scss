@@ -184,7 +184,7 @@
     }
 }
 
-/* Styles for List Variant (with Actions) */
+
 .cardWrapper {
     display: block;
     background: var(--surface);
@@ -203,7 +203,7 @@
     }
 }
 
-/* Override card styles when inside wrapper */
+
 .cardWrapper .card {
     border: none;
     border-radius: 0;

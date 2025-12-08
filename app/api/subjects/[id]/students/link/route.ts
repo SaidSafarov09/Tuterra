@@ -20,7 +20,7 @@ export async function POST(
             return NextResponse.json({ error: 'studentId обязателен' }, { status: 400 })
         }
 
-        // Verify subject belongs to user
+        
         const subject = await prisma.subject.findFirst({
             where: {
                 id: subjectId,
@@ -32,7 +32,7 @@ export async function POST(
             return NextResponse.json({ error: 'Предмет не найден' }, { status: 404 })
         }
 
-        // Verify student belongs to user
+        
         const student = await prisma.student.findFirst({
             where: {
                 id: studentId,
@@ -44,7 +44,7 @@ export async function POST(
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
-        // Link student to subject
+        
         await prisma.student.update({
             where: { id: studentId },
             data: {
@@ -81,7 +81,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'studentId обязателен' }, { status: 400 })
         }
 
-        // Verify subject belongs to user
+        
         const subject = await prisma.subject.findFirst({
             where: {
                 id: subjectId,
@@ -93,7 +93,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Предмет не найден' }, { status: 404 })
         }
 
-        // Verify student belongs to user
+        
         const student = await prisma.student.findFirst({
             where: {
                 id: studentId,
@@ -105,7 +105,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
-        // Unlink student from subject
+        
         await prisma.student.update({
             where: { id: studentId },
             data: {

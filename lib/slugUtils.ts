@@ -34,11 +34,11 @@ export function generateSlug(input: string, extra?: string): string {
     let slug = transliterate(input)
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, '-')           // Replace spaces with -
-        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars except -
-        .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-        .replace(/^-+/, '')             // Trim - from start
-        .replace(/-+$/, '')             // Trim - from end
+        .replace(/\s+/g, '-')           
+        .replace(/[^\w\-]+/g, '')       
+        .replace(/\-\-+/g, '-')         
+        .replace(/^-+/, '')             
+        .replace(/-+$/, '')             
 
     if (extra) {
         slug += `-${extra}`

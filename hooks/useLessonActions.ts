@@ -44,7 +44,7 @@ export function useLessonActions(onUpdate?: () => void) {
             }
 
             toast.success(scope === 'series' ? 'Серия занятий удалена' : 'Занятие удалено')
-            if (onUpdate) onUpdate() // Changed onSuccess to onUpdate to match existing prop
+            if (onUpdate) onUpdate() 
         } catch (error) {
             toast.error('Не удалось удалить занятие')
         } finally {

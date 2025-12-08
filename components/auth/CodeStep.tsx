@@ -37,7 +37,7 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
     }, [])
 
     const handleChange = (index: number, value: string) => {
-        // Only allow digits
+        
         if (value && !/^\d$/.test(value)) return
 
         const newCode = [...code]

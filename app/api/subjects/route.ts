@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const validatedData = subjectSchema.parse(body)
 
-        // Проверяем, не существует ли уже предмет с таким именем
+        
         const existing = await prisma.subject.findFirst({
             where: {
                 userId: payload.userId,

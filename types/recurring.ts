@@ -1,16 +1,11 @@
-/**
- * Recurring lessons types
- * Used across frontend and backend for type safety
- */
-
 export type RecurrenceType = 'weekly' | 'daily' | 'every_x_weeks'
 export type RecurrenceEndType = 'never' | 'until_date' | 'count'
 
 export interface RecurrenceRule {
     enabled: boolean
     type: RecurrenceType
-    interval: number // For "every X weeks", default 1
-    daysOfWeek: number[] // 0-6 (Sunday-Saturday), empty for daily
+    interval: number 
+    daysOfWeek: number[] 
     endType: RecurrenceEndType
     endDate?: Date | string
     occurrencesCount?: number
@@ -26,7 +21,7 @@ export interface LessonSeriesData {
     endDate?: Date | string | null
     occurrencesCount?: number | null
 
-    // Template data for generating lessons
+    
     studentId: string
     subjectId?: string | null
     price: number
@@ -38,7 +33,7 @@ export interface LessonSeriesData {
 }
 
 export interface RecurringLessonFormData {
-    // Base lesson data
+    
     studentId: string
     subjectId?: string
     date: Date
@@ -46,11 +41,11 @@ export interface RecurringLessonFormData {
     topic?: string
     notes?: string
 
-    // Recurrence data
+    
     recurrence: RecurrenceRule
 }
 
-// Helper constants
+
 export const WEEKDAY_NAMES = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'] as const
 export const WEEKDAY_NAMES_FULL = [
     'Воскресенье',

@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const { phone } = body
 
-        // Validate phone number
+        
         if (!phone || !validatePhoneNumber(phone)) {
             return NextResponse.json(
                 { success: false, error: 'Неверный формат номера телефона. Используйте формат +7XXXXXXXXXX' },
@@ -15,14 +15,14 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Generate verification code
-        // Magic numbers for testing: code is always 111111
+        
+        
         const testNumbers = ['+79990000000', '+79998887766']
         const isTestPhone = testNumbers.includes(phone)
         const code = isTestPhone ? '111111' : generateVerificationCode(6)
 
-        // Create verification session
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+        
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000) 
 
         const session = await prisma.verificationSession.create({
             data: {
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
             },
         })
 
-        // Send SMS (skip for test phone)
+        
         if (!isTestPhone) {
             await sendSMS(phone, code)
         }

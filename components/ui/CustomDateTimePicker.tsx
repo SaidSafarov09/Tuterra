@@ -21,7 +21,7 @@ export const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
     const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate()
     const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay()
 
-    // Adjust for Monday start (0 = Sunday -> 6, 1 = Monday -> 0)
+    
     const startingDayIndex = (firstDayOfMonth + 6) % 7
 
     const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -55,12 +55,12 @@ export const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
         const days = []
         const today = new Date()
 
-        // Empty cells for days before month starts
+        
         for (let i = 0; i < startingDayIndex; i++) {
             days.push(<div key={`empty-${i}`} className={styles.emptyDay} />)
         }
 
-        // Days of the month
+        
         for (let day = 1; day <= daysInMonth; day++) {
             const isSelected = value &&
                 value.getDate() === day &&

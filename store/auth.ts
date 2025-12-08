@@ -5,7 +5,7 @@ interface User {
     id: string
     firstName: string | null
     lastName: string | null
-    name: string | null | undefined  // Оставлено для совместимости
+    name: string | null | undefined  
     email: string | null
     phone: string | null
     avatar: string | null
@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
 
             login: (token: string, user: User) => {
-                // Store token in localStorage as fallback
+                
                 localStorage.setItem('auth-token', token)
 
                 set({
@@ -40,10 +40,10 @@ export const useAuthStore = create<AuthState>()(
 
             logout: async () => {
                 try {
-                    // Clear localStorage
+                    
                     localStorage.removeItem('auth-token')
 
-                    // Call logout API to clear httpOnly cookie
+                    
                     await fetch('/api/auth/logout', { method: 'POST' })
                 } catch (error) {
                     console.error('Logout error:', error)

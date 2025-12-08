@@ -80,7 +80,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                     onChange={handlePhoneChange}
                     placeholder="+7 (___) ___-__-__"
                     autoFocus
-                    // disabled={isLoading}
+                    
                     disabled
                 />
 

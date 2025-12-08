@@ -180,7 +180,7 @@ export function LessonFormModal({
                             onChange={(e) => {
                                 const newPrice = e.target.value
                                 handleChange('price', newPrice)
-                                // Если цена = 0, снимаем "Оплачено"
+                                
                                 if (newPrice === '0') {
                                     handleChange('isPaid', false)
                                 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { findOrCreateOAuthUser, createAuthSession } from '@/lib/oauth'
 
 interface GoogleUser {
-    sub: string // Google user ID
+    sub: string 
     name: string
     given_name: string
     family_name: string
@@ -21,8 +21,8 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        // 1. Exchange code for token
-        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        
+        const tokenResponse = await fetch('https:
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
@@ -40,16 +40,16 @@ export async function GET(req: NextRequest) {
             return NextResponse.redirect(new URL('/auth?error=token_error', req.url))
         }
 
-        // 2. Get user info
-        const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        
+        const userResponse = await fetch('https:
             headers: { Authorization: `Bearer ${tokenData.access_token}` },
         })
         const googleUser: GoogleUser = await userResponse.json()
 
-        // 3. Find or create user
+        
         const user = await findOrCreateOAuthUser({
             email: googleUser.email,
-            phone: null, // Google doesn't provide phone in basic scope
+            phone: null, 
             firstName: googleUser.given_name,
             lastName: googleUser.family_name || '',
             avatar: googleUser.picture,
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
             providerId: googleUser.sub,
         })
 
-        // 4. Create session and redirect
+        
         return createAuthSession(user.id, user.phone || '', req.url)
 
     } catch (error) {

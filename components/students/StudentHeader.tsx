@@ -34,7 +34,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
         return `hsl(${hue}, 65%, 55%)`
     }
 
-    // Calculate stats
+    
     const totalLessons = student._count?.lessons || 0
     const totalSubjects = student.subjects.length
 

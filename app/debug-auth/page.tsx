@@ -13,7 +13,7 @@ export default function DebugAuthPage() {
         const allCookies = document.cookie
         setCookies(allCookies)
 
-        // Try to find auth-token cookie
+        
         const authToken = allCookies.split('; ').find(row => row.startsWith('auth-token='))
         setAuthTokenCookie(authToken || 'NOT FOUND')
 

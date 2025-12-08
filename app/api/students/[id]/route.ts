@@ -28,7 +28,7 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        // Check if id is a CUID (old format) or slug
+        
         const isId = isCuid(id)
         const whereClause = isId
             ? { id: id, ownerId: user.id }
@@ -52,7 +52,7 @@ export async function GET(
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
-        // If accessed by old ID, redirect to slug URL
+        
         if (isId && student.slug) {
             return NextResponse.redirect(
                 new URL(`/students/${student.slug}`, request.url),

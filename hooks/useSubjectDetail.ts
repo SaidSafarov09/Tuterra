@@ -37,7 +37,7 @@ export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void)
         return { success }
     }
 
-    // ...
+    
 
     const createAndLinkStudent = async (
         subjectId: string,

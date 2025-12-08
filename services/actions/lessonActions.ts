@@ -3,9 +3,6 @@ import { lessonsApi } from '@/services/api'
 import { LESSON_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages'
 import { Lesson } from '@/types'
 
-/**
- * Получить занятие по ID
- */
 export async function fetchLesson(lessonId: string): Promise<Lesson | null> {
     try {
         return await lessonsApi.getById(lessonId)
@@ -15,9 +12,6 @@ export async function fetchLesson(lessonId: string): Promise<Lesson | null> {
     }
 }
 
-/**
- * Получить занятия с фильтром
- */
 export async function fetchLessons(filter?: string): Promise<Lesson[]> {
     try {
         return await lessonsApi.getAll(filter)
@@ -27,13 +21,12 @@ export async function fetchLessons(filter?: string): Promise<Lesson[]> {
     }
 }
 
-/**
- * Создать новое занятие
- */
 export async function createLesson(data: {
     studentId: string
     subjectId: string
     date: Date | string
+    duration?: number
+    isTrial?: boolean
     price: number | string
     isPaid: boolean
     topic?: string
@@ -55,6 +48,8 @@ export async function createLesson(data: {
             studentId: data.studentId,
             subjectId: data.subjectId,
             date: lessonDate.toISOString(),
+            duration: data.duration,
+            isTrial: data.isTrial,
             price: Number(data.price),
             isPaid: data.isPaid,
             topic: data.topic,
@@ -68,15 +63,14 @@ export async function createLesson(data: {
     }
 }
 
-/**
- * Обновить занятие
- */
 export async function updateLesson(
     lessonId: string,
     data: Partial<{
         studentId: string
         subjectId: string
         date: Date | string
+        duration: number
+        isTrial: boolean
         price: number | string
         isPaid: boolean
         isCanceled: boolean
@@ -97,6 +91,14 @@ export async function updateLesson(
             updateData.price = Number(data.price)
         }
 
+        if (data.duration !== undefined) {
+            updateData.duration = data.duration
+        }
+
+        if (data.isTrial !== undefined) {
+            updateData.isTrial = data.isTrial
+        }
+
         const lesson = await lessonsApi.update(lessonId, updateData)
         toast.success(LESSON_MESSAGES.UPDATED)
         return lesson
@@ -106,9 +108,6 @@ export async function updateLesson(
     }
 }
 
-/**
- * Удалить занятие
- */
 export async function deleteLesson(lessonId: string): Promise<boolean> {
     try {
         await lessonsApi.delete(lessonId)
@@ -120,9 +119,6 @@ export async function deleteLesson(lessonId: string): Promise<boolean> {
     }
 }
 
-/**
- * Переключить статус оплаты
- */
 export async function toggleLessonPaid(
     lessonId: string,
     isPaid: boolean
@@ -137,9 +133,6 @@ export async function toggleLessonPaid(
     }
 }
 
-/**
- * Переключить статус отмены
- */
 export async function toggleLessonCanceled(
     lessonId: string,
     isCanceled: boolean

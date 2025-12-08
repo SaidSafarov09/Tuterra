@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 export const StudentDetailSkeleton: React.FC = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* Header */}
+            {}
             <div style={{
                 background: 'var(--background)',
                 border: '1px solid var(--border)',
@@ -30,7 +30,7 @@ export const StudentDetailSkeleton: React.FC = () => {
                 </div>
             </div>
 
-            {/* Subjects */}
+            {}
             <div style={{
                 background: 'var(--background)',
                 border: '1px solid var(--border)',
@@ -48,7 +48,7 @@ export const StudentDetailSkeleton: React.FC = () => {
                 </div>
             </div>
 
-            {/* Lessons */}
+            {}
             <div style={{
                 background: 'var(--background)',
                 border: '1px solid var(--border)',

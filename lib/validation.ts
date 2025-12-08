@@ -4,18 +4,18 @@ export function validatePhoneNumber(phone: string): boolean {
 }
 
 export function formatPhoneNumber(phone: string): string {
-    // Remove all non-digits except +
+    
     let cleaned = phone.replace(/[^\d+]/g, '')
 
-    // If already starts with +7, just limit length
+    
     if (cleaned.startsWith('+7')) {
         return cleaned.substring(0, 12)
     }
 
-    // Remove any existing + signs
+    
     cleaned = cleaned.replace(/\+/g, '')
 
-    // Handle different starting digits
+    
     if (cleaned.startsWith('7') || cleaned.startsWith('8')) {
         cleaned = '+7' + cleaned.substring(1)
     } else if (cleaned) {

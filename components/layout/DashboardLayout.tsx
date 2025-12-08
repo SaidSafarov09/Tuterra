@@ -17,7 +17,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const { user, setUser } = useAuthStore()
     const { setTheme } = useTheme()
 
-    // Fetch user data on mount if not already loaded
+    
     useEffect(() => {
         const fetchUserData = async () => {
             if (!user) {
@@ -33,7 +33,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         avatar: data.avatar || null,
                     })
 
-                    // Sync theme if provided
+                    
                     if (data.theme) {
                         setTheme(data.theme)
                     }

@@ -151,7 +151,7 @@ export function useStudentDetail(studentId: string) {
 
         if (newSubject) {
             if (!forLink) {
-                // Link to student if creating from lesson modal
+                
                 await linkStudentToSubject(newSubject.id, studentId)
                 setLessonFormData(prev => ({ ...prev, subjectId: newSubject.id }))
             } else {
@@ -267,23 +267,23 @@ export function useStudentDetail(studentId: string) {
         isLoading,
         isSubmitting,
 
-        // Modal States
+        
         isEditModalOpen, setIsEditModalOpen,
         isAddSubjectModalOpen, setIsAddSubjectModalOpen,
         isCreateLessonModalOpen, setIsCreateLessonModalOpen,
         isEditLessonModalOpen, setIsEditLessonModalOpen,
 
-        // Form Data
+        
         editFormData, setEditFormData,
         selectedSubjectId, setSelectedSubjectId,
         lessonFormData, setLessonFormData,
 
-        // Confirm States
+        
         deleteStudentConfirm, setDeleteStudentConfirm,
         deleteSubjectConfirm, setDeleteSubjectConfirm,
         deleteLessonConfirm, setDeleteLessonConfirm,
 
-        // Actions
+        
         handleDeleteStudent,
         handleDeleteSubject,
         handleUpdateStudent,
@@ -297,7 +297,7 @@ export function useStudentDetail(studentId: string) {
         handleTogglePaidStatus,
         handleToggleCancelLesson,
 
-        // Openers
+        
         openEditModal,
         openCreateLessonModal
     }

@@ -63,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
     )
 
-    // Use portal to render modal at document.body level
+    
     if (typeof document !== 'undefined') {
         return createPortal(modalContent, document.body)
     }

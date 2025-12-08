@@ -63,7 +63,7 @@ export default function SettingsPage() {
         }
     }
 
-    // Detect changes
+    
     useEffect(() => {
         if (!initialDataRef.current) return
 
@@ -71,7 +71,7 @@ export default function SettingsPage() {
         setHasUnsavedChanges(hasChanges)
     }, [formData])
 
-    // Block navigation if there are unsaved changes
+    
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (hasUnsavedChanges) {
@@ -107,7 +107,7 @@ export default function SettingsPage() {
         const { name, value } = e.target
 
         if (name === 'phone') {
-            // Format phone number automatically
+            
             const formatted = formatPhoneNumber(value)
             setFormData((prev) => ({ ...prev, [name]: formatted }))
         } else {
@@ -148,7 +148,7 @@ export default function SettingsPage() {
                 avatar: updatedUser.avatar || null,
             })
 
-            // Update initial data ref to current data
+            
             initialDataRef.current = { ...formData }
             setHasUnsavedChanges(false)
 

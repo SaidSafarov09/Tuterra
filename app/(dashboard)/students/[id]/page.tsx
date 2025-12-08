@@ -53,11 +53,11 @@ export default function StudentDetailPage({
     handleTogglePaidStatus,
     handleToggleCancelLesson,
 
-    // Openers
+    
     openEditModal,
     openCreateLessonModal,
 
-    // New exports
+    
     isEditLessonModalOpen,
     setIsEditLessonModalOpen,
     deleteLessonConfirm,

@@ -18,21 +18,21 @@ export function generateRecurringDates({
         return [startDate]
     }
 
-    // Always include the start date as the first lesson
+    
     const dates: Date[] = [new Date(startDate)]
 
-    // Adjust limit for subsequent generation
+    
     let effectiveLimit = limit
     if (rule.endType === 'count' && rule.occurrencesCount) {
         effectiveLimit = Math.min(limit, rule.occurrencesCount)
 
-        // We always treat occurrencesCount as the number of *repetitions* AFTER the first lesson.
-        // Since we manually add the startDate as the first lesson, we need to increase the limit by 1
-        // so that the generator produces 'occurrencesCount' additional lessons.
+        
+        
+        
         effectiveLimit += 1
     }
 
-    // If we already reached the limit (e.g. count=1), return
+    
     if (dates.length >= effectiveLimit) {
         return dates
     }
@@ -40,25 +40,25 @@ export function generateRecurringDates({
     let calculatedEndDate = hardEndDate
 
     if (rule.endType === 'until_date' && rule.endDate) {
-        // Set end date time to end of day to include lessons on that day
+        
         const date = new Date(rule.endDate)
         date.setHours(23, 59, 59, 999)
         calculatedEndDate = date
     } else if (rule.endType === 'count' && rule.occurrencesCount) {
-        // For count, we don't strictly need an end date, the limit handles it
-        // But we can calculate an approximate one for optimization if needed
+        
+        
     }
 
     if (hardEndDate && (!calculatedEndDate || isAfter(calculatedEndDate, hardEndDate))) {
         calculatedEndDate = hardEndDate
     }
 
-    // Generate subsequent dates
-    // We start looking from the next day to avoid duplicating startDate
-    // (unless it's daily, but even then we want the NEXT day)
+    
+    
+    
 
-    // Note: The generator functions need to be updated to NOT clear the dates array
-    // and to respect the "strictly after startDate" logic
+    
+    
 
     switch (rule.type) {
         case 'daily':
@@ -91,7 +91,7 @@ export function getRecurrenceDescription(rule: RecurrenceRule, startDate: Date):
 
     const parts: string[] = []
 
-    // Type description
+    
     switch (rule.type) {
         case 'daily':
             parts.push('Каждый день')
@@ -120,12 +120,12 @@ export function getRecurrenceDescription(rule: RecurrenceRule, startDate: Date):
             break
     }
 
-    // Time from startDate
+    
     const hours = startDate.getHours().toString().padStart(2, '0')
     const minutes = startDate.getMinutes().toString().padStart(2, '0')
     parts.push(`в ${hours}:${minutes}`)
 
-    // End description
+    
     if (rule.endType === 'until_date' && rule.endDate) {
         const date = new Date(rule.endDate)
         parts.push(`до ${date.toLocaleDateString('ru-RU')}`)
@@ -169,7 +169,7 @@ function getRecurrenceEndDate(
     let endDate: Date | null = null
 
     if (rule.endType === 'until_date' && rule.endDate) {
-        // Set end date time to end of day to include lessons on that day
+        
         const date = new Date(rule.endDate)
         date.setHours(23, 59, 59, 999)
         endDate = date
@@ -191,7 +191,7 @@ function generateDailyDates(
     dates: Date[],
     limit: number
 ): void {
-    let currentDate = addDays(startDate, 1) // Start from next day
+    let currentDate = addDays(startDate, 1) 
 
     while (dates.length < limit) {
         if (endDate && isAfter(currentDate, endDate)) {
@@ -267,7 +267,7 @@ function generateEveryXWeeksDates(
     let weeksChecked = 0
     const maxWeeksToCheck = 1000
 
-    // Normalize startDate to minute precision for comparison
+    
     const normalizedStart = new Date(startDate)
     normalizedStart.setSeconds(0, 0)
 
@@ -276,7 +276,7 @@ function generateEveryXWeeksDates(
             let targetDate = addDays(currentWeekStart, dayOfWeek)
             targetDate.setHours(hours, minutes, 0, 0)
 
-            // Only include dates STRICTLY AFTER start date
+            
             if (targetDate > normalizedStart) {
                 if (endDate && isAfter(targetDate, endDate)) {
                     return

@@ -27,8 +27,8 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        // 1. Exchange code for token
-        const tokenResponse = await fetch('https://oauth.yandex.ru/token', {
+        
+        const tokenResponse = await fetch('https:
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
@@ -45,16 +45,16 @@ export async function GET(req: NextRequest) {
             return NextResponse.redirect(new URL('/auth?error=token_error', req.url))
         }
 
-        // 2. Get user info
-        const userResponse = await fetch('https://login.yandex.ru/info?format=json', {
+        
+        const userResponse = await fetch('https:
             headers: { Authorization: `OAuth ${tokenData.access_token}` },
         })
         const yandexUser: YandexUser = await userResponse.json()
 
-        // 3. Find or create user
+        
         const avatarUrl = yandexUser.is_avatar_empty
             ? null
-            : `https://avatars.yandex.net/get-yapic/${yandexUser.default_avatar_id}/islands-200`
+            : `https:
 
         const user = await findOrCreateOAuthUser({
             email: yandexUser.default_email || null,
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
             providerId: yandexUser.id,
         })
 
-        // 4. Create session and redirect
+        
         return createAuthSession(user.id, user.phone || '', req.url)
 
     } catch (error) {

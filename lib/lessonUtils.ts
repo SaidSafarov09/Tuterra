@@ -25,11 +25,11 @@ export function getLessonStatusLabel(status: LessonStatus): string {
 export function getLessonStatusColor(status: LessonStatus): string {
     switch (status) {
         case 'free':
-            return '#4A6CF7' // Синий
+            return '#4A6CF7' 
         case 'paid':
-            return '#10B981' // Зеленый
+            return '#10B981' 
         case 'unpaid':
-            return '#EF4444' // Красный
+            return '#EF4444' 
     }
 }
 

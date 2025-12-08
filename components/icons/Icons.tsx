@@ -47,7 +47,7 @@ import {
     Receipt
 } from 'lucide-react'
 
-// ... (existing exports)
+
 
 export const HistoryIcon: React.FC<IconProps> = (props) => <History {...props} />
 export const ReceiptIcon: React.FC<IconProps> = (props) => <Receipt {...props} />
@@ -59,7 +59,7 @@ interface IconProps {
     style?: React.CSSProperties
 }
 
-// Navigation Icons
+
 export const DashboardIcon: React.FC<IconProps> = (props) => <LayoutDashboard {...props} />
 export const StudentsIcon: React.FC<IconProps> = (props) => <GraduationCap {...props} />
 export const LessonsIcon: React.FC<IconProps> = (props) => <BookOpen {...props} />
@@ -70,7 +70,7 @@ export const CalendarIcon: React.FC<IconProps> = (props) => <Calendar {...props}
 export const AnalyticsIcon: React.FC<IconProps> = (props) => <PieChart {...props} />
 export const LogoutIcon: React.FC<IconProps> = (props) => <LogOut {...props} />
 
-// Action Icons
+
 export const PlusIcon: React.FC<IconProps> = (props) => <Plus {...props} />
 export const EditIcon: React.FC<IconProps> = (props) => <Pencil {...props} />
 export const DeleteIcon: React.FC<IconProps> = (props) => <Trash2 {...props} />
@@ -82,7 +82,7 @@ export const FilterIcon: React.FC<IconProps> = (props) => <Filter {...props} />
 export const SearchIcon: React.FC<IconProps> = (props) => <Search {...props} />
 export const XCircleIcon: React.FC<IconProps> = (props) => <XCircle {...props} />
 
-// UI Elements
+
 export const ArrowLeftIcon: React.FC<IconProps> = (props) => <ArrowLeft {...props} />
 export const ArrowRightIcon: React.FC<IconProps> = (props) => <ArrowRight {...props} />
 export const ChevronDownIcon: React.FC<IconProps> = (props) => <ChevronDown {...props} />
@@ -95,7 +95,7 @@ export const PhoneIcon: React.FC<IconProps> = (props) => <Phone {...props} />
 export const NoteIcon: React.FC<IconProps> = (props) => <FileText {...props} />
 export const HomeIcon: React.FC<IconProps> = (props) => <Home {...props} />
 
-// Dashboard & Stats Icons
+
 export const UsersGroupIcon: React.FC<IconProps> = (props) => <Users {...props} />
 export const BookIcon: React.FC<IconProps> = (props) => <BookOpen {...props} />
 export const AlertIcon: React.FC<IconProps> = (props) => <AlertTriangle {...props} />
@@ -104,12 +104,12 @@ export const WalletIcon: React.FC<IconProps> = (props) => <Wallet {...props} />
 export const DollarIcon: React.FC<IconProps> = (props) => <DollarSign {...props} />
 export const CelebrationIcon: React.FC<IconProps> = (props) => <PartyPopper {...props} />
 
-// Avatar Editor Icons
+
 export const UserIcon: React.FC<IconProps> = (props) => <User {...props} />
 export const ScissorsIcon: React.FC<IconProps> = (props) => <Scissors {...props} />
 export const EyeIcon: React.FC<IconProps> = (props) => <Eye {...props} />
 export const PaletteIcon: React.FC<IconProps> = (props) => <Palette {...props} />
 
-// Social Icons
+
 export const TelegramIcon: React.FC<IconProps> = (props) => <Send {...props} />
 export const WhatsAppIcon: React.FC<IconProps> = (props) => <MessageCircle {...props} />

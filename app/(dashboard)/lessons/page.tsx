@@ -23,7 +23,7 @@ function LessonsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    // State
+    
     const [activeTab, setActiveTab] = useState<LessonFilter>('upcoming')
     const [isOpen, setIsOpen] = useState(false)
     const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
@@ -32,7 +32,7 @@ function LessonsContent() {
         lesson: null,
     })
 
-    // Data Fetching with caching
+    
     const {
         lessons,
         allLessonsCount,
@@ -52,7 +52,7 @@ function LessonsContent() {
         refetch: refetchSubjects
     } = useFetch<Subject[]>('/api/subjects')
 
-    // Hooks
+    
     const {
         togglePaid,
         toggleCancel,
@@ -81,7 +81,7 @@ function LessonsContent() {
         refetchSubjects
     )
 
-    // Create tabs with counts using useMemo
+    
     const tabsWithCounts = useMemo(() =>
         LESSON_TABS.map(tab => ({
             ...tab,
@@ -90,7 +90,7 @@ function LessonsContent() {
         [lessonsCounts]
     )
 
-    // Effects
+    
     useEffect(() => {
         const tab = searchParams.get('tab') as LessonFilter
         if (tab && ['upcoming', 'past', 'unpaid', 'canceled'].includes(tab)) {
@@ -98,7 +98,7 @@ function LessonsContent() {
         }
     }, [searchParams])
 
-    // Handlers
+    
     const handleTabChange = (id: string) => {
         setActiveTab(id as LessonFilter)
         router.push(`/lessons?tab=${id}`)

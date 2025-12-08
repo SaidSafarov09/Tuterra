@@ -11,7 +11,7 @@ import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
 import styles from './LessonCard.module.scss'
 
 interface LessonCardProps {
-    lesson: Lesson & { series?: any } // Extended with series data
+    lesson: Lesson & { series?: any } 
     variant?: 'default' | 'compact'
     showActions?: boolean
     onTogglePaid?: (lesson: Lesson) => void
@@ -31,7 +31,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
 }) => {
     const [showTopic, setShowTopic] = useState(false)
 
-    // Get recurrence description if lesson is part of a series
+    
     const recurrenceText = lesson.series ? getRecurrenceDescription(
         {
             enabled: true,

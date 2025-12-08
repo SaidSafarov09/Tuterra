@@ -115,7 +115,7 @@ export async function PATCH(
 
         const body = await request.json()
 
-        // Allow partial updates
+        
         const updateData: any = {}
         if (body.name !== undefined) updateData.name = body.name
         if (body.color !== undefined) updateData.color = body.color
@@ -159,7 +159,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        // First, check if the subject exists and belongs to the user
+        
         const subject = await prisma.subject.findFirst({
             where: {
                 id: id,
@@ -178,7 +178,7 @@ export async function DELETE(
 
         const lessonsCount = subject._count.lessons
 
-        // Delete all lessons associated with this subject
+        
         if (lessonsCount > 0) {
             await prisma.lesson.deleteMany({
                 where: {
@@ -188,7 +188,7 @@ export async function DELETE(
             })
         }
 
-        // Delete the subject
+        
         await prisma.subject.delete({
             where: {
                 id: id,

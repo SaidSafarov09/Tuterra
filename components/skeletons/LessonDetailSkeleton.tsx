@@ -12,7 +12,7 @@ export const LessonDetailSkeleton: React.FC = () => {
             flexDirection: 'column',
             gap: '24px'
         }}>
-            {/* Header */}
+            {}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -27,7 +27,7 @@ export const LessonDetailSkeleton: React.FC = () => {
                 </div>
             </div>
 
-            {/* Content */}
+            {}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
                 <div>
                     <Skeleton width={120} height={20} style={{ marginBottom: '8px' }} />
@@ -39,7 +39,7 @@ export const LessonDetailSkeleton: React.FC = () => {
                 </div>
             </div>
 
-            {/* Actions */}
+            {}
             <div style={{ display: 'flex', gap: '12px', paddingTop: '24px', borderTop: '1px solid var(--border)', flexWrap: 'wrap' }}>
                 <Skeleton width={120} height={40} style={{ borderRadius: '8px' }} />
                 <Skeleton width={120} height={40} style={{ borderRadius: '8px' }} />

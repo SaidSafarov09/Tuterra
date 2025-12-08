@@ -33,7 +33,7 @@ export function formatPhoneForDB(rawPhone: string | null | undefined): string | 
 export async function findOrCreateOAuthUser(params: CreateUserParams) {
     const { email, phone, firstName, lastName, avatar, provider, providerId } = params
 
-    // 1. Check if user already linked to this provider
+    
     let user = await prisma.user.findFirst({
         where: {
             authProviders: {
@@ -47,7 +47,7 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
 
     if (user) return user
 
-    // 2. Try to find existing user by email or phone to link accounts
+    
     const formattedPhone = formatPhoneForDB(phone)
 
     user = await prisma.user.findFirst({
@@ -60,7 +60,7 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
     })
 
     if (user) {
-        // Link existing user to provider
+        
         await prisma.authProvider.create({
             data: {
                 userId: user.id,
@@ -71,7 +71,7 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
         return user
     }
 
-    // 3. Create new user
+    
     user = await prisma.user.create({
         data: {
             email,
@@ -108,7 +108,7 @@ export async function createAuthSession(userId: string, phone: string, requestUr
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: 60 * 60 * 24 * 7, 
         path: '/',
     })
 

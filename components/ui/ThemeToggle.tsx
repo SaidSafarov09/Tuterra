@@ -10,7 +10,7 @@ export function ThemeToggle() {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
 
-    // Avoid hydration mismatch
+    
     useEffect(() => {
         setMounted(true)
     }, [])
@@ -30,7 +30,7 @@ export function ThemeToggle() {
             })
         } catch (error) {
             console.error('Failed to save theme preference', error)
-            // Don't show error to user as UI is already updated
+            
         }
     }
 

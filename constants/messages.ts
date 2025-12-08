@@ -89,7 +89,7 @@ export const createStudentLinkedMessage = (studentName: string) =>
     `Ученик "${studentName}" добавлен к предмету`
 
 function formatMonthGenitive(date: Date) {
-    const month = format(date, 'LLLL', { locale: ru }).toLowerCase() // "январь"
+    const month = format(date, 'LLLL', { locale: ru }).toLowerCase() 
     const year = format(date, 'yyyy')
     return `${MONTHS_GENITIVE[month] ?? month} ${year}`
 }

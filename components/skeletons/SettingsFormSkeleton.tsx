@@ -12,7 +12,7 @@ export const SettingsFormSkeleton: React.FC = () => {
             flexDirection: 'column',
             gap: '24px'
         }}>
-            {/* Avatar section */}
+            {}
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
                 <Skeleton variant="circular" width={100} height={100} />
                 <div style={{ flex: 1 }}>
@@ -21,7 +21,7 @@ export const SettingsFormSkeleton: React.FC = () => {
                 </div>
             </div>
 
-            {/* Form fields */}
+            {}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div>
                     <Skeleton width={80} height={14} style={{ marginBottom: '8px' }} />
@@ -41,7 +41,7 @@ export const SettingsFormSkeleton: React.FC = () => {
                 </div>
             </div>
 
-            {/* Save button */}
+            {}
             <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
                 <Skeleton width={140} height={44} style={{ borderRadius: '8px' }} />
             </div>

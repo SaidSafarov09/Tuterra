@@ -138,7 +138,7 @@ npm install
 
 ```env
 DATABASE_URL="file:./dev.db"
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http:
 NEXTAUTH_SECRET=your-super-secret-key-change-this-in-production
 ```
 
@@ -154,13 +154,13 @@ npx prisma migrate dev
 npm run dev
 ```
 
-Приложение будет доступно по адресу: `http://localhost:3000`
+Приложение будет доступно по адресу: `http:
 
 ## 📝 Использование
 
 ### Первый запуск
 
-1. Откройте `http://localhost:3000`
+1. Откройте `http:
 2. Зарегистрируйтесь
 3. Войдите в систему
 4. Вы попадёте на Dashboard

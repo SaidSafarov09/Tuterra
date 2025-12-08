@@ -37,14 +37,14 @@ const settingsSchema = z.object({
 
 export async function GET(request: NextRequest) {
     try {
-        // Get token from cookie
+        
         const token = request.cookies.get('auth-token')?.value
 
         if (!token) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        // Verify token
+        
         const payload = await verifyToken(token)
 
         if (!payload) {

@@ -17,6 +17,8 @@ interface CreateLessonDTO {
     studentId: string
     subjectId: string
     date: string
+    duration?: number
+    isTrial?: boolean
     price: number
     isPaid: boolean
     notes?: string
@@ -157,7 +159,7 @@ interface UserSettings {
     id: string
     firstName: string
     lastName: string
-    name?: string  // Оставлено для совместимости
+    name?: string  
     email: string
     phone?: string
     avatar?: string | null

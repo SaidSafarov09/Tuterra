@@ -33,7 +33,7 @@ export function StudentLessons({
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
 
-    // Filter lessons based on active tab
+    
     const filteredLessons = useMemo(() => {
         const now = new Date();
 

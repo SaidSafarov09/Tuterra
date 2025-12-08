@@ -62,7 +62,7 @@ export function useSubjects() {
         isLoading,
         error,
         fetchSubjects,
-        refetch: fetchSubjects, // Alias для обратной совместимости
+        refetch: fetchSubjects, 
         createSubject,
         updateSubject,
         deleteSubject,

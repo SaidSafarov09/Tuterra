@@ -45,13 +45,13 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const pickerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        // Обновляем selectedDate при изменении value
+        
         setSelectedDate(value)
     }, [value])
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            // Проверяем, что клик был вне основного контейнера и вне пикера (если он в портале)
+            
             const target = event.target as Node
             
             const isOutsideContainer = containerRef.current && !containerRef.current.contains(target)

@@ -13,7 +13,7 @@ interface StudentModalsProps {
     allSubjects: Subject[]
     isSubmitting: boolean
 
-    // Edit Modal
+    
     isEditModalOpen: boolean
     onCloseEditModal: () => void
     onSubmitEdit: () => void
@@ -27,7 +27,7 @@ interface StudentModalsProps {
     }
     setEditFormData: (data: any) => void
 
-    // Add Subject Modal
+    
     isAddSubjectModalOpen: boolean
     onCloseAddSubjectModal: () => void
     onSubmitAddSubject: () => void
@@ -35,14 +35,14 @@ interface StudentModalsProps {
     setSelectedSubjectId: (id: string) => void
     onCreateSubjectForLink: (name: string) => void
 
-    // Create Lesson Modal
+    
     isCreateLessonModalOpen: boolean
     onCloseCreateLessonModal: () => void
     onSubmitCreateLesson: () => void
     lessonFormData: LessonFormData
     setLessonFormData: (data: any) => void
     onCreateSubject: (name: string) => void
-    // Edit Lesson Modal
+    
     isEditLessonModalOpen: boolean
     onCloseEditLessonModal: () => void
     onSubmitEditLesson: () => void
@@ -79,7 +79,7 @@ export function StudentModals({
 }: StudentModalsProps) {
     return (
         <>
-            {/* Edit Student Modal */}
+            {}
             <Modal
                 isOpen={isEditModalOpen}
                 onClose={onCloseEditModal}
@@ -119,7 +119,7 @@ export function StudentModals({
                 </form>
             </Modal>
 
-            {/* Add Subject Modal */}
+            {}
             <Modal
                 isOpen={isAddSubjectModalOpen}
                 onClose={onCloseAddSubjectModal}
@@ -151,7 +151,7 @@ export function StudentModals({
                 </form>
             </Modal>
 
-            {/* Create Lesson Modal */}
+            {}
             <Modal
                 isOpen={isCreateLessonModalOpen}
                 onClose={onCloseCreateLessonModal}
@@ -176,7 +176,7 @@ export function StudentModals({
                 </form>
             </Modal>
 
-            {/* Edit Lesson Modal */}
+            {}
             <Modal
                 isOpen={isEditLessonModalOpen}
                 onClose={onCloseEditLessonModal}

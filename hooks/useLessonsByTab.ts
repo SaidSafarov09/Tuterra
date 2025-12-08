@@ -53,18 +53,18 @@ export function useLessonsByTab(activeTab: LessonFilter) {
         fetchLessons(activeTab, true)
     }, [activeTab, fetchLessons])
 
-    // Load active tab data
+    
     useEffect(() => {
         fetchLessons(activeTab)
     }, [activeTab, fetchLessons])
 
-    // Preload all tabs on initial mount for badge counts
+    
     useEffect(() => {
         if (hasPreloaded.current) return
 
         const preloadAllTabs = async () => {
             const tabs: LessonFilter[] = ['upcoming', 'past', 'unpaid', 'canceled']
-            // Load all tabs in parallel
+            
             await Promise.all(
                 tabs.map(tab => {
                     if (!loadedTabs.current.has(tab)) {
@@ -79,10 +79,10 @@ export function useLessonsByTab(activeTab: LessonFilter) {
         preloadAllTabs()
     }, [fetchLessons])
 
-    // Calculate total lessons count across all tabs
+    
     const allLessonsCount = Object.values(lessonsCache).reduce((total, lessons) => total + lessons.length, 0)
 
-    // Calculate counts for each tab
+    
     const lessonsCounts = {
         upcoming: lessonsCache.upcoming.length,
         past: lessonsCache.past.length,
@@ -91,7 +91,7 @@ export function useLessonsByTab(activeTab: LessonFilter) {
     }
 
     const isTabLoaded = loadedTabs.current.has(activeTab)
-    // Show loading if global loading is true OR if current tab hasn't been loaded yet
+    
     const shouldShowLoading = isLoading || !isTabLoaded
 
     return {

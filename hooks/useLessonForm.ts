@@ -109,7 +109,7 @@ export function useLessonForm(
             if (refetchSubjects) await refetchSubjects()
             setFormData((prev) => ({ ...prev, subjectId: newSubject.id }))
 
-            // Auto-link subject to student if student is selected
+            
             if (formData.studentId && refetchStudents) {
                 try {
                     await fetch(`/api/subjects/${newSubject.id}/students/link`, {

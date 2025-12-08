@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { verifyToken } from './lib/jwt'
 
-// Use Node.js runtime instead of Edge runtime for crypto support
+
 export const runtime = 'nodejs'
 
 const publicPaths = ['/auth', '/debug-auth']
@@ -11,7 +11,7 @@ const protectedPaths = ['/dashboard', '/students', '/subjects', '/lessons', '/ca
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
-    // Handle root path
+    
     if (pathname === '/') {
         const token = request.cookies.get('auth-token')?.value
         const payload = token ? await verifyToken(token) : null
@@ -24,24 +24,24 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // Check if path is protected
+    
     const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
     const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
 
-    // Get token from cookie
+    
     const token = request.cookies.get('auth-token')?.value
 
-    // Verify token
+    
     const payload = token ? await verifyToken(token) : null
     const isAuthenticated = payload !== null
 
-    // Redirect to auth if trying to access protected route without auth
+    
     if (isProtectedPath && !isAuthenticated) {
         const url = new URL('/auth', request.url)
         return NextResponse.redirect(url)
     }
 
-    // Redirect to dashboard if trying to access auth page while authenticated
+    
     if (isPublicPath && isAuthenticated) {
         const url = new URL('/dashboard', request.url)
         return NextResponse.redirect(url)

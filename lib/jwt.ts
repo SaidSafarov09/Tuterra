@@ -8,7 +8,7 @@ export interface JWTPayload {
     phone: string
 }
 
-// Convert secret to Uint8Array for jose
+
 const getSecretKey = () => new TextEncoder().encode(JWT_SECRET)
 
 export async function signToken(payload: JWTPayload): Promise<string> {
@@ -27,7 +27,7 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
         const secret = getSecretKey()
         const { payload } = await jwtVerify(token, secret)
 
-        // Validate payload has required fields
+        
         if (payload && typeof payload === 'object' && 'userId' in payload && 'phone' in payload) {
             return {
                 userId: payload.userId as string,

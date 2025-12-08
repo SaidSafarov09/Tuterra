@@ -31,7 +31,7 @@
     color: var(--text-secondary);
 }
 
-// Calendar Container
+
 .calendarContainer {
     background: var(--surface);
     border-radius: var(--radius-lg);
@@ -89,7 +89,7 @@
     }
 }
 
-// Calendar Grid
+
 .calendarWeekDays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -220,7 +220,7 @@
     text-align: center;
 }
 
-// Modal Content
+
 .modalLoading {
     text-align: center;
     padding: 40px;
@@ -571,7 +571,7 @@
     flex-direction: column;
     gap: 12px;
 
-    /* Custom Scrollbar */
+    
     &::-webkit-scrollbar {
         width: 6px;
     }

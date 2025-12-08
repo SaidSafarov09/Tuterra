@@ -13,7 +13,7 @@ export function useFetch<T>(url: string, dependencies: any[] = []) {
     const isFirstLoad = useRef(true)
 
     const fetchData = async () => {
-        // Show loading only on first load, use refreshing for subsequent loads
+        
         if (isFirstLoad.current) {
             setIsLoading(true)
         } else {

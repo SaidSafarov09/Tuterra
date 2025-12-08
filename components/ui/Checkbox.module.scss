@@ -40,15 +40,15 @@
         color: white;
     }
 
-    // Parent selector hack via sibling for border color when checked
+    
     &:checked~.checkmark {
-        // This doesn't work directly in CSS modules without :has or similar
-        // Instead we style the wrapper based on input state if possible or rely on JS
-        // But standard CSS way:
+        
+        
+        
     }
 }
 
-// Correct way for custom checkbox styling
+
 .container input:checked~.checkmark {
     opacity: 1;
 }
@@ -77,11 +77,11 @@
 }
 
 .container input:checked+.checkmark {
-    // This selector is wrong based on HTML structure
+    
 }
 
-// Fix based on actual structure:
-// input is inside wrapper, checkmark is sibling
+
+
 .input:checked+.checkmark {
     opacity: 1;
     transform: scale(1);
@@ -89,8 +89,8 @@
 }
 
 .input:checked {
-    // We can't style the parent .inputWrapper from here easily without :has
-    // So we'll just style the checkmark to fill the box
+    
+    
 }
 
 .label {

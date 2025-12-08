@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         }
 
         const lessons = await prisma.lesson.findMany({
-            where: where as any,
+            where,
             include: {
                 student: true,
                 subject: true,
@@ -99,8 +99,14 @@ export async function POST(request: NextRequest) {
                 ownerId: payload.userId,
             },
             include: {
-                subjects: true
-            } as any
+                subjects: {
+                    include: {
+                        _count: {
+                            select: { students: true, lessons: true }
+                        }
+                    }
+                }
+            }
         })
 
         if (!student) {
@@ -110,12 +116,12 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // DRY: Handle recurring lessons
+        
         if (validatedData.recurrence?.enabled) {
             return await createRecurringLesson(payload.userId, validatedData)
         }
 
-        // DRY: Handle single lesson
+        
         return await createSingleLesson(payload.userId, validatedData)
 
     } catch (error) {
@@ -155,20 +161,20 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             ownerId: userId,
             studentId: data.studentId,
             subjectId: data.subjectId,
-        },
+        } as any,
         include: {
             student: true,
             subject: true,
         },
     })
-    const student = await prisma.student.findUnique({
+    const student = lesson.studentId ? await prisma.student.findUnique({
         where: { id: lesson.studentId }
-    })
+    }) : null
 
-    const slug = generateLessonSlug(student!.name, new Date(lesson.date), lesson.topic || undefined)
+    const slug = student ? generateLessonSlug(student.name, new Date(lesson.date), lesson.topic || undefined) : undefined
     const updatedLesson = await prisma.lesson.update({
         where: { id: lesson.id },
-        data: { slug },
+        data: { slug } as any,
         include: {
             student: true,
             subject: true,
@@ -207,7 +213,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             { status: 400 }
         )
     }
-    const series = await (prisma as any).lessonSeries.create({
+    const series = await prisma.lessonSeries.create({
         data: {
             userId,
             type: recurrence.type,
@@ -222,7 +228,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             topic: data.topic,
             duration: data.duration,
             notes: data.notes,
-        },
+        } as any,
     })
     const lessons = await prisma.lesson.createMany({
         data: dates.map((date, index) => ({
@@ -245,7 +251,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         await linkSubjectToStudent(data.studentId, data.subjectId)
     }
     const firstLesson = await prisma.lesson.findFirst({
-        where: { seriesId: series.id } as any,
+        where: { seriesId: series.id },
         include: {
             student: true,
             subject: true,
@@ -270,7 +276,7 @@ async function linkSubjectToStudent(studentId: string, subjectId: string) {
                 subjects: {
                     connect: { id: subjectId },
                 },
-            } as any,
+            },
         })
     } catch (error) {
         console.log('Subject linking attempt result:', error)
