@@ -130,6 +130,32 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
+        const existingStudent = await prisma.student.findFirst({
+            where: {
+                id: id,
+                ownerId: user.id,
+            },
+        })
+
+        if (!existingStudent) {
+            return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
+        }
+
+        await prisma.lesson.deleteMany({
+            where: {
+                studentId: id,
+            },
+        })
+
+        await prisma.student.update({
+            where: { id: id },
+            data: {
+                subjects: {
+                    set: [] 
+                }
+            }
+        })
+
         const deleted = await prisma.student.deleteMany({
             where: {
                 id: id,
@@ -144,6 +170,12 @@ export async function DELETE(
         return NextResponse.json({ success: true })
     } catch (error) {
         console.error('Delete student error:', error)
+        if (error instanceof Error && error.message.includes('foreign key constraint')) {
+            return NextResponse.json(
+                { error: 'Невозможно удалить ученика, так как с ним связаны другие данные' },
+                { status: 400 }
+            )
+        }
         return NextResponse.json(
             { error: 'Произошла ошибка при удалении ученика' },
             { status: 500 }

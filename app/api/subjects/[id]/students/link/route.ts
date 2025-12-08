@@ -105,7 +105,13 @@ export async function DELETE(
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
-        
+        await prisma.lesson.deleteMany({
+            where: {
+                studentId: studentId,
+                subjectId: subjectId,
+            },
+        })
+
         await prisma.student.update({
             where: { id: studentId },
             data: {
