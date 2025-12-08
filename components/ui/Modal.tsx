@@ -11,6 +11,7 @@ interface ModalProps {
     children: React.ReactNode
     footer?: React.ReactNode
     size?: 'default' | 'large'
+    maxWidth?: string
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -20,6 +21,7 @@ export const Modal: React.FC<ModalProps> = ({
     children,
     footer,
     size = 'default',
+    maxWidth = '500px',
 }) => {
     const modalRef = useRef<HTMLDivElement>(null)
 
@@ -49,6 +51,7 @@ export const Modal: React.FC<ModalProps> = ({
                 ref={modalRef}
                 className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''}`}
                 onClick={(e) => e.stopPropagation()}
+                style={{ maxWidth }}
             >
 
                 <div className={styles.header}>
@@ -63,7 +66,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
     )
 
-    
+
     if (typeof document !== 'undefined') {
         return createPortal(modalContent, document.body)
     }

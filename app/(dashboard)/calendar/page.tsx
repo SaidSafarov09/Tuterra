@@ -226,6 +226,7 @@ export default function CalendarPage() {
             )}
 
             <Modal
+                maxWidth="650px"
                 isOpen={isDetailsModalOpen}
                 onClose={handleCloseDetailsModal}
                 title={selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: ru }) : ''}

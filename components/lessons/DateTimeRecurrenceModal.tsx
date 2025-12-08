@@ -3,7 +3,8 @@
 import React from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { RecurrenceSection } from '@/components/lessons/RecurrenceSection'
-import { CustomDateTimePicker } from '@/components/ui/CustomDateTimePicker'
+import { DatePicker } from '@/components/ui/DatePicker'
+import { TimeSelect } from '@/components/ui/TimeSelect'
 import type { RecurrenceRule } from '@/types/recurring'
 import styles from './DateTimeRecurrenceModal.module.scss'
 import { Info } from 'lucide-react'
@@ -17,6 +18,7 @@ interface DateTimeRecurrenceModalProps {
     onDateChange: (date: Date | undefined) => void
     onRecurrenceChange: (recurrence: RecurrenceRule) => void
     isEdit?: boolean
+    showRecurrence?: boolean
 }
 
 const defaultRecurrence: RecurrenceRule = {
@@ -36,6 +38,7 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
     onDateChange,
     onRecurrenceChange,
     isEdit = false,
+    showRecurrence = true,
 }) => {
     const handleConfirm = () => {
         if (date) {
@@ -60,9 +63,10 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
 
     return (
         <Modal
+            maxWidth="650px"
             isOpen={isOpen}
             onClose={onClose}
-            title="Дата и время занятия"
+            title={showRecurrence ? "Настройка регулярного занятия" : "Дата и время занятия"}
             footer={
                 <ModalFooter
                     onCancel={onClose}
@@ -73,12 +77,34 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
             }
         >
             <div className={styles.content}>
-                <CustomDateTimePicker
-                    value={date}
-                    onChange={onDateChange}
-                />
+                <div className={styles.dateTimeContainer}>
+                    <div className={styles.dateSection}>
+                        <DatePicker
+                            value={date}
+                            onChange={(newDate) => {
+                                const updated = new Date(date || new Date())
+                                updated.setFullYear(newDate.getFullYear())
+                                updated.setMonth(newDate.getMonth())
+                                updated.setDate(newDate.getDate())
+                                onDateChange(updated)
+                            }}
+                        />
+                    </div>
+                    <div className={styles.timeSection}>
+                        <TimeSelect
+                            label="Время начала"
+                            value={date}
+                            onChange={(newTime) => {
+                                const updated = new Date(date || new Date())
+                                updated.setHours(newTime.getHours())
+                                updated.setMinutes(newTime.getMinutes())
+                                onDateChange(updated)
+                            }}
+                        />
+                    </div>
+                </div>
 
-                {willAutoAddWeekday() && date && (
+                {willAutoAddWeekday() && date && showRecurrence && (
                     <div className={styles.info}>
                         <Info size={16} />
                         <span>
@@ -88,7 +114,7 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
                     </div>
                 )}
 
-                {!isEdit && (
+                {!isEdit && showRecurrence && (
                     <div className={styles.recurrenceWrapper}>
                         <RecurrenceSection
                             value={recurrence || defaultRecurrence}

@@ -27,3 +27,25 @@
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
 }
+
+.dateTimeContainer {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+    }
+}
+
+.dateSection {
+    flex: 1;
+}
+
+.timeSection {
+    width: 200px;
+
+    @media (max-width: 768px) {
+        width: 100%;
+    }
+}
