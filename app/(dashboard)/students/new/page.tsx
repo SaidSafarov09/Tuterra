@@ -30,7 +30,8 @@ export default function NewStudentPage() {
         subjects,
         students,
         handleCreateSubject,
-        handleSubmit
+        handleSubmit,
+        isLoading
     } = useStudents(() => {
         router.back()
     })
@@ -65,14 +66,23 @@ export default function NewStudentPage() {
         s => !s.subjects.some(subj => subj.id === subjectIdParam)
     )
 
+    const subject = subjects.find(s => s.id === subjectIdParam)
+
+    let title = 'Добавить ученика'
+    if (isLoading && subjectIdParam) {
+        title = 'Загрузка...'
+    } else if (subject) {
+        title = `Добавить ученика в предмет ${subject.name}`
+    }
+
     return (
-        <div className={styles.container}>
+        <div className={`${styles.container} page-enter-animation`}>
             <div className={styles.header}>
                 <Button variant="ghost" onClick={() => router.back()} className={styles.backButton}>
                     <ArrowLeft size={20} />
                     Назад
                 </Button>
-                <h1 className={styles.title}>Добавить ученика</h1>
+                <h1 className={styles.title}>{title}</h1>
             </div>
 
             {subjectIdParam && (
@@ -108,8 +118,9 @@ export default function NewStudentPage() {
                             onClick={handleLinkSubmit}
                             fullWidth
                             disabled={!selectedStudentId || isLinking}
+                            isLoading={isLinking}
                         >
-                            {isLinking ? 'Добавление...' : 'Добавить'}
+                            Добавить
                         </Button>
                     </div>
                 </div>
@@ -123,6 +134,7 @@ export default function NewStudentPage() {
                     subjects={subjects}
                     onCreateSubject={handleCreateSubject}
                     onSubmit={handleSubmit}
+                    fixedSubjectId={subjectIdParam || undefined}
                 >
                     <div className={styles.formActions}>
                         <Button

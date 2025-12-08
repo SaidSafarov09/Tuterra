@@ -249,7 +249,7 @@ export default function SubjectsPage() {
                 onCreateSubject={handleCreateSubject}
                 handleChange={handleLessonChange}
                 fixedSubjectId={selectedSubject?.id}
-                customTitle={selectedSubject ? `Добавить занятие по ${selectedSubject.name}` : undefined}
+                customTitle={selectedSubject ? `Добавить занятие по предмету ${selectedSubject.name}` : undefined}
             />
 
             <ConfirmDialog

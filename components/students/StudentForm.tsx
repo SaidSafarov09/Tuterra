@@ -26,6 +26,7 @@ export interface StudentFormProps {
     subjects: Subject[]
     onCreateSubject: (name: string) => void
     onSubmit?: (e?: React.FormEvent) => void
+    fixedSubjectId?: string
     children?: React.ReactNode
 }
 
@@ -38,6 +39,7 @@ export function StudentForm({
     subjects,
     onCreateSubject,
     onSubmit,
+    fixedSubjectId,
     children
 }: StudentFormProps) {
     return (
@@ -60,7 +62,7 @@ export function StudentForm({
             <Dropdown
                 label="Предмет"
                 placeholder="Выберите или создайте предмет"
-                value={formData.subjectId}
+                value={fixedSubjectId || formData.subjectId}
                 onChange={(value) => {
                     const subject = subjects.find(s => s.id === value)
                     setFormData((prev: any) => ({
@@ -71,9 +73,10 @@ export function StudentForm({
                 }}
                 options={subjects.map(s => ({ value: s.id, label: s.name }))}
                 searchable
-                creatable
+                creatable={!fixedSubjectId}
                 onCreate={onCreateSubject}
                 menuPosition="relative"
+                disabled={isSubmitting || !!fixedSubjectId}
             />
 
             <ContactInput

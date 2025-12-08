@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/Button'
 import { ArrowLeft } from 'lucide-react'
 import styles from './page.module.scss'
 
+import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
+
 export default function NewLessonPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -19,11 +22,13 @@ export default function NewLessonPage() {
 
     const {
         data: students = [],
+        isLoading: isStudentsLoading,
         refetch: refetchStudents
     } = useFetch<Student[]>('/api/students')
 
     const {
         data: subjects = [],
+        isLoading: isSubjectsLoading,
         refetch: refetchSubjects
     } = useFetch<Subject[]>('/api/subjects')
 
@@ -60,14 +65,33 @@ export default function NewLessonPage() {
         }
     }, [dateParam, studentIdParam, subjectIdParam, setFormData])
 
+    const student = students?.find(s => s.id === studentIdParam || s.slug === studentIdParam)
+    const subject = subjects?.find(s => s.id === subjectIdParam)
+
+    const isContextLoading = (studentIdParam && isStudentsLoading) || (subjectIdParam && isSubjectsLoading)
+
+    let title = 'Добавить занятие'
+    if (isContextLoading) {
+        title = 'Загрузка...'
+    } else if (student) {
+        title = `Занятие для ученика ${student.name}`
+    } else if (subject) {
+        title = `Занятие по предмету ${subject.name}`
+    } else if (dateParam) {
+        const date = new Date(dateParam)
+        if (!isNaN(date.getTime())) {
+            title = `Занятие на ${format(date, 'd MMMM', { locale: ru })}`
+        }
+    }
+
     return (
-        <div className={styles.container}>
+        <div className={`${styles.container} page-enter-animation`}>
             <div className={styles.header}>
                 <Button variant="ghost" onClick={() => router.back()} className={styles.backButton}>
                     <ArrowLeft size={20} />
                     Назад
                 </Button>
-                <h1 className={styles.title}>Добавить занятие</h1>
+                <h1 className={styles.title}>{title}</h1>
             </div>
 
             <LessonForm
@@ -83,13 +107,17 @@ export default function NewLessonPage() {
                 onCreateStudent={handleCreateStudent}
                 onCreateSubject={handleCreateSubject}
                 handleChange={handleChange}
+                fixedStudentId={student?.id || studentIdParam || undefined}
+                fixedSubjectId={subjectIdParam || undefined}
             >
                 <div className={styles.formActions}>
                     <Button
                         type="submit"
                         fullWidth
+                        isLoading={isSubmitting}
+                        onClick={() => handleSubmit(false)}
                     >
-                        {isSubmitting ? 'Добавление...' : 'Добавить'}
+                        Добавить
                     </Button>
                 </div>
             </LessonForm>

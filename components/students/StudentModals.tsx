@@ -124,7 +124,7 @@ export function StudentModals({
             <Modal
                 isOpen={isAddSubjectModalOpen}
                 onClose={onCloseAddSubjectModal}
-                title="Добавить предмет"
+                title={`Добавить предмет для ${student.name}`}
                 footer={
                     <ModalFooter
                         onCancel={onCloseAddSubjectModal}
@@ -169,6 +169,7 @@ export function StudentModals({
                 onCreateSubject={onCreateSubject}
                 handleChange={(name, value) => setLessonFormData((prev: any) => ({ ...prev, [name]: value }))}
                 fixedStudentId={student.id}
+                customTitle={`Занятие для ученика ${student.name}`}
             />
 
             {/* Edit Lesson Modal */}

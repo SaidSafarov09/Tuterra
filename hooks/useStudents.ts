@@ -34,7 +34,6 @@ export function useStudents(onSuccess?: () => void) {
     const fetchStudents = async () => {
         const data = await loadStudents()
         setStudents(data)
-        setIsLoading(false)
     }
 
     const fetchSubjects = async () => {
@@ -43,8 +42,12 @@ export function useStudents(onSuccess?: () => void) {
     }
 
     useEffect(() => {
-        fetchStudents()
-        fetchSubjects()
+        const loadData = async () => {
+            setIsLoading(true)
+            await Promise.all([fetchStudents(), fetchSubjects()])
+            setIsLoading(false)
+        }
+        loadData()
     }, [])
 
     const handleOpenModal = () => {

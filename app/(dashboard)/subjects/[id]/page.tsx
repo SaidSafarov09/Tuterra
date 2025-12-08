@@ -37,7 +37,7 @@ export default function SubjectDetailsPage() {
     }
 
     return (
-        <div className={styles.container}>
+        <div className={`${styles.container} page-enter-animation`}>
             <div className={styles.header}>
                 <Button variant="ghost" onClick={() => router.back()} className={styles.backButton}>
                     <ArrowLeft size={20} />
