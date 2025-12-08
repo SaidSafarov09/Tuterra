@@ -265,7 +265,9 @@ export default function IncomePage() {
                                                 </div>
                                                 <div className={styles.transactionDetails}>
                                                     <span className={styles.transactionStudent}>{tx.student.name}</span>
-                                                    <span className={styles.transactionSubject}>{tx.subject?.name || 'Без предмета'}</span>
+                                                    <span className={styles.transactionSubject}>
+                                                        {tx.subject?.name || tx.subjectName || 'Без предмета'}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <span className={styles.transactionAmount}>+{tx.price} ₽</span>
