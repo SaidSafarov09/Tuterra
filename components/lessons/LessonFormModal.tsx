@@ -38,6 +38,7 @@ interface LessonFormModalProps {
     onCreateSubject: (name: string) => void
     handleChange: (name: string, value: any) => void
     fixedSubjectId?: string
+    fixedStudentId?: string
     customTitle?: string
 }
 
@@ -57,6 +58,7 @@ export function LessonFormModal({
     onCreateSubject,
     handleChange,
     fixedSubjectId,
+    fixedStudentId,
     customTitle
 }: LessonFormModalProps) {
     const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
@@ -143,6 +145,7 @@ export function LessonFormModal({
         <>
             <Modal
                 maxWidth="650px"
+                minHeight='580px'
                 isOpen={isOpen}
                 onClose={onClose}
                 title={title}
@@ -171,7 +174,7 @@ export function LessonFormModal({
                         <Dropdown
                             label="Ученик"
                             placeholder="Выберите или создайте ученика"
-                            value={formData.studentId}
+                            value={fixedStudentId || formData.studentId}
                             onChange={(value) => {
                                 if (fixedSubjectId) {
                                     handleChange('studentId', value)
@@ -184,11 +187,11 @@ export function LessonFormModal({
                                 label: student.name,
                             }))}
                             searchable
-                            creatable
+                            creatable={!fixedStudentId}
                             onCreate={onCreateStudent}
                             menuPosition="relative"
                             required
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || !!fixedStudentId}
                         />
 
                         <Dropdown

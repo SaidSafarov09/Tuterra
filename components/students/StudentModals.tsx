@@ -5,6 +5,7 @@ import { Dropdown } from '@/components/ui/Dropdown'
 import { ContactInput } from '@/components/ui/ContactInput'
 import { Student, Subject, LessonFormData } from '@/types'
 import { LessonFormWithDateTime } from '@/components/lessons/LessonFormWithDateTime'
+import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { ContactType } from '@/lib/contactUtils'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
 
@@ -13,7 +14,7 @@ interface StudentModalsProps {
     allSubjects: Subject[]
     isSubmitting: boolean
 
-    
+
     isEditModalOpen: boolean
     onCloseEditModal: () => void
     onSubmitEdit: () => void
@@ -27,7 +28,7 @@ interface StudentModalsProps {
     }
     setEditFormData: (data: any) => void
 
-    
+
     isAddSubjectModalOpen: boolean
     onCloseAddSubjectModal: () => void
     onSubmitAddSubject: () => void
@@ -35,14 +36,14 @@ interface StudentModalsProps {
     setSelectedSubjectId: (id: string) => void
     onCreateSubjectForLink: (name: string) => void
 
-    
+
     isCreateLessonModalOpen: boolean
     onCloseCreateLessonModal: () => void
     onSubmitCreateLesson: () => void
     lessonFormData: LessonFormData
     setLessonFormData: (data: any) => void
     onCreateSubject: (name: string) => void
-    
+
     isEditLessonModalOpen: boolean
     onCloseEditLessonModal: () => void
     onSubmitEditLesson: () => void
@@ -79,7 +80,7 @@ export function StudentModals({
 }: StudentModalsProps) {
     return (
         <>
-            {}
+            {/* Edit Student Modal */}
             <Modal
                 isOpen={isEditModalOpen}
                 onClose={onCloseEditModal}
@@ -119,7 +120,7 @@ export function StudentModals({
                 </form>
             </Modal>
 
-            {}
+            {/* Add Subject Modal */}
             <Modal
                 isOpen={isAddSubjectModalOpen}
                 onClose={onCloseAddSubjectModal}
@@ -151,62 +152,43 @@ export function StudentModals({
                 </form>
             </Modal>
 
-            {}
-            <Modal
+            {/* Create Lesson Modal */}
+            <LessonFormModal
                 isOpen={isCreateLessonModalOpen}
                 onClose={onCloseCreateLessonModal}
-                title="Создать занятие"
-                footer={
-                    <ModalFooter
-                        onCancel={onCloseCreateLessonModal}
-                        onSubmit={onSubmitCreateLesson}
-                        isLoading={isSubmitting}
-                        submitText="Создать"
-                    />
-                }
-            >
-                <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-                    <LessonFormWithDateTime
-                        formData={lessonFormData}
-                        setFormData={setLessonFormData}
-                        subjects={allSubjects}
-                        onCreateSubject={onCreateSubject}
-                        isSubmitting={isSubmitting}
-                    />
-                </form>
-            </Modal>
+                isEdit={false}
+                formData={lessonFormData}
+                setFormData={setLessonFormData}
+                students={[student]}
+                subjects={allSubjects}
+                isSubmitting={isSubmitting}
+                error=""
+                onSubmit={onSubmitCreateLesson}
+                onStudentChange={() => { }}
+                onCreateStudent={() => { }}
+                onCreateSubject={onCreateSubject}
+                handleChange={(name, value) => setLessonFormData((prev: any) => ({ ...prev, [name]: value }))}
+                fixedStudentId={student.id}
+            />
 
-            {}
-            <Modal
+            {/* Edit Lesson Modal */}
+            <LessonFormModal
                 isOpen={isEditLessonModalOpen}
                 onClose={onCloseEditLessonModal}
-                title="Редактировать занятие"
-                footer={
-                    <ModalFooter
-                        onCancel={onCloseEditLessonModal}
-                        onSubmit={onSubmitEditLesson}
-                        isLoading={isSubmitting}
-                        submitText="Сохранить"
-                    />
-                }
-            >
-                <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-                    <LessonFormWithDateTime
-                        formData={lessonFormData}
-                        setFormData={setLessonFormData}
-                        subjects={allSubjects}
-                        onCreateSubject={onCreateSubject}
-                        isEdit={true}
-                        isSubmitting={isSubmitting}
-                    />
-                    <Input
-                        label="Заметки"
-                        value={lessonFormData.notes || ''}
-                        onChange={(e) => setLessonFormData({ ...lessonFormData, notes: e.target.value })}
-                        placeholder="Дополнительные заметки..."
-                    />
-                </form>
-            </Modal>
+                isEdit={true}
+                formData={lessonFormData}
+                setFormData={setLessonFormData}
+                students={[student]}
+                subjects={allSubjects}
+                isSubmitting={isSubmitting}
+                error=""
+                onSubmit={onSubmitEditLesson}
+                onStudentChange={() => { }}
+                onCreateStudent={() => { }}
+                onCreateSubject={onCreateSubject}
+                handleChange={(name, value) => setLessonFormData((prev: any) => ({ ...prev, [name]: value }))}
+                fixedStudentId={student.id}
+            />
         </>
     )
 }

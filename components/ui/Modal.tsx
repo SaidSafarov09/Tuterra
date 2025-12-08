@@ -12,6 +12,7 @@ interface ModalProps {
     footer?: React.ReactNode
     size?: 'default' | 'large'
     maxWidth?: string
+    minHeight?: string
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -22,6 +23,7 @@ export const Modal: React.FC<ModalProps> = ({
     footer,
     size = 'default',
     maxWidth = '500px',
+    minHeight = "auto"
 }) => {
     const modalRef = useRef<HTMLDivElement>(null)
 
@@ -60,7 +62,7 @@ export const Modal: React.FC<ModalProps> = ({
                         <XIcon size={24} />
                     </div>
                 </div>
-                <div className={styles.content}>{children}</div>
+                <div style={{ minHeight }} className={styles.content}>{children}</div>
                 {footer && <div className={styles.footer}>{footer}</div>}
             </div>
         </div>
