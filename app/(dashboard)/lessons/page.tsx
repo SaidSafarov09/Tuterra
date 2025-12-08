@@ -17,13 +17,14 @@ import styles from './page.module.scss'
 import { LESSON_TABS } from '@/constants'
 import { LessonDetailSkeleton } from '@/components/skeletons'
 import { EmptyLessonsState } from '@/components/lessons/EmptyLessonsState'
+import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 
 
 function LessonsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    
+
     const [activeTab, setActiveTab] = useState<LessonFilter>('upcoming')
     const [isOpen, setIsOpen] = useState(false)
     const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
@@ -32,7 +33,7 @@ function LessonsContent() {
         lesson: null,
     })
 
-    
+
     const {
         lessons,
         allLessonsCount,
@@ -52,12 +53,17 @@ function LessonsContent() {
         refetch: refetchSubjects
     } = useFetch<Subject[]>('/api/subjects')
 
-    
+
     const {
         togglePaid,
         toggleCancel,
         deleteLesson,
+        handleRescheduleLesson,
+        handleConfirmReschedule,
         isLoading,
+        isRescheduleModalOpen,
+        setIsRescheduleModalOpen,
+        reschedulingLesson,
     } = useLessonActions(refetchLessons)
 
     const {
@@ -81,7 +87,7 @@ function LessonsContent() {
         refetchSubjects
     )
 
-    
+
     const tabsWithCounts = useMemo(() =>
         LESSON_TABS.map(tab => ({
             ...tab,
@@ -90,7 +96,7 @@ function LessonsContent() {
         [lessonsCounts]
     )
 
-    
+
     useEffect(() => {
         const tab = searchParams.get('tab') as LessonFilter
         if (tab && ['upcoming', 'past', 'unpaid', 'canceled'].includes(tab)) {
@@ -98,7 +104,7 @@ function LessonsContent() {
         }
     }, [searchParams])
 
-    
+
     const handleTabChange = (id: string) => {
         setActiveTab(id as LessonFilter)
         router.push(`/lessons?tab=${id}`)
@@ -168,6 +174,7 @@ function LessonsContent() {
                     isRefreshing={isLessonsRefreshing}
                     onTogglePaid={togglePaid}
                     onToggleCancel={toggleCancel}
+                    onReschedule={handleRescheduleLesson}
                     onEdit={handleEditLesson}
                     onDelete={handleDeleteClick}
                 />
@@ -196,6 +203,14 @@ function LessonsContent() {
                 onConfirm={handleConfirmDelete}
                 isSeries={!!deleteConfirm.lesson?.seriesId}
                 isLoading={isLoading}
+            />
+
+            <RescheduleModal
+                isOpen={isRescheduleModalOpen}
+                onClose={() => setIsRescheduleModalOpen(false)}
+                onConfirm={handleConfirmReschedule}
+                currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
+                isSubmitting={isLoading}
             />
         </div>
     )

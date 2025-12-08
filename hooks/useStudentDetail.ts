@@ -32,7 +32,9 @@ export function useStudentDetail(studentId: string) {
     const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false)
     const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
     const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false)
+    const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
     const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
+    const [reschedulingLessonId, setReschedulingLessonId] = useState<string | null>(null)
 
     const [editFormData, setEditFormData] = useState({
         name: '',
@@ -151,7 +153,7 @@ export function useStudentDetail(studentId: string) {
 
         if (newSubject) {
             if (!forLink) {
-                
+
                 await linkStudentToSubject(newSubject.id, studentId)
                 setLessonFormData(prev => ({ ...prev, subjectId: newSubject.id }))
             } else {
@@ -230,6 +232,39 @@ export function useStudentDetail(studentId: string) {
         }
     }
 
+    const handleRescheduleLesson = (lessonId: string) => {
+        setReschedulingLessonId(lessonId)
+        setIsRescheduleModalOpen(true)
+    }
+
+    const handleConfirmReschedule = async (newDate: Date) => {
+        if (!reschedulingLessonId || !student?.lessons) return
+
+        setIsSubmitting(true)
+        const lesson = student.lessons.find((l) => l.id === reschedulingLessonId)
+        if (!lesson) {
+            setIsSubmitting(false)
+            return
+        }
+
+        const updated = await updateLesson(reschedulingLessonId, {
+            studentId: student.id,
+            subjectId: lesson.subject?.id || '',
+            date: newDate,
+            price: lesson.price.toString(),
+            isPaid: lesson.isPaid,
+            topic: lesson.topic || '',
+            notes: lesson.notes || '',
+        })
+
+        if (updated) {
+            await fetchStudent()
+            setIsRescheduleModalOpen(false)
+            setReschedulingLessonId(null)
+        }
+        setIsSubmitting(false)
+    }
+
     const openEditModal = () => {
         if (!student) return
         setEditFormData({
@@ -267,23 +302,25 @@ export function useStudentDetail(studentId: string) {
         isLoading,
         isSubmitting,
 
-        
+
         isEditModalOpen, setIsEditModalOpen,
         isAddSubjectModalOpen, setIsAddSubjectModalOpen,
         isCreateLessonModalOpen, setIsCreateLessonModalOpen,
         isEditLessonModalOpen, setIsEditLessonModalOpen,
+        isRescheduleModalOpen, setIsRescheduleModalOpen,
+        reschedulingLessonId,
 
-        
+
         editFormData, setEditFormData,
         selectedSubjectId, setSelectedSubjectId,
         lessonFormData, setLessonFormData,
 
-        
+
         deleteStudentConfirm, setDeleteStudentConfirm,
         deleteSubjectConfirm, setDeleteSubjectConfirm,
         deleteLessonConfirm, setDeleteLessonConfirm,
 
-        
+
         handleDeleteStudent,
         handleDeleteSubject,
         handleUpdateStudent,
@@ -296,8 +333,10 @@ export function useStudentDetail(studentId: string) {
         handleDeleteLesson,
         handleTogglePaidStatus,
         handleToggleCancelLesson,
+        handleRescheduleLesson,
+        handleConfirmReschedule,
 
-        
+
         openEditModal,
         openCreateLessonModal
     }

@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { lessonsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { CalendarSkeleton } from '@/components/skeletons'
+import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 
 import styles from './page.module.scss'
 
@@ -28,6 +29,8 @@ export default function CalendarPage() {
 
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+    const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
+    const [reschedulingLesson, setReschedulingLesson] = useState<Lesson | null>(null)
 
     useEffect(() => {
         fetchLessons()
@@ -79,6 +82,33 @@ export default function CalendarPage() {
         } catch (error) {
             updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
             toast.error(LESSON_MESSAGES.UPDATE_ERROR)
+        }
+    }
+
+    const handleRescheduleLesson = (lesson: Lesson) => {
+        setReschedulingLesson(lesson)
+        setIsRescheduleModalOpen(true)
+    }
+
+    const handleConfirmReschedule = async (newDate: Date) => {
+        if (!reschedulingLesson) return
+
+        try {
+            await lessonsApi.update(reschedulingLesson.id, {
+                studentId: reschedulingLesson.student.id,
+                subjectId: reschedulingLesson.subject?.id || '',
+                date: newDate.toISOString(),
+                price: reschedulingLesson.price,
+                isPaid: reschedulingLesson.isPaid,
+                topic: reschedulingLesson.topic || '',
+                notes: reschedulingLesson.notes || '',
+            })
+            toast.success('Занятие перенесено')
+            setIsRescheduleModalOpen(false)
+            setReschedulingLesson(null)
+            await fetchLessons()
+        } catch (error) {
+            toast.error('Не удалось перенести занятие')
         }
     }
 
@@ -164,6 +194,7 @@ export default function CalendarPage() {
                     onAddLesson={handleOpenCreateModal}
                     onTogglePaid={togglePaid}
                     onToggleCancel={toggleCancel}
+                    onReschedule={handleRescheduleLesson}
                 />
             </Modal>
 
@@ -180,6 +211,14 @@ export default function CalendarPage() {
                     />
                 )}
             </Modal>
+
+            <RescheduleModal
+                isOpen={isRescheduleModalOpen}
+                onClose={() => setIsRescheduleModalOpen(false)}
+                onConfirm={handleConfirmReschedule}
+                currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
+                isSubmitting={isLoading}
+            />
         </div>
     )
 }

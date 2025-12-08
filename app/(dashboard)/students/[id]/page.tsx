@@ -9,6 +9,7 @@ import { StudentModals } from "@/components/students/StudentModals";
 import { useStudentDetail } from "@/hooks/useStudentDetail";
 import { StudentDetailSkeleton } from "@/components/skeletons";
 import { StudentNote } from "@/components/students/StudentNote";
+import { RescheduleModal } from "@/components/lessons/RescheduleModal";
 
 export default function StudentDetailPage({
   params,
@@ -52,12 +53,17 @@ export default function StudentDetailPage({
     handleDeleteLesson,
     handleTogglePaidStatus,
     handleToggleCancelLesson,
+    handleRescheduleLesson,
+    handleConfirmReschedule,
 
-    
+    isRescheduleModalOpen,
+    setIsRescheduleModalOpen,
+    reschedulingLessonId,
+
     openEditModal,
     openCreateLessonModal,
 
-    
+
     isEditLessonModalOpen,
     setIsEditLessonModalOpen,
     deleteLessonConfirm,
@@ -105,6 +111,7 @@ export default function StudentDetailPage({
         onDeleteLesson={handleDeleteLesson}
         onTogglePaidStatus={handleTogglePaidStatus}
         onToggleCancelLesson={handleToggleCancelLesson}
+        onRescheduleLesson={handleRescheduleLesson}
       />
 
       <StudentModals
@@ -164,6 +171,18 @@ export default function StudentDetailPage({
         confirmText="Удалить"
         cancelText="Отмена"
         variant="danger"
+      />
+
+      <RescheduleModal
+        isOpen={isRescheduleModalOpen}
+        onClose={() => setIsRescheduleModalOpen(false)}
+        onConfirm={handleConfirmReschedule}
+        currentDate={
+          reschedulingLessonId
+            ? new Date(student?.lessons?.find((l) => l.id === reschedulingLessonId)?.date || new Date())
+            : new Date()
+        }
+        isSubmitting={isSubmitting}
       />
     </div>
   );

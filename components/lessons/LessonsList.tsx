@@ -11,6 +11,7 @@ interface LessonsListProps {
     isRefreshing?: boolean
     onTogglePaid: (lesson: Lesson) => void
     onToggleCancel: (lesson: Lesson) => void
+    onReschedule?: (lesson: Lesson) => void
     onEdit: (lesson: Lesson) => void
     onDelete: (lessonId: string) => void
 }
@@ -21,6 +22,7 @@ export function LessonsList({
     isRefreshing = false,
     onTogglePaid,
     onToggleCancel,
+    onReschedule,
     onEdit,
     onDelete
 }: LessonsListProps) {
@@ -47,15 +49,18 @@ export function LessonsList({
 
     return (
         <div className={`${styles.lessonsList} ${isRefreshing ? styles.refreshing : ''}`}>
-            {lessons.map((lesson) => (
+            {lessons.map((lesson, index) => (
                 <LessonCard
                     key={lesson.id}
                     lesson={lesson}
                     showActions={true}
                     onTogglePaid={onTogglePaid}
                     onToggleCancel={onToggleCancel}
+                    onReschedule={onReschedule}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    index={index}
+                    totalItems={lessons.length}
                 />
             ))}
         </div>

@@ -1,6 +1,6 @@
 import React from 'react'
-import { format, isPast } from 'date-fns'
-import { MoneyIcon, ClockIcon, PlusIcon, CheckIcon, XCircleIcon } from '@/components/icons/Icons'
+import { format, isPast, addMinutes } from 'date-fns'
+import { MoneyIcon, ClockIcon, PlusIcon, CheckIcon, XCircleIcon, RescheduleIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Lesson, DayData } from '@/types'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
@@ -15,6 +15,7 @@ interface CalendarDayDetailsProps {
     onAddLesson: () => void
     onTogglePaid: (lesson: Lesson) => void
     onToggleCancel: (lesson: Lesson) => void
+    onReschedule: (lesson: Lesson) => void
 }
 
 export function CalendarDayDetails({
@@ -23,7 +24,8 @@ export function CalendarDayDetails({
     isLoading,
     onAddLesson,
     onTogglePaid,
-    onToggleCancel
+    onToggleCancel,
+    onReschedule
 }: CalendarDayDetailsProps) {
     if (isLoading) {
         return <div className={styles.modalLoading}>Загрузка...</div>
@@ -133,6 +135,16 @@ export function CalendarDayDetails({
                                     >
                                         <CheckIcon size={16} />
                                         {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
+                                    </button>
+                                )}
+
+                                {!isPast(addMinutes(new Date(lesson.date), lesson.duration || 60)) && (
+                                    <button
+                                        className={styles.actionButton}
+                                        onClick={() => onReschedule(lesson)}
+                                    >
+                                        <RescheduleIcon size={16} />
+                                        Перенести
                                     </button>
                                 )}
 

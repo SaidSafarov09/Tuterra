@@ -196,11 +196,16 @@
     border-radius: 16px;
     border: 1px solid var(--border);
     transition: all 0.2s ease;
-    overflow: hidden;
+    overflow: visible;
 
     &:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
+
+        @media (max-width: 768px) {
+            transform: none;
+            box-shadow: none;
+        }
     }
 
     &.compactWrapper {
@@ -227,4 +232,6 @@
     background: var(--background-subtle);
     display: flex;
     justify-content: flex-end;
+    position: relative;
+    overflow: visible;
 }

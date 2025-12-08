@@ -82,3 +82,77 @@
         border-color: var(--error);
     }
 }
+
+.rescheduleButton {
+    &:hover {
+        background: rgba(74, 108, 247, 0.1);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+}
+
+.dropdownContainer {
+    position: relative;
+}
+
+.moreButton {
+    &:hover {
+        background: var(--background);
+        border-color: var(--border);
+    }
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 1000;
+    overflow: hidden;
+
+    &.dropdownTop {
+        top: auto;
+        bottom: calc(100% + 4px);
+    }
+}
+
+.dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+
+    &:hover {
+        background: var(--background);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+
+    &.deleteItem {
+        color: var(--error);
+
+        &:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}

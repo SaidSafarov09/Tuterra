@@ -11,13 +11,16 @@ import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
 import styles from './LessonCard.module.scss'
 
 interface LessonCardProps {
-    lesson: Lesson & { series?: any } 
+    lesson: Lesson & { series?: any }
     variant?: 'default' | 'compact'
     showActions?: boolean
     onTogglePaid?: (lesson: Lesson) => void
     onToggleCancel?: (lesson: Lesson) => void
+    onReschedule?: (lesson: Lesson) => void
     onEdit?: (lesson: Lesson) => void
     onDelete?: (lessonId: string) => void
+    index?: number
+    totalItems?: number
 }
 
 export const LessonCard: React.FC<LessonCardProps> = ({
@@ -26,12 +29,14 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     showActions = false,
     onTogglePaid,
     onToggleCancel,
+    onReschedule,
     onEdit,
     onDelete,
+    index,
+    totalItems,
 }) => {
     const [showTopic, setShowTopic] = useState(false)
 
-    
     const recurrenceText = lesson.series ? getRecurrenceDescription(
         {
             enabled: true,
@@ -125,8 +130,11 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                             lesson={lesson}
                             onTogglePaid={onTogglePaid}
                             onToggleCancel={onToggleCancel}
+                            onReschedule={onReschedule}
                             onEdit={onEdit}
                             onDelete={onDelete}
+                            index={index}
+                            totalItems={totalItems}
                         />
                     </div>
                 )}

@@ -5,10 +5,13 @@ import {
     toggleLessonPaid,
     toggleLessonCanceled,
     deleteLesson as removeLesson,
+    updateLesson,
 } from '@/services/actions'
 
 export function useLessonActions(onUpdate?: () => void) {
     const [isLoading, setIsLoading] = useState(false)
+    const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
+    const [reschedulingLesson, setReschedulingLesson] = useState<Lesson | null>(null)
 
     const togglePaid = async (lesson: Lesson) => {
         setIsLoading(true)
@@ -44,7 +47,7 @@ export function useLessonActions(onUpdate?: () => void) {
             }
 
             toast.success(scope === 'series' ? 'Серия занятий удалена' : 'Занятие удалено')
-            if (onUpdate) onUpdate() 
+            if (onUpdate) onUpdate()
         } catch (error) {
             toast.error('Не удалось удалить занятие')
         } finally {
@@ -52,11 +55,43 @@ export function useLessonActions(onUpdate?: () => void) {
         }
     }
 
+    const handleRescheduleLesson = (lesson: Lesson) => {
+        setReschedulingLesson(lesson)
+        setIsRescheduleModalOpen(true)
+    }
+
+    const handleConfirmReschedule = async (newDate: Date) => {
+        if (!reschedulingLesson) return
+
+        setIsLoading(true)
+        const updated = await updateLesson(reschedulingLesson.id, {
+            studentId: reschedulingLesson.student.id,
+            subjectId: reschedulingLesson.subject?.id || '',
+            date: newDate,
+            price: reschedulingLesson.price.toString(),
+            isPaid: reschedulingLesson.isPaid,
+            topic: reschedulingLesson.topic || '',
+            notes: reschedulingLesson.notes || '',
+        })
+
+        if (updated) {
+            setIsRescheduleModalOpen(false)
+            setReschedulingLesson(null)
+            onUpdate?.()
+        }
+        setIsLoading(false)
+    }
+
     return {
         togglePaid,
         toggleCancel,
         deleteLesson,
+        handleRescheduleLesson,
+        handleConfirmReschedule,
         isLoading,
+        isRescheduleModalOpen,
+        setIsRescheduleModalOpen,
+        reschedulingLesson,
     }
 }
 

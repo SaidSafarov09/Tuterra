@@ -44,7 +44,9 @@ import {
     Send,
     MessageCircle,
     History,
-    Receipt
+    Receipt,
+    CalendarClock,
+    MoreVertical
 } from 'lucide-react'
 
 
@@ -113,3 +115,6 @@ export const PaletteIcon: React.FC<IconProps> = (props) => <Palette {...props} /
 
 export const TelegramIcon: React.FC<IconProps> = (props) => <Send {...props} />
 export const WhatsAppIcon: React.FC<IconProps> = (props) => <MessageCircle {...props} />
+
+export const RescheduleIcon: React.FC<IconProps> = (props) => <CalendarClock {...props} />
+export const MoreVerticalIcon: React.FC<IconProps> = (props) => <MoreVertical {...props} />

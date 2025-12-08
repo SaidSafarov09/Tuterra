@@ -19,6 +19,7 @@ interface StudentLessonsProps {
     onDeleteLesson: (lessonId: string) => void;
     onTogglePaidStatus: (lessonId: string, isPaid: boolean) => void;
     onToggleCancelLesson: (lessonId: string, isCanceled: boolean) => void;
+    onRescheduleLesson: (lessonId: string) => void;
 }
 
 export function StudentLessons({
@@ -29,11 +30,12 @@ export function StudentLessons({
     onDeleteLesson,
     onTogglePaidStatus,
     onToggleCancelLesson,
+    onRescheduleLesson,
 }: StudentLessonsProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
 
-    
+
     const filteredLessons = useMemo(() => {
         const now = new Date();
 
@@ -78,7 +80,7 @@ export function StudentLessons({
                 </div>
             ) : (
                 <div className={styles.lessonsList}>
-                    {filteredLessons.map((lesson) => {
+                    {filteredLessons.map((lesson, index) => {
                         const subject = lesson.subject;
                         return (
                             <div
@@ -148,8 +150,11 @@ export function StudentLessons({
                                         onToggleCancel={(l) =>
                                             onToggleCancelLesson(l.id, !l.isCanceled)
                                         }
+                                        onReschedule={(l) => onRescheduleLesson(l.id)}
                                         onEdit={onEditLesson}
                                         onDelete={onDeleteLesson}
+                                        index={index}
+                                        totalItems={filteredLessons.length}
                                     />
                                 </div>
                             </div>

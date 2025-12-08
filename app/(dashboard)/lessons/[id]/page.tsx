@@ -19,6 +19,7 @@ import styles from './page.module.scss'
 import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
 import { LESSON_MESSAGES, STUDENT_MESSAGES, SUBJECT_MESSAGES } from '@/constants/messages'
 import { LessonDetailSkeleton } from '@/components/skeletons'
+import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter()
@@ -33,7 +34,17 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const [students, setStudents] = useState<Student[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
 
-    const { togglePaid, toggleCancel, deleteLesson, isLoading: isActionLoading } = useLessonActions(fetchLesson)
+    const {
+        togglePaid,
+        toggleCancel,
+        deleteLesson,
+        handleRescheduleLesson,
+        handleConfirmReschedule,
+        isLoading: isActionLoading,
+        isRescheduleModalOpen,
+        setIsRescheduleModalOpen,
+        reschedulingLesson,
+    } = useLessonActions(fetchLesson)
 
     const fetchStudents = async () => {
         try {
@@ -210,6 +221,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         lesson={lesson}
                         onTogglePaid={handleTogglePaid}
                         onToggleCancel={() => setCancelConfirm(true)}
+                        onReschedule={() => lesson && handleRescheduleLesson(lesson)}
                         onEdit={handleEditClick}
                         onDelete={() => setDeleteConfirm(true)}
                     />
@@ -257,6 +269,14 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 confirmText={lesson.isCanceled ? 'Восстановить' : 'Отменить'}
                 cancelText="Назад"
                 variant={lesson.isCanceled ? 'info' : 'danger'}
+            />
+
+            <RescheduleModal
+                isOpen={isRescheduleModalOpen}
+                onClose={() => setIsRescheduleModalOpen(false)}
+                onConfirm={handleConfirmReschedule}
+                currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
+                isSubmitting={isActionLoading}
             />
         </div>
     )
