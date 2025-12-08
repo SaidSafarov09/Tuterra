@@ -71,9 +71,13 @@ export default function SubjectsPage() {
     )
 
     const handleSubjectClick = (subject: Subject) => {
-        setSelectedSubject(subject)
-        setIsDetailsModalOpen(true)
-        fetchStudents(subject.id)
+        if (isMobile) {
+            router.push(`/subjects/${subject.id}`)
+        } else {
+            setSelectedSubject(subject)
+            setIsDetailsModalOpen(true)
+            fetchStudents(subject.id)
+        }
     }
 
     const handleCloseDetailsModal = () => {

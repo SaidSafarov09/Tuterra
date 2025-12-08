@@ -11,7 +11,6 @@ import { useLessonActions } from '@/hooks/useLessonActions'
 import { calculateDayData } from '@/lib/lessonUtils'
 import { lessonsApi } from '@/services/api'
 import { Lesson } from '@/types'
-import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 import styles from './page.module.scss'
 
 export default function CalendarDayPage() {
@@ -42,12 +41,6 @@ export default function CalendarDayPage() {
     const {
         togglePaid,
         toggleCancel,
-        handleRescheduleLesson,
-        handleConfirmReschedule,
-        isLoading: isActionLoading,
-        isRescheduleModalOpen,
-        setIsRescheduleModalOpen,
-        reschedulingLesson,
     } = useLessonActions(fetchLessons)
 
     const dayData = calculateDayData(lessons, date)
@@ -69,15 +62,7 @@ export default function CalendarDayPage() {
                 onAddLesson={() => router.push(`/lessons/new?date=${dateStr}`)}
                 onTogglePaid={togglePaid}
                 onToggleCancel={toggleCancel}
-                onReschedule={handleRescheduleLesson}
-            />
-
-            <RescheduleModal
-                isOpen={isRescheduleModalOpen}
-                onClose={() => setIsRescheduleModalOpen(false)}
-                onConfirm={handleConfirmReschedule}
-                currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
-                isSubmitting={isActionLoading}
+                onReschedule={(lessonId) => router.push(`/lessons/${lessonId}/reschedule`)}
             />
         </div>
     )

@@ -48,7 +48,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     }, [user, setUser, setTheme])
 
     const pathname = usePathname()
-    const isMobilePage = pathname.includes('/new') || pathname.includes('/edit') || pathname.includes('/calendar/day')
+    const isMobilePage =
+        pathname.includes('/new') ||
+        pathname.includes('/edit') ||
+        pathname.includes('/calendar/day') ||
+        pathname.includes('/reschedule') ||
+        pathname.startsWith('/subjects/')
 
     return (
         <div className={styles.layout}>

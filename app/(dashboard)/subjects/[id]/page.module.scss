@@ -1,0 +1,131 @@
+.container {
+    max-width: 600px;
+    padding-bottom: 100px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    justify-content: center;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.backButton {
+    padding: 0;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+        color: var(--text-primary);
+        background: none;
+    }
+
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.studentsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.studentItem {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    transition: background 0.2s;
+
+    &:hover {
+        background: var(--hover-bg);
+    }
+}
+
+.studentInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.studentAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.studentName {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.lessonInfo {
+    font-size: 13px;
+}
+
+.nextLesson {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    background: rgba(74, 108, 247, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.noLesson {
+    color: var(--text-muted);
+}
+
+.emptyDetails {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-secondary);
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.error {
+    text-align: center;
+    padding: 40px;
+    color: var(--error);
+}
+
+.detailsFooter {
+    margin-top: 24px;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}

@@ -143,6 +143,14 @@ function LessonsContent() {
         }
     }
 
+    const handleRescheduleClick = (lesson: Lesson) => {
+        if (isMobile) {
+            router.push(`/lessons/${lesson.id}/reschedule`)
+        } else {
+            handleRescheduleLesson(lesson)
+        }
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -181,7 +189,7 @@ function LessonsContent() {
                     isRefreshing={isLessonsRefreshing}
                     onTogglePaid={togglePaid}
                     onToggleCancel={toggleCancel}
-                    onReschedule={handleRescheduleLesson}
+                    onReschedule={handleRescheduleClick}
                     onEdit={handleEditLesson}
                     onDelete={handleDeleteClick}
                 />

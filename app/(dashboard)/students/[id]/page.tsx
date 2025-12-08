@@ -85,6 +85,14 @@ export default function StudentDetailPage({
   };
 
 
+  const handleRescheduleLessonMobile = (lessonId: string) => {
+    if (isMobile) {
+      router.push(`/lessons/${lessonId}/reschedule`)
+    } else {
+      handleRescheduleLesson(lessonId)
+    }
+  }
+
   if (isLoading) {
     return <StudentDetailSkeleton />;
   }
@@ -124,7 +132,7 @@ export default function StudentDetailPage({
         onDeleteLesson={handleDeleteLesson}
         onTogglePaidStatus={handleTogglePaidStatus}
         onToggleCancelLesson={handleToggleCancelLesson}
-        onRescheduleLesson={handleRescheduleLesson}
+        onRescheduleLesson={handleRescheduleLessonMobile}
       />
 
       <StudentModals
