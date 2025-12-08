@@ -7,7 +7,7 @@ import { LessonForm, LessonFormProps } from './LessonForm'
 interface LessonFormModalProps extends LessonFormProps {
     isOpen: boolean
     onClose: () => void
-    customTitle?: string
+    customTitle?: string | React.ReactNode
 }
 
 export function LessonFormModal({
@@ -24,7 +24,7 @@ export function LessonFormModal({
     return (
         <Modal
             maxWidth="650px"
-            minHeight='580px'
+            minHeight={isEdit ? "auto" : "580px"}
             isOpen={isOpen}
             onClose={onClose}
             title={title}

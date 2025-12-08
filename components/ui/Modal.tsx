@@ -7,7 +7,7 @@ import { XIcon } from 'lucide-react'
 interface ModalProps {
     isOpen: boolean
     onClose: () => void
-    title: string
+    title: string | React.ReactNode
     children: React.ReactNode
     footer?: React.ReactNode
     size?: 'default' | 'large'

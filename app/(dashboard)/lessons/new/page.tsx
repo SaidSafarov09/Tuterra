@@ -12,6 +12,7 @@ import styles from './page.module.scss'
 
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { stringToColor } from '@/lib/utils'
 
 export default function NewLessonPage() {
     const router = useRouter()
@@ -70,17 +71,28 @@ export default function NewLessonPage() {
 
     const isContextLoading = (studentIdParam && isStudentsLoading) || (subjectIdParam && isSubjectsLoading)
 
-    let title = 'Добавить занятие'
+    let title: React.ReactNode = 'Добавить занятие';
+
     if (isContextLoading) {
-        title = 'Загрузка...'
+        title = 'Загрузка...';
     } else if (student) {
-        title = `Занятие для ученика ${student.name}`
+        title = (
+            <>
+                Занятие для ученика<br />
+                <span style={{ color: `${stringToColor(student.name)}` }}>{student.name}</span>
+            </>
+        );
     } else if (subject) {
-        title = `Занятие по предмету ${subject.name}`
+        title = (
+            <>
+                Занятие по предмету<br />
+                <span style={{ color: `${subject.color}` }}>{subject.name}</span>
+            </>
+        );
     } else if (dateParam) {
-        const date = new Date(dateParam)
+        const date = new Date(dateParam);
         if (!isNaN(date.getTime())) {
-            title = `Занятие на ${format(date, 'd MMMM', { locale: ru })}`
+            title = `Занятие на ${format(date, 'd MMMM', { locale: ru })}`;
         }
     }
 

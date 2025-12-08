@@ -8,6 +8,7 @@ import { LessonFormWithDateTime } from '@/components/lessons/LessonFormWithDateT
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { ContactType } from '@/lib/contactUtils'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
+import { stringToColor } from '@/lib/utils'
 
 interface StudentModalsProps {
     student: Student
@@ -78,6 +79,11 @@ export function StudentModals({
     onCloseEditLessonModal,
     onSubmitEditLesson
 }: StudentModalsProps) {
+    const customTitle = student ? (
+        <>
+            <span style={{ color: `${stringToColor(student.name)}` }}>{student.name}</span>
+        </>
+    ) : undefined;
     return (
         <>
             {/* Edit Student Modal */}
@@ -124,7 +130,10 @@ export function StudentModals({
             <Modal
                 isOpen={isAddSubjectModalOpen}
                 onClose={onCloseAddSubjectModal}
-                title={`Добавить предмет для ${student.name}`}
+                title={<>
+                    Добавить предмет для &nbsp;
+                    <span style={{ color: stringToColor(student.name) }}>{student.name}</span>
+                </>}
                 footer={
                     <ModalFooter
                         onCancel={onCloseAddSubjectModal}
@@ -169,7 +178,12 @@ export function StudentModals({
                 onCreateSubject={onCreateSubject}
                 handleChange={(name, value) => setLessonFormData((prev: any) => ({ ...prev, [name]: value }))}
                 fixedStudentId={student.id}
-                customTitle={`Занятие для ученика ${student.name}`}
+                customTitle={
+                    <>
+                        Занятие для ученика &nbsp;
+                        <span style={{ color: stringToColor(student.name) }}>{student.name}</span>
+                    </>
+                }
             />
 
             {/* Edit Lesson Modal */}
