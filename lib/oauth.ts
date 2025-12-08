@@ -12,9 +12,7 @@ interface CreateUserParams {
     providerId: string
 }
 
-/**
- * Format phone number to standard format (+7...)
- */
+
 export function formatPhoneForDB(rawPhone: string | null | undefined): string | null {
     if (!rawPhone) return null
 
@@ -27,9 +25,7 @@ export function formatPhoneForDB(rawPhone: string | null | undefined): string | 
     }
 }
 
-/**
- * Find or create user from OAuth provider
- */
+
 export async function findOrCreateOAuthUser(params: CreateUserParams) {
     const { email, phone, firstName, lastName, avatar, provider, providerId } = params
 
@@ -94,9 +90,6 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
     return user
 }
 
-/**
- * Create auth session and redirect to dashboard
- */
 export async function createAuthSession(userId: string, phone: string, requestUrl: string) {
     const token = await signToken({
         userId,

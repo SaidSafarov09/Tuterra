@@ -40,14 +40,7 @@
         color: white;
     }
 
-    
-    &:checked~.checkmark {
-        
-        
-        
-    }
 }
-
 
 .container input:checked~.checkmark {
     opacity: 1;
@@ -76,21 +69,10 @@
     pointer-events: none;
 }
 
-.container input:checked+.checkmark {
-    
-}
-
-
-
 .input:checked+.checkmark {
     opacity: 1;
     transform: scale(1);
     background: var(--primary);
-}
-
-.input:checked {
-    
-    
 }
 
 .label {

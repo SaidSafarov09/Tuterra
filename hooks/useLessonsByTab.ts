@@ -4,10 +4,6 @@ import { Lesson, LessonFilter } from '@/types'
 import { lessonsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 
-/**
- * Hook for fetching lessons with tab-based caching
- * Caches data for each tab to prevent reloading when switching between tabs
- */
 export function useLessonsByTab(activeTab: LessonFilter) {
     const [lessonsCache, setLessonsCache] = useState<Record<LessonFilter, Lesson[]>>({
         all: [],

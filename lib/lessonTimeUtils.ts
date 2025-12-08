@@ -2,7 +2,7 @@ import { addMinutes, format } from 'date-fns'
 
 /**
  * Calculate lesson end time based on start time and duration
- * @param startDate - Lesson start date/time
+ @param startDate - Lesson start date/time
  * @param durationMinutes - Duration in minutes
  * @returns End time as Date object
  */

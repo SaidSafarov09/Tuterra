@@ -1,7 +1,3 @@
-/**
- * SMS sending utilities
- * Currently uses fake implementation for development
- */
 
 export async function sendSMS(phone: string, code: string): Promise<boolean> {
     

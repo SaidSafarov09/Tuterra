@@ -3,9 +3,6 @@ import { subjectsApi } from '@/services/api'
 import { SUBJECT_MESSAGES, VALIDATION_MESSAGES, createSubjectCreatedMessage } from '@/constants/messages'
 import { Subject } from '@/types'
 
-/**
- * Получить предмет по ID
- */
 export async function fetchSubject(subjectId: string): Promise<Subject | null> {
     try {
         return await subjectsApi.getById(subjectId)
@@ -15,9 +12,6 @@ export async function fetchSubject(subjectId: string): Promise<Subject | null> {
     }
 }
 
-/**
- * Получить все предметы
- */
 export async function fetchSubjects(): Promise<Subject[]> {
     try {
         return await subjectsApi.getAll()
@@ -27,9 +21,6 @@ export async function fetchSubjects(): Promise<Subject[]> {
     }
 }
 
-/**
- * Создать новый предмет
- */
 export async function createSubject(data: {
     name: string
     color: string
@@ -49,9 +40,6 @@ export async function createSubject(data: {
     }
 }
 
-/**
- * Создать предмет со случайным цветом
- */
 export async function createSubjectWithRandomColor(name: string): Promise<Subject | null> {
     const colors = ['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
     const randomColor = colors[Math.floor(Math.random() * colors.length)]
@@ -59,9 +47,6 @@ export async function createSubjectWithRandomColor(name: string): Promise<Subjec
     return createSubject({ name, color: randomColor })
 }
 
-/**
- * Обновить предмет
- */
 export async function updateSubject(
     subjectId: string,
     data: { name: string; color: string }
@@ -81,9 +66,6 @@ export async function updateSubject(
     }
 }
 
-/**
- * Удалить предмет
- */
 export async function deleteSubject(subjectId: string): Promise<{
     success: boolean
     deletedLessonsCount?: number
@@ -104,9 +86,6 @@ export async function deleteSubject(subjectId: string): Promise<{
     }
 }
 
-/**
- * Привязать ученика к предмету
- */
 export async function linkStudentToSubject(
     subjectId: string,
     studentId: string
@@ -125,10 +104,6 @@ export async function linkStudentToSubject(
         return false
     }
 }
-
-/**
- * Отвязать ученика от предмета
- */
 export async function unlinkStudentFromSubject(
     subjectId: string,
     studentId: string

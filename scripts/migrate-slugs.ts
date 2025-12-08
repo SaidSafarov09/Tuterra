@@ -1,7 +1,3 @@
-/**
- * Migration script to generate slugs for existing students and lessons
- * Run this once after adding slug fields to the database
- */
 
 import { PrismaClient } from '@prisma/client'
 import { generateStudentSlug, generateLessonSlug } from '../lib/slugUtils'

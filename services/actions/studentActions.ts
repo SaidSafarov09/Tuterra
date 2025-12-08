@@ -4,9 +4,6 @@ import { STUDENT_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages'
 import { Student } from '@/types'
 import { ContactType } from '@/lib/contactUtils'
 
-/**
- * Получить ученика по ID
- */
 export async function fetchStudent(studentId: string): Promise<Student | null> {
     try {
         return await studentsApi.getById(studentId)
@@ -16,9 +13,6 @@ export async function fetchStudent(studentId: string): Promise<Student | null> {
     }
 }
 
-/**
- * Получить всех учеников
- */
 export async function fetchStudents(): Promise<Student[]> {
     try {
         return await studentsApi.getAll()
@@ -28,9 +22,6 @@ export async function fetchStudents(): Promise<Student[]> {
     }
 }
 
-/**
- * Создать нового ученика
- */
 export async function createStudent(data: {
     name: string
     contact?: string
@@ -56,9 +47,6 @@ export async function createStudent(data: {
     }
 }
 
-/**
- * Обновить данные ученика
- */
 export async function updateStudent(
     studentId: string,
     data: {
@@ -87,9 +75,6 @@ export async function updateStudent(
     }
 }
 
-/**
- * Удалить ученика
- */
 export async function deleteStudent(studentId: string): Promise<boolean> {
     try {
         await studentsApi.delete(studentId)

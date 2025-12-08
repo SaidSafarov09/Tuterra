@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
-/**
- * Generic hook for fetching data from API
- * Keeps previous data while loading new data to prevent UI jumps
- */
 export function useFetch<T>(url: string, dependencies: any[] = []) {
     const [data, setData] = useState<T | null>(null)
     const [isLoading, setIsLoading] = useState(true)

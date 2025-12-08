@@ -5,7 +5,7 @@ export async function GET() {
     const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/yandex/callback`
     const scope = 'login:email login:info login:avatar login:birthday login:default_phone'
 
-    const yandexAuthUrl = `https:
+    const yandexAuthUrl = `https://oauth.yandex.ru/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`
 
     return NextResponse.redirect(yandexAuthUrl)
 }

@@ -1,6 +1,3 @@
-/**
- * Transliteration map: Cyrillic → Latin
- */
 const translitMap: Record<string, string> = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
     'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
@@ -14,9 +11,6 @@ const translitMap: Record<string, string> = {
     'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
 }
 
-/**
- * Transliterate Cyrillic to Latin
- */
 function transliterate(text: string): string {
     return text
         .split('')
@@ -69,9 +63,6 @@ export function generateLessonSlug(studentName: string, date: Date, topic?: stri
     return generateSlug(base, dateStr)
 }
 
-/**
- * Check if string is a valid CUID (old ID format)
- */
 export function isCuid(str: string): boolean {
     return /^c[a-z0-9]{24,25}$/i.test(str)
 }
