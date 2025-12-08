@@ -24,6 +24,7 @@ interface LessonFormWithDateTimeProps {
     showStudentField?: boolean
     students?: Array<{ id: string; name: string }>
     onStudentChange?: (studentId: string) => void
+    onCreateStudent?: (name: string) => void
 }
 
 export function LessonFormWithDateTime({
@@ -36,6 +37,7 @@ export function LessonFormWithDateTime({
     showStudentField = false,
     students = [],
     onStudentChange,
+    onCreateStudent,
 }: LessonFormWithDateTimeProps) {
     const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
@@ -76,6 +78,8 @@ export function LessonFormWithDateTime({
                         onChange={onStudentChange}
                         options={students.map(s => ({ value: s.id, label: s.name }))}
                         searchable
+                        creatable
+                        onCreate={onCreateStudent}
                         disabled={isSubmitting}
                     />
                 )}
@@ -117,7 +121,6 @@ export function LessonFormWithDateTime({
                     onChange={(isTrial) => {
                         if (isTrial) {
                             handleChange('price', '0')
-                            handleChange('isPaid', true)
                         } else {
                             handleChange('price', '')
                         }
@@ -164,7 +167,7 @@ export function LessonFormWithDateTime({
                                 ? 'Оплачено только первое занятие'
                                 : 'Оплачено'
                         }
-                        disabled={isSubmitting || formData.price === '0'}
+                        disabled={isSubmitting}
                     />
 
                     {formData.recurrence?.enabled && (
@@ -178,7 +181,7 @@ export function LessonFormWithDateTime({
                                 }
                             }}
                             label="Оплачены все занятия серии"
-                            disabled={isSubmitting || formData.price === '0'}
+                            disabled={isSubmitting}
                         />
                     )}
                 </div>

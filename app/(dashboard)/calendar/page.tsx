@@ -9,15 +9,16 @@ import { MonthNavigation } from '@/components/common/MonthNavigation'
 import { CalendarWeekDays } from '@/components/calendar/CalendarWeekDays'
 import { CalendarGrid } from '@/components/calendar/CalendarGrid'
 import { CalendarDayDetails } from '@/components/calendar/CalendarDayDetails'
-import { CalendarLessonForm } from '@/components/calendar/CalendarLessonForm'
+import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 
 import { calculateDayData } from '@/lib/lessonUtils'
-import { Lesson, DayData } from '@/types'
+import { Lesson, DayData, Student, Subject } from '@/types'
 import { toast } from 'sonner'
-import { lessonsApi } from '@/services/api'
+import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { CalendarSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
+import { useLessonForm } from '@/hooks/useLessonForm'
 
 import styles from './page.module.scss'
 
@@ -32,8 +33,13 @@ export default function CalendarPage() {
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
     const [reschedulingLesson, setReschedulingLesson] = useState<Lesson | null>(null)
 
+    const [students, setStudents] = useState<Student[]>([])
+    const [subjects, setSubjects] = useState<Subject[]>([])
+
     useEffect(() => {
         fetchLessons()
+        fetchStudents()
+        fetchSubjects()
     }, [])
 
     const fetchLessons = async () => {
@@ -46,6 +52,24 @@ export default function CalendarPage() {
             toast.error(LESSON_MESSAGES.FETCH_ERROR)
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    const fetchStudents = async () => {
+        try {
+            const data = await studentsApi.getAll()
+            setStudents(data)
+        } catch (error) {
+            console.error('Failed to fetch students:', error)
+        }
+    }
+
+    const fetchSubjects = async () => {
+        try {
+            const data = await subjectsApi.getAll()
+            setSubjects(data)
+        } catch (error) {
+            console.error('Failed to fetch subjects:', error)
         }
     }
 
@@ -132,11 +156,15 @@ export default function CalendarPage() {
 
     const handleOpenCreateModal = () => {
         setIsDetailsModalOpen(false)
+        if (selectedDate) {
+            loadLessonWithDate(selectedDate)
+        }
         setIsCreateModalOpen(true)
     }
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false)
+        resetForm()
         if (selectedDate) {
             setIsDetailsModalOpen(true)
         }
@@ -145,10 +173,25 @@ export default function CalendarPage() {
     const handleCreateSuccess = () => {
         fetchLessons()
         setIsCreateModalOpen(false)
+        resetForm()
         if (selectedDate) {
             setIsDetailsModalOpen(true)
         }
     }
+
+    const {
+        formData,
+        setFormData,
+        isSubmitting,
+        error,
+        handleChange,
+        handleStudentChange,
+        handleCreateStudent,
+        handleCreateSubject,
+        handleSubmit,
+        loadLessonWithDate,
+        resetForm,
+    } = useLessonForm(handleCreateSuccess, fetchStudents, fetchSubjects)
 
     const selectedDayData: DayData | null = selectedDate
         ? calculateDayData(lessons, selectedDate)
@@ -198,19 +241,23 @@ export default function CalendarPage() {
                 />
             </Modal>
 
-            <Modal
+            <LessonFormModal
                 isOpen={isCreateModalOpen}
                 onClose={handleCloseCreateModal}
-                title={selectedDate ? `Новое занятие на ${format(selectedDate, 'd MMMM', { locale: ru })}` : 'Новое занятие'}
-            >
-                {selectedDate && (
-                    <CalendarLessonForm
-                        initialDate={selectedDate}
-                        onSuccess={handleCreateSuccess}
-                        onCancel={handleCloseCreateModal}
-                    />
-                )}
-            </Modal>
+                isEdit={false}
+                formData={formData}
+                setFormData={setFormData}
+                students={students}
+                subjects={subjects}
+                isSubmitting={isSubmitting}
+                error={error}
+                onSubmit={() => handleSubmit(false)}
+                onStudentChange={handleStudentChange}
+                onCreateStudent={handleCreateStudent}
+                onCreateSubject={handleCreateSubject}
+                handleChange={handleChange}
+                customTitle={selectedDate ? `Новое занятие на ${format(selectedDate, 'd MMMM', { locale: ru })}` : undefined}
+            />
 
             <RescheduleModal
                 isOpen={isRescheduleModalOpen}

@@ -35,7 +35,7 @@ export function CalendarLessonForm({ initialDate, onSuccess, onCancel }: Calenda
                 showStudentField={true}
                 students={students}
                 onStudentChange={handleStudentChange}
-                
+                onCreateStudent={handleCreateStudent}
             />
 
             {error && <div className={styles.error}>{error}</div>}

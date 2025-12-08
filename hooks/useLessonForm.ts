@@ -109,7 +109,7 @@ export function useLessonForm(
             if (refetchSubjects) await refetchSubjects()
             setFormData((prev) => ({ ...prev, subjectId: newSubject.id }))
 
-            
+
             if (formData.studentId && refetchStudents) {
                 try {
                     await fetch(`/api/subjects/${newSubject.id}/students/link`, {
@@ -176,18 +176,25 @@ export function useLessonForm(
         }
     }
 
+    const loadLessonWithDate = (date: Date) => {
+        setFormData(prev => ({
+            ...prev,
+            date: date,
+        }))
+    }
+
     return {
         formData,
         isSubmitting,
         error,
         setFormData,
-        setError,
-        resetForm,
-        loadLesson,
         handleChange,
         handleStudentChange,
         handleCreateStudent,
         handleCreateSubject,
+        loadLesson,
+        loadLessonWithDate,
+        resetForm,
         handleSubmit,
     }
 }
