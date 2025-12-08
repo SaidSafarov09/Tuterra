@@ -16,7 +16,9 @@ export const formatSmartDate = (date: Date | string): string => {
         return `Вчера, ${format(d, 'HH:mm', { locale: ru })}`
     }
 
-    return format(d, 'dd MMMM yyyy, HH:mm', { locale: ru })
+    return format(d, 'dd MMMM , HH:mm', { locale: ru })
+
+    // return format(d, 'dd MMMM yyyy, HH:mm', { locale: ru })
 }
 
 export const formatDuration = (minutes: number): string => {

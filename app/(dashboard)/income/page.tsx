@@ -187,7 +187,7 @@ export default function IncomePage() {
                             <div className={styles.durationBlock}>
                                 <ClockIcon size={20} color="var(--primary)" />
                                 <div className={styles.durationText}>
-                                    Затрачено времени
+                                    Рабочие часы
                                     <strong>{formatDuration(currentMonthDuration)}</strong>
                                 </div>
                             </div>
@@ -228,7 +228,7 @@ export default function IncomePage() {
                             <div className={styles.durationBlock}>
                                 <ClockIcon size={20} color="var(--primary)" />
                                 <div className={styles.durationText}>
-                                    Затрачено времени
+                                    Рабочие часы
                                     <strong>{formatDuration(previousMonthDuration)}</strong>
                                 </div>
                             </div>

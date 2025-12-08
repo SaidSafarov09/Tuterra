@@ -72,10 +72,15 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: 16px;
     color: var(--text-primary);
     margin: 0;
     font-weight: 600;
+
+    @media (max-width: 768px) {
+        font-size: 14px;
+        font-weight: 500;
+    }
 }
 
 .duration {
