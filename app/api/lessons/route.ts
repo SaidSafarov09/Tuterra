@@ -116,12 +116,12 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        
+
         if (validatedData.recurrence?.enabled) {
             return await createRecurringLesson(payload.userId, validatedData)
         }
 
-        
+
         return await createSingleLesson(payload.userId, validatedData)
 
     } catch (error) {
@@ -148,6 +148,18 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
         )
     }
 
+    let subjectName = null
+    let subjectColor = null
+    if (data.subjectId) {
+        const subject = await prisma.subject.findUnique({
+            where: { id: data.subjectId }
+        })
+        if (subject) {
+            subjectName = subject.name
+            subjectColor = subject.color
+        }
+    }
+
     const lesson = await prisma.lesson.create({
         data: {
             date: data.date,
@@ -161,6 +173,8 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             ownerId: userId,
             studentId: data.studentId,
             subjectId: data.subjectId,
+            subjectName,
+            subjectColor,
         } as any,
         include: {
             student: true,

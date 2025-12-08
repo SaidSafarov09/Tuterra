@@ -55,16 +55,16 @@ export const LessonCard: React.FC<LessonCardProps> = ({
             <div className={styles.header}>
                 <div className={styles.info}>
                     <h4 className={styles.studentName}>{lesson.student.name}</h4>
-                    {lesson.subject && (
+                    {(lesson.subject || (lesson.subjectName && lesson.subjectColor)) && (
                         <span
                             className={styles.subjectBadge}
                             style={{
-                                color: lesson.subject.color,
-                                backgroundColor: lesson.subject.color + '15',
-                                borderColor: lesson.subject.color + '30',
+                                color: lesson.subject?.color || lesson.subjectColor || '#666',
+                                backgroundColor: (lesson.subject?.color || lesson.subjectColor || '#666') + '15',
+                                borderColor: (lesson.subject?.color || lesson.subjectColor || '#666') + '30',
                             }}
                         >
-                            {lesson.subject.name}
+                            {lesson.subject?.name || lesson.subjectName}
                         </span>
                     )}
                     <div className={styles.dateBlock}>

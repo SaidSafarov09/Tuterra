@@ -53,6 +53,8 @@ export interface Lesson {
     topic?: string
     duration?: number
     seriesId?: string | null
+    subjectName?: string | null
+    subjectColor?: string | null
     student: {
         id: string
         name: string

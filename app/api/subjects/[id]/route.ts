@@ -115,7 +115,7 @@ export async function PATCH(
 
         const body = await request.json()
 
-        
+
         const updateData: any = {}
         if (body.name !== undefined) updateData.name = body.name
         if (body.color !== undefined) updateData.color = body.color
@@ -159,7 +159,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        
+
         const subject = await prisma.subject.findFirst({
             where: {
                 id: id,
@@ -176,19 +176,40 @@ export async function DELETE(
             return NextResponse.json({ error: 'Предмет не найден' }, { status: 404 })
         }
 
-        const lessonsCount = subject._count.lessons
+        const now = new Date()
 
-        
-        if (lessonsCount > 0) {
+        const futureLessons = await prisma.lesson.count({
+            where: {
+                subjectId: id,
+                ownerId: user.id,
+                date: {
+                    gte: now
+                }
+            }
+        })
+
+        const pastLessons = await prisma.lesson.count({
+            where: {
+                subjectId: id,
+                ownerId: user.id,
+                date: {
+                    lt: now
+                }
+            }
+        })
+
+        if (futureLessons > 0) {
             await prisma.lesson.deleteMany({
                 where: {
                     subjectId: id,
                     ownerId: user.id,
+                    date: {
+                        gte: now
+                    }
                 }
             })
         }
 
-        
         await prisma.subject.delete({
             where: {
                 id: id,
@@ -197,7 +218,11 @@ export async function DELETE(
 
         return NextResponse.json({
             success: true,
-            deletedLessonsCount: lessonsCount
+            deletedFutureLessons: futureLessons,
+            keptPastLessons: pastLessons,
+            message: pastLessons > 0
+                ? `Удалено ${futureLessons} будущих занятий. ${pastLessons} прошедших занятий сохранены для статистики.`
+                : `Удалено ${futureLessons} занятий.`
         })
     } catch (error) {
         console.error('Delete subject error:', error)

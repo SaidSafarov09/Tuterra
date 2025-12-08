@@ -28,7 +28,7 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        
+
         const isId = isCuid(id)
         const whereClause = isId
             ? { id: id, ownerId: user.id }
@@ -52,7 +52,7 @@ export async function GET(
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
-        
+
         if (isId && student.slug) {
             return NextResponse.redirect(
                 new URL(`/students/${student.slug}`, request.url),
@@ -85,11 +85,13 @@ export async function PUT(
         const body = await request.json()
         const validatedData = studentSchema.parse(body)
 
+        const isId = isCuid(id)
+        const whereClause = isId
+            ? { id: id, ownerId: user.id }
+            : { slug: id, ownerId: user.id }
+
         const student = await prisma.student.updateMany({
-            where: {
-                id: id,
-                ownerId: user.id,
-            },
+            where: whereClause,
             data: validatedData,
         })
 
@@ -97,8 +99,8 @@ export async function PUT(
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
-        const updatedStudent = await prisma.student.findUnique({
-            where: { id: id },
+        const updatedStudent = await prisma.student.findFirst({
+            where: whereClause,
         })
 
         return NextResponse.json(updatedStudent)
@@ -130,35 +132,31 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const existingStudent = await prisma.student.findFirst({
-            where: {
-                id: id,
-                ownerId: user.id,
-            },
+        const isId = isCuid(id)
+        const whereClause = isId
+            ? { id: id, ownerId: user.id }
+            : { slug: id, ownerId: user.id }
+
+        const student = await prisma.student.findFirst({
+            where: whereClause,
         })
 
-        if (!existingStudent) {
+        if (!student) {
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
-        await prisma.lesson.deleteMany({
-            where: {
-                studentId: id,
-            },
-        })
-
         await prisma.student.update({
-            where: { id: id },
+            where: { id: student.id },
             data: {
                 subjects: {
-                    set: [] 
+                    set: []
                 }
             }
         })
 
         const deleted = await prisma.student.deleteMany({
             where: {
-                id: id,
+                id: student.id,
                 ownerId: user.id,
             },
         })
