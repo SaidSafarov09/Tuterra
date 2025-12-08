@@ -106,7 +106,7 @@ export function AddStudentModal({
                                 fontWeight: 500,
                             }}
                         >
-                            Добавить существующего
+                            Добавить
                         </button>
                         <button
                             type="button"

@@ -253,7 +253,7 @@ export default function SubjectsPage() {
                 onClose={() => setDeleteConfirm({ isOpen: false, subject: null })}
                 onConfirm={confirmDelete}
                 title="Удалить предмет?"
-                message={`Вы уверены, что хотите удалить предмет "${deleteConfirm.subject?.name}"? Это действие нельзя отменить. Все связанные занятия также будут удалены.`}
+                message={`Вы уверены, что хотите удалить предмет "${deleteConfirm.subject?.name}"? Это действие нельзя отменить. Все ближайшие связанные занятия также будут удалены.`}
                 confirmText="Удалить"
                 cancelText="Отмена"
                 variant="danger"

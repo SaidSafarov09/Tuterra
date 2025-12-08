@@ -79,7 +79,7 @@ export default function NewStudentPage() {
                 <div style={{ marginBottom: '24px' }}>
                     <Tabs
                         tabs={[
-                            { id: 'link', label: 'Добавить существующего' },
+                            { id: 'link', label: 'Добавить' },
                             { id: 'create', label: 'Создать нового' }
                         ]}
                         activeTab={mode}

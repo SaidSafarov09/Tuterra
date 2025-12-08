@@ -34,7 +34,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
         return `hsl(${hue}, 65%, 55%)`
     }
 
-    
+
     const totalLessons = student._count?.lessons || 0
     const totalSubjects = student.subjects.length
 
@@ -70,7 +70,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
         <div>
             <div className={styles.header}>
                 <button className={styles.backButton} onClick={() => router.back()}>
-                    ← Назад к ученикам
+                    ← Назад
                 </button>
             </div>
 

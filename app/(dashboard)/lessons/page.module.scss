@@ -258,7 +258,6 @@
 
     @media (max-width: 768px) {
         gap: 16px;
-        max-height: 300px;
         overflow-y: auto;
     }
 }
@@ -472,12 +471,9 @@
 
 .row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 16px;
 
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-    }
 }
 
 .dateInputWrapper {
