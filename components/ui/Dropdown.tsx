@@ -25,6 +25,7 @@ interface DropdownProps {
     error?: string
     onOpen?: () => void
     className?: string
+    placeholderSearch?: string
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -42,6 +43,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
     error,
     onOpen,
     className = '',
+    placeholderSearch = "Найти/Создать"
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
@@ -138,7 +140,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                         <div className={styles.search}>
                             <input
                                 type="text"
-                                placeholder="Найти/Создать"
+                                placeholder={placeholderSearch}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onClick={(e) => e.stopPropagation()}

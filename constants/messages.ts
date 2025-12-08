@@ -57,6 +57,7 @@ export const SUBJECT_MESSAGES = {
     UPDATE_ERROR: 'Не удалось обновить предмет',
     DELETE_ERROR: 'Не удалось удалить предмет',
     FETCH_ERROR: 'Не удалось загрузить предметы',
+    LINK_ERROR: 'Не удалось добавить предмет',
 } as const
 
 export const GENERAL_MESSAGES = {
@@ -89,7 +90,7 @@ export const createStudentLinkedMessage = (studentName: string) =>
     `Ученик "${studentName}" добавлен к предмету`
 
 function formatMonthGenitive(date: Date) {
-    const month = format(date, 'LLLL', { locale: ru }).toLowerCase() 
+    const month = format(date, 'LLLL', { locale: ru }).toLowerCase()
     const year = format(date, 'yyyy')
     return `${MONTHS_GENITIVE[month] ?? month} ${year}`
 }

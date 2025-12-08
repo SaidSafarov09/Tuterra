@@ -18,6 +18,7 @@ import { LESSON_TABS } from '@/constants'
 import { LessonDetailSkeleton } from '@/components/skeletons'
 import { EmptyLessonsState } from '@/components/lessons/EmptyLessonsState'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 
 function LessonsContent() {
@@ -110,10 +111,16 @@ function LessonsContent() {
         router.push(`/lessons?tab=${id}`)
     }
 
+    const isMobile = useMediaQuery('(max-width: 768px)')
+
     const handleOpenModal = () => {
-        setEditingLesson(null)
-        resetForm()
-        setIsOpen(true)
+        if (isMobile) {
+            router.push('/lessons/new')
+        } else {
+            setEditingLesson(null)
+            resetForm()
+            setIsOpen(true)
+        }
     }
 
     const handleEditLesson = (lesson: Lesson) => {

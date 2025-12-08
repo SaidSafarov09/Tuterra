@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { Sidebar } from './Sidebar'
 import { MenuIcon, CloseIcon } from '@/components/icons/Icons'
 import { useAuthStore } from '@/store/auth'
@@ -17,7 +18,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const { user, setUser } = useAuthStore()
     const { setTheme } = useTheme()
 
-    
+
     useEffect(() => {
         const fetchUserData = async () => {
             if (!user) {
@@ -33,7 +34,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         avatar: data.avatar || null,
                     })
 
-                    
+
                     if (data.theme) {
                         setTheme(data.theme)
                     }
@@ -45,6 +46,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
         fetchUserData()
     }, [user, setUser, setTheme])
+
+    const pathname = usePathname()
+    const isMobilePage = pathname.includes('/new') || pathname.includes('/edit') || pathname.includes('/calendar/day')
 
     return (
         <div className={styles.layout}>
@@ -58,14 +62,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             )}
 
             <main className={styles.main}>
-                <button
-                    className={styles.mobileMenuButton}
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    aria-label="Toggle menu"
-                >
-                    <MenuIcon size={20} />
-                    <span>Меню</span>
-                </button>
+                {!isMobilePage && (
+                    <button
+                        className={styles.mobileMenuButton}
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        <MenuIcon size={20} />
+                        <span>Меню</span>
+                    </button>
+                )}
 
                 <div className={styles.content}>{children}</div>
             </main>

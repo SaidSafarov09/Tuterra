@@ -9,7 +9,7 @@ import {
 } from '@/services/actions'
 import { ContactType } from '@/lib/contactUtils'
 
-export function useStudents() {
+export function useStudents(onSuccess?: () => void) {
     const [students, setStudents] = useState<Student[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -98,6 +98,7 @@ export function useStudents() {
             await fetchStudents()
             await fetchSubjects()
             handleCloseModal()
+            if (onSuccess) onSuccess()
         }
 
         setIsSubmitting(false)

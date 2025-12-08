@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -19,6 +21,8 @@ import { Subject, Student } from '@/types'
 import styles from './page.module.scss'
 
 export default function SubjectsPage() {
+    const router = useRouter()
+    const isMobile = useMediaQuery('(max-width: 768px)')
     const { subjects, isLoading, createSubject, updateSubject, deleteSubject, refetch } = useSubjects()
     const { data: studentsData, refetch: refetchStudents } = useFetch<Student[]>('/api/students')
     const allStudents = studentsData || []
@@ -122,11 +126,25 @@ export default function SubjectsPage() {
     }
 
     const handleOpenCreateLessonModal = () => {
-        resetLessonForm()
-        if (selectedSubject) {
-            setLessonFormData(prev => ({ ...prev, subjectId: selectedSubject.id }))
+        if (isMobile) {
+            const subjectId = selectedSubject ? selectedSubject.id : ''
+            router.push(`/lessons/new?subjectId=${subjectId}`)
+        } else {
+            resetLessonForm()
+            if (selectedSubject) {
+                setLessonFormData(prev => ({ ...prev, subjectId: selectedSubject.id }))
+            }
+            setIsCreateLessonModalOpen(true)
         }
-        setIsCreateLessonModalOpen(true)
+    }
+
+    const handleOpenAddStudentModal = () => {
+        if (isMobile) {
+            const subjectId = selectedSubject ? selectedSubject.id : ''
+            router.push(`/students/new?subjectId=${subjectId}`)
+        } else {
+            setIsAddStudentModalOpen(true)
+        }
     }
 
     return (
@@ -199,7 +217,7 @@ export default function SubjectsPage() {
                 subject={selectedSubject}
                 students={subjectStudents}
                 isLoading={isLoadingStudents}
-                onAddStudent={() => setIsAddStudentModalOpen(true)}
+                onAddStudent={handleOpenAddStudentModal}
                 onCreateLesson={handleOpenCreateLessonModal}
             />
 

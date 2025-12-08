@@ -20,31 +20,31 @@ export async function POST(
             return NextResponse.json({ error: 'studentId обязателен' }, { status: 400 })
         }
 
-        
-        const subject = await prisma.subject.findFirst({
-            where: {
-                id: subjectId,
-                userId: user.id,
-            },
+
+        const subject = await prisma.subject.findUnique({
+            where: { id: subjectId },
         })
 
         if (!subject) {
-            return NextResponse.json({ error: 'Предмет не найден' }, { status: 404 })
+            return NextResponse.json({ error: `Предмет не найден (ID: ${subjectId})` }, { status: 404 })
         }
 
-        
-        const student = await prisma.student.findFirst({
-            where: {
-                id: studentId,
-                ownerId: user.id,
-            },
+        if (subject.userId !== user.id) {
+            return NextResponse.json({ error: `Нет прав на предмет` }, { status: 403 })
+        }
+
+        const student = await prisma.student.findUnique({
+            where: { id: studentId },
         })
 
         if (!student) {
-            return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
+            return NextResponse.json({ error: `Ученик не найден (ID: ${studentId})` }, { status: 404 })
         }
 
-        
+        if (student.ownerId !== user.id) {
+            return NextResponse.json({ error: `Нет прав на ученика` }, { status: 403 })
+        }
+
         await prisma.student.update({
             where: { id: studentId },
             data: {
@@ -81,7 +81,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'studentId обязателен' }, { status: 400 })
         }
 
-        
+
         const subject = await prisma.subject.findFirst({
             where: {
                 id: subjectId,
@@ -93,7 +93,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Предмет не найден' }, { status: 404 })
         }
 
-        
+
         const student = await prisma.student.findFirst({
             where: {
                 id: studentId,

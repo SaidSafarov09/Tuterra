@@ -1,6 +1,8 @@
 "use client";
 
 import React, { use as usePromise } from "react";
+import { useRouter } from "next/navigation";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { StudentHeader } from "@/components/students/StudentHeader";
 import { StudentSubjects } from "@/components/students/StudentSubjects";
@@ -17,6 +19,8 @@ export default function StudentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = usePromise(params);
+  const router = useRouter();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const {
     student,
@@ -72,6 +76,15 @@ export default function StudentDetailPage({
     confirmDeleteLesson,
   } = useStudentDetail(id);
 
+  const handleCreateLessonMobile = () => {
+    if (isMobile) {
+      router.push(`/lessons/new?studentId=${id}`);
+    } else {
+      openCreateLessonModal();
+    }
+  };
+
+
   if (isLoading) {
     return <StudentDetailSkeleton />;
   }
@@ -85,7 +98,7 @@ export default function StudentDetailPage({
       <StudentHeader
         student={student}
         onEdit={openEditModal}
-        onCreateLesson={openCreateLessonModal}
+        onCreateLesson={handleCreateLessonMobile}
         onDelete={() => setDeleteStudentConfirm(true)}
       />
       <StudentSubjects
@@ -106,7 +119,7 @@ export default function StudentDetailPage({
           subject: l.subject || null,
         }))}
         student={student}
-        onCreateLesson={openCreateLessonModal}
+        onCreateLesson={handleCreateLessonMobile}
         onEditLesson={handleEditLesson}
         onDeleteLesson={handleDeleteLesson}
         onTogglePaidStatus={handleTogglePaidStatus}

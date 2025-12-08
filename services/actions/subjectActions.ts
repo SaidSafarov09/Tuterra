@@ -34,8 +34,9 @@ export async function createSubject(data: {
         const subject = await subjectsApi.create(data)
         toast.success(createSubjectCreatedMessage(data.name))
         return subject
-    } catch (error) {
-        toast.error(SUBJECT_MESSAGES.CREATE_ERROR)
+    } catch (error: any) {
+        const message = error.message || SUBJECT_MESSAGES.CREATE_ERROR
+        toast.error(message)
         return null
     }
 }
@@ -90,7 +91,7 @@ export async function linkStudentToSubject(
     subjectId: string,
     studentId: string
 ): Promise<boolean> {
-    if (!studentId) {
+    if (!studentId || !subjectId) {
         toast.error(VALIDATION_MESSAGES.SELECT_STUDENT)
         return false
     }
@@ -99,8 +100,9 @@ export async function linkStudentToSubject(
         await subjectsApi.linkStudent(subjectId, studentId)
         toast.success(SUBJECT_MESSAGES.CREATED)
         return true
-    } catch (error) {
-        toast.error(SUBJECT_MESSAGES.CREATE_ERROR)
+    } catch (error: any) {
+        const message = error.message || SUBJECT_MESSAGES.LINK_ERROR
+        toast.error(message)
         return false
     }
 }

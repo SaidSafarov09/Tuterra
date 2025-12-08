@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import { useRouter } from 'next/navigation'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { PlusIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { StudentsList } from '@/components/students/StudentsList'
@@ -31,6 +33,17 @@ export default function StudentsPage() {
         filteredStudents
     } = useStudents()
 
+    const router = useRouter()
+    const isMobile = useMediaQuery('(max-width: 768px)')
+
+    const handleAddClick = () => {
+        if (isMobile) {
+            router.push('/students/new')
+        } else {
+            handleOpenModal()
+        }
+    }
+
     return (
         <div>
             <div className={styles.header}>
@@ -38,7 +51,7 @@ export default function StudentsPage() {
                     <h1 className={styles.title}>Ученики</h1>
                     <p className={styles.subtitle}>Управляйте списком ваших учеников</p>
                 </div>
-                <Button onClick={handleOpenModal}>
+                <Button onClick={handleAddClick}>
                     <PlusIcon size={20} />
                     Добавить ученика
                 </Button>

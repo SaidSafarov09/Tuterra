@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { addMonths, subMonths, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 
@@ -23,6 +25,8 @@ import { useLessonForm } from '@/hooks/useLessonForm'
 import styles from './page.module.scss'
 
 export default function CalendarPage() {
+    const router = useRouter()
+    const isMobile = useMediaQuery('(max-width: 768px)')
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [lessons, setLessons] = useState<Lesson[]>([])
@@ -145,8 +149,12 @@ export default function CalendarPage() {
     }
 
     const handleDayClick = (date: Date) => {
-        setSelectedDate(date)
-        setIsDetailsModalOpen(true)
+        if (isMobile) {
+            router.push(`/calendar/day/${format(date, 'yyyy-MM-dd')}`)
+        } else {
+            setSelectedDate(date)
+            setIsDetailsModalOpen(true)
+        }
     }
 
     const handleCloseDetailsModal = () => {

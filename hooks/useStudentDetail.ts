@@ -88,7 +88,7 @@ export function useStudentDetail(studentId: string) {
     }, [studentId])
 
     const handleDeleteStudent = async () => {
-        const success = await deleteStudent(studentId)
+        const success = await deleteStudent(student?.id || studentId)
         if (success) {
             router.push('/students')
         }
@@ -98,7 +98,7 @@ export function useStudentDetail(studentId: string) {
     const handleDeleteSubject = async () => {
         if (!deleteSubjectConfirm) return
 
-        const success = await unlinkStudentFromSubject(deleteSubjectConfirm, studentId)
+        const success = await unlinkStudentFromSubject(deleteSubjectConfirm, student?.id || studentId)
         if (success) {
             await fetchStudent()
             await loadSubjects()
@@ -108,7 +108,7 @@ export function useStudentDetail(studentId: string) {
 
     const handleUpdateStudent = async () => {
         setIsSubmitting(true)
-        const updated = await updateStudent(studentId, editFormData)
+        const updated = await updateStudent(student?.id || studentId, editFormData)
 
         if (updated) {
             await fetchStudent()
@@ -118,8 +118,12 @@ export function useStudentDetail(studentId: string) {
     }
 
     const handleAddSubject = async () => {
+        if (!selectedSubjectId) {
+            toast.error('Выберите предмет')
+            return
+        }
         setIsSubmitting(true)
-        const success = await linkStudentToSubject(selectedSubjectId, studentId)
+        const success = await linkStudentToSubject(selectedSubjectId, student?.id || studentId)
 
         if (success) {
             await fetchStudent()
@@ -132,7 +136,7 @@ export function useStudentDetail(studentId: string) {
     const handleCreateLesson = async () => {
         setIsSubmitting(true)
         const lesson = await createLesson({
-            studentId,
+            studentId: student?.id || studentId,
             subjectId: lessonFormData.subjectId || '',
             date: lessonFormData.date,
             price: lessonFormData.price,
@@ -154,7 +158,7 @@ export function useStudentDetail(studentId: string) {
         if (newSubject) {
             if (!forLink) {
 
-                await linkStudentToSubject(newSubject.id, studentId)
+                await linkStudentToSubject(newSubject.id, student?.id || studentId)
                 setLessonFormData(prev => ({ ...prev, subjectId: newSubject.id }))
             } else {
                 setSelectedSubjectId(newSubject.id)
@@ -166,7 +170,7 @@ export function useStudentDetail(studentId: string) {
 
     const handleEditLesson = async (lesson: any) => {
         setLessonFormData({
-            studentId: studentId,
+            studentId: student?.id || studentId,
             subjectId: lesson.subject?.id || '',
             date: new Date(lesson.date),
             duration: lesson.duration || 60,
@@ -187,7 +191,7 @@ export function useStudentDetail(studentId: string) {
 
         setIsSubmitting(true)
         const updated = await updateLesson(editingLessonId, {
-            studentId,
+            studentId: student?.id || studentId,
             subjectId: lessonFormData.subjectId || undefined,
             date: lessonFormData.date,
             price: lessonFormData.price,
