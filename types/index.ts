@@ -56,7 +56,7 @@ export interface Lesson {
     subjectName?: string | null
     subjectColor?: string | null
     student: {
-        slug: string
+        slug?: string
         id: string
         name: string
     }
