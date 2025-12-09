@@ -31,8 +31,8 @@
     overscroll-behavior: contain;
 
     @media (max-width: 768px) {
-        max-height: calc(100dvh - 32px);
-        height: 100vh;
+        height: 100dvh;
+        max-height: 100dvh;
         border-radius: 0;
         box-shadow: none;
         animation: slideUp 0.3s ease-out;
