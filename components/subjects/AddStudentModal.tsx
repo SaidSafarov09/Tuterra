@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
-import { Input } from '@/components/ui/Input'
+import { Input, Textarea } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { ContactInput } from '@/components/ui/ContactInput'
 import { Student, Subject } from '@/types'
@@ -48,7 +48,7 @@ export function AddStudentModal({
         }
     }, [isOpen])
 
-    const handleStudentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleStudentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setStudentFormData((prev) => ({ ...prev, [name]: value }))
     }
@@ -165,12 +165,12 @@ export function AddStudentModal({
                             onChange={(value, type) => setStudentFormData(prev => ({ ...prev, parentContact: value, parentContactType: type }))}
                             disabled={isSubmitting}
                         />
-                        <Input
+                        <Textarea
                             label="Заметка"
                             name="note"
                             value={studentFormData.note}
                             onChange={handleStudentChange}
-                            placeholder="Дополнительная информация"
+                            placeholder="Дополнительная информация об ученике"
                             disabled={isSubmitting}
                         />
                     </>

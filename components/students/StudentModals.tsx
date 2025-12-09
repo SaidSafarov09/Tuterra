@@ -1,6 +1,6 @@
 import React from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
-import { Input } from '@/components/ui/Input'
+import { Input, Textarea } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { ContactInput } from '@/components/ui/ContactInput'
 import { Student, Subject, LessonFormData } from '@/types'
@@ -8,7 +8,7 @@ import { LessonFormWithDateTime } from '@/components/lessons/LessonFormWithDateT
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { ContactType } from '@/lib/contactUtils'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
-import { stringToColor } from '@/lib/utils'
+import { getInitials, stringToColor } from '@/lib/utils'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface StudentModalsProps {
@@ -97,12 +97,20 @@ export function StudentModals({
                 }
             >
                 <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-                    <Input
-                        label="Имя"
-                        value={editFormData.name}
-                        onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        required
-                    />
+                    <div className={styles.studentAvatarContainer}>
+                        <div
+                            className={styles.studentAvatar}
+                            style={{ backgroundColor: stringToColor(student.name) }}
+                        >
+                            {getInitials(editFormData.name)}
+                        </div>
+                        <Input
+                            label="Имя"
+                            value={editFormData.name}
+                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                            required
+                        />
+                    </div>
                     <ContactInput
                         label="Контакт"
                         value={editFormData.contact}
@@ -115,7 +123,7 @@ export function StudentModals({
                         type={editFormData.parentContactType || 'phone'}
                         onChange={(value, type) => setEditFormData({ ...editFormData, parentContact: value, parentContactType: type })}
                     />
-                    <Input
+                    <Textarea
                         label="Заметка"
                         value={editFormData.note}
                         onChange={(e) => setEditFormData({ ...editFormData, note: e.target.value })}
@@ -128,7 +136,7 @@ export function StudentModals({
                 isOpen={isAddSubjectModalOpen}
                 onClose={onCloseAddSubjectModal}
                 title={<>
-                    Добавить предмет для {isMobile ? <br /> : ""}
+                    Добавить предмет для {isMobile ? "" : "ученика"} <br />
                     <span style={{ color: stringToColor(student.name) }}>{student.name}</span>
                 </>}
                 footer={

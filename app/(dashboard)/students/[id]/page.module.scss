@@ -171,14 +171,13 @@
   position: relative;
   overflow: hidden;
 
-  &::before {
-    content: "";
+  .leftBar {
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
     width: 4px;
-    background: var(--primary);
+    border-radius: 2px 0 0 2px;
   }
 
   &:hover {
@@ -188,12 +187,16 @@
 
   strong {
     display: block;
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-secondary);
     margin-bottom: 8px;
+
+    @media (max-width: 768px) {
+      font-size: 12px;
+    }
   }
 
   p {
@@ -512,6 +515,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.studentAvatarContainer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .contactLink {

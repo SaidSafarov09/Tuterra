@@ -184,6 +184,10 @@
     align-items: flex-start;
     gap: 10px;
     width: max-content;
+
+    &:nth-child(2) {
+        width: 100%;
+    }
 }
 
 .iconWrapper {
