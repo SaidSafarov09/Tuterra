@@ -17,9 +17,10 @@ import { ClockIcon } from '@/components/icons/Icons'
 import styles from './page.module.scss'
 
 import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
-import { LESSON_MESSAGES, STUDENT_MESSAGES, SUBJECT_MESSAGES } from '@/constants/messages'
+import { LESSON_MESSAGES } from '@/constants/messages'
 import { LessonDetailSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
+
 
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter()
@@ -164,7 +165,9 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 <div className={styles.lessonHeader}>
                     <div>
                         <div className={styles.studentNameRow}>
-                            <h1 className={styles.studentName}>{lesson.student.name}</h1>
+                            <div onClick={() => router.push(`/students/${lesson.student.slug || lesson.student.id}`)}>
+                                <h1 className={styles.studentName}>{lesson.student.name}</h1>
+                            </div>
                             {lesson.subject && (
                                 <span
                                     className={styles.subjectBadge}
@@ -182,7 +185,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                             )}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <p className={styles.lessonDate}>
+                            <p className={styles.lessonDate} style={{ color: isLessonPast ? 'var(--warning)' : 'var(--success)' }}>
                                 {isLessonPast
                                     ? `Занятие было ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
                                     : `${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`

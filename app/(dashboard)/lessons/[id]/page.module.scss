@@ -64,6 +64,12 @@
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--primary);
+        transition: all 0.2s ease;
+    }
 
     @media (max-width: 768px) {
         font-size: 20px;
@@ -82,10 +88,10 @@
 
 .lessonDate {
     font-size: 16px;
-    color: var(--primary);
     font-weight: 600;
     margin: 0;
     padding: 12px 0;
+
     @media (max-width: 768px) {
         font-size: 14px;
         width: max-content;

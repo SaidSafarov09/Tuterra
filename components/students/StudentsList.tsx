@@ -83,17 +83,15 @@ export function StudentsList({ students }: StudentsListProps) {
                     <div className={styles.cardBody}>
                         {student.contact && (
                             <div className={styles.infoRow} onClick={(e) => e.stopPropagation()}>
-                                <a
-                                    href={getContactLink(student.contactType as ContactType || 'phone', student.contact)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <div
+                                    className={styles.infoRowText}
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'inherit', textDecoration: 'none', width: '100%' }}
                                 >
                                     <div className={styles.iconWrapper}>
                                         {getContactIcon(student.contactType || 'phone')}
                                     </div>
                                     <span className={styles.infoText}>{student.contact}</span>
-                                </a>
+                                </div>
                             </div>
                         )}
 
