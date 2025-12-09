@@ -43,7 +43,6 @@
     }
 }
 
-/* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
     .tab:hover {
         background: rgba(255, 255, 255, 0.05);
@@ -53,4 +52,8 @@
         background: var(--primary);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
+}
+
+.tab.active {
+    background: var(--primary);
 }

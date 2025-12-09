@@ -128,7 +128,7 @@ export function StudentModals({
                 isOpen={isAddSubjectModalOpen}
                 onClose={onCloseAddSubjectModal}
                 title={<>
-                    Добавить предмет для {isMobile ? <br /> : "&nbsp;"}
+                    Добавить предмет для {isMobile ? <br /> : ""}
                     <span style={{ color: stringToColor(student.name) }}>{student.name}</span>
                 </>}
                 footer={

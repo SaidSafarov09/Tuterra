@@ -22,7 +22,7 @@ export function LessonFormModal({
 }: LessonFormModalProps) {
     const title = customTitle || (isEdit ? "Редактировать занятие" : "Добавить занятие")
     const isMobile = useMediaQuery("(max-width: 768px)")
-    const minHeight = isMobile ? "auto" : "580px"
+    const minHeight = isMobile ? "auto" : "550px"
 
     return (
         <Modal
