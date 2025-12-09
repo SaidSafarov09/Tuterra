@@ -43,6 +43,10 @@
         opacity: 0.5;
         cursor: not-allowed;
     }
+
+    @media (max-width: 768px) {
+        padding: 10px 40px 10px 16px;
+    }
 }
 
 .icon {

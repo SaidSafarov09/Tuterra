@@ -31,7 +31,7 @@
     }
 
     &.active {
-        color: var(--text-primary);
+        color: var(--surface);
         background: var(--bg-primary);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         font-weight: 600;
@@ -39,6 +39,7 @@
 
     @media (max-width: 768px) {
         padding: 10px 8px;
+        font-size: 13px;
     }
 }
 

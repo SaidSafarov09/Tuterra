@@ -61,6 +61,7 @@ export function SubjectFormModal({
             isOpen={isOpen}
             onClose={onClose}
             title={title}
+            mobileView="modal"
             footer={
                 <ModalFooter
                     onCancel={onClose}

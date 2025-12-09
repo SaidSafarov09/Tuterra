@@ -190,7 +190,7 @@ export function LessonForm({
                 </div>
 
                 {activeTab === 'single' ? (
-                    <div className={styles.row}>
+                    <div className={styles.rowDate}>
                         <div className={styles.dateInputWrapper} ref={calendarRef}>
                             <label className={styles.label}>Дата</label>
                             <Button

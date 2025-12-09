@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import styles from './Modal.module.scss'
 import { Button } from './Button'
-import { XIcon } from 'lucide-react'
+import { XIcon, ArrowLeft } from 'lucide-react'
 
 interface ModalProps {
     isOpen: boolean
@@ -13,6 +13,7 @@ interface ModalProps {
     size?: 'default' | 'large'
     maxWidth?: string
     minHeight?: string
+    mobileView?: 'page' | 'modal'
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -23,7 +24,8 @@ export const Modal: React.FC<ModalProps> = ({
     footer,
     size = 'default',
     maxWidth = '500px',
-    minHeight = "auto"
+    minHeight = "auto",
+    mobileView = 'page',
 }) => {
     const modalRef = useRef<HTMLDivElement>(null)
 
@@ -51,14 +53,20 @@ export const Modal: React.FC<ModalProps> = ({
         <div className={styles.overlay} onClick={onClose}>
             <div
                 ref={modalRef}
-                className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''}`}
+                className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''} ${mobileView === 'modal' ? styles.modalPopup : ''}`}
                 onClick={(e) => e.stopPropagation()}
                 style={{ maxWidth }}
             >
 
                 <div className={styles.header}>
+                    {mobileView === 'page' && (
+                        <div className={styles.mobileBackButton} onClick={onClose}>
+                            <ArrowLeft size={20} />
+                            {/* <span>Назад</span> */}
+                        </div>
+                    )}
                     <h2 className={styles.title}>{title}</h2>
-                    <div className={styles.closeButton} onClick={onClose}>
+                    <div className={`${styles.closeButton} ${mobileView === 'modal' ? styles.closeButtonPopup : ''}`} onClick={onClose}>
                         <XIcon size={24} />
                     </div>
                 </div>

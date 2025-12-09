@@ -31,6 +31,7 @@ export const DeleteLessonDialog: React.FC<DeleteLessonDialogProps> = ({
             isOpen={isOpen}
             onClose={onClose}
             title="Удалить занятие"
+            mobileView="modal"
             footer={
                 <ModalFooter
                     onCancel={onClose}

@@ -210,9 +210,9 @@
     }
 
     @media (max-width: 768px) {
-        flex-direction: column;
-        align-items: flex-start;
         gap: 8px;
+        padding: 0;
+
     }
 }
 
@@ -254,6 +254,7 @@
     padding: 4px 10px;
     border-radius: 12px;
     font-weight: 500;
+    width: max-content;
 }
 
 .noLesson {

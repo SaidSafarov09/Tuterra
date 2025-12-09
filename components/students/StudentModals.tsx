@@ -9,6 +9,7 @@ import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { ContactType } from '@/lib/contactUtils'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
 import { stringToColor } from '@/lib/utils'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface StudentModalsProps {
     student: Student
@@ -79,11 +80,7 @@ export function StudentModals({
     onCloseEditLessonModal,
     onSubmitEditLesson
 }: StudentModalsProps) {
-    const customTitle = student ? (
-        <>
-            <span style={{ color: `${stringToColor(student.name)}` }}>{student.name}</span>
-        </>
-    ) : undefined;
+    const isMobile = useMediaQuery("(max-width: 768px)");
     return (
         <>
             {/* Edit Student Modal */}
@@ -131,7 +128,7 @@ export function StudentModals({
                 isOpen={isAddSubjectModalOpen}
                 onClose={onCloseAddSubjectModal}
                 title={<>
-                    Добавить предмет для &nbsp;
+                    Добавить предмет для {isMobile ? <br /> : "&nbsp;"}
                     <span style={{ color: stringToColor(student.name) }}>{student.name}</span>
                 </>}
                 footer={
@@ -180,7 +177,7 @@ export function StudentModals({
                 fixedStudentId={student.id}
                 customTitle={
                     <>
-                        Занятие для ученика &nbsp;
+                        Занятие для ученика {isMobile ? <br /> : ""}
                         <span style={{ color: stringToColor(student.name) }}>{student.name}</span>
                     </>
                 }

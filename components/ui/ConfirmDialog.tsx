@@ -34,7 +34,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={title}>
+        <Modal isOpen={isOpen} onClose={onClose} title={title} mobileView="modal">
             <div className={styles.content}>
                 <p className={styles.message}>{message}</p>
                 <div className={styles.actions}>

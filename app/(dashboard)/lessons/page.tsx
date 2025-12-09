@@ -114,13 +114,9 @@ function LessonsContent() {
     const isMobile = useMediaQuery('(max-width: 768px)')
 
     const handleOpenModal = () => {
-        if (isMobile) {
-            router.push('/lessons/new')
-        } else {
-            setEditingLesson(null)
-            resetForm()
-            setIsOpen(true)
-        }
+        setEditingLesson(null)
+        resetForm()
+        setIsOpen(true)
     }
 
     const handleEditLesson = (lesson: Lesson) => {
@@ -144,11 +140,7 @@ function LessonsContent() {
     }
 
     const handleRescheduleClick = (lesson: Lesson) => {
-        if (isMobile) {
-            router.push(`/lessons/${lesson.id}/reschedule`)
-        } else {
-            handleRescheduleLesson(lesson)
-        }
+        handleRescheduleLesson(lesson)
     }
 
     return (

@@ -258,7 +258,6 @@
 
     @media (max-width: 768px) {
         gap: 16px;
-        overflow-y: auto;
     }
 }
 
@@ -445,7 +444,7 @@
     align-items: flex-start;
 
     @media (max-width: 768px) {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
     }
 }
 
@@ -474,6 +473,17 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
 
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+.rowDate {
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
 .dateInputWrapper {

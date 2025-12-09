@@ -149,12 +149,8 @@ export default function CalendarPage() {
     }
 
     const handleDayClick = (date: Date) => {
-        if (isMobile) {
-            router.push(`/calendar/day/${format(date, 'yyyy-MM-dd')}`)
-        } else {
-            setSelectedDate(date)
-            setIsDetailsModalOpen(true)
-        }
+        setSelectedDate(date)
+        setIsDetailsModalOpen(true)
     }
 
     const handleCloseDetailsModal = () => {

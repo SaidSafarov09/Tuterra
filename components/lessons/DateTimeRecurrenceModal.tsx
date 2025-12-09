@@ -66,7 +66,7 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
             maxWidth="650px"
             isOpen={isOpen}
             onClose={onClose}
-            title={showRecurrence ? "Настройка регулярного занятия" : "Дата и время занятия"}
+            title={showRecurrence ? "Расписание" : "Дата и время занятия"}
             footer={
                 <ModalFooter
                     onCancel={onClose}

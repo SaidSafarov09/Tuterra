@@ -77,20 +77,12 @@ export default function StudentDetailPage({
   } = useStudentDetail(id);
 
   const handleCreateLessonMobile = () => {
-    if (isMobile) {
-      router.push(`/lessons/new?studentId=${id}`);
-    } else {
-      openCreateLessonModal();
-    }
+    openCreateLessonModal();
   };
 
 
   const handleRescheduleLessonMobile = (lessonId: string) => {
-    if (isMobile) {
-      router.push(`/lessons/${lessonId}/reschedule`)
-    } else {
-      handleRescheduleLesson(lessonId)
-    }
+    handleRescheduleLesson(lessonId)
   }
 
   if (isLoading) {

@@ -37,11 +37,7 @@ export default function StudentsPage() {
     const isMobile = useMediaQuery('(max-width: 768px)')
 
     const handleAddClick = () => {
-        if (isMobile) {
-            router.push('/students/new')
-        } else {
-            handleOpenModal()
-        }
+        handleOpenModal()
     }
 
     return (

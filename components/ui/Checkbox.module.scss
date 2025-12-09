@@ -4,6 +4,7 @@
     gap: 0.5rem;
     cursor: pointer;
     user-select: none;
+    width: max-content;
 
     &:hover .inputWrapper {
         border-color: var(--primary);

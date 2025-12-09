@@ -71,13 +71,9 @@ export default function SubjectsPage() {
     )
 
     const handleSubjectClick = (subject: Subject) => {
-        if (isMobile) {
-            router.push(`/subjects/${subject.id}`)
-        } else {
-            setSelectedSubject(subject)
-            setIsDetailsModalOpen(true)
-            fetchStudents(subject.id)
-        }
+        setSelectedSubject(subject)
+        setIsDetailsModalOpen(true)
+        fetchStudents(subject.id)
     }
 
     const handleCloseDetailsModal = () => {
@@ -130,26 +126,23 @@ export default function SubjectsPage() {
     }
 
     const handleOpenCreateLessonModal = () => {
-        if (isMobile) {
-            const subjectId = selectedSubject ? selectedSubject.id : ''
-            router.push(`/lessons/new?subjectId=${subjectId}`)
-        } else {
-            resetLessonForm()
-            if (selectedSubject) {
-                setLessonFormData(prev => ({ ...prev, subjectId: selectedSubject.id }))
-            }
-            setIsCreateLessonModalOpen(true)
+        resetLessonForm()
+        if (selectedSubject) {
+            setLessonFormData(prev => ({ ...prev, subjectId: selectedSubject.id }))
         }
+        setIsCreateLessonModalOpen(true)
     }
 
     const handleOpenAddStudentModal = () => {
-        if (isMobile) {
-            const subjectId = selectedSubject ? selectedSubject.id : ''
-            router.push(`/students/new?subjectId=${subjectId}`)
-        } else {
-            setIsAddStudentModalOpen(true)
-        }
+        setIsAddStudentModalOpen(true)
     }
+
+    const customTitle = selectedSubject ? (
+        <>
+            Занятие по предмету {isMobile ? <br /> : <></>}
+            <span style={{ color: selectedSubject.color }}>{selectedSubject.name}</span>
+        </>
+    ) : undefined
 
     return (
         <div>
@@ -249,7 +242,7 @@ export default function SubjectsPage() {
                 onCreateSubject={handleCreateSubject}
                 handleChange={handleLessonChange}
                 fixedSubjectId={selectedSubject?.id}
-                customTitle={selectedSubject ? `Добавить занятие по предмету ${selectedSubject.name}` : undefined}
+                customTitle={customTitle}
             />
 
             <ConfirmDialog
