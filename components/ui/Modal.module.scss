@@ -31,7 +31,7 @@
     overscroll-behavior: contain;
 
     @media (max-width: 768px) {
-        max-height: 100vh;
+        max-height: calc(100dvh - 32px);
         height: 100vh;
         border-radius: 0;
         box-shadow: none;
