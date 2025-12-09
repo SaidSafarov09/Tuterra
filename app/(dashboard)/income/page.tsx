@@ -276,7 +276,9 @@ export default function IncomePage() {
                                 )}
                             </div>
 
-                            <a href="#" className={styles.allTransactionsLink} onClick={(e) => e.preventDefault()}>
+                            <a href="#"
+                                className={styles.allTransactionsLink}
+                                onClick={() => toast.warning("Страница в разработке")}>
                                 Все операции
                                 <ArrowRightIcon size={16} />
                             </a>
