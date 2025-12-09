@@ -8,6 +8,7 @@ import { TimeSelect } from '@/components/ui/TimeSelect'
 import type { RecurrenceRule } from '@/types/recurring'
 import styles from './DateTimeRecurrenceModal.module.scss'
 import { Info } from 'lucide-react'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface DateTimeRecurrenceModalProps {
     isOpen: boolean
@@ -60,10 +61,11 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
         const accusative = ['воскресенье', 'понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу']
         return form === 'accusative' ? accusative[day] : nominative[day]
     }
+    const isMobile = useMediaQuery("(max-width: 768px)")
 
     return (
         <Modal
-            maxWidth="650px"
+            maxWidth={isMobile ? "100%" : "650px"}
             isOpen={isOpen}
             onClose={onClose}
             title={showRecurrence ? "Расписание" : "Дата и время занятия"}

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import styles from './Modal.module.scss'
 import { Button } from './Button'
 import { XIcon, ArrowLeft } from 'lucide-react'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface ModalProps {
     isOpen: boolean
@@ -29,6 +30,7 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
     const modalRef = useRef<HTMLDivElement>(null)
 
+    const isMobile = useMediaQuery("(max-width: 768px)")
     useEffect(() => {
         if (!isOpen) return
 
@@ -39,23 +41,46 @@ export const Modal: React.FC<ModalProps> = ({
         }
 
         document.addEventListener('keydown', handleEscape)
-        document.body.style.overflow = 'hidden'
 
         return () => {
             document.removeEventListener('keydown', handleEscape)
-            document.body.style.overflow = 'unset'
+            if (document.querySelectorAll('.modal-overlay').length <= 1) {
+                document.body.style.overflow = 'unset'
+                document.documentElement.style.overflow = 'unset'
+            }
         }
     }, [isOpen, onClose])
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const scrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.left = '';
+            document.body.style.right = '';
+            document.body.style.overflow = '';
+
+            window.scrollTo(0, scrollY);
+        };
+    }, [isOpen]);
 
     if (!isOpen) return null
 
     const modalContent = (
-        <div className={styles.overlay} onClick={onClose}>
+        <div className={`${styles.overlay} modal-overlay`} onClick={onClose}>
             <div
                 ref={modalRef}
                 className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''} ${mobileView === 'modal' ? styles.modalPopup : ''}`}
                 onClick={(e) => e.stopPropagation()}
-                style={{ maxWidth }}
+                style={{ maxWidth: isMobile ? "100%" : maxWidth }}
             >
 
                 <div className={styles.header}>
