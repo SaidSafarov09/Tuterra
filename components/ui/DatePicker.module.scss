@@ -87,10 +87,6 @@
         font-size: 14px;
     }
 
-    &:hover {
-        background: var(--background);
-    }
-
     &.today {
         color: var(--primary);
         font-weight: 600;
@@ -102,6 +98,16 @@
         font-weight: 600;
 
         &:hover {
+            background: var(--primary);
+        }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            background: var(--background);
+        }
+
+        &.selected:hover {
             background: var(--primary);
         }
     }

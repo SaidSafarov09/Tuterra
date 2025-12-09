@@ -14,10 +14,15 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    touch-action: manipulation;
 
-    &:hover:not(.disabled) {
-        border-color: var(--primary);
-        background: var(--border-light);
+    @media (hover: hover) and (pointer: fine) {
+        &:hover:not(.disabled) {
+            border-color: var(--primary);
+            background: var(--border-light);
+        }
     }
 
     &.selected {
