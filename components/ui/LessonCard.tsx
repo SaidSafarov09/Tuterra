@@ -54,16 +54,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
         <div className={`${styles.card} ${variant === 'compact' ? styles.compact : ''} ${lesson.isCanceled ? styles.canceled : ''}`}>
             <div className={styles.header}>
                 <div className={styles.info}>
-                    <div className={styles.studentHeader}>
-                        <h4 className={styles.studentName}>
-                            {lesson.group ? lesson.group.name : lesson.student.name}
-                        </h4>
-                        {lesson.group && (
-                            <span className={styles.groupBadge} title={`Групповое занятие: ${lesson.group.name}`}>
-                                👥 Группа
-                            </span>
-                        )}
-                    </div>
+                    <h4 className={styles.studentName}>{lesson.student.name}</h4>
                     {(lesson.subject || (lesson.subjectName && lesson.subjectColor)) && (
                         <span
                             className={styles.subjectBadge}

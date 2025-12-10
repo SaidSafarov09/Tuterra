@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { Student, Subject, LessonFormData, Group } from '@/types'
+import { Student, Subject, LessonFormData } from '@/types'
 import styles from '@/app/(dashboard)/lessons/page.module.scss'
 import { useTypewriter } from '@/hooks/useTypewriter'
 import { LESSON_TOPIC_EXAMPLES } from '@/constants'
@@ -27,7 +27,6 @@ export interface LessonFormProps {
     setFormData: React.Dispatch<React.SetStateAction<LessonFormData>>
     students: Student[]
     subjects: Subject[]
-    groups?: Group[]
     isSubmitting: boolean
     error: string
     onSubmit: () => void
@@ -37,7 +36,6 @@ export interface LessonFormProps {
     handleChange: (name: string, value: any) => void
     fixedSubjectId?: string
     fixedStudentId?: string
-    fixedGroupId?: string
     children?: React.ReactNode
 }
 
@@ -47,7 +45,6 @@ export function LessonForm({
     setFormData,
     students,
     subjects,
-    groups = [],
     isSubmitting,
     error,
     onSubmit,
@@ -57,7 +54,6 @@ export function LessonForm({
     handleChange,
     fixedSubjectId,
     fixedStudentId,
-    fixedGroupId,
     children
 }: LessonFormProps) {
     const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
@@ -65,9 +61,6 @@ export function LessonForm({
     const [tempDate, setTempDate] = useState<Date | undefined>(formData.date)
     const [tempRecurrence, setTempRecurrence] = useState<RecurrenceRule | undefined>(formData.recurrence)
     const [activeTab, setActiveTab] = useState('single')
-    const [lessonType, setLessonType] = useState<'student' | 'group'>(
-        fixedGroupId ? 'group' : 'student'
-    )
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
     const calendarRef = useRef<HTMLDivElement>(null)
@@ -155,84 +148,29 @@ export function LessonForm({
                     />
                 )}
 
-                {!fixedStudentId && !fixedGroupId && !isEdit && (
-                    <div className={styles.lessonTypeSelector}>
-                        <label className={styles.label}>Тип занятия</label>
-                        <div className={styles.typeButtons}>
-                            <button
-                                type="button"
-                                className={`${styles.typeButton} ${lessonType === 'student' ? styles.typeButtonActive : ''}`}
-                                onClick={() => {
-                                    setLessonType('student')
-                                    setFormData(prev => ({ ...prev, groupId: undefined }))
-                                }}
-                                disabled={isSubmitting}
-                            >
-                                Индивидуальное
-                            </button>
-                            <button
-                                type="button"
-                                className={`${styles.typeButton} ${lessonType === 'group' ? styles.typeButtonActive : ''}`}
-                                onClick={() => {
-                                    setLessonType('group')
-                                }}
-                                disabled={isSubmitting}
-                            >
-                                Групповое
-                            </button>
-                        </div>
-                    </div>
-                )}
-
                 <div className={styles.row}>
-                    {lessonType === 'student' ? (
-                        <Dropdown
-                            label="Ученик"
-                            placeholder="Выберите или создайте ученика"
-                            value={fixedStudentId || formData.studentId}
-                            onChange={(value) => {
-                                if (fixedSubjectId) {
-                                    handleChange('studentId', value)
-                                } else {
-                                    onStudentChange(value, students)
-                                }
-                            }}
-                            options={students.map((student) => ({
-                                value: student.id,
-                                label: student.name,
-                            }))}
-                            searchable
-                            creatable={!fixedStudentId}
-                            onCreate={onCreateStudent}
-                            menuPosition="relative"
-                            required
-                            disabled={isSubmitting || !!fixedStudentId}
-                        />
-                    ) : (
-                        <>
-                            <Dropdown
-                                label="Группа"
-                                placeholder="Выберите группу"
-                                value={fixedGroupId || formData.groupId || ''}
-                                onChange={(value) => {
-                                    handleChange('groupId', value)
-                                    // Set first student from group as studentId for compatibility
-                                    const group = groups.find(g => g.id === value)
-                                    if (group && group.students && group.students.length > 0) {
-                                        handleChange('studentId', group.students[0].id)
-                                    }
-                                }}
-                                options={groups.map((group) => ({
-                                    value: group.id,
-                                    label: `${group.name} (${group._count?.students || group.students?.length || 0} уч.)`,
-                                }))}
-                                searchable
-                                menuPosition="relative"
-                                required
-                                disabled={isSubmitting || !!fixedGroupId}
-                            />
-                        </>
-                    )}
+                    <Dropdown
+                        label="Ученик"
+                        placeholder="Выберите или создайте ученика"
+                        value={fixedStudentId || formData.studentId}
+                        onChange={(value) => {
+                            if (fixedSubjectId) {
+                                handleChange('studentId', value)
+                            } else {
+                                onStudentChange(value, students)
+                            }
+                        }}
+                        options={students.map((student) => ({
+                            value: student.id,
+                            label: student.name,
+                        }))}
+                        searchable
+                        creatable={!fixedStudentId}
+                        onCreate={onCreateStudent}
+                        menuPosition="relative"
+                        required
+                        disabled={isSubmitting || !!fixedStudentId}
+                    />
 
                     <Dropdown
                         label="Предмет"
