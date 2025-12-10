@@ -16,6 +16,7 @@ import {
     linkStudentToSubject,
     unlinkStudentFromSubject,
 } from '@/services/actions'
+import { unlinkStudentFromSubjectWithLessonsNotification } from '@/services/actions'
 import { STUDENT_MESSAGES } from '@/constants/messages'
 import { toast } from 'sonner'
 
@@ -98,7 +99,18 @@ export function useStudentDetail(studentId: string) {
     const handleDeleteSubject = async () => {
         if (!deleteSubjectConfirm) return
 
-        const success = await unlinkStudentFromSubject(deleteSubjectConfirm, student?.id || studentId)
+        const subject = allSubjects.find(s => s.id === deleteSubjectConfirm)
+        const subjectName = subject?.name || 'предмет'
+        
+        const studentLessons = student?.lessons || []
+        
+        const success = await unlinkStudentFromSubjectWithLessonsNotification(
+            deleteSubjectConfirm,
+            student?.id || studentId,
+            subjectName,
+            studentLessons
+        )
+        
         if (success) {
             await fetchStudent()
             await loadSubjects()

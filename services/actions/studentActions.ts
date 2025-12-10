@@ -85,3 +85,51 @@ export async function deleteStudent(studentId: string): Promise<boolean> {
         return false
     }
 }
+
+export async function unlinkStudentFromSubjectWithLessonsNotification(
+    subjectId: string,
+    studentId: string,
+    subjectName: string,
+    studentLessons: any[] = []
+): Promise<boolean> {
+    try {
+        const lessonsToDelete = studentLessons.filter(lesson =>
+            lesson.subject?.id === subjectId && new Date(lesson.date) >= new Date()
+        )
+        const response = await fetch(`/api/subjects/${subjectId}/students/link`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentId }),
+        })
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'An error occurred' }))
+            throw new Error(error.message || error.error || 'Failed to unlink student from subject')
+        }
+        toast.success(`Предмет "${subjectName}" удален у ученика`)
+ 
+        if (lessonsToDelete.length > 0) {
+            const lessonTimes = lessonsToDelete
+                .map(lesson => new Date(lesson.date))
+                .sort((a, b) => a.getTime() - b.getTime())
+                .map(date => `• ${date.toLocaleDateString('ru-RU')} в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`)
+                .join('\n')
+            
+            toast.info(
+                `Будущие занятия по этому предмету были автоматически удалены:\n${lessonTimes}`,
+                {
+                    duration: 8000,
+                    position: 'bottom-center'
+                }
+            )
+        }
+        
+        return true
+    } catch (error: any) {
+        console.error('Unlink student from subject error:', error)
+        toast.error(error.message || STUDENT_MESSAGES.UNLINKED_FROM_SUBJECT)
+        return false
+    }
+}
