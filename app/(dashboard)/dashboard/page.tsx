@@ -103,7 +103,7 @@ export default function DashboardPage() {
 
                     <Section
                         title="Неоплаченные занятия"
-                        viewAllHref="/lessons?filter=unpaid"
+                        viewAllHref="/lessons?tab=unpaid"
                         viewAllText="Все неоплаченные →"
                     >
                         {isLoading ? (
