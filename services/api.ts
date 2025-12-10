@@ -1,4 +1,4 @@
-import { Lesson, Student, Subject } from '@/types'
+import { Lesson, Student, Subject, Group } from '@/types'
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'An error occurred' }))
@@ -159,7 +159,7 @@ interface UserSettings {
     id: string
     firstName: string
     lastName: string
-    name?: string  
+    name?: string
     email: string
     phone?: string
     avatar?: string | null
@@ -184,4 +184,14 @@ export const settingsApi = {
 export const statsApi = {
     get: () =>
         fetch('/api/stats').then(res => handleResponse<import('@/types').DashboardStats>(res)),
+}
+
+export const groupsApi = {
+    getAll: () => fetch('/api/groups').then(res => handleResponse<Group[]>(res)),
+    getById: (id: string) => fetch(`/api/groups/${id}`).then(res => handleResponse<Group>(res)),
+    create: (data: { name: string; studentIds?: string[]; subjectIds?: string[]; note?: string }) =>
+        fetch('/api/groups', { method: 'POST', headers, body: JSON.stringify(data) }).then(res => handleResponse<Group>(res)),
+    update: (id: string, data: { name?: string; studentIds?: string[]; subjectIds?: string[]; note?: string }) =>
+        fetch(`/api/groups/${id}`, { method: 'PATCH', headers, body: JSON.stringify(data) }).then(res => handleResponse<Group>(res)),
+    delete: (id: string) => fetch(`/api/groups/${id}`, { method: 'DELETE' }).then(res => handleResponse<{ success: boolean }>(res)),
 }

@@ -29,6 +29,12 @@ export async function GET(request: NextRequest) {
             where: { ownerId: payload.userId },
             include: {
                 subjects: true,
+                groups: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
                 lessons: {
                     orderBy: { date: 'desc' },
                     take: 1,
@@ -78,8 +84,8 @@ export async function POST(request: NextRequest) {
             if (existingSubject) {
                 subjectId = existingSubject.id
             } else {
-                
-                
+
+
                 const colors = ['#4A6CF7', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
                 const randomColor = colors[Math.floor(Math.random() * colors.length)]
 
@@ -109,7 +115,7 @@ export async function POST(request: NextRequest) {
             } as any,
         })
 
-        
+
         const slug = generateStudentSlug(student.name, student.id)
         const updatedStudent = await prisma.student.update({
             where: { id: student.id },

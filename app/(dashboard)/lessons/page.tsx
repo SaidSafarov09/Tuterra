@@ -12,7 +12,7 @@ import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { useFetch } from '@/hooks/useFetch'
 import { useLessonsByTab } from '@/hooks/useLessonsByTab'
-import { Lesson, Student, Subject, LessonFilter } from '@/types'
+import { Lesson, Student, Subject, LessonFilter, Group } from '@/types'
 import styles from './page.module.scss'
 import { LESSON_TABS } from '@/constants'
 import { LessonDetailSkeleton } from '@/components/skeletons'
@@ -53,6 +53,10 @@ function LessonsContent() {
         data: subjects = [],
         refetch: refetchSubjects
     } = useFetch<Subject[]>('/api/subjects')
+
+    const {
+        data: groups = []
+    } = useFetch<Group[]>('/api/groups')
 
 
     const {
@@ -195,6 +199,7 @@ function LessonsContent() {
                 setFormData={setFormData}
                 students={students || []}
                 subjects={subjects || []}
+                groups={groups || []}
                 isSubmitting={isSubmitting}
                 error={error}
                 onSubmit={() => submitForm(!!editingLesson, editingLesson?.id)}

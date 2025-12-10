@@ -29,6 +29,7 @@ model User {
   lessonSeries      LessonSeries[]
   students          Student[]
   subjects          Subject[]
+  groups            Group[]
   verificationCodes VerificationCode[]
 }
 
@@ -44,6 +45,7 @@ model Subject {
   lessonSeries LessonSeries[]
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   students     Student[]      @relation("StudentToSubject")
+  groups       Group[]        @relation("GroupToSubject")
 
   @@unique([userId, name])
 }
@@ -70,6 +72,7 @@ model Student {
   lessonSeries LessonSeries[]
   owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   subjects     Subject[]      @relation("StudentToSubject")
+  groups       Group[]        @relation("GroupToStudent")
 
   @@index([ownerId])
 }
@@ -86,6 +89,7 @@ model Lesson {
   ownerId    String
   studentId  String
   subjectId  String?
+  groupId    String?
   subjectName   String?
   subjectColor  String?
   createdAt  DateTime      @default(now())
@@ -97,11 +101,13 @@ model Lesson {
   series     LessonSeries? @relation(fields: [seriesId], references: [id])
   student    Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   subject    Subject?      @relation(fields: [subjectId], references: [id])
+  group      Group?        @relation(fields: [groupId], references: [id])
 
   @@index([ownerId])
   @@index([studentId])
   @@index([subjectId])
   @@index([seriesId])
+  @@index([groupId])
 }
 
 model LessonSeries {
@@ -163,5 +169,20 @@ model AuthProvider {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerId])
+  @@index([userId])
+}
+
+model Group {
+  id        String    @id @default(cuid())
+  name      String
+  note      String?
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students  Student[] @relation("GroupToStudent")
+  subjects  Subject[] @relation("GroupToSubject")
+  lessons   Lesson[]
+
   @@index([userId])
 }

@@ -1,0 +1,191 @@
+.container {
+    max-width: 1000px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    gap: 16px;
+}
+
+.backButton {
+    gap: 8px;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+}
+
+.groupInfo {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    border: 1px solid var(--border);
+}
+
+.iconWrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.3);
+}
+
+.groupName {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.groupMeta {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.section {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sectionTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+
+    p {
+        margin: 0 0 16px;
+    }
+}
+
+.studentsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.studentCard {
+    background: var(--background);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary);
+    }
+}
+
+.studentInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.studentName {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.studentContact {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.lessonsInfo {
+    padding: 16px;
+    background: var(--background);
+    border-radius: 8px;
+}
+
+.lessonsCount {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.notFound {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+
+    h2 {
+        font-size: 24px;
+        color: var(--text-primary);
+        margin: 0 0 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .actions {
+        width: 100%;
+
+        button {
+            flex: 1;
+        }
+    }
+
+    .groupInfo {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px;
+    }
+
+    .groupName {
+        font-size: 24px;
+    }
+
+    .studentsList {
+        grid-template-columns: 1fr;
+    }
+
+    .sectionHeader {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+}

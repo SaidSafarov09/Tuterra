@@ -20,11 +20,12 @@ const recurrenceRuleSchema = z.object({
 })
 
 const lessonSchema = z.object({
-    studentId: z.string(),
+    studentId: z.string().min(1, 'Выберите ученика'),
+    groupId: z.string().optional(),
     subjectId: z.string().optional(),
-    date: z.string().transform((str) => new Date(str)),
-    price: z.number().nonnegative('Цена должна быть положительной'),
-    isPaid: z.boolean().optional(),
+    date: z.string().transform(str => new Date(str)),
+    price: z.number().int().min(0),
+    isPaid: z.boolean().default(false),
     isCanceled: z.boolean().optional(),
     isTrial: z.boolean().optional(),
     notes: z.string().optional(),
@@ -116,6 +117,25 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // If this is a group lesson and has a subject, link subject to all group students
+        if (validatedData.groupId && validatedData.subjectId) {
+            const group = await prisma.group.findFirst({
+                where: {
+                    id: validatedData.groupId,
+                    userId: payload.userId
+                },
+                include: {
+                    students: true
+                }
+            })
+
+            if (group) {
+                // Link subject to all students in the group
+                for (const groupStudent of group.students) {
+                    await linkSubjectToStudent(groupStudent.id, validatedData.subjectId)
+                }
+            }
+        }
 
         if (validatedData.recurrence?.enabled) {
             return await createRecurringLesson(payload.userId, validatedData)
@@ -173,12 +193,14 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             ownerId: userId,
             studentId: data.studentId,
             subjectId: data.subjectId,
+            groupId: data.groupId,
             subjectName,
             subjectColor,
         } as any,
         include: {
             student: true,
             subject: true,
+            group: true,
         },
     })
     const student = lesson.studentId ? await prisma.student.findUnique({

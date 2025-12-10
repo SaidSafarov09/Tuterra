@@ -10,32 +10,17 @@ export interface Subject {
 
 export interface Student {
     id: string
-    slug?: string
     name: string
-    email?: string
-    phone?: string
+    slug?: string
     contact?: string | null
     contactType?: string | null
     parentContact?: string | null
     parentContactType?: string | null
-    avatar?: string
-    subjects: Subject[]
-    notes?: string
     note?: string | null
-    lessons?: {
-        id: string
-        date: string
-        price: number
-        isPaid: boolean
-        isCanceled: boolean
-        topic?: string
-        notes?: string
-        subject?: {
-            id: string
-            name: string
-            color: string
-        } | null
-    }[]
+    createdAt?: string
+    updatedAt?: string
+    subjects?: Subject[]
+    groups?: { id: string; name: string }[]
     _count?: {
         lessons: number
     }
@@ -43,70 +28,90 @@ export interface Student {
 
 export interface Lesson {
     id: string
-    slug?: string
     date: string
     price: number
     isPaid: boolean
     isCanceled: boolean
     isTrial?: boolean
-    notes?: string
-    topic?: string
-    duration?: number
-    seriesId?: string | null
-    subjectName?: string | null
-    subjectColor?: string | null
+    notes?: string | null
+    topic?: string | null
+    duration: number
+    slug?: string
     student: {
-        slug?: string
         id: string
         name: string
+        slug?: string
     }
     subject?: {
         id: string
         name: string
         color: string
     } | null
+    subjectName?: string | null
+    subjectColor?: string | null
+    group?: {
+        id: string
+        name: string
+    } | null
+    seriesId?: string | null
+    series?: {
+        id: string
+        type: string
+        interval: number
+        daysOfWeek: number[]
+        endDate?: string | null
+        occurrencesCount?: number | null
+    } | null
 }
-
-export interface DashboardStats {
-    studentsCount: number
-    upcomingLessons: Lesson[]
-    unpaidLessons: Lesson[]
-    monthlyIncome: number
-    totalLessons?: number
-    subjectsCount?: number
-    createdAt?: string
-}
-
-export interface DayData {
-    lessons: Lesson[]
-    totalEarned: number
-    potentialEarnings: number
-}
-
-export interface MonthlyData {
-    month: string
-    income: number
-    lessons: number
-    paid: number
-    unpaid: number
-}
-
-import type { RecurrenceRule } from './recurring'
 
 export interface LessonFormData {
     studentId: string
-    subjectId: string
-    date: Date
-    price: string
+    groupId?: string
+    subjectId?: string
+    date?: Date
+    price: string | number
     isPaid: boolean
-    isPaidAll?: boolean
+    isCanceled?: boolean
     isTrial?: boolean
-    notes: string
-    topic: string
+    notes?: string
+    topic?: string
     duration: number
     recurrence?: RecurrenceRule
-    seriesPrice?: string
+    isPaidAll?: boolean
+    seriesPrice?: number
 }
 
-export type LessonFilter = 'all' | 'upcoming' | 'past' | 'unpaid' | 'canceled'
-export type SubjectFilter = 'all' | string
+export interface Group {
+    id: string
+    name: string
+    note?: string | null
+    createdAt?: string
+    updatedAt?: string
+    students: Student[]
+    subjects?: Subject[]
+    _count?: {
+        students: number
+        lessons: number
+        subjects?: number
+    }
+}
+
+export type LessonFilter = 'all' | 'upcoming' | 'past' | 'unpaid' | 'canceled' | 'trial'
+
+export interface User {
+    id: string
+    name: string
+    email?: string
+    phone?: string
+    avatar?: string
+}
+
+export interface RecurrenceRule {
+    enabled: boolean
+    type: 'daily' | 'weekly' | 'monthly'
+    interval: number
+    daysOfWeek?: number[]
+    endType: 'never' | 'count' | 'until_date'
+    occurrencesCount?: number
+    endDate?: Date
+}
