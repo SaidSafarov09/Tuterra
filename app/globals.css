@@ -110,8 +110,6 @@ select {
 @media (hover: none),
 (pointer: coarse) {
   *:hover {
-    background: inherit !important;
-    transform: none !important;
     box-shadow: none !important;
     opacity: 1 !important;
   }
