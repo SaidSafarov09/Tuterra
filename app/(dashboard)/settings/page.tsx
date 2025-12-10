@@ -18,7 +18,11 @@ import styles from './page.module.scss'
 import { TABS, TIMEZONES } from '@/constants'
 
 
-export default function SettingsPage() {
+interface SettingsPageProps {
+    onLeaveSettings?: () => void
+}
+
+export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
     const router = useRouter()
     const { user, setUser } = useAuthStore()
     const [activeTab, setActiveTab] = useState('general')
@@ -127,10 +131,6 @@ export default function SettingsPage() {
         }
     }
 
-    const handleTimezoneChange = (value: string) => {
-        setFormData((prev) => ({ ...prev, timezone: value }))
-    }
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSaving(true)
@@ -166,9 +166,15 @@ export default function SettingsPage() {
     const handleDiscardChanges = () => {
         setShowUnsavedModal(false)
         setHasUnsavedChanges(false)
+        window.dispatchEvent(new CustomEvent('closeMobileSidebar'))
         if (pendingNavigation) {
             router.push(pendingNavigation)
         }
+    }
+
+    const handleStayOnPage = () => {
+        setShowUnsavedModal(false)
+        window.dispatchEvent(new CustomEvent('closeMobileSidebar'))
     }
 
     return (
@@ -282,7 +288,7 @@ export default function SettingsPage() {
 
             <UnsavedChangesModal
                 isOpen={showUnsavedModal}
-                onClose={() => setShowUnsavedModal(false)}
+                onClose={handleStayOnPage}
                 onDiscard={handleDiscardChanges}
             />
         </div>

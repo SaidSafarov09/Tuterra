@@ -1,6 +1,6 @@
 import { toast } from 'sonner'
 import { subjectsApi } from '@/services/api'
-import { SUBJECT_MESSAGES, VALIDATION_MESSAGES, createSubjectCreatedMessage } from '@/constants/messages'
+import { SUBJECT_MESSAGES, STUDENT_MESSAGES, VALIDATION_MESSAGES, createSubjectCreatedMessage } from '@/constants/messages'
 import { Subject } from '@/types'
 
 export async function fetchSubject(subjectId: string): Promise<Subject | null> {
@@ -98,7 +98,7 @@ export async function linkStudentToSubject(
 
     try {
         await subjectsApi.linkStudent(subjectId, studentId)
-        toast.success(SUBJECT_MESSAGES.CREATED)
+        toast.success(STUDENT_MESSAGES.LINKED_TO_SUBJECT)
         return true
     } catch (error: any) {
         const message = error.message || SUBJECT_MESSAGES.LINK_ERROR

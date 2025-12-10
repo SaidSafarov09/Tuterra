@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { Sidebar } from './Sidebar'
-import { MenuIcon, CloseIcon } from '@/components/icons/Icons'
+import { MenuIcon } from '@/components/icons/Icons'
 import { useAuthStore } from '@/store/auth'
 import { settingsApi } from '@/services/api'
 import { useTheme } from 'next-themes'
@@ -17,6 +17,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const { user, setUser } = useAuthStore()
     const { setTheme } = useTheme()
+
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = 'auto'
+        }
+        return () => {
+            document.body.style.overflow = 'auto'
+        }
+    }, [isMobileMenuOpen])
 
 
     useEffect(() => {
@@ -46,8 +57,22 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
         fetchUserData()
     }, [user, setUser, setTheme])
+    useEffect(() => {
+        const handleCloseSidebar = () => {
+            setIsMobileMenuOpen(false)
+        }
 
+        window.addEventListener('closeMobileSidebar', handleCloseSidebar)
+
+        return () => {
+            window.removeEventListener('closeMobileSidebar', handleCloseSidebar)
+        }
+    }, [])
     const pathname = usePathname()
+    useEffect(() => {
+        setIsMobileMenuOpen(false)
+    }, [pathname])
+
     const isMobilePage =
         pathname.includes('/new') ||
         pathname.includes('/edit') ||
@@ -57,7 +82,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
     return (
         <div className={styles.layout}>
-            <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            <Sidebar
+                isOpen={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+            />
 
             {isMobileMenuOpen && (
                 <div

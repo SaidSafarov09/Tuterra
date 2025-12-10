@@ -206,7 +206,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 {lesson.topic && (
-                    <div className={styles.topicSection}>
+                    <div className={styles.topicSection} style={{ borderLeftColor: lesson.subject ? lesson.subject.color : 'var(--primary)' , borderLeftWidth: '3px', borderLeftStyle: 'solid' }}>
                         <strong>Тема урока:</strong>
                         <p>{lesson.topic}</p>
                     </div>
