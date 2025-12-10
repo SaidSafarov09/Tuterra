@@ -1,13 +1,12 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { ClockIcon } from '@/components/icons/Icons'
 import { Subject, Student } from '@/types'
 import { getInitials, stringToColor } from '@/lib/utils'
 import styles from '../../app/(dashboard)/subjects/page.module.scss'
+import { formatSmartDate } from '@/lib/dateUtils'
 
 interface SubjectDetailsModalProps {
     isOpen: boolean
@@ -29,7 +28,6 @@ export function SubjectDetailsModal({
     onCreateLesson
 }: SubjectDetailsModalProps) {
     const router = useRouter()
-
     return (
         <Modal
             isOpen={isOpen}
@@ -75,7 +73,7 @@ export function SubjectDetailsModal({
                                         <div className={styles.nextLesson}>
                                             <ClockIcon size={14} className={styles.clockIcon} />
                                             <span>
-                                                {format(new Date(student.lessons[0].date), 'd MMM, HH:mm', { locale: ru })}
+                                                {formatSmartDate(new Date(student.lessons[0].date))}
                                             </span>
                                         </div>
                                     ) : (
