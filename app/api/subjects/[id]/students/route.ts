@@ -30,6 +30,7 @@ export async function GET(
                         date: {
                             gte: new Date(),
                         },
+                        subjectId: id, 
                     },
                     orderBy: {
                         date: 'asc',
