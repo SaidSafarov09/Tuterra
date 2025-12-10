@@ -41,6 +41,30 @@ export interface Student {
     }
 }
 
+export interface Group {
+    id: string
+    name: string
+    subjectId: string
+    subject: Subject
+    students: Student[]
+    lessons?: Lesson[]
+    _count?: {
+        lessons: number
+        students: number
+    }
+}
+
+export interface LessonPayment {
+    id: string
+    lessonId: string
+    studentId: string
+    hasPaid: boolean
+    student?: {
+        id: string
+        name: string
+    }
+}
+
 export interface Lesson {
     id: string
     slug?: string
@@ -55,16 +79,21 @@ export interface Lesson {
     seriesId?: string | null
     subjectName?: string | null
     subjectColor?: string | null
-    student: {
+    student?: {
         slug?: string
         id: string
         name: string
-    }
+    } | null
+    group?: {
+        id: string
+        name: string
+    } | null
     subject?: {
         id: string
         name: string
         color: string
     } | null
+    lessonPayments?: LessonPayment[]
 }
 
 export interface DashboardStats {
@@ -94,7 +123,8 @@ export interface MonthlyData {
 import type { RecurrenceRule } from './recurring'
 
 export interface LessonFormData {
-    studentId: string
+    studentId?: string
+    groupId?: string
     subjectId: string
     date: Date
     price: string
@@ -106,6 +136,7 @@ export interface LessonFormData {
     duration: number
     recurrence?: RecurrenceRule
     seriesPrice?: string
+    paidStudentIds?: string[]
 }
 
 export type LessonFilter = 'all' | 'upcoming' | 'past' | 'unpaid' | 'canceled'

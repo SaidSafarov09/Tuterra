@@ -1,0 +1,439 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--surface);
+    border-radius: 12px;
+}
+
+.filterChip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &Active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border);
+}
+
+.emptyStateIcon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.emptyStateTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0 0 8px;
+}
+
+.emptyStateText {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin: 0 0 24px;
+}
+
+.groupsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.groupCard {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 16px;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+
+    }
+
+    @media (max-width: 768px) {
+        padding: 18px;
+    }
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.groupAvatarFallback {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.headerInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.groupName {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    line-height: 1.3;
+}
+
+.subjectsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.subjectBadge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.cardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.cardFooter {
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    margin-top: auto;
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.statLabel {
+    color: var(--text-secondary);
+}
+
+.statValue {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modalContent {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.subjectInputWrapper {
+    position: relative;
+    width: 100%;
+}
+
+.suggestionsList {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: var(--shadow-md);
+}
+
+.suggestionItem {
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+    color: var(--text-primary);
+
+    &:hover {
+        background: var(--hover-bg);
+    }
+}
+
+.suggestionColor {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+    .header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .groupsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+}
+
+.studentsSelection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.studentsList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.studentItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+
+    input {
+        cursor: pointer;
+    }
+}
+
+.noStudents {
+    color: var(--text-muted);
+    font-size: 14px;
+    text-align: center;
+    padding: 12px;
+}
+
+/* Group Detail Page Styles */
+
+.backButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color 0.2s;
+
+    &:hover {
+        color: var(--primary);
+    }
+}
+
+.groupHeader {
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 32px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.headerTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 32px;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+
+.groupProfile {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.groupAvatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 600;
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.groupInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.studentsBlock {
+    margin-bottom: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.blockTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chipList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-direction: row;
+    max-height: none;
+    border: none;
+    padding: 0;
+    overflow: visible;
+}
+
+.studentChip {
+    padding: 6px 14px;
+    background: var(--background);
+    border-radius: 20px;
+    font-size: 14px;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.headerMeta {
+    display: flex;
+    gap: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.metaItem {
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    strong {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+}

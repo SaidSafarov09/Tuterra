@@ -26,11 +26,13 @@ export interface LessonFormProps {
     formData: LessonFormData
     setFormData: React.Dispatch<React.SetStateAction<LessonFormData>>
     students: Student[]
+    groups?: Group[]
     subjects: Subject[]
     isSubmitting: boolean
     error: string
     onSubmit: () => void
     onStudentChange: (studentId: string, students: Student[]) => void
+    onGroupChange?: (groupId: string, groups: Group[]) => void
     onCreateStudent: (name: string) => void
     onCreateSubject: (name: string) => void
     handleChange: (name: string, value: any) => void
@@ -39,16 +41,20 @@ export interface LessonFormProps {
     children?: React.ReactNode
 }
 
+import { Group } from '@/types'
+
 export function LessonForm({
     isEdit,
     formData,
     setFormData,
     students,
+    groups = [],
     subjects,
     isSubmitting,
     error,
     onSubmit,
     onStudentChange,
+    onGroupChange,
     onCreateStudent,
     onCreateSubject,
     handleChange,
@@ -134,6 +140,60 @@ export function LessonForm({
         return formatSmartDate(formData.date)
     }
 
+    const getStudentOptions = () => {
+        const options = []
+
+        if (groups.length > 0) {
+            options.push({ label: 'Группы', options: groups.map(g => ({ value: `group_${g.id}`, label: g.name })) })
+        }
+
+        if (students.length > 0) {
+            options.push({ label: 'Ученики', options: students.map(s => ({ value: s.id, label: s.name })) })
+        }
+
+        return options
+    }
+
+    const handleStudentOrGroupChange = (value: string) => {
+        if (value.startsWith('group_')) {
+            const groupId = value.replace('group_', '')
+            if (onGroupChange) {
+                onGroupChange(groupId, groups)
+            } else {
+                // Fallback if onGroupChange is not provided (though it should be)
+                const group = groups.find(g => g.id === groupId)
+                if (group) {
+                    setFormData(prev => ({
+                        ...prev,
+                        groupId: group.id,
+                        studentId: undefined,
+                        subjectId: group.subjectId,
+                        paidStudentIds: []
+                    }))
+                }
+            }
+        } else {
+            onStudentChange(value, students)
+        }
+    }
+
+    const selectedValue = formData.groupId ? `group_${formData.groupId}` : formData.studentId
+
+    const selectedGroup = formData.groupId ? groups.find(g => g.id === formData.groupId) : null
+
+    const handlePaidStudentToggle = (studentId: string) => {
+        setFormData(prev => {
+            const currentPaid = prev.paidStudentIds || []
+            const isPaid = currentPaid.includes(studentId)
+            return {
+                ...prev,
+                paidStudentIds: isPaid
+                    ? currentPaid.filter(id => id !== studentId)
+                    : [...currentPaid, studentId]
+            }
+        })
+    }
+
     return (
         <>
             <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
@@ -150,22 +210,13 @@ export function LessonForm({
 
                 <div className={styles.row}>
                     <Dropdown
-                        label="Ученик"
-                        placeholder="Выберите или создайте ученика"
-                        value={fixedStudentId || formData.studentId}
-                        onChange={(value) => {
-                            if (fixedSubjectId) {
-                                handleChange('studentId', value)
-                            } else {
-                                onStudentChange(value, students)
-                            }
-                        }}
-                        options={students.map((student) => ({
-                            value: student.id,
-                            label: student.name,
-                        }))}
+                        label="Ученик / Группа"
+                        placeholder="Выберите ученика или группу"
+                        value={selectedValue}
+                        onChange={handleStudentOrGroupChange}
+                        options={getStudentOptions()}
                         searchable
-                        creatable={!fixedStudentId}
+                        creatable={!fixedStudentId && !formData.groupId}
                         onCreate={onCreateStudent}
                         menuPosition="relative"
                         required
@@ -185,7 +236,7 @@ export function LessonForm({
                         creatable={!fixedSubjectId}
                         onCreate={onCreateSubject}
                         menuPosition="relative"
-                        disabled={isSubmitting || !!fixedSubjectId}
+                        disabled={isSubmitting || !!fixedSubjectId || (!!formData.groupId && !!selectedGroup)}
                     />
                 </div>
 
@@ -249,7 +300,7 @@ export function LessonForm({
 
                 <div className={styles.priceRow}>
                     <Input
-                        label="Стоимость (₽)"
+                        label={formData.groupId ? "Стоимость с ученика (₽)" : "Стоимость (₽)"}
                         type="number"
                         value={formData.price}
                         onChange={(e) => {
@@ -307,30 +358,49 @@ export function LessonForm({
 
                 {formData.price !== '0' && (
                     <div className={styles.paymentSection}>
-                        <Checkbox
-                            checked={formData.isPaid}
-                            onChange={(e) => handleChange('isPaid', e.target.checked)}
-                            label={
-                                activeTab === 'recurring'
-                                    ? 'Оплачено только первое занятие'
-                                    : 'Оплачено'
-                            }
-                            disabled={isSubmitting}
-                        />
-
-                        {activeTab === 'recurring' && (
-                            <Checkbox
-                                checked={formData.isPaidAll || false}
-                                onChange={(e) => {
-                                    const checked = e.target.checked
-                                    handleChange('isPaidAll', checked)
-                                    if (checked) {
-                                        handleChange('isPaid', true)
+                        {!formData.groupId ? (
+                            <>
+                                <Checkbox
+                                    checked={formData.isPaid}
+                                    onChange={(e) => handleChange('isPaid', e.target.checked)}
+                                    label={
+                                        activeTab === 'recurring'
+                                            ? 'Оплачено только первое занятие'
+                                            : 'Оплачено'
                                     }
-                                }}
-                                label="Оплачены все занятия серии"
-                                disabled={isSubmitting}
-                            />
+                                    disabled={isSubmitting}
+                                />
+
+                                {activeTab === 'recurring' && (
+                                    <Checkbox
+                                        checked={formData.isPaidAll || false}
+                                        onChange={(e) => {
+                                            const checked = e.target.checked
+                                            handleChange('isPaidAll', checked)
+                                            if (checked) {
+                                                handleChange('isPaid', true)
+                                            }
+                                        }}
+                                        label="Оплачены все занятия серии"
+                                        disabled={isSubmitting}
+                                    />
+                                )}
+                            </>
+                        ) : (
+                            <div className={styles.groupPaymentBlock}>
+                                <label className={styles.label}>Оплаты участников</label>
+                                <div className={styles.groupStudentsList}>
+                                    {selectedGroup?.students.map(student => (
+                                        <Checkbox
+                                            key={student.id}
+                                            checked={formData.paidStudentIds?.includes(student.id) || false}
+                                            onChange={() => handlePaidStudentToggle(student.id)}
+                                            label={`${student.name} (Оплатил)`}
+                                            disabled={isSubmitting}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         )}
                     </div>
                 )}

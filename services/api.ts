@@ -14,7 +14,8 @@ const headers = {
 }
 
 interface CreateLessonDTO {
-    studentId: string
+    studentId?: string
+    groupId?: string
     subjectId: string
     date: string
     duration?: number
@@ -24,6 +25,7 @@ interface CreateLessonDTO {
     notes?: string
     topic?: string
     isCanceled?: boolean
+    paidStudentIds?: string[]
 }
 
 interface CreateStudentDTO {
@@ -136,6 +138,33 @@ export const subjectsApi = {
         }).then(res => handleResponse<{ success: boolean }>(res)),
 }
 
+export const groupsApi = {
+    getAll: () =>
+        fetch('/api/groups').then(res => handleResponse<import('@/types').Group[]>(res)),
+
+    getById: (id: string) =>
+        fetch(`/api/groups/${id}`).then(res => handleResponse<import('@/types').Group>(res)),
+
+    create: (data: { name: string; subjectId: string; studentIds?: string[] }) =>
+        fetch('/api/groups', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data),
+        }).then(res => handleResponse<import('@/types').Group>(res)),
+
+    update: (id: string, data: { name?: string; subjectId?: string; studentIds?: string[] }) =>
+        fetch(`/api/groups/${id}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(data),
+        }).then(res => handleResponse<import('@/types').Group>(res)),
+
+    delete: (id: string) =>
+        fetch(`/api/groups/${id}`, {
+            method: 'DELETE',
+        }).then(res => handleResponse<{ success: boolean }>(res)),
+}
+
 interface IncomeData {
     monthlyData: any[]
     currentMonthIncome: number
@@ -159,7 +188,7 @@ interface UserSettings {
     id: string
     firstName: string
     lastName: string
-    name?: string  
+    name?: string
     email: string
     phone?: string
     avatar?: string | null

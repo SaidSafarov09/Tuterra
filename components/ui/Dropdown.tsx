@@ -10,12 +10,17 @@ export interface DropdownOption {
     icon?: React.ReactNode
 }
 
+export interface DropdownGroup {
+    label: string
+    options: DropdownOption[]
+}
+
 interface DropdownProps {
     label?: string
     placeholder?: string
     value?: string
     onChange: (value: string) => void
-    options: DropdownOption[]
+    options: (DropdownOption | DropdownGroup)[]
     searchable?: boolean
     creatable?: boolean
     onCreate?: (value: string) => void
@@ -59,13 +64,35 @@ export const Dropdown: React.FC<DropdownProps> = ({
         return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
-    const selectedOption = options.find((opt) => opt.value === value)
+    const flattenOptions = (opts: (DropdownOption | DropdownGroup)[]): DropdownOption[] => {
+        return opts.flatMap(opt => {
+            if ('options' in opt) {
+                return opt.options
+            }
+            return opt
+        })
+    }
 
-    const filteredOptions = searchQuery
-        ? options.filter((opt) =>
-            opt.label.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        : options
+    const allOptions = flattenOptions(options)
+    const selectedOption = allOptions.find((opt) => opt.value === value)
+
+    const filterOptions = (opts: (DropdownOption | DropdownGroup)[]): (DropdownOption | DropdownGroup)[] => {
+        if (!searchQuery) return opts
+
+        return opts.map(opt => {
+            if ('options' in opt) {
+                const filteredGroupOptions = opt.options.filter(o => o.label.toLowerCase().includes(searchQuery.toLowerCase()))
+                if (filteredGroupOptions.length > 0) {
+                    return { ...opt, options: filteredGroupOptions }
+                }
+                return null
+            } else {
+                return opt.label.toLowerCase().includes(searchQuery.toLowerCase()) ? opt : null
+            }
+        }).filter(Boolean) as (DropdownOption | DropdownGroup)[]
+    }
+
+    const filteredOptions = filterOptions(options)
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -108,7 +135,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
         }
     }
 
-    const showCreateOption = creatable && searchQuery && !options.some(opt => opt.label.toLowerCase() === searchQuery.toLowerCase())
+    const showCreateOption = creatable && searchQuery && !allOptions.some(opt => opt.label.toLowerCase() === searchQuery.toLowerCase())
 
     return (
         <div className={`${styles.dropdown} ${className}`} ref={dropdownRef}>
@@ -150,17 +177,36 @@ export const Dropdown: React.FC<DropdownProps> = ({
                     )}
 
                     <div className={styles.optionsList}>
-                        {filteredOptions.map((option) => (
-                            <div
-                                key={option.value}
-                                className={`${styles.option} ${option.value === value ? styles.selected : ''
-                                    }`}
-                                onClick={() => handleSelect(option.value)}
-                            >
-                                {option.icon && option.icon}
-                                <span>{option.label}</span>
-                            </div>
-                        ))}
+                        {filteredOptions.map((option, index) => {
+                            if ('options' in option) {
+                                return (
+                                    <div key={index} className={styles.group}>
+                                        <div className={styles.groupLabel}>{option.label}</div>
+                                        {option.options.map(opt => (
+                                            <div
+                                                key={opt.value}
+                                                className={`${styles.option} ${opt.value === value ? styles.selected : ''}`}
+                                                onClick={() => handleSelect(opt.value)}
+                                            >
+                                                {opt.icon && opt.icon}
+                                                <span>{opt.label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )
+                            } else {
+                                return (
+                                    <div
+                                        key={option.value}
+                                        className={`${styles.option} ${option.value === value ? styles.selected : ''}`}
+                                        onClick={() => handleSelect(option.value)}
+                                    >
+                                        {option.icon && option.icon}
+                                        <span>{option.label}</span>
+                                    </div>
+                                )
+                            }
+                        })}
 
                         {showCreateOption && (
                             <div className={styles.createOption} onClick={handleCreate}>

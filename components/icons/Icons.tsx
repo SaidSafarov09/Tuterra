@@ -99,6 +99,7 @@ export const HomeIcon: React.FC<IconProps> = (props) => <Home {...props} />
 
 
 export const UsersGroupIcon: React.FC<IconProps> = (props) => <Users {...props} />
+export const UsersIcon: React.FC<IconProps> = (props) => <Users {...props} />
 export const BookIcon: React.FC<IconProps> = (props) => <BookOpen {...props} />
 export const AlertIcon: React.FC<IconProps> = (props) => <AlertTriangle {...props} />
 export const MoneyIcon: React.FC<IconProps> = (props) => <Coins {...props} />

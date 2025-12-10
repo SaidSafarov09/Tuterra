@@ -14,9 +14,9 @@ import { CalendarDayDetails } from '@/components/calendar/CalendarDayDetails'
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 
 import { calculateDayData } from '@/lib/lessonUtils'
-import { Lesson, DayData, Student, Subject } from '@/types'
+import { Lesson, DayData, Student, Subject, Group } from '@/types'
 import { toast } from 'sonner'
-import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
+import { lessonsApi, studentsApi, subjectsApi, groupsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { CalendarSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
@@ -39,12 +39,25 @@ export default function CalendarPage() {
 
     const [students, setStudents] = useState<Student[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
+    const [groups, setGroups] = useState<Group[]>([])
 
     useEffect(() => {
         fetchLessons()
         fetchStudents()
         fetchSubjects()
+        fetchGroups()
     }, [])
+
+    const fetchGroups = async () => {
+        try {
+            const data = await groupsApi.getAll()
+            setGroups(data)
+        } catch (error) {
+            console.error('Failed to fetch groups:', error)
+        }
+    }
+
+    // ... (rest of the code)
 
     const fetchLessons = async () => {
         setIsLoading(true)
@@ -123,7 +136,8 @@ export default function CalendarPage() {
 
         try {
             await lessonsApi.update(reschedulingLesson.id, {
-                studentId: reschedulingLesson.student.id,
+                studentId: reschedulingLesson.student?.id,
+                groupId: reschedulingLesson.group?.id,
                 subjectId: reschedulingLesson.subject?.id || '',
                 date: newDate.toISOString(),
                 price: reschedulingLesson.price,
@@ -253,6 +267,7 @@ export default function CalendarPage() {
                 formData={formData}
                 setFormData={setFormData}
                 students={students}
+                groups={groups}
                 subjects={subjects}
                 isSubmitting={isSubmitting}
                 error={error}

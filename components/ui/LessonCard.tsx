@@ -54,7 +54,9 @@ export const LessonCard: React.FC<LessonCardProps> = ({
         <div className={`${styles.card} ${variant === 'compact' ? styles.compact : ''} ${lesson.isCanceled ? styles.canceled : ''}`}>
             <div className={styles.header}>
                 <div className={styles.info}>
-                    <h4 className={styles.studentName}>{lesson.student.name}</h4>
+                    <h4 className={styles.studentName}>
+                        {lesson.student?.name || lesson.group?.name || 'Неизвестно'}
+                    </h4>
                     {(lesson.subject || (lesson.subjectName && lesson.subjectColor)) && (
                         <span
                             className={styles.subjectBadge}
@@ -110,7 +112,9 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                         className={`${styles.price} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid
                             }`}
                     >
-                        {lesson.price} ₽
+                        {lesson.group && lesson.lessonPayments
+                            ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
+                            : lesson.price} ₽
                     </div>
                     <LessonBadges price={lesson.price} isPaid={lesson.isPaid} isTrial={lesson.isTrial} />
                 </div>

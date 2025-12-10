@@ -29,6 +29,7 @@ model User {
   lessonSeries      LessonSeries[]
   students          Student[]
   subjects          Subject[]
+  groups            Group[]
   verificationCodes VerificationCode[]
 }
 
@@ -44,6 +45,7 @@ model Subject {
   lessonSeries LessonSeries[]
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   students     Student[]      @relation("StudentToSubject")
+  groups       Group[]
 
   @@unique([userId, name])
 }
@@ -70,8 +72,28 @@ model Student {
   lessonSeries LessonSeries[]
   owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   subjects     Subject[]      @relation("StudentToSubject")
+  groups       Group[]        @relation("GroupToStudent")
+  lessonPayments LessonPayment[]
 
   @@index([ownerId])
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  subjectId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  subject      Subject        @relation(fields: [subjectId], references: [id])
+  students     Student[]      @relation("GroupToStudent")
+  lessons      Lesson[]
+  lessonSeries LessonSeries[]
+
+  @@index([ownerId])
+  @@index([subjectId])
 }
 
 model Lesson {
@@ -84,7 +106,8 @@ model Lesson {
   isTrial    Boolean       @default(false)
   notes      String?
   ownerId    String
-  studentId  String
+  studentId  String?
+  groupId    String?
   subjectId  String?
   subjectName   String?
   subjectColor  String?
@@ -95,11 +118,14 @@ model Lesson {
   seriesId   String?
   owner      User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   series     LessonSeries? @relation(fields: [seriesId], references: [id])
-  student    Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student    Student?      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group      Group?        @relation(fields: [groupId], references: [id])
   subject    Subject?      @relation(fields: [subjectId], references: [id])
+  lessonPayments LessonPayment[]
 
   @@index([ownerId])
   @@index([studentId])
+  @@index([groupId])
   @@index([subjectId])
   @@index([seriesId])
 }
@@ -113,7 +139,8 @@ model LessonSeries {
   startDate        DateTime
   endDate          DateTime?
   occurrencesCount Int?
-  studentId        String
+  studentId        String?
+  groupId          String?
   subjectId        String?
   price            Int
   topic            String?
@@ -122,13 +149,29 @@ model LessonSeries {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   lessons          Lesson[]
-  student          Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student          Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group            Group?    @relation(fields: [groupId], references: [id])
   subject          Subject?  @relation(fields: [subjectId], references: [id])
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([studentId])
+  @@index([groupId])
   @@index([subjectId])
+}
+
+model LessonPayment {
+  id        String   @id @default(cuid())
+  lessonId  String
+  studentId String
+  hasPaid   Boolean  @default(false)
+  
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@index([lessonId])
+  @@index([studentId])
 }
 
 model VerificationCode {

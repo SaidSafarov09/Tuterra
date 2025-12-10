@@ -9,6 +9,7 @@ export function useLessonForm(
 ) {
     const [formData, setFormData] = useState<LessonFormData>({
         studentId: '',
+        groupId: '',
         subjectId: '',
         date: new Date(),
         price: '',
@@ -17,6 +18,7 @@ export function useLessonForm(
         notes: '',
         topic: '',
         duration: 60,
+        paidStudentIds: [],
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -24,6 +26,7 @@ export function useLessonForm(
     const resetForm = () => {
         setFormData({
             studentId: '',
+            groupId: '',
             subjectId: '',
             date: new Date(),
             price: '',
@@ -35,13 +38,15 @@ export function useLessonForm(
             recurrence: undefined,
             isPaidAll: false,
             seriesPrice: undefined,
+            paidStudentIds: [],
         })
         setError('')
     }
 
     const loadLesson = (lesson: any) => {
         setFormData({
-            studentId: lesson.student.id,
+            studentId: lesson.student?.id || '',
+            groupId: lesson.group?.id || '',
             subjectId: lesson.subject?.id || '',
             date: new Date(lesson.date),
             price: lesson.price.toString(),
@@ -50,6 +55,7 @@ export function useLessonForm(
             notes: lesson.notes || '',
             topic: lesson.topic || '',
             duration: lesson.duration || 60,
+            paidStudentIds: lesson.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || [],
         })
     }
 
@@ -130,7 +136,7 @@ export function useLessonForm(
     }
 
     const handleSubmit = async (isEdit: boolean, lessonId?: string) => {
-        if (!formData.studentId || !formData.price) {
+        if ((!formData.studentId && !formData.groupId) || !formData.price) {
             toast.error('Заполните все обязательные поля')
             return
         }
@@ -146,7 +152,8 @@ export function useLessonForm(
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    studentId: formData.studentId,
+                    studentId: formData.studentId || undefined,
+                    groupId: formData.groupId || undefined,
                     subjectId: formData.subjectId || undefined,
                     date: formData.date.toISOString(),
                     price: parseInt(formData.price),
@@ -158,6 +165,7 @@ export function useLessonForm(
                     recurrence: formData.recurrence,
                     isPaidAll: formData.isPaidAll,
                     seriesPrice: formData.seriesPrice ? parseInt(formData.seriesPrice) : undefined,
+                    paidStudentIds: formData.paidStudentIds,
                 }),
             })
 

@@ -22,7 +22,8 @@ export async function fetchLessons(filter?: string): Promise<Lesson[]> {
 }
 
 export async function createLesson(data: {
-    studentId: string
+    studentId?: string
+    groupId?: string
     subjectId: string
     date: Date | string
     duration?: number
@@ -31,6 +32,7 @@ export async function createLesson(data: {
     isPaid: boolean
     topic?: string
     notes?: string
+    paidStudentIds?: string[]
 }): Promise<Lesson | null> {
     if (!data.price) {
         toast.error(VALIDATION_MESSAGES.ENTER_PRICE)
@@ -46,6 +48,7 @@ export async function createLesson(data: {
     try {
         const lesson = await lessonsApi.create({
             studentId: data.studentId,
+            groupId: data.groupId,
             subjectId: data.subjectId,
             date: lessonDate.toISOString(),
             duration: data.duration,
@@ -54,6 +57,7 @@ export async function createLesson(data: {
             isPaid: data.isPaid,
             topic: data.topic,
             notes: data.notes,
+            paidStudentIds: data.paidStudentIds,
         })
         toast.success(LESSON_MESSAGES.CREATED)
         return lesson
@@ -67,6 +71,7 @@ export async function updateLesson(
     lessonId: string,
     data: Partial<{
         studentId: string
+        groupId: string
         subjectId: string
         date: Date | string
         duration: number
@@ -76,6 +81,7 @@ export async function updateLesson(
         isCanceled: boolean
         topic: string
         notes: string
+        paidStudentIds: string[]
     }>
 ): Promise<Lesson | null> {
     try {
