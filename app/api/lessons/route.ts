@@ -77,7 +77,11 @@ export async function GET(request: NextRequest) {
             where,
             include: {
                 student: true,
-                group: true,
+                group: {
+                    include: {
+                        students: true
+                    }
+                },
                 subject: true,
                 lessonPayments: true,
             },

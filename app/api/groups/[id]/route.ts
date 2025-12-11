@@ -9,6 +9,7 @@ const groupSchema = z.object({
     name: z.string().min(2, 'Название должно содержать минимум 2 символа').optional(),
     subjectId: z.string().min(1, 'Выберите предмет').optional(),
     studentIds: z.array(z.string()).optional(),
+    note: z.string().optional(),
 })
 
 export async function GET(
@@ -74,6 +75,7 @@ export async function PATCH(
             data: {
                 name: validatedData.name,
                 subjectId: validatedData.subjectId,
+                note: validatedData.note,
                 students: validatedData.studentIds ? {
                     set: validatedData.studentIds.map(id => ({ id }))
                 } : undefined,

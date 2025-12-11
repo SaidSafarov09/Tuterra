@@ -9,6 +9,7 @@ const groupSchema = z.object({
     name: z.string().min(2, 'Название должно содержать минимум 2 символа'),
     subjectId: z.string().min(1, 'Выберите предмет'),
     studentIds: z.array(z.string()).optional(),
+    note: z.string().optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
             data: {
                 name: validatedData.name,
                 subjectId: validatedData.subjectId,
+                note: validatedData.note,
                 ownerId: payload.userId,
                 students: validatedData.studentIds ? {
                     connect: validatedData.studentIds.map(id => ({ id }))

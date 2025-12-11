@@ -11,7 +11,7 @@ export function StudentNote({ student }: StudentHeaderProps) {
   return (
     <>
       {student.note && (
-        <div className={styles.studentNote}>
+        <div className={styles.Note}>
           <div
             style={{ backgroundColor: stringToColor(student.name) }}
             className={styles.leftBar}

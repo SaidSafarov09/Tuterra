@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { GroupHeader } from '@/components/groups/GroupHeader'
 import { StudentLessons } from '@/components/students/StudentLessons' // Reusing StudentLessons for now
 import { GroupModals } from '@/components/groups/GroupModals'
+import { GroupNote } from '@/components/groups/GroupNote'
 import { useGroupDetail } from '@/hooks/useGroupDetail'
 import { StudentDetailSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
@@ -72,6 +73,8 @@ export default function GroupDetailPage({
                 onCreateLesson={openCreateLessonModal}
                 onDelete={() => setDeleteGroupConfirm(true)}
             />
+
+            <GroupNote group={group} />
 
             <StudentLessons
                 lessons={(group.lessons || []).map((l) => ({

@@ -79,6 +79,7 @@ export function GroupModals({
                 onClose={onCloseEditModal}
                 onSubmit={onSubmitEdit}
                 isSubmitting={isSubmitting}
+                isEdit={true}
                 error=""
                 formData={editFormData}
                 setFormData={setEditFormData}

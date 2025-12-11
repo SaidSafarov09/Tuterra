@@ -1,5 +1,5 @@
 import React from 'react'
-import { Input } from '@/components/ui/Input'
+import { Input, Textarea } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { Subject, Student } from '@/types'
 import styles from '@/app/(dashboard)/groups/page.module.scss'
@@ -12,6 +12,7 @@ export interface GroupFormProps {
         subjectId: string
         subjectName: string
         studentIds: string[]
+        note?: string
     }
     setFormData: (data: any) => void
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
@@ -68,6 +69,15 @@ export function GroupForm({
                 creatable
                 onCreate={onCreateSubject}
                 menuPosition="relative"
+                disabled={isSubmitting}
+            />
+
+            <Textarea
+                label="Заметка"
+                name="note"
+                value={formData.note || ''}
+                onChange={handleChange}
+                placeholder="Добавьте заметку о группе..."
                 disabled={isSubmitting}
             />
 

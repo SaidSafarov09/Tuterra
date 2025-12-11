@@ -1,15 +1,21 @@
 import React from 'react'
-import { getLessonStatus, getLessonStatusLabel } from '@/lib/lessonUtils'
+import { getLessonStatus, getLessonStatusLabel, LessonStatus } from '@/lib/lessonUtils'
 import styles from './LessonStatusBadge.module.scss'
 
 interface LessonStatusBadgeProps {
     price: number
     isPaid: boolean
     className?: string
+    paymentStatus?: 'paid' | 'unpaid' | 'partial'
 }
 
-export function LessonStatusBadge({ price, isPaid, className = '' }: LessonStatusBadgeProps) {
-    const status = getLessonStatus(price, isPaid)
+export function LessonStatusBadge({
+    price,
+    isPaid,
+    className = '',
+    paymentStatus
+}: LessonStatusBadgeProps) {
+    const status: LessonStatus = paymentStatus || getLessonStatus(price, isPaid)
     const label = getLessonStatusLabel(status)
 
     return (

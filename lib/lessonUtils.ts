@@ -1,6 +1,6 @@
 import type { Lesson, DayData } from '@/types'
 
-export type LessonStatus = 'free' | 'paid' | 'unpaid'
+export type LessonStatus = 'free' | 'paid' | 'unpaid' | 'partial'
 
 export function getLessonStatus(price: number, isPaid: boolean): LessonStatus {
     if (price === 0) return 'free'
@@ -19,17 +19,21 @@ export function getLessonStatusLabel(status: LessonStatus): string {
             return 'Оплачено'
         case 'unpaid':
             return 'Не оплачено'
+        case 'partial':
+            return 'Частично оплачено'
     }
 }
 
 export function getLessonStatusColor(status: LessonStatus): string {
     switch (status) {
         case 'free':
-            return '#4A6CF7' 
+            return '#4A6CF7'
         case 'paid':
-            return '#10B981' 
+            return '#10B981'
         case 'unpaid':
-            return '#EF4444' 
+            return '#EF4444'
+        case 'partial':
+            return '#F59E0B' // Yellow/orange for partial payment
     }
 }
 

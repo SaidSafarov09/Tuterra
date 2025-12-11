@@ -165,8 +165,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 <div className={styles.lessonHeader}>
                     <div>
                         <div className={styles.studentNameRow}>
-                            <div onClick={() => router.push(`/students/${lesson.student.slug || lesson.student.id}`)}>
-                                <h1 className={styles.studentName}>{lesson.student.name}</h1>
+                            <div onClick={() => router.push(`/students/${lesson?.student?.slug || lesson?.student?.id}`)}>
+                                <h1 className={styles.studentName}>{lesson?.student?.name || lesson?.group?.name}</h1>
                             </div>
                             {lesson.subject && (
                                 <span
@@ -206,7 +206,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 {lesson.topic && (
-                    <div className={styles.topicSection} style={{ borderLeftColor: lesson.subject ? lesson.subject.color : 'var(--primary)' , borderLeftWidth: '3px', borderLeftStyle: 'solid' }}>
+                    <div className={styles.topicSection} style={{ borderLeftColor: lesson.subject ? lesson.subject.color : 'var(--primary)', borderLeftWidth: '3px', borderLeftStyle: 'solid' }}>
                         <strong>Тема урока:</strong>
                         <p>{lesson.topic}</p>
                     </div>

@@ -34,7 +34,8 @@ export function useGroupDetail(groupId: string) {
         name: '',
         subjectId: '',
         subjectName: '',
-        studentIds: [] as string[]
+        studentIds: [] as string[],
+        note: ''
     })
 
     const [lessonFormData, setLessonFormData] = useState({
@@ -237,7 +238,8 @@ export function useGroupDetail(groupId: string) {
             name: group.name,
             subjectId: group.subjectId,
             subjectName: group.subject?.name || '',
-            studentIds: group.students.map(s => s.id)
+            studentIds: group.students.map(s => s.id),
+            note: group.note || ''
         })
         setIsEditModalOpen(true)
     }

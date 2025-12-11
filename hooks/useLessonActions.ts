@@ -65,7 +65,8 @@ export function useLessonActions(onUpdate?: () => void) {
 
         setIsLoading(true)
         const updated = await updateLesson(reschedulingLesson.id, {
-            studentId: reschedulingLesson.student.id,
+            studentId: reschedulingLesson.student?.id || undefined,
+            groupId: reschedulingLesson.group?.id || undefined,
             subjectId: reschedulingLesson.subject?.id || '',
             date: newDate,
             price: reschedulingLesson.price.toString(),

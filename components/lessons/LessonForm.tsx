@@ -173,6 +173,14 @@ export function LessonForm({
                 }
             }
         } else {
+            // Switching to student - reset group fields
+            setFormData(prev => ({
+                ...prev,
+                studentId: value,
+                groupId: undefined,
+                paidStudentIds: [],
+                subjectId: '' // Reset subject so user can select
+            }))
             onStudentChange(value, students)
         }
     }

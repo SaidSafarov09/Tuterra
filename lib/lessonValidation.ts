@@ -78,7 +78,7 @@ export async function checkRecurringConflicts(
     return null
 }
 
-export function formatConflictMessage(conflict: any, newStudentId: string) {
+export function formatConflictMessage(conflict: any, newStudentId?: string) {
     const startTime = new Date(conflict.date)
     const endTime = addMinutes(startTime, conflict.duration)
     const subjectName = conflict.subject?.name || 'Без предмета'
@@ -89,9 +89,10 @@ export function formatConflictMessage(conflict: any, newStudentId: string) {
 
     const timeRange = `${format(startTime, 'HH:mm')} - ${format(endTime, 'HH:mm')}`
 
-    if (conflict.studentId === newStudentId) {
+    if (newStudentId && conflict.studentId === newStudentId) {
         return `Ученик уже занят ${dateStr} с ${timeRange} (${subjectName})`
     } else {
-        return `Наслоение! У вас уже есть занятие с ${conflict.student.name} ${dateStr} с ${timeRange} по предмету "${subjectName}"`
+        const studentName = conflict.student?.name || conflict.group?.name || 'неизвестный ученик'
+        return `Наслоение! У вас уже есть занятие с ${studentName} ${dateStr} с ${timeRange} по предмету "${subjectName}"`
     }
 }

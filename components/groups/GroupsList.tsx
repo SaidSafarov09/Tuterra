@@ -2,6 +2,7 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Group } from '@/types'
 import styles from '../../app/(dashboard)/groups/page.module.scss'
+import { NoteIcon } from '../icons/Icons'
 
 interface GroupsListProps {
     groups: Group[]
@@ -59,6 +60,14 @@ export function GroupsList({ groups }: GroupsListProps) {
                             </div>
                         </div>
                     </div>
+                    {group.note && (
+                        <div className={styles.infoRow}>
+                            <div className={styles.iconWrapper}>
+                                <NoteIcon size={14} />
+                            </div>
+                            <p className={styles.noteText}>{group.note}</p>
+                        </div>
+                    )}
 
                     <div className={styles.cardBody}>
                         <div className={styles.statItem}>

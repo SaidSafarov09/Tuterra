@@ -9,6 +9,7 @@ interface CreateGroupModalProps extends GroupFormProps {
     isOpen: boolean
     onClose: () => void
     onSubmit: () => void
+    isEdit?: boolean
 }
 
 export function CreateGroupModal({
@@ -16,19 +17,20 @@ export function CreateGroupModal({
     onClose,
     onSubmit,
     isSubmitting,
+    isEdit = false,
     ...formProps
 }: CreateGroupModalProps) {
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Создать группу"
+            title={isEdit ? "Редактировать группу" : "Создать группу"}
             footer={
                 <ModalFooter
                     onCancel={onClose}
                     onSubmit={onSubmit}
                     isLoading={isSubmitting}
-                    submitText="Создать"
+                    submitText={isEdit ? "Сохранить" : "Создать"}
                 />
             }
         >

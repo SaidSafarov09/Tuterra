@@ -45,6 +45,7 @@ export interface Group {
     id: string
     name: string
     subjectId: string
+    note?: string
     subject: Subject
     students: Student[]
     lessons?: Lesson[]
@@ -87,6 +88,7 @@ export interface Lesson {
     group?: {
         id: string
         name: string
+        students?: { id: string; name: string }[]
     } | null
     subject?: {
         id: string

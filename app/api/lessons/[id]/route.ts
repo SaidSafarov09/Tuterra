@@ -6,7 +6,8 @@ import { z } from 'zod'
 import { isCuid } from '@/lib/slugUtils'
 
 const lessonSchema = z.object({
-    studentId: z.string(),
+    studentId: z.string().optional(),
+    groupId: z.string().optional(),
     date: z.string().transform((str) => new Date(str)),
     price: z.number().nonnegative('Цена должна быть положительной'),
     isPaid: z.boolean(),
@@ -14,6 +15,7 @@ const lessonSchema = z.object({
     notes: z.string().optional(),
     topic: z.string().optional(),
     duration: z.number().int().positive().optional(),
+    paidStudentIds: z.array(z.string()).optional(),
 })
 
 export async function GET(
@@ -29,7 +31,7 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        
+
         const isId = isCuid(id)
         const whereClause = isId
             ? { id: id, ownerId: user.id }
@@ -47,7 +49,7 @@ export async function GET(
             return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
         }
 
-        
+
         if (isId && lesson.slug) {
             return NextResponse.redirect(
                 new URL(`/lessons/${lesson.slug}`, request.url),
@@ -79,35 +81,58 @@ export async function PUT(
 
         const body = await request.json()
         const validatedData = lessonSchema.parse(body)
-        const student = await prisma.student.findFirst({
-            where: {
-                id: validatedData.studentId,
-                ownerId: user.id,
-            },
-        })
 
-        if (!student) {
-            return NextResponse.json(
-                { error: 'Ученик не найден' },
-                { status: 404 }
-            )
+        // Validate student or group existence if provided
+        if (validatedData.studentId) {
+            const student = await prisma.student.findFirst({
+                where: { id: validatedData.studentId, ownerId: user.id },
+            })
+            if (!student) return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
+        if (validatedData.groupId) {
+            const group = await prisma.group.findFirst({
+                where: { id: validatedData.groupId, ownerId: user.id },
+            })
+            if (!group) return NextResponse.json({ error: 'Группа не найдена' }, { status: 404 })
+        }
+
+        // Separate payment data
+        const { paidStudentIds, ...lessonData } = validatedData
+
+        // Update lesson
         const lesson = await prisma.lesson.updateMany({
             where: {
                 id: id,
                 ownerId: user.id,
             },
-            data: validatedData as any,
+            data: lessonData as any,
         })
 
         if (lesson.count === 0) {
             return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
         }
 
+        // Update payments if provided
+        if (paidStudentIds) {
+            await prisma.lessonPayment.deleteMany({
+                where: { lessonId: id }
+            })
+
+            if (paidStudentIds.length > 0) {
+                await prisma.lessonPayment.createMany({
+                    data: paidStudentIds.map(studentId => ({
+                        lessonId: id,
+                        studentId,
+                        hasPaid: true
+                    }))
+                })
+            }
+        }
+
         const updatedLesson = await prisma.lesson.findUnique({
             where: { id: id },
-            include: { student: true },
+            include: { student: true, group: true },
         })
 
         return NextResponse.json(updatedLesson)
@@ -141,10 +166,13 @@ export async function PATCH(
 
         const body = await request.json()
         const updateData: any = {}
+
+        // Basic fields
         if (body.isPaid !== undefined) updateData.isPaid = body.isPaid
         if (body.price !== undefined) updateData.price = body.price
         if (body.date !== undefined) updateData.date = new Date(body.date)
         if (body.studentId !== undefined) updateData.studentId = body.studentId
+        if (body.groupId !== undefined) updateData.groupId = body.groupId
         if (body.subjectId !== undefined) updateData.subjectId = body.subjectId
         if (body.isCanceled !== undefined) updateData.isCanceled = body.isCanceled
         if (body.notes !== undefined) updateData.notes = body.notes
@@ -156,16 +184,33 @@ export async function PATCH(
                 id: id,
                 ownerId: user.id,
             },
-            data: updateData as any,
+            data: updateData,
         })
 
         if (lesson.count === 0) {
             return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
         }
 
+        // Update payments if provided
+        if (body.paidStudentIds !== undefined) {
+            await prisma.lessonPayment.deleteMany({
+                where: { lessonId: id }
+            })
+
+            if (body.paidStudentIds.length > 0) {
+                await prisma.lessonPayment.createMany({
+                    data: body.paidStudentIds.map((studentId: string) => ({
+                        lessonId: id,
+                        studentId,
+                        hasPaid: true
+                    }))
+                })
+            }
+        }
+
         const updatedLesson = await prisma.lesson.findUnique({
             where: { id: id },
-            include: { student: true, subject: true },
+            include: { student: true, group: true, subject: true },
         })
 
         return NextResponse.json(updatedLesson)
