@@ -309,7 +309,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             date,
             price: index === 0 ? data.price : (data.seriesPrice !== undefined ? data.seriesPrice : data.price),
 
-            isPaid: data.isPaidAll ? true : (index === 0 ? (data.isPaid || false) : false),
+            isPaid: data.isPaidAll || (data.paidStudentIds && data.paidStudentIds.length > 0) ? true : (index === 0 ? (data.isPaid || false) : false),
             isTrial: index === 0 ? (data.isTrial || false) : false,
             isCanceled: false,
             notes: data.notes,
@@ -323,8 +323,26 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         })),
     })
 
-    // Note: We are not creating LessonPayments for recurring lessons yet as createMany doesn't support it.
-    // Future improvement: create payments for each lesson if needed.
+    // Create lesson payments for recurring lessons if paidStudentIds is provided
+    if (data.groupId && data.paidStudentIds) {
+        const createdLessons = await prisma.lesson.findMany({
+            where: { seriesId: series.id },
+            select: { id: true }
+        });
+
+        for (const lesson of createdLessons) {
+            await prisma.lessonPayment.createMany({
+                data: data.paidStudentIds.map(studentId => ({
+                    lessonId: lesson.id,
+                    studentId,
+                    hasPaid: true
+                }))
+            });
+        }
+    }
+    
+    // If isPaidAll is true, we've already handled the payment creation above
+    // The isPaid field is handled separately for individual lesson tracking
 
     if (data.subjectId && data.studentId) {
         await linkSubjectToStudent(data.studentId, data.subjectId)
@@ -335,6 +353,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             student: true,
             group: true,
             subject: true,
+            lessonPayments: true,
         },
         orderBy: { date: 'asc' },
     })
