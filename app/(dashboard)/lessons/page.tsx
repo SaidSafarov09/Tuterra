@@ -246,9 +246,10 @@ function LessonsContent() {
                     }
                 }}
                 students={paymentLesson?.group?.students || []}
-                initialPaidStudentIds={paymentLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []}
+                initialPaidStudentIds={paymentLesson?.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || []}
                 isSubmitting={isLoading}
                 price={Number(paymentLesson?.price || 0)}
+                lessonDate={paymentLesson?.date}
             />
         </div>
     )

@@ -105,6 +105,7 @@ export function useLessonActions(onUpdate?: () => void) {
         isGroupPaymentModalOpen,
         setIsGroupPaymentModalOpen,
         paymentLesson,
+        paymentLessonDate: paymentLesson?.date,
     }
 }
 

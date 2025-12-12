@@ -24,15 +24,20 @@ export function LessonBadges({
     // For group lessons, determine payment status
     let paymentStatus: 'paid' | 'unpaid' | 'partial' = isPaid ? 'paid' : 'unpaid'
 
-    if (isGroupLesson && totalStudents > 0 && lessonPayments.length > 0) {
-        const paidCount = lessonPayments.filter(p => p.hasPaid).length
+    if (isGroupLesson && lessonPayments && lessonPayments.length > 0) {
+        // Рассчитываем статус оплаты только на основе присутствовавших студентов
+        const attendedPayments = lessonPayments.filter(p => p.hasPaid || !p.hasPaid) // Все, кто присутствовал (оплатил или не оплатил)
+        const totalAttended = attendedPayments.length
+        const paidAttended = attendedPayments.filter(p => p.hasPaid).length
 
-        if (paidCount === 0) {
+        if (totalAttended === 0) {
             paymentStatus = 'unpaid'
-        } else if (paidCount === totalStudents) {
-            paymentStatus = 'paid'
+        } else if (paidAttended === 0) {
+            paymentStatus = 'unpaid'
+        } else if (paidAttended === totalAttended) {
+            paymentStatus = 'paid' // Все присутствовавшие оплатили
         } else {
-            paymentStatus = 'partial'
+            paymentStatus = 'partial' // Только часть присутствовавших оплатила
         }
     }
 

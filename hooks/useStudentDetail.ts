@@ -68,6 +68,7 @@ export function useStudentDetail(studentId: string) {
 
     const [isGroupPaymentModalOpen, setIsGroupPaymentModalOpen] = useState(false)
     const [paymentLessonId, setPaymentLessonId] = useState<string | null>(null)
+    const [paymentLessonDate, setPaymentLessonDate] = useState<string | null>(null)
 
     const [deleteStudentConfirm, setDeleteStudentConfirm] = useState(false)
     const [deleteSubjectConfirm, setDeleteSubjectConfirm] = useState<string | null>(null)
@@ -294,6 +295,7 @@ export function useStudentDetail(studentId: string) {
             await fetchStudent()
             setIsGroupPaymentModalOpen(false)
             setPaymentLessonId(null)
+            setPaymentLessonDate(null)
         } catch (error) {
             console.error('Payment update error:', error)
             toast.error('Ошибка при обновлении статуса оплаты')
@@ -389,6 +391,7 @@ export function useStudentDetail(studentId: string) {
         isRescheduleModalOpen, setIsRescheduleModalOpen,
         isGroupPaymentModalOpen, setIsGroupPaymentModalOpen,
         paymentLessonId, setPaymentLessonId,
+        paymentLessonDate, setPaymentLessonDate,
         handleGroupPaymentSubmit,
         reschedulingLessonId,
 

@@ -162,6 +162,7 @@ export default function GroupDetailPage({
                 }
                 isSubmitting={isSubmitting}
                 price={paymentLessonId ? Number(group.lessons?.find(l => l.id === paymentLessonId)?.price) : 0}
+                lessonDate={paymentLessonId ? group.lessons?.find(l => l.id === paymentLessonId)?.date : undefined}
             />
         </div>
     )

@@ -89,6 +89,8 @@ export default function StudentDetailPage({
     setIsGroupPaymentModalOpen,
     paymentLessonId,
     setPaymentLessonId,
+    paymentLessonDate,
+    setPaymentLessonDate,
     handleGroupPaymentSubmit,
   } = useStudentDetail(id);
 
@@ -168,8 +170,9 @@ export default function StudentDetailPage({
         onToggleCancelLesson={handleToggleCancelLesson}
         onRescheduleLesson={handleRescheduleLessonMobile}
         onOpenGroupPayment={(l) => {
-          setPaymentLessonId(l.id);
-          setIsGroupPaymentModalOpen(true);
+            setPaymentLessonId(l.id);
+            setPaymentLessonDate(l.date);
+            setIsGroupPaymentModalOpen(true);
         }}
       />
 
@@ -262,15 +265,16 @@ export default function StudentDetailPage({
       />
 
       <GroupPaymentModal
-        isOpen={isGroupPaymentModalOpen}
-        onClose={() => setIsGroupPaymentModalOpen(false)}
-        onSubmit={handleGroupPaymentSubmit}
-        students={paymentGroupLesson?.group?.students || []}
-        initialPaidStudentIds={
-          paymentGroupLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
-        }
-        isSubmitting={isSubmitting}
-        price={paymentGroupLesson ? Number(paymentGroupLesson.price) : 0}
+          isOpen={isGroupPaymentModalOpen}
+          onClose={() => setIsGroupPaymentModalOpen(false)}
+          onSubmit={handleGroupPaymentSubmit}
+          students={paymentGroupLesson?.group?.students || []}
+          initialPaidStudentIds={
+              paymentGroupLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
+          }
+          isSubmitting={isSubmitting}
+          price={paymentGroupLesson ? Number(paymentGroupLesson.price) : 0}
+          lessonDate={paymentGroupLesson ? paymentGroupLesson.date : undefined}
       />
     </div>
   );

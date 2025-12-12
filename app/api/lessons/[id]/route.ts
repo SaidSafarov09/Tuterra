@@ -16,6 +16,7 @@ const lessonSchema = z.object({
     topic: z.string().optional(),
     duration: z.number().int().positive().optional(),
     paidStudentIds: z.array(z.string()).optional(),
+    attendedStudentIds: z.array(z.string()).optional(), // Добавляем валидацию для списка присутствовавших студентов
 })
 
 export async function GET(
@@ -47,7 +48,11 @@ export async function GET(
                         students: true
                     }
                 },
-                lessonPayments: true,
+                lessonPayments: {
+                    include: {
+                        student: true // Добавляем информацию о студенте для отображения
+                    }
+                },
             },
         })
 
@@ -132,8 +137,7 @@ export async function PUT(
             )
         }
 
-        // Separate payment data
-        const { paidStudentIds, ...lessonData } = validatedData
+        const { paidStudentIds, attendedStudentIds, ...lessonData } = validatedData
 
         // Update lesson
         const lesson = await prisma.lesson.updateMany({
@@ -149,18 +153,71 @@ export async function PUT(
         }
 
         // Update payments if provided
-        if (paidStudentIds) {
+        if (paidStudentIds !== undefined || attendedStudentIds !== undefined) {
             await prisma.lessonPayment.deleteMany({
                 where: { lessonId: lessonId }
             })
-
-            if (paidStudentIds.length > 0) {
+            
+            if (paidStudentIds && paidStudentIds.length > 0) {
+                // Создаем записи для оплативших студентов
                 await prisma.lessonPayment.createMany({
                     data: paidStudentIds.map(studentId => ({
                         lessonId: lessonId,
                         studentId,
                         hasPaid: true
                     }))
+                })
+            }
+            
+            if (attendedStudentIds) {
+                // Находим студентов, которые присутствовали, но не оплатили
+                const nonPaidAttendedStudentIds = paidStudentIds
+                    ? attendedStudentIds.filter(id => !paidStudentIds.includes(id))
+                    : attendedStudentIds;
+                
+                if (nonPaidAttendedStudentIds.length > 0) {
+                    // Создаем записи для присутствовавших, но не оплативших студентов
+                    await prisma.lessonPayment.createMany({
+                        data: nonPaidAttendedStudentIds.map(studentId => ({
+                            lessonId: lessonId,
+                            studentId,
+                            hasPaid: false
+                        }))
+                    })
+                }
+            }
+            
+            // Обновляем статус оплаты занятия на основе данных о посещаемости и оплате
+            const lessonWithGroup = await prisma.lesson.findUnique({
+                where: { id: lessonId },
+                include: {
+                    group: {
+                        include: {
+                            students: true
+                        }
+                    },
+                    lessonPayments: true
+                }
+            })
+            
+            if (lessonWithGroup?.group && lessonWithGroup.lessonPayments) {
+                // Получаем только присутствовавших студентов (те, у кого есть запись в lessonPayments)
+                const attendedPayments = lessonWithGroup.lessonPayments
+                const attendedStudentsCount = attendedPayments.length
+                const paidAttendedCount = attendedPayments.filter(p => p.hasPaid).length
+                
+                // Определяем статус оплаты занятия
+                let isLessonPaid = false
+                if (attendedStudentsCount > 0 && paidAttendedCount === attendedStudentsCount) {
+                    isLessonPaid = true // Все присутствовавшие оплатили
+                } else if (attendedStudentsCount > 0 && paidAttendedCount > 0 && paidAttendedCount < attendedStudentsCount) {
+                    isLessonPaid = true // Частично оплачено (некоторые присутствовавшие оплатили)
+                }
+                
+                // Обновляем статус оплаты занятия
+                await prisma.lesson.update({
+                    where: { id: lessonId },
+                    data: { isPaid: isLessonPaid }
                 })
             }
         }
@@ -175,7 +232,11 @@ export async function PUT(
                     }
                 },
                 subject: true,
-                lessonPayments: true,
+                lessonPayments: {
+                    include: {
+                        student: true
+                    }
+                },
             },
         })
 
@@ -290,18 +351,71 @@ export async function PATCH(
         }
 
         // Update payments if provided
-        if (body.paidStudentIds !== undefined) {
+        if (body.paidStudentIds !== undefined || body.attendedStudentIds !== undefined) {
             await prisma.lessonPayment.deleteMany({
                 where: { lessonId: lessonId }
             })
 
-            if (body.paidStudentIds.length > 0) {
+            if (body.paidStudentIds && body.paidStudentIds.length > 0) {
+                // Создаем записи для оплативших студентов
                 await prisma.lessonPayment.createMany({
                     data: body.paidStudentIds.map((studentId: string) => ({
                         lessonId: lessonId,
                         studentId,
                         hasPaid: true
                     }))
+                })
+            }
+            
+            if (body.attendedStudentIds) {
+                // Находим студентов, которые присутствовали, но не оплатили
+                const nonPaidAttendedStudentIds = body.paidStudentIds
+                    ? body.attendedStudentIds.filter((id: string) => !body.paidStudentIds.includes(id))
+                    : body.attendedStudentIds;
+                
+                if (nonPaidAttendedStudentIds.length > 0) {
+                    // Создаем записи для присутствовавших, но не оплативших студентов
+                    await prisma.lessonPayment.createMany({
+                        data: nonPaidAttendedStudentIds.map((studentId: string) => ({
+                            lessonId: lessonId,
+                            studentId,
+                            hasPaid: false
+                        }))
+                    })
+                }
+            }
+            
+            // Обновляем статус оплаты занятия на основе данных о посещаемости и оплате
+            const lessonWithGroup = await prisma.lesson.findUnique({
+                where: { id: lessonId },
+                include: {
+                    group: {
+                        include: {
+                            students: true
+                        }
+                    },
+                    lessonPayments: true
+                }
+            })
+            
+            if (lessonWithGroup?.group && lessonWithGroup.lessonPayments) {
+                // Получаем только присутствовавших студентов (те, у кого есть запись в lessonPayments)
+                const attendedPayments = lessonWithGroup.lessonPayments
+                const attendedStudentsCount = attendedPayments.length
+                const paidAttendedCount = attendedPayments.filter(p => p.hasPaid).length
+                
+                // Определяем статус оплаты занятия
+                let isLessonPaid = false
+                if (attendedStudentsCount > 0 && paidAttendedCount === attendedStudentsCount) {
+                    isLessonPaid = true // Все присутствовавшие оплатили
+                } else if (attendedStudentsCount > 0 && paidAttendedCount > 0 && paidAttendedCount < attendedStudentsCount) {
+                    isLessonPaid = true // Частично оплачено (некоторые присутствовавшие оплатили)
+                }
+                
+                // Обновляем статус оплаты занятия
+                await prisma.lesson.update({
+                    where: { id: lessonId },
+                    data: { isPaid: isLessonPaid }
                 })
             }
         }
@@ -316,7 +430,11 @@ export async function PATCH(
                     }
                 },
                 subject: true,
-                lessonPayments: true,
+                lessonPayments: {
+                    include: {
+                        student: true
+                    }
+                },
             },
         })
 

@@ -4,10 +4,56 @@
     gap: 20px;
 }
 
+.date {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin: 0;
+    padding: 10px;
+    background: var(--background);
+    border-radius: 8px;
+    font-weight: 600;
+}
+
 .description {
     font-size: 14px;
     color: var(--text-secondary);
     margin: 0;
+}
+
+.hint {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin: 0 0 10px 0;
+    padding: 8px;
+    background: var(--background);
+    border-radius: 6px;
+    line-height: 1.4;
+}
+
+.modeSelector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.modeButton {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    background: var(--background);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    
+    &:hover {
+        background: var(--hover);
+    }
 }
 
 .price {
@@ -45,9 +91,26 @@
         padding: 8px;
         border-radius: 8px;
         transition: background 0.2s;
-
+        
         &:hover {
             background: var(--background);
+        }
+    }
+    
+    .studentItem {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        
+        &:hover {
+            background: var(--background);
+        }
+        
+        .paymentCheckbox {
+            margin-left: auto;
         }
     }
 }

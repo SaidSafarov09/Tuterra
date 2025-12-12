@@ -136,12 +136,13 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         await togglePaid(lesson)
     }
 
-    const handleGroupPaymentSubmit = async (paidStudentIds: string[]) => {
+    const handleGroupPaymentSubmit = async (paidStudentIds: string[], attendedStudentIds: string[]) => {
         if (!lesson) return
 
         try {
             await lessonsApi.update(id, {
                 paidStudentIds,
+                attendedStudentIds,
             })
             toast.success('Статус оплаты обновлен')
             setIsGroupPaymentModalOpen(false)
@@ -173,9 +174,17 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const lessonDate = new Date(lesson.date)
     const isLessonPast = isPast(lessonDate)
 
+    // Определяем статус оплаты для группового занятия
     const isFullyPaid = lesson.group
         ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
         : lesson.isPaid
+        
+    const isPartiallyPaid = lesson.group
+        ? (lesson.lessonPayments && lesson.group.students &&
+           lesson.lessonPayments.filter(p => p.hasPaid).length > 0 &&
+           lesson.lessonPayments.filter(p => p.hasPaid).length < lesson.group.students.length &&
+           lesson.group.students.length > 0)
+        : false
 
     return (
         <div>
@@ -327,9 +336,10 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 onClose={() => setIsGroupPaymentModalOpen(false)}
                 onSubmit={handleGroupPaymentSubmit}
                 students={paymentLesson?.group?.students || lesson?.group?.students || []}
-                initialPaidStudentIds={paymentLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || lesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []}
+                initialPaidStudentIds={paymentLesson?.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || lesson?.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || []}
                 isSubmitting={isActionLoading}
                 price={Number(paymentLesson?.price || lesson?.price || 0)}
+                lessonDate={paymentLesson?.date || lesson?.date}
             />
         </div>
     )

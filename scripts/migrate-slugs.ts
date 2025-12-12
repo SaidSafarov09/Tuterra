@@ -27,16 +27,21 @@ async function migrateLessons() {
     })
 
     for (const lesson of lessons) {
-        const slug = generateLessonSlug(
-            lesson.student.name,
-            new Date(lesson.date),
-            lesson.topic || undefined
-        )
-        await prisma.lesson.update({
-            where: { id: lesson.id },
-            data: { slug }
-        })
-        console.log(`✓ Lesson: ${slug}`)
+        // Проверяем, что у урока есть студент перед генерацией слага
+        if (lesson.student) {
+            const slug = generateLessonSlug(
+                lesson.student.name,
+                new Date(lesson.date),
+                lesson.topic || undefined
+            )
+            await prisma.lesson.update({
+                where: { id: lesson.id },
+                data: { slug }
+            })
+            console.log(`✓ Lesson: ${slug}`)
+        } else {
+            console.log(`⚠ Skipping lesson ${lesson.id} - no student assigned`)
+        }
     }
 
     console.log(`✓ Migrated ${lessons.length} lessons`)

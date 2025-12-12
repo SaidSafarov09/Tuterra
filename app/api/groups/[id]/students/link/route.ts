@@ -44,6 +44,7 @@ export async function POST(
             return NextResponse.json({ error: `Нет прав на ученика` }, { status: 403 })
         }
 
+        // Сначала добавляем ученика к группе
         await prisma.group.update({
             where: { id: groupId },
             data: {
@@ -52,6 +53,31 @@ export async function POST(
                 },
             },
         })
+
+        // Находим будущие занятия группы и создаем для них записи об оплате с hasPaid=false
+        const now = new Date()
+        const futureLessons = await prisma.lesson.findMany({
+            where: {
+                groupId: groupId,
+                date: {
+                    gte: now
+                }
+            },
+            select: {
+                id: true
+            }
+        })
+
+        // Создаем записи LessonPayment для будущих занятий
+        if (futureLessons.length > 0) {
+            await prisma.lessonPayment.createMany({
+                data: futureLessons.map(lesson => ({
+                    lessonId: lesson.id,
+                    studentId: studentId,
+                    hasPaid: false
+                }))
+            })
+        }
 
         return NextResponse.json({ success: true })
     } catch (error) {

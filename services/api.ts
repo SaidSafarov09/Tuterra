@@ -26,6 +26,7 @@ interface CreateLessonDTO {
     topic?: string
     isCanceled?: boolean
     paidStudentIds?: string[]
+    attendedStudentIds?: string[] // Добавляем список присутствовавших студентов
 }
 
 interface CreateStudentDTO {
