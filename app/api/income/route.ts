@@ -26,94 +26,115 @@ export async function GET(request: NextRequest) {
             const monthStart = startOfMonth(date)
             const monthEnd = endOfMonth(date)
 
-
-            const paidLessons = await prisma.lesson.aggregate({
+            const lessonsInMonth = await prisma.lesson.findMany({
                 where: {
                     ownerId: user.id,
-                    isPaid: true,
-                    date: {
-                        gte: monthStart,
-                        lte: monthEnd,
-                    },
+                    date: { gte: monthStart, lte: monthEnd },
                 },
-                _sum: {
-                    price: true,
-                },
-                _count: true,
+                include: {
+                    group: { include: { students: true } },
+                    lessonPayments: true
+                }
             })
 
+            let income = 0
+            let paidCount = 0
+            let unpaidCount = 0
 
-            const unpaidLessons = await prisma.lesson.aggregate({
-                where: {
-                    ownerId: user.id,
-                    isPaid: false,
-                    date: {
-                        gte: monthStart,
-                        lte: monthEnd,
-                    },
-                },
-                _count: true,
+            lessonsInMonth.forEach(lesson => {
+                if (lesson.group) {
+                    const totalStudents = lesson.group.students?.length || 0
+                    const paidPayments = lesson.lessonPayments?.filter(p => p.hasPaid).length || 0
+                    const lessonIncome = paidPayments * lesson.price
+
+                    income += lessonIncome
+
+                    if (totalStudents > 0 && paidPayments >= totalStudents) {
+                        paidCount++
+                    } else {
+                        unpaidCount++
+                    }
+                } else {
+                    if (lesson.isPaid) {
+                        income += lesson.price
+                        paidCount++
+                    } else {
+                        unpaidCount++
+                    }
+                }
             })
 
             monthlyData.push({
                 month: format(date, 'MMM', { locale: ru }),
-                income: paidLessons._sum.price || 0,
-                lessons: (paidLessons._count || 0) + (unpaidLessons._count || 0),
-                paid: paidLessons._count || 0,
-                unpaid: unpaidLessons._count || 0,
+                income,
+                lessons: lessonsInMonth.length,
+                paid: paidCount,
+                unpaid: unpaidCount,
             })
         }
 
         const currentMonthStart = startOfMonth(currentDate)
         const currentMonthEnd = endOfMonth(currentDate)
-
-        const currentMonthIncome = await prisma.lesson.aggregate({
-            where: {
-                ownerId: user.id,
-                isPaid: true,
-                date: {
-                    gte: currentMonthStart,
-                    lte: currentMonthEnd,
-                },
-            },
-            _sum: {
-                price: true,
-            },
-            _count: true,
-        })
-
-
         const prevMonthStart = startOfMonth(subMonths(currentDate, 1))
         const prevMonthEnd = endOfMonth(subMonths(currentDate, 1))
 
-        const previousMonthIncome = await prisma.lesson.aggregate({
-            where: {
-                ownerId: user.id,
-                isPaid: true,
-                date: {
-                    gte: prevMonthStart,
-                    lte: prevMonthEnd,
+        const getMonthStats = async (start: Date, end: Date) => {
+            const lessons = await prisma.lesson.findMany({
+                where: {
+                    ownerId: user.id,
+                    date: { gte: start, lte: end },
                 },
-            },
-            _sum: {
-                price: true,
-            },
-            _count: true,
-        })
+                include: {
+                    group: { include: { students: true } },
+                    lessonPayments: true
+                }
+            })
 
-        const currentIncome = currentMonthIncome._sum.price || 0
-        const currentLessonsCount = currentMonthIncome._count || 0
+            let income = 0
+            let lessonsCount = 0 // Count of "Paid" lessons (or lessons with income?)
+            // Usually "Lessons Count" in stats refers to Total Lessons or Paid Lessons?
+            // In original code: `currentLessonsCount = currentMonthIncome._count` (which was filtered by isPaid=true).
+            // So default behavior was counting PAID lessons.
+
+            lessons.forEach(lesson => {
+                if (lesson.group) {
+                    const paidPayments = lesson.lessonPayments?.filter(p => p.hasPaid).length || 0
+                    if (paidPayments > 0) {
+                        income += paidPayments * lesson.price
+                        // For count: should we count it if ANY payment? Or only full?
+                        // Original was isPaid=true (so only fully paid in theory, but buggy).
+                        // Let's count it if it generates income (has >0 payments).
+                        lessonsCount++
+                    }
+                } else {
+                    if (lesson.isPaid) {
+                        income += lesson.price
+                        lessonsCount++
+                    }
+                }
+            })
+            return { income, lessonsCount }
+        }
+
+        const currentStats = await getMonthStats(currentMonthStart, currentMonthEnd)
+        const prevStats = await getMonthStats(prevMonthStart, prevMonthEnd)
+
+        const currentIncome = currentStats.income
+        const currentLessonsCount = currentStats.lessonsCount
         const averageCheck = currentLessonsCount > 0 ? Math.round(currentIncome / currentLessonsCount) : 0
 
-        const previousIncome = previousMonthIncome._sum.price || 0
-        const previousLessonsCount = previousMonthIncome._count || 0
+        const previousIncome = prevStats.income
+        const previousLessonsCount = prevStats.lessonsCount
         const previousAverageCheck = previousLessonsCount > 0 ? Math.round(previousIncome / previousLessonsCount) : 0
 
 
-        const paidLessonsCount = await prisma.lesson.count({
+        const paidLessonsCount = await prisma.lesson.count({ // This is "all time paid lessons"
             where: {
                 ownerId: user.id,
-                isPaid: true,
+                OR: [
+                    { isPaid: true },
+                    { lessonPayments: { some: { hasPaid: true } } }
+                ]
             },
         })
         const hasAnyIncomeEver = paidLessonsCount > 0
@@ -122,8 +143,8 @@ export async function GET(request: NextRequest) {
         const currentMonthDuration = await prisma.lesson.aggregate({
             where: {
                 ownerId: user.id,
-                isPaid: true,
                 date: { gte: currentMonthStart, lte: currentMonthEnd },
+                isCanceled: false,
             },
             _sum: { duration: true } as any,
         })
@@ -131,8 +152,8 @@ export async function GET(request: NextRequest) {
         const previousMonthDuration = await prisma.lesson.aggregate({
             where: {
                 ownerId: user.id,
-                isPaid: true,
                 date: { gte: prevMonthStart, lte: prevMonthEnd },
+                isCanceled: false,
             },
             _sum: { duration: true } as any,
         })

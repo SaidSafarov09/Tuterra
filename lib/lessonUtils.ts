@@ -55,13 +55,25 @@ export function calculateDayData(lessons: Lesson[], date: Date): DayData {
         return lessonDate >= startOfDay && lessonDate <= endOfDay
     })
 
-    const totalEarned = dayLessons
-        .filter(lesson => lesson.isPaid)
-        .reduce((sum, lesson) => sum + lesson.price, 0)
+    const totalEarned = dayLessons.reduce((sum, lesson) => {
+        if (lesson.group && lesson.lessonPayments) {
+            const paidCount = lesson.lessonPayments.filter(p => p.hasPaid).length
+            return sum + (paidCount * lesson.price)
+        }
+        return sum + (lesson.isPaid ? lesson.price : 0)
+    }, 0)
 
     const potentialEarnings = dayLessons
-        .filter(lesson => !lesson.isPaid && !lesson.isCanceled)
-        .reduce((sum, lesson) => sum + lesson.price, 0)
+        .filter(lesson => !lesson.isCanceled)
+        .reduce((sum, lesson) => {
+            if (lesson.group && lesson.group.students) {
+                const total = lesson.group.students.length
+                const paidCount = lesson.lessonPayments?.filter(p => p.hasPaid).length || 0
+                const unpaidCount = total - paidCount
+                return sum + (unpaidCount * lesson.price)
+            }
+            return sum + (!lesson.isPaid ? lesson.price : 0)
+        }, 0)
 
     return {
         lessons: dayLessons,

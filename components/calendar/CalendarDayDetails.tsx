@@ -149,7 +149,7 @@ export function CalendarDayDetails({
                                             disabled={lesson.isCanceled}
                                         >
                                             <CheckIcon size={16} />
-                                            {lesson.isPaid ? 'Отменить оплату' : 'Отметить оплаченным'}
+                                            {isFullyPaid ? (lesson.group ? 'Изменить оплату' : 'Отменить оплату') : 'Отметить оплаченным'}
                                         </button>
                                     )}
 

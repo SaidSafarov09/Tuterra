@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { Checkbox } from '@/components/ui/Checkbox'
 import styles from './GroupPaymentModal.module.scss'
@@ -24,14 +24,17 @@ export function GroupPaymentModal({
     isSubmitting,
     price
 }: GroupPaymentModalProps) {
-    const [paidStudentIds, setPaidStudentIds] = useState<string[]>(initialPaidStudentIds)
+    const [paidStudentIds, setPaidStudentIds] = useState<string[]>(initialPaidStudentIds || [])
+
+    const prevIsOpenRef = useRef<boolean>(false)
 
     useEffect(() => {
-        if (isOpen) {
-            setPaidStudentIds(initialPaidStudentIds)
+        const prev = prevIsOpenRef.current
+        if (!prev && isOpen) {
+            setPaidStudentIds(initialPaidStudentIds || [])
         }
-    }, [isOpen, initialPaidStudentIds])
-
+        prevIsOpenRef.current = isOpen
+    }, [isOpen])
     const handleToggle = (studentId: string) => {
         setPaidStudentIds(prev =>
             prev.includes(studentId)
