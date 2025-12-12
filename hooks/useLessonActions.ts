@@ -16,14 +16,12 @@ export function useLessonActions(onUpdate?: () => void) {
     const [paymentLesson, setPaymentLesson] = useState<Lesson | null>(null)
 
     const togglePaid = async (lesson: Lesson) => {
-        // Для групповых уроков открываем модальное окно
         if (lesson.group) {
             setPaymentLesson(lesson)
             setIsGroupPaymentModalOpen(true)
             return
         }
 
-        // Для индивидуальных уроков просто переключаем статус
         setIsLoading(true)
         const updated = await toggleLessonPaid(lesson.id, !lesson.isPaid)
 

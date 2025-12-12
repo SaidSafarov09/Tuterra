@@ -86,7 +86,7 @@ export default function GroupDetailPage({
                     group: { id: group.id, name: group.name, students: group.students },
                     subject: group.subject || null,
                 }))}
-                student={{ id: group.id, name: group.name } as any} // Mock student for compatibility
+                student={{ id: group.id, name: group.name } as any}
                 onCreateLesson={openCreateLessonModal}
                 onEditLesson={handleEditLesson}
                 onDeleteLesson={handleDeleteLesson}

@@ -5,7 +5,7 @@ import { TabNav } from "@/components/ui/TabNav";
 import { PlusIcon, NoteIcon } from "@/components/icons/Icons";
 import { Lesson, Student, LessonFilter } from "@/types";
 import { formatSmartDate } from "@/lib/dateUtils";
-import { LESSON_TABS } from "@/constants";
+import { LESSON_TABS, stringToColor } from "@/constants";
 import { LessonActions } from "@/components/lessons/LessonActions";
 import { LessonBadges } from "@/components/lessons/LessonBadges";
 import { getLessonTimeInfo } from "@/lib/lessonTimeUtils";
@@ -119,6 +119,13 @@ export function StudentLessons({
                                 <div className={styles.lessonHeader}>
                                     <div>
                                         <div className={styles.lessonDateContainer}>
+
+                                            {lesson.group && student.id !== lesson.group.id && (
+                                                <p className={styles.lessonGroupText}
+                                                >
+                                                    <span style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</span> - группа
+                                                </p>
+                                            )}
                                             <h3 className={styles.lessonDate}>
                                                 {formatSmartDate(new Date(lesson.date))}
                                             </h3>
@@ -144,11 +151,6 @@ export function StudentLessons({
                                             ) : (
                                                 <span className={styles.lessonSubject} style={{ color: 'var(--text-secondary)', background: 'var(--background)' }}>
                                                     Без предмета
-                                                </span>
-                                            )}
-                                            {lesson.group && (
-                                                <span className={styles.lessonGroupText}>
-                                                    {lesson.group.name} - группа
                                                 </span>
                                             )}
                                         </div>

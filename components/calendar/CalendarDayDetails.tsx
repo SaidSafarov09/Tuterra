@@ -7,6 +7,7 @@ import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { isTrial } from '@/lib/lessonUtils'
 import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
+import { stringToColor } from '@/constants'
 
 interface CalendarDayDetailsProps {
     date: Date | null
@@ -93,7 +94,7 @@ export function CalendarDayDetails({
                                 <div className={styles.lessonMain}>
                                     <div className={styles.lessonInfo}>
                                         <div className={styles.lessonStudent}>
-                                            {lesson.group ? `${lesson.group.name} - группа` : lesson.student?.name}
+                                            {lesson.group ? <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</p>&nbsp;-&nbsp;группа</> : <>{lesson.student?.name}</>}
                                             {lesson.isCanceled && (
                                                 <span className={styles.canceledBadge}>Отменено</span>
                                             )}
@@ -125,19 +126,20 @@ export function CalendarDayDetails({
                                     {lesson.notes && (
                                         <div className={styles.lessonNotes}>{lesson.notes}</div>
                                     )}
-                                </div>
-                                <div className={styles.lessonTimeContainer}>
-                                    <div className={styles.timeBig}>
-                                        {format(new Date(lesson.date), 'HH:mm')}
+
+                                    <div className={styles.lessonTimeContainer}>
+                                        <div className={styles.timeBig}>
+                                            {format(new Date(lesson.date), 'HH:mm')}
+                                        </div>
+                                        <LessonBadges
+                                            price={lesson.price}
+                                            isPaid={lesson.isPaid}
+                                            isTrial={lesson.isTrial}
+                                            isGroupLesson={!!lesson.group}
+                                            totalStudents={lesson.group?.students?.length || 0}
+                                            lessonPayments={lesson.lessonPayments}
+                                        />
                                     </div>
-                                    <LessonBadges
-                                        price={lesson.price}
-                                        isPaid={lesson.isPaid}
-                                        isTrial={lesson.isTrial}
-                                        isGroupLesson={!!lesson.group}
-                                        totalStudents={lesson.group?.students?.length || 0}
-                                        lessonPayments={lesson.lessonPayments}
-                                    />
                                 </div>
                                 <div className={styles.lessonActions}>
                                     {!lesson.isCanceled && !isTrial(lesson.price) && (

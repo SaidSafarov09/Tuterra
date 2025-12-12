@@ -184,8 +184,7 @@ export function useGroupDetail(groupId: string) {
     }
 
     const handleTogglePaidStatus = async (lessonId: string, isPaid: boolean) => {
-        // Since we are in Group Detail, we assume this is a group lesson.
-        // We open the modal to manage individual payments.
+
         setPaymentLessonId(lessonId)
         setIsGroupPaymentModalOpen(true)
     }
@@ -279,7 +278,6 @@ export function useGroupDetail(groupId: string) {
     }
 
     const handleCreateSubject = async (name: string) => {
-        // Logic to create subject if needed
     }
 
     return {

@@ -9,6 +9,7 @@ import { LessonActions } from '@/components/lessons/LessonActions'
 import { getRecurrenceDescription } from '@/lib/recurring-lessons'
 import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
 import styles from './LessonCard.module.scss'
+import { stringToColor } from '@/lib/utils'
 
 interface LessonCardProps {
     lesson: Lesson & { series?: any }
@@ -60,7 +61,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
             <div className={styles.header}>
                 <div className={styles.info}>
                     <h4 className={styles.studentName}>
-                        {lesson.student?.name || (lesson.group ? `${lesson.group.name} - группа` : 'Неизвестно')}
+                        {lesson.student?.name || (lesson.group && (<><span style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</span> — группа</>))}
                     </h4>
                     {(lesson.subject || (lesson.subjectName && lesson.subjectColor)) && (
                         <span

@@ -73,7 +73,6 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        // Automatically link students to the subject
         if (validatedData.studentIds && validatedData.studentIds.length > 0) {
             await prisma.subject.update({
                 where: { id: validatedData.subjectId },
@@ -83,7 +82,6 @@ export async function POST(request: NextRequest) {
                     }
                 }
             }).catch(e => {
-                // Ignore error if already connected or other issue, don't fail group creation
                 console.error('Failed to link students to subject:', e)
             })
         }

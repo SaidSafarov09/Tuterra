@@ -63,7 +63,7 @@ export function GroupPaymentModal({
                     Отметьте учеников, которые оплатили занятие:
                 </p>
                 {price && price > 0 && (
-                    <p style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--text-primary)' }}>
+                    <p className={styles.price}>
                         Цена за ученика: <strong>{price} ₽</strong>
                     </p>
                 )}
