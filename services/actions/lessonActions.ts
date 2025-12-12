@@ -108,8 +108,9 @@ export async function updateLesson(
         const lesson = await lessonsApi.update(lessonId, updateData)
         toast.success(LESSON_MESSAGES.UPDATED)
         return lesson
-    } catch (error) {
-        toast.error(LESSON_MESSAGES.UPDATE_ERROR)
+    } catch (error: any) {
+        const errorMessage = error?.message || LESSON_MESSAGES.UPDATE_ERROR
+        toast.error(errorMessage)
         return null
     }
 }

@@ -15,14 +15,14 @@ export async function GET(request: NextRequest) {
         const monthStart = startOfMonth(now)
         const monthEnd = endOfMonth(now)
 
-        
+
         const [studentsCount, upcomingLessons, unpaidLessons, monthlyIncome, totalLessons, subjectsCount, userProfile] = await Promise.all([
-            
+
             prisma.student.count({
                 where: { ownerId: payload.userId },
             }),
 
-            
+
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
@@ -32,12 +32,18 @@ export async function GET(request: NextRequest) {
                 include: {
                     student: true,
                     subject: true,
+                    group: {
+                        include: {
+                            students: true
+                        }
+                    },
+                    lessonPayments: true,
                 },
                 orderBy: { date: 'asc' },
                 take: 5,
             }),
 
-            
+
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
@@ -48,11 +54,17 @@ export async function GET(request: NextRequest) {
                 include: {
                     student: true,
                     subject: true,
+                    group: {
+                        include: {
+                            students: true
+                        }
+                    },
+                    lessonPayments: true,
                 },
                 orderBy: { date: 'desc' },
             }),
 
-            
+
             prisma.lesson.aggregate({
                 where: {
                     ownerId: payload.userId,
@@ -67,7 +79,7 @@ export async function GET(request: NextRequest) {
                 },
             }),
 
-            
+
             prisma.lesson.count({
                 where: {
                     ownerId: payload.userId,
@@ -76,12 +88,12 @@ export async function GET(request: NextRequest) {
                 } as any,
             }),
 
-            
+
             prisma.subject.count({
                 where: { userId: payload.userId },
             }),
 
-            
+
             prisma.user.findUnique({
                 where: { id: payload.userId },
                 select: { createdAt: true },

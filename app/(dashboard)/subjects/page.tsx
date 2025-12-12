@@ -30,6 +30,7 @@ export default function SubjectsPage() {
 
     const {
         students: subjectStudents,
+        groups: subjectGroups,
         isLoadingStudents,
         fetchStudents,
         linkStudent,
@@ -213,6 +214,7 @@ export default function SubjectsPage() {
                 onClose={handleCloseDetailsModal}
                 subject={selectedSubject}
                 students={subjectStudents}
+                groups={subjectGroups}
                 isLoading={isLoadingStudents}
                 onAddStudent={handleOpenAddStudentModal}
                 onCreateLesson={handleOpenCreateLessonModal}

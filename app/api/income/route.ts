@@ -16,9 +16,9 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url)
         const dateParam = searchParams.get('date')
         const currentDate = dateParam ? new Date(dateParam) : new Date()
-        const monthsCount = 6 
+        const monthsCount = 6
 
-        
+
         const monthlyData = []
 
         for (let i = monthsCount - 1; i >= 0; i--) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
             const monthStart = startOfMonth(date)
             const monthEnd = endOfMonth(date)
 
-            
+
             const paidLessons = await prisma.lesson.aggregate({
                 where: {
                     ownerId: user.id,
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
                 _count: true,
             })
 
-            
+
             const unpaidLessons = await prisma.lesson.aggregate({
                 where: {
                     ownerId: user.id,
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
             _count: true,
         })
 
-        
+
         const prevMonthStart = startOfMonth(subMonths(currentDate, 1))
         const prevMonthEnd = endOfMonth(subMonths(currentDate, 1))
 
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
         const previousLessonsCount = previousMonthIncome._count || 0
         const previousAverageCheck = previousLessonsCount > 0 ? Math.round(previousIncome / previousLessonsCount) : 0
 
-        
+
         const paidLessonsCount = await prisma.lesson.count({
             where: {
                 ownerId: user.id,
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
         })
         const hasAnyIncomeEver = paidLessonsCount > 0
 
-        
+
         const currentMonthDuration = await prisma.lesson.aggregate({
             where: {
                 ownerId: user.id,
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
             _sum: { duration: true } as any,
         })
 
-        
+
         const recentTransactions = await prisma.lesson.findMany({
             where: {
                 ownerId: user.id,
@@ -148,6 +148,7 @@ export async function GET(request: NextRequest) {
             include: {
                 student: { select: { name: true } },
                 subject: { select: { name: true, color: true, icon: true } },
+                group: { select: { name: true } },
             },
         })
 

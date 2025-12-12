@@ -12,8 +12,18 @@ export function useLessonActions(onUpdate?: () => void) {
     const [isLoading, setIsLoading] = useState(false)
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
     const [reschedulingLesson, setReschedulingLesson] = useState<Lesson | null>(null)
+    const [isGroupPaymentModalOpen, setIsGroupPaymentModalOpen] = useState(false)
+    const [paymentLesson, setPaymentLesson] = useState<Lesson | null>(null)
 
     const togglePaid = async (lesson: Lesson) => {
+        // Для групповых уроков открываем модальное окно
+        if (lesson.group) {
+            setPaymentLesson(lesson)
+            setIsGroupPaymentModalOpen(true)
+            return
+        }
+
+        // Для индивидуальных уроков просто переключаем статус
         setIsLoading(true)
         const updated = await toggleLessonPaid(lesson.id, !lesson.isPaid)
 
@@ -73,6 +83,7 @@ export function useLessonActions(onUpdate?: () => void) {
             isPaid: reschedulingLesson.isPaid,
             topic: reschedulingLesson.topic || '',
             notes: reschedulingLesson.notes || '',
+            duration: reschedulingLesson.duration || 60,
         })
 
         if (updated) {
@@ -93,6 +104,9 @@ export function useLessonActions(onUpdate?: () => void) {
         isRescheduleModalOpen,
         setIsRescheduleModalOpen,
         reschedulingLesson,
+        isGroupPaymentModalOpen,
+        setIsGroupPaymentModalOpen,
+        paymentLesson,
     }
 }
 

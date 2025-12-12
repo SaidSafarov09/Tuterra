@@ -10,15 +10,19 @@ import {
 import { STUDENT_MESSAGES, createStudentLinkedMessage } from '@/constants/messages'
 import { ContactType } from '@/lib/contactUtils'
 
+import { Group } from '@/types'
+
 export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void) {
     const [students, setStudents] = useState<Student[]>([])
-    const [isLoadingStudents, setIsLoadingStudents] = useState(false)
+    const [groups, setGroups] = useState<Group[]>([])
+    const [isLoadingStudents, setIsLoadingStudents] = useState(false) // Rename to isLoadingDetails? Keep for compatibility
 
     const fetchStudents = async (subjectId: string) => {
         setIsLoadingStudents(true)
         try {
-            const data = await subjectsApi.getStudents(subjectId)
-            setStudents(data)
+            const data = await subjectsApi.getById(subjectId)
+            setStudents(data.students || [])
+            setGroups(data.groups || [])
         } catch (error) {
             toast.error(STUDENT_MESSAGES.FETCH_ERROR)
         } finally {
@@ -37,7 +41,7 @@ export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void)
         return { success }
     }
 
-    
+
 
     const createAndLinkStudent = async (
         subjectId: string,
@@ -93,6 +97,7 @@ export function useSubjectDetail(subject: Subject | null, onUpdate?: () => void)
 
     return {
         students,
+        groups,
         isLoadingStudents,
         fetchStudents,
         linkStudent,

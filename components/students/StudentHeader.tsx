@@ -135,6 +135,10 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                     <div className={styles.metaItem}>
                         Предметов: <strong>{totalSubjects}</strong>
                     </div>
+                    <div className={styles.metaDivider} />
+                    <div className={styles.metaItem}>
+                        Группы: <strong>{student.groups && student.groups.length > 0 ? student.groups.map(g => g.name).join(', ') : '0'}</strong>
+                    </div>
                 </div>
             </div>
         </div>

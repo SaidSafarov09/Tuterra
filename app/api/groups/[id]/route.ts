@@ -86,6 +86,20 @@ export async function PATCH(
             }
         })
 
+        // Automatically link students to the subject
+        if (group.subjectId && group.students.length > 0) {
+            await prisma.subject.update({
+                where: { id: group.subjectId },
+                data: {
+                    students: {
+                        connect: group.students.map(s => ({ id: s.id }))
+                    }
+                }
+            }).catch(e => {
+                console.error('Failed to link students to subject:', e)
+            })
+        }
+
         return NextResponse.json(group)
     } catch (error) {
         if (error instanceof z.ZodError) {

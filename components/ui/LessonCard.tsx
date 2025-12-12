@@ -37,6 +37,11 @@ export const LessonCard: React.FC<LessonCardProps> = ({
 }) => {
     const [showTopic, setShowTopic] = useState(false)
 
+    // Определяем, полностью ли оплачен урок
+    const isFullyPaid = lesson.group
+        ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
+        : lesson.isPaid
+
     const recurrenceText = lesson.series ? getRecurrenceDescription(
         {
             enabled: true,
@@ -109,8 +114,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
 
                 <div className={styles.priceContainer}>
                     <div
-                        className={`${styles.price} ${lesson.isPaid ? styles.pricePaid : styles.priceUnpaid
-                            }`}
+                        className={`${styles.price} ${isFullyPaid ? styles.pricePaid : styles.priceUnpaid}`}
                     >
                         {lesson.group && lesson.lessonPayments
                             ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price

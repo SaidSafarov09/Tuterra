@@ -264,7 +264,9 @@ export default function IncomePage() {
                                                     <UserIcon size={20} />
                                                 </div>
                                                 <div className={styles.transactionDetails}>
-                                                    <span className={styles.transactionStudent}>{tx.student.name}</span>
+                                                    <span className={styles.transactionStudent}>
+                                                        {tx.group ? tx.group.name : tx.student?.name}
+                                                    </span>
                                                     <span className={styles.transactionSubject}>
                                                         {tx.subject?.name || tx.subjectName || 'Без предмета'}
                                                     </span>

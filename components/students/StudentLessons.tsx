@@ -120,6 +120,18 @@ export function StudentLessons({
                                                     Без предмета
                                                 </span>
                                             )}
+                                            {lesson.group && (
+                                                <span
+                                                    className={styles.lessonSubject}
+                                                    style={{
+                                                        color: '#6366f1',
+                                                        backgroundColor: '#6366f115',
+                                                        borderColor: '#6366f130',
+                                                    }}
+                                                >
+                                                    {lesson.group.name}
+                                                </span>
+                                            )}
                                         </div>
                                         {lesson.topic && (
                                             <div className={styles.lessonTopic}>
@@ -139,6 +151,9 @@ export function StudentLessons({
                                             price={lesson.price}
                                             isPaid={lesson.isPaid}
                                             isTrial={lesson.isTrial}
+                                            isGroupLesson={!!lesson.group}
+                                            totalStudents={lesson.group?.students?.length || 0}
+                                            lessonPayments={lesson.lessonPayments}
                                         />
                                     </div>
                                 </div>

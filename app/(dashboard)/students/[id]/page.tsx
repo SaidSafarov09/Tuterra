@@ -113,11 +113,25 @@ export default function StudentDetailPage({
       <StudentNote student={student} />
 
       <StudentLessons
-        lessons={(student.lessons || []).map((l) => ({
-          ...l,
-          student: { id: student.id, name: student.name },
-          subject: l.subject || null,
-        }))}
+        lessons={[
+          ...(student.lessons || []).map((l) => ({
+            ...l,
+            student: { id: student.id, name: student.name },
+            subject: l.subject || null,
+          })),
+          ...(student.groups || []).flatMap((g) =>
+            (g.lessons || []).map((l) => {
+              const payment = l.lessonPayments?.find(p => p.studentId === student.id)
+              return {
+                ...l,
+                student: { id: student.id, name: student.name },
+                subject: l.subject || null,
+                group: g,
+                isPaid: payment ? payment.hasPaid : false,
+              }
+            })
+          ),
+        ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
         student={student}
         onCreateLesson={handleCreateLessonMobile}
         onEditLesson={handleEditLesson}

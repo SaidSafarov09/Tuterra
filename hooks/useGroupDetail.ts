@@ -56,6 +56,8 @@ export function useGroupDetail(groupId: string) {
 
     const [deleteGroupConfirm, setDeleteGroupConfirm] = useState(false)
     const [deleteLessonConfirm, setDeleteLessonConfirm] = useState<string | null>(null)
+    const [isGroupPaymentModalOpen, setIsGroupPaymentModalOpen] = useState(false)
+    const [paymentLessonId, setPaymentLessonId] = useState<string | null>(null)
 
     const fetchGroup = async () => {
         try {
@@ -182,13 +184,26 @@ export function useGroupDetail(groupId: string) {
     }
 
     const handleTogglePaidStatus = async (lessonId: string, isPaid: boolean) => {
-        // For groups, simple toggle might not be enough if we want to track individual payments.
-        // But if user clicks the main toggle, maybe we mark all as paid?
-        // Or maybe we disable this for groups and force edit?
-        // For now, let's keep it simple: toggle updates the lesson's isPaid flag.
-        const updated = await toggleLessonPaid(lessonId, isPaid)
-        if (updated) {
+        // Since we are in Group Detail, we assume this is a group lesson.
+        // We open the modal to manage individual payments.
+        setPaymentLessonId(lessonId)
+        setIsGroupPaymentModalOpen(true)
+    }
+
+    const handleGroupPaymentSubmit = async (paidStudentIds: string[]) => {
+        if (!paymentLessonId) return
+
+        setIsSubmitting(true)
+        try {
+            await updateLesson(paymentLessonId, { paidStudentIds })
             await fetchGroup()
+            setIsGroupPaymentModalOpen(false)
+            setPaymentLessonId(null)
+        } catch (error) {
+            console.error('Payment update error:', error)
+            toast.error('Ошибка при обновлении статуса оплаты')
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -278,6 +293,8 @@ export function useGroupDetail(groupId: string) {
         isCreateLessonModalOpen, setIsCreateLessonModalOpen,
         isEditLessonModalOpen, setIsEditLessonModalOpen,
         isRescheduleModalOpen, setIsRescheduleModalOpen,
+        isGroupPaymentModalOpen, setIsGroupPaymentModalOpen,
+        paymentLessonId,
         reschedulingLessonId,
 
         editFormData, setEditFormData,
@@ -294,6 +311,7 @@ export function useGroupDetail(groupId: string) {
         handleEditLesson,
         handleDeleteLesson,
         handleTogglePaidStatus,
+        handleGroupPaymentSubmit,
         handleToggleCancelLesson,
         handleRescheduleLesson,
         handleConfirmReschedule,

@@ -11,6 +11,7 @@ import { GroupNote } from '@/components/groups/GroupNote'
 import { useGroupDetail } from '@/hooks/useGroupDetail'
 import { StudentDetailSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
+import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 
 export default function GroupDetailPage({
     params,
@@ -32,6 +33,9 @@ export default function GroupDetailPage({
         isCreateLessonModalOpen, setIsCreateLessonModalOpen,
         isEditLessonModalOpen, setIsEditLessonModalOpen,
         isRescheduleModalOpen, setIsRescheduleModalOpen,
+        isGroupPaymentModalOpen, setIsGroupPaymentModalOpen,
+        paymentLessonId,
+        handleGroupPaymentSubmit,
         reschedulingLessonId,
 
         editFormData, setEditFormData,
@@ -142,6 +146,19 @@ export default function GroupDetailPage({
                     reschedulingLessonId
                         ? new Date(group.lessons?.find((l) => l.id === reschedulingLessonId)?.date || new Date())
                         : new Date()
+                }
+                isSubmitting={isSubmitting}
+            />
+
+            <GroupPaymentModal
+                isOpen={isGroupPaymentModalOpen}
+                onClose={() => setIsGroupPaymentModalOpen(false)}
+                onSubmit={handleGroupPaymentSubmit}
+                students={group.students || []}
+                initialPaidStudentIds={
+                    paymentLessonId
+                        ? group.lessons?.find(l => l.id === paymentLessonId)?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
+                        : []
                 }
                 isSubmitting={isSubmitting}
             />

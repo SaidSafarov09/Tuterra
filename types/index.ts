@@ -2,9 +2,12 @@ export interface Subject {
     id: string
     name: string
     color: string
+    groups?: Group[]
+    students?: Student[]
     _count?: {
         students: number
         lessons: number
+        groups?: number
     }
 }
 
@@ -19,6 +22,7 @@ export interface Student {
     parentContact?: string | null
     parentContactType?: string | null
     avatar?: string
+    groups?: Group[]
     subjects: Subject[]
     notes?: string
     note?: string | null

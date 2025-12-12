@@ -20,7 +20,9 @@ import { lessonsApi, studentsApi, subjectsApi, groupsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { CalendarSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
+import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 import { useLessonForm } from '@/hooks/useLessonForm'
+import { useLessonActions } from '@/hooks/useLessonActions'
 
 import styles from './page.module.scss'
 
@@ -34,19 +36,12 @@ export default function CalendarPage() {
 
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-    const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
-    const [reschedulingLesson, setReschedulingLesson] = useState<Lesson | null>(null)
+
+
 
     const [students, setStudents] = useState<Student[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
     const [groups, setGroups] = useState<Group[]>([])
-
-    useEffect(() => {
-        fetchLessons()
-        fetchStudents()
-        fetchSubjects()
-        fetchGroups()
-    }, [])
 
     const fetchGroups = async () => {
         try {
@@ -56,8 +51,6 @@ export default function CalendarPage() {
             console.error('Failed to fetch groups:', error)
         }
     }
-
-    // ... (rest of the code)
 
     const fetchLessons = async () => {
         setIsLoading(true)
@@ -90,69 +83,28 @@ export default function CalendarPage() {
         }
     }
 
-    const updateLessonOptimistic = (lessonId: string, updates: Partial<Lesson>) => {
-        setLessons(prev => prev.map(lesson =>
-            lesson.id === lessonId ? { ...lesson, ...updates } : lesson
-        ))
-    }
+    const {
+        togglePaid,
+        toggleCancel,
+        handleRescheduleLesson,
+        handleConfirmReschedule,
+        isLoading: isActionsLoading,
+        isRescheduleModalOpen,
+        setIsRescheduleModalOpen,
+        reschedulingLesson,
+        isGroupPaymentModalOpen,
+        setIsGroupPaymentModalOpen,
+        paymentLesson,
+    } = useLessonActions(fetchLessons)
 
-    const togglePaid = async (lesson: Lesson) => {
-        const newIsPaid = !lesson.isPaid
-        updateLessonOptimistic(lesson.id, { isPaid: newIsPaid })
+    useEffect(() => {
+        fetchLessons()
+        fetchStudents()
+        fetchSubjects()
+        fetchGroups()
+    }, [])
 
-        try {
-            await lessonsApi.update(lesson.id, { isPaid: newIsPaid })
-            toast.success(
-                newIsPaid ? LESSON_MESSAGES.MARKED_PAID : LESSON_MESSAGES.MARKED_UNPAID
-            )
-        } catch (error) {
-            updateLessonOptimistic(lesson.id, { isPaid: !newIsPaid })
-            toast.error(LESSON_MESSAGES.UPDATE_ERROR)
-        }
-    }
 
-    const toggleCancel = async (lesson: Lesson) => {
-        const newIsCanceled = !lesson.isCanceled
-        updateLessonOptimistic(lesson.id, { isCanceled: newIsCanceled })
-
-        try {
-            await lessonsApi.update(lesson.id, { isCanceled: newIsCanceled })
-            toast.success(
-                newIsCanceled ? LESSON_MESSAGES.CANCELED : LESSON_MESSAGES.RESTORED
-            )
-        } catch (error) {
-            updateLessonOptimistic(lesson.id, { isCanceled: !newIsCanceled })
-            toast.error(LESSON_MESSAGES.UPDATE_ERROR)
-        }
-    }
-
-    const handleRescheduleLesson = (lesson: Lesson) => {
-        setReschedulingLesson(lesson)
-        setIsRescheduleModalOpen(true)
-    }
-
-    const handleConfirmReschedule = async (newDate: Date) => {
-        if (!reschedulingLesson) return
-
-        try {
-            await lessonsApi.update(reschedulingLesson.id, {
-                studentId: reschedulingLesson.student?.id,
-                groupId: reschedulingLesson.group?.id,
-                subjectId: reschedulingLesson.subject?.id || '',
-                date: newDate.toISOString(),
-                price: reschedulingLesson.price,
-                isPaid: reschedulingLesson.isPaid,
-                topic: reschedulingLesson.topic || '',
-                notes: reschedulingLesson.notes || '',
-            })
-            toast.success('Занятие перенесено')
-            setIsRescheduleModalOpen(false)
-            setReschedulingLesson(null)
-            await fetchLessons()
-        } catch (error) {
-            toast.error('Не удалось перенести занятие')
-        }
-    }
 
     const handlePreviousMonth = () => {
         setCurrentMonth(subMonths(currentMonth, 1))
@@ -284,7 +236,26 @@ export default function CalendarPage() {
                 onClose={() => setIsRescheduleModalOpen(false)}
                 onConfirm={handleConfirmReschedule}
                 currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
-                isSubmitting={isLoading}
+                isSubmitting={isActionsLoading}
+            />
+
+            <GroupPaymentModal
+                isOpen={isGroupPaymentModalOpen}
+                onClose={() => setIsGroupPaymentModalOpen(false)}
+                onSubmit={async (paidStudentIds) => {
+                    if (!paymentLesson) return
+                    try {
+                        await lessonsApi.update(paymentLesson.id, { paidStudentIds })
+                        toast.success('Статус оплаты обновлен')
+                        setIsGroupPaymentModalOpen(false)
+                        fetchLessons()
+                    } catch (error) {
+                        toast.error('Ошибка при обновлении статуса оплаты')
+                    }
+                }}
+                students={paymentLesson?.group?.students || []}
+                initialPaidStudentIds={paymentLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []}
+                isSubmitting={isActionsLoading}
             />
         </div>
     )

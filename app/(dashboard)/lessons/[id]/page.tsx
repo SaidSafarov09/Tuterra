@@ -20,6 +20,7 @@ import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { LessonDetailSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
+import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 
 
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -45,6 +46,9 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         isRescheduleModalOpen,
         setIsRescheduleModalOpen,
         reschedulingLesson,
+        isGroupPaymentModalOpen,
+        setIsGroupPaymentModalOpen,
+        paymentLesson,
     } = useLessonActions(fetchLesson)
 
     const fetchStudents = async () => {
@@ -132,6 +136,22 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         await togglePaid(lesson)
     }
 
+    const handleGroupPaymentSubmit = async (paidStudentIds: string[]) => {
+        if (!lesson) return
+
+        try {
+            await lessonsApi.update(id, {
+                paidStudentIds,
+            })
+            toast.success('Статус оплаты обновлен')
+            setIsGroupPaymentModalOpen(false)
+            fetchLesson()
+        } catch (error: any) {
+            console.error('Payment update error:', error)
+            toast.error(error?.message || 'Ошибка при обновлении статуса оплаты')
+        }
+    }
+
     const handleToggleCancel = async () => {
         if (!lesson) return
         setCancelConfirm(false)
@@ -153,6 +173,10 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const lessonDate = new Date(lesson.date)
     const isLessonPast = isPast(lessonDate)
 
+    const isFullyPaid = lesson.group
+        ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
+        : lesson.isPaid
+
     return (
         <div>
             <div className={styles.header}>
@@ -165,8 +189,10 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 <div className={styles.lessonHeader}>
                     <div>
                         <div className={styles.studentNameRow}>
-                            <div onClick={() => router.push(`/students/${lesson?.student?.slug || lesson?.student?.id}`)}>
-                                <h1 className={styles.studentName}>{lesson?.student?.name || lesson?.group?.name}</h1>
+                            <div onClick={() => lesson?.student ? router.push(`/students/${lesson.student.slug || lesson.student.id}`) : lesson?.group ? router.push(`/groups/${lesson.group.id}`) : null}>
+                                <h1 className={styles.studentName}>
+                                    {lesson?.student?.name || (lesson?.group ? `${lesson.group.name} - группа` : 'Неизвестно')}
+                                </h1>
                             </div>
                             {lesson.subject && (
                                 <span
@@ -200,8 +226,22 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         </div>
                     </div>
                     <div className={styles.lessonPriceContainer}>
-                        <div className={styles.lessonPrice}>{lesson.price} ₽</div>
-                        <LessonBadges price={lesson.price} isPaid={lesson.isPaid} isTrial={lesson.isTrial} />
+                        <div
+                            className={styles.lessonPrice}
+                            style={{ color: isFullyPaid ? 'var(--success)' : 'var(--text-primary)' }}
+                        >
+                            {lesson.group
+                                ? `${(lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price} ₽`
+                                : `${lesson.price} ₽`}
+                        </div>
+                        <LessonBadges
+                            price={lesson.price}
+                            isPaid={lesson.isPaid}
+                            isTrial={lesson.isTrial}
+                            isGroupLesson={!!lesson.group}
+                            totalStudents={lesson.group?.students?.length || 0}
+                            lessonPayments={lesson.lessonPayments}
+                        />
                     </div>
                 </div>
 
@@ -279,6 +319,15 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 onClose={() => setIsRescheduleModalOpen(false)}
                 onConfirm={handleConfirmReschedule}
                 currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
+                isSubmitting={isActionLoading}
+            />
+
+            <GroupPaymentModal
+                isOpen={isGroupPaymentModalOpen}
+                onClose={() => setIsGroupPaymentModalOpen(false)}
+                onSubmit={handleGroupPaymentSubmit}
+                students={paymentLesson?.group?.students || lesson?.group?.students || []}
+                initialPaidStudentIds={paymentLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || lesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []}
                 isSubmitting={isActionLoading}
             />
         </div>

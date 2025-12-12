@@ -73,6 +73,21 @@ export async function POST(request: NextRequest) {
             }
         })
 
+        // Automatically link students to the subject
+        if (validatedData.studentIds && validatedData.studentIds.length > 0) {
+            await prisma.subject.update({
+                where: { id: validatedData.subjectId },
+                data: {
+                    students: {
+                        connect: validatedData.studentIds.map(id => ({ id }))
+                    }
+                }
+            }).catch(e => {
+                // Ignore error if already connected or other issue, don't fail group creation
+                console.error('Failed to link students to subject:', e)
+            })
+        }
+
         return NextResponse.json(group, { status: 201 })
     } catch (error) {
         if (error instanceof z.ZodError) {

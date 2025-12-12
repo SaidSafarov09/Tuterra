@@ -29,12 +29,17 @@ export async function GET(
             },
             include: {
                 students: true,
+                groups: {
+                    include: {
+                        students: true
+                    }
+                },
                 lessons: {
                     include: { student: true },
                     orderBy: { date: 'desc' },
                 },
                 _count: {
-                    select: { students: true, lessons: true },
+                    select: { students: true, lessons: true, groups: true },
                 },
             },
         })

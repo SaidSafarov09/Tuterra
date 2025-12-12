@@ -18,7 +18,10 @@ import { LESSON_TABS } from '@/constants'
 import { LessonDetailSkeleton } from '@/components/skeletons'
 import { EmptyLessonsState } from '@/components/lessons/EmptyLessonsState'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
+import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { lessonsApi } from '@/services/api'
+import { toast } from 'sonner'
 
 
 function LessonsContent() {
@@ -69,6 +72,9 @@ function LessonsContent() {
         isRescheduleModalOpen,
         setIsRescheduleModalOpen,
         reschedulingLesson,
+        isGroupPaymentModalOpen,
+        setIsGroupPaymentModalOpen,
+        paymentLesson,
     } = useLessonActions(refetchLessons)
 
     const {
@@ -222,6 +228,25 @@ function LessonsContent() {
                 onClose={() => setIsRescheduleModalOpen(false)}
                 onConfirm={handleConfirmReschedule}
                 currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
+                isSubmitting={isLoading}
+            />
+
+            <GroupPaymentModal
+                isOpen={isGroupPaymentModalOpen}
+                onClose={() => setIsGroupPaymentModalOpen(false)}
+                onSubmit={async (paidStudentIds) => {
+                    if (!paymentLesson) return
+                    try {
+                        await lessonsApi.update(paymentLesson.id, { paidStudentIds })
+                        toast.success('Статус оплаты обновлен')
+                        setIsGroupPaymentModalOpen(false)
+                        refetchLessons()
+                    } catch (error) {
+                        toast.error('Ошибка при обновлении статуса оплаты')
+                    }
+                }}
+                students={paymentLesson?.group?.students || []}
+                initialPaidStudentIds={paymentLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []}
                 isSubmitting={isLoading}
             />
         </div>

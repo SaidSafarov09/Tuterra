@@ -42,6 +42,12 @@ export async function GET(
             include: {
                 student: true,
                 subject: true,
+                group: {
+                    include: {
+                        students: true
+                    }
+                },
+                lessonPayments: true,
             },
         })
 
@@ -80,6 +86,18 @@ export async function PUT(
         }
 
         const body = await request.json()
+
+        // Resolve ID if slug
+        let lessonId = id
+        if (!isCuid(id)) {
+            const found = await prisma.lesson.findFirst({
+                where: { slug: id, ownerId: user.id },
+                select: { id: true }
+            })
+            if (!found) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+            lessonId = found.id
+        }
+
         const validatedData = lessonSchema.parse(body)
 
         // Validate student or group existence if provided
@@ -97,13 +115,30 @@ export async function PUT(
             if (!group) return NextResponse.json({ error: 'Группа не найдена' }, { status: 404 })
         }
 
+        // Check for lesson overlap - always check since we're updating
+        const { checkLessonOverlap, formatConflictMessage } = await import('@/lib/lessonValidation')
+        const duration = validatedData.duration || 60
+        const conflict = await checkLessonOverlap(
+            user.id,
+            validatedData.date,
+            duration,
+            lessonId // Exclude current lesson from check
+        )
+
+        if (conflict) {
+            return NextResponse.json(
+                { error: formatConflictMessage(conflict, validatedData.studentId) },
+                { status: 400 }
+            )
+        }
+
         // Separate payment data
         const { paidStudentIds, ...lessonData } = validatedData
 
         // Update lesson
         const lesson = await prisma.lesson.updateMany({
             where: {
-                id: id,
+                id: lessonId,
                 ownerId: user.id,
             },
             data: lessonData as any,
@@ -116,13 +151,13 @@ export async function PUT(
         // Update payments if provided
         if (paidStudentIds) {
             await prisma.lessonPayment.deleteMany({
-                where: { lessonId: id }
+                where: { lessonId: lessonId }
             })
 
             if (paidStudentIds.length > 0) {
                 await prisma.lessonPayment.createMany({
                     data: paidStudentIds.map(studentId => ({
-                        lessonId: id,
+                        lessonId: lessonId,
                         studentId,
                         hasPaid: true
                     }))
@@ -131,8 +166,17 @@ export async function PUT(
         }
 
         const updatedLesson = await prisma.lesson.findUnique({
-            where: { id: id },
-            include: { student: true, group: true },
+            where: { id: lessonId },
+            include: {
+                student: true,
+                group: {
+                    include: {
+                        students: true
+                    }
+                },
+                subject: true,
+                lessonPayments: true,
+            },
         })
 
         return NextResponse.json(updatedLesson)
@@ -165,6 +209,18 @@ export async function PATCH(
         }
 
         const body = await request.json()
+
+        // Resolve ID if slug
+        let lessonId = id
+        if (!isCuid(id)) {
+            const found = await prisma.lesson.findFirst({
+                where: { slug: id, ownerId: user.id },
+                select: { id: true }
+            })
+            if (!found) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+            lessonId = found.id
+        }
+
         const updateData: any = {}
 
         // Basic fields
@@ -179,28 +235,70 @@ export async function PATCH(
         if (body.topic !== undefined) updateData.topic = body.topic
         if (body.duration !== undefined) updateData.duration = body.duration
 
-        const lesson = await prisma.lesson.updateMany({
-            where: {
-                id: id,
-                ownerId: user.id,
-            },
-            data: updateData,
-        })
+        // Check for lesson overlap when date or duration changes
+        if (body.date !== undefined || body.duration !== undefined) {
+            // Get current lesson to check duration if not provided
+            const currentLesson = await prisma.lesson.findFirst({
+                where: { id: lessonId, ownerId: user.id }
+            })
 
-        if (lesson.count === 0) {
-            return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+            if (!currentLesson) {
+                return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+            }
+
+            const { checkLessonOverlap, formatConflictMessage } = await import('@/lib/lessonValidation')
+            const checkDate = body.date ? new Date(body.date) : new Date(currentLesson.date)
+            const checkDuration = body.duration !== undefined ? body.duration : currentLesson.duration
+
+            const conflict = await checkLessonOverlap(
+                user.id,
+                checkDate,
+                checkDuration,
+                lessonId // Exclude current lesson from check
+            )
+
+            if (conflict) {
+                return NextResponse.json(
+                    { error: formatConflictMessage(conflict, body.studentId || currentLesson.studentId) },
+                    { status: 400 }
+                )
+            }
+        }
+
+        // Update lesson fields only if there are any
+        if (Object.keys(updateData).length > 0) {
+            const lesson = await prisma.lesson.updateMany({
+                where: {
+                    id: lessonId,
+                    ownerId: user.id,
+                },
+                data: updateData,
+            })
+
+            if (lesson.count === 0) {
+                return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+            }
+        } else {
+            // If no fields to update, just verify lesson exists
+            const lessonExists = await prisma.lesson.findFirst({
+                where: { id: lessonId, ownerId: user.id }
+            })
+
+            if (!lessonExists) {
+                return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+            }
         }
 
         // Update payments if provided
         if (body.paidStudentIds !== undefined) {
             await prisma.lessonPayment.deleteMany({
-                where: { lessonId: id }
+                where: { lessonId: lessonId }
             })
 
             if (body.paidStudentIds.length > 0) {
                 await prisma.lessonPayment.createMany({
                     data: body.paidStudentIds.map((studentId: string) => ({
-                        lessonId: id,
+                        lessonId: lessonId,
                         studentId,
                         hasPaid: true
                     }))
@@ -209,8 +307,17 @@ export async function PATCH(
         }
 
         const updatedLesson = await prisma.lesson.findUnique({
-            where: { id: id },
-            include: { student: true, group: true, subject: true },
+            where: { id: lessonId },
+            include: {
+                student: true,
+                group: {
+                    include: {
+                        students: true
+                    }
+                },
+                subject: true,
+                lessonPayments: true,
+            },
         })
 
         return NextResponse.json(updatedLesson)
@@ -238,11 +345,13 @@ export async function DELETE(
         const { searchParams } = new URL(request.url)
         const scope = searchParams.get('scope')
 
+        const isId = isCuid(id)
+        const whereClause = isId
+            ? { id: id, ownerId: user.id }
+            : { slug: id, ownerId: user.id }
+
         const lesson = await prisma.lesson.findFirst({
-            where: {
-                id: id,
-                ownerId: user.id,
-            },
+            where: whereClause,
         })
 
         if (!lesson) {
@@ -267,7 +376,7 @@ export async function DELETE(
         } else {
             await prisma.lesson.delete({
                 where: {
-                    id: id,
+                    id: lesson.id,
                 },
             })
         }

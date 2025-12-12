@@ -38,6 +38,15 @@ export async function GET(
             where: whereClause,
             include: {
                 subjects: true,
+                groups: {
+                    include: {
+                        students: true,
+                        lessons: {
+                            orderBy: { date: 'desc' },
+                            include: { subject: true, group: true, lessonPayments: true },
+                        }
+                    }
+                },
                 lessons: {
                     orderBy: { date: 'desc' },
                     include: { subject: true },

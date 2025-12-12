@@ -10,7 +10,9 @@ export async function checkLessonOverlap(
 ) {
     const startTime = date
     const endTime = addMinutes(date, duration)
+    // Ищем уроки в диапазоне +/- 24 часа для покрытия всех возможных конфликтов
     const searchStart = addMinutes(startTime, -24 * 60)
+    const searchEnd = addMinutes(endTime, 24 * 60)
 
     const candidates = await prisma.lesson.findMany({
         where: {
@@ -19,12 +21,13 @@ export async function checkLessonOverlap(
             id: excludeLessonId ? { not: excludeLessonId } : undefined,
             date: {
                 gte: searchStart,
-                lt: endTime,
+                lt: searchEnd,
             },
         },
         include: {
             subject: true,
             student: true,
+            group: true,
         },
     })
 
