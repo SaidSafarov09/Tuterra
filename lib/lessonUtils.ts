@@ -20,7 +20,7 @@ export function getLessonStatusLabel(status: LessonStatus): string {
         case 'unpaid':
             return 'Не оплачено'
         case 'partial':
-            return 'Частично оплачено'
+            return 'Частично'
     }
 }
 

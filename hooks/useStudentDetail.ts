@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Student, Subject } from '@/types'
+import { Student, Subject, Group } from '@/types'
 import { studentsApi, subjectsApi } from '@/services/api'
 import {
     deleteStudent,
     updateStudent,
     fetchStudents,
     fetchSubjects,
+    fetchGroups,
     createLesson,
     updateLesson,
     deleteLesson,
@@ -15,6 +16,8 @@ import {
     createSubjectWithRandomColor,
     linkStudentToSubject,
     unlinkStudentFromSubject,
+    linkStudentToGroup,
+    unlinkStudentFromGroup,
 } from '@/services/actions'
 import { unlinkStudentFromSubjectWithLessonsNotification } from '@/services/actions'
 import { STUDENT_MESSAGES } from '@/constants/messages'
@@ -26,11 +29,13 @@ export function useStudentDetail(studentId: string) {
     const router = useRouter()
     const [student, setStudent] = useState<Student | null>(null)
     const [allSubjects, setAllSubjects] = useState<Subject[]>([])
+    const [allGroups, setAllGroups] = useState<Group[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false)
+    const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState(false)
     const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false)
     const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false)
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
@@ -46,6 +51,7 @@ export function useStudentDetail(studentId: string) {
         note: '',
     })
     const [selectedSubjectId, setSelectedSubjectId] = useState('')
+    const [selectedGroupId, setSelectedGroupId] = useState('')
     const [lessonFormData, setLessonFormData] = useState({
         studentId: studentId,
         subjectId: '',
@@ -65,6 +71,7 @@ export function useStudentDetail(studentId: string) {
 
     const [deleteStudentConfirm, setDeleteStudentConfirm] = useState(false)
     const [deleteSubjectConfirm, setDeleteSubjectConfirm] = useState<string | null>(null)
+    const [deleteGroupConfirm, setDeleteGroupConfirm] = useState<string | null>(null)
     const [deleteLessonConfirm, setDeleteLessonConfirm] = useState<string | null>(null)
 
     const fetchStudent = async () => {
@@ -84,10 +91,16 @@ export function useStudentDetail(studentId: string) {
         setAllSubjects(subjects)
     }
 
+    const loadGroups = async () => {
+        const groups = await fetchGroups()
+        setAllGroups(groups)
+    }
+
     useEffect(() => {
         if (studentId) {
             fetchStudent()
             loadSubjects()
+            loadGroups()
         }
     }, [studentId])
 
@@ -146,6 +159,34 @@ export function useStudentDetail(studentId: string) {
             setIsAddSubjectModalOpen(false)
         }
         setIsSubmitting(false)
+    }
+
+    const handleAddGroup = async () => {
+        if (!selectedGroupId) {
+            toast.error('Выберите группу')
+            return
+        }
+        setIsSubmitting(true)
+        const success = await linkStudentToGroup(selectedGroupId, student?.id || studentId)
+
+        if (success) {
+            await fetchStudent()
+            await loadGroups()
+            setIsAddGroupModalOpen(false)
+        }
+        setIsSubmitting(false)
+    }
+
+    const handleDeleteGroup = async () => {
+        if (!deleteGroupConfirm) return
+
+        const success = await unlinkStudentFromGroup(deleteGroupConfirm, student?.id || studentId)
+
+        if (success) {
+            await fetchStudent()
+            await loadGroups()
+        }
+        setDeleteGroupConfirm(null)
     }
 
     const handleCreateLesson = async () => {
@@ -335,12 +376,14 @@ export function useStudentDetail(studentId: string) {
     return {
         student,
         allSubjects,
+        allGroups,
         isLoading,
         isSubmitting,
 
 
         isEditModalOpen, setIsEditModalOpen,
         isAddSubjectModalOpen, setIsAddSubjectModalOpen,
+        isAddGroupModalOpen, setIsAddGroupModalOpen,
         isCreateLessonModalOpen, setIsCreateLessonModalOpen,
         isEditLessonModalOpen, setIsEditLessonModalOpen,
         isRescheduleModalOpen, setIsRescheduleModalOpen,
@@ -352,18 +395,22 @@ export function useStudentDetail(studentId: string) {
 
         editFormData, setEditFormData,
         selectedSubjectId, setSelectedSubjectId,
+        selectedGroupId, setSelectedGroupId,
         lessonFormData, setLessonFormData,
 
 
         deleteStudentConfirm, setDeleteStudentConfirm,
         deleteSubjectConfirm, setDeleteSubjectConfirm,
+        deleteGroupConfirm, setDeleteGroupConfirm,
         deleteLessonConfirm, setDeleteLessonConfirm,
 
 
         handleDeleteStudent,
         handleDeleteSubject,
+        handleDeleteGroup,
         handleUpdateStudent,
         handleAddSubject,
+        handleAddGroup,
         handleCreateLesson,
         handleUpdateLesson,
         confirmDeleteLesson,

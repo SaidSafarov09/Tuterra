@@ -53,6 +53,7 @@ export interface Group {
     subject: Subject
     students: Student[]
     lessons?: Lesson[]
+    color: string
     _count?: {
         lessons: number
         students: number

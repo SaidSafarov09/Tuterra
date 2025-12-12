@@ -4,7 +4,7 @@ import React from 'react'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { ContactInput } from '@/components/ui/ContactInput'
-import { Subject } from '@/types'
+import { Subject, Group } from '@/types'
 import { ContactType } from '@/lib/contactUtils'
 import styles from '@/app/(dashboard)/students/page.module.scss'
 
@@ -20,10 +20,12 @@ export interface StudentFormProps {
         note: string
         subjectId: string
         subjectName: string
+        groupId?: string
     }
     setFormData: (data: any) => void
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
     subjects: Subject[]
+    groups?: Group[]
     onCreateSubject: (name: string) => void
     onSubmit?: (e?: React.FormEvent) => void
     fixedSubjectId?: string
@@ -37,6 +39,7 @@ export function StudentForm({
     setFormData,
     handleChange,
     subjects,
+    groups,
     onCreateSubject,
     onSubmit,
     fixedSubjectId,
@@ -78,6 +81,17 @@ export function StudentForm({
                 menuPosition="relative"
                 disabled={isSubmitting || !!fixedSubjectId}
             />
+
+            {groups && groups.length > 0 && (
+                <Dropdown
+                    label="Добавить в группу (необязательно)"
+                    placeholder="Выберите группу"
+                    value={formData.groupId || ''}
+                    onChange={(value) => setFormData((prev: any) => ({ ...prev, groupId: value }))}
+                    options={groups.map(g => ({ value: g.id, label: g.name }))}
+                    disabled={isSubmitting}
+                />
+            )}
 
             <ContactInput
                 label="Контакт ученика"

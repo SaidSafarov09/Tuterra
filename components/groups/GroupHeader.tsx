@@ -80,8 +80,11 @@ export function GroupHeader({ group, onEdit, onCreateLesson, onDelete }: GroupHe
                     <div className={styles.blockTitle}>Ученики группы ({totalStudents})</div>
                     <div className={styles.chipList}>
                         {group.students.map(student => (
-                            <div key={student.id} className={styles.studentChip}>
-                                {student.name}
+                            <div key={student.id} className={styles.studentChip}
+                                onClick={() => router.push(`/students/${student.slug || student.id}`)}
+                            >
+                                <p>{student.name}</p>
+                                <div style={{ backgroundColor: stringToColor(student.name) }} />
                             </div>
                         ))}
                         {group.students.length === 0 && (

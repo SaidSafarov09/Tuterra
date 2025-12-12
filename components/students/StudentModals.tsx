@@ -3,7 +3,7 @@ import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { ContactInput } from '@/components/ui/ContactInput'
-import { Student, Subject, LessonFormData } from '@/types'
+import { Student, Subject, Group, LessonFormData } from '@/types'
 import { LessonFormWithDateTime } from '@/components/lessons/LessonFormWithDateTime'
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { ContactType } from '@/lib/contactUtils'
@@ -14,6 +14,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 interface StudentModalsProps {
     student: Student
     allSubjects: Subject[]
+    allGroups?: Group[]
     isSubmitting: boolean
 
 
@@ -38,6 +39,12 @@ interface StudentModalsProps {
     setSelectedSubjectId: (id: string) => void
     onCreateSubjectForLink: (name: string) => void
 
+    isAddGroupModalOpen?: boolean
+    onCloseAddGroupModal?: () => void
+    onSubmitAddGroup?: () => void
+    selectedGroupId?: string
+    setSelectedGroupId?: (id: string) => void
+
 
     isCreateLessonModalOpen: boolean
     onCloseCreateLessonModal: () => void
@@ -54,6 +61,7 @@ interface StudentModalsProps {
 export function StudentModals({
     student,
     allSubjects,
+    allGroups,
     isSubmitting,
 
     isEditModalOpen,
@@ -68,6 +76,12 @@ export function StudentModals({
     selectedSubjectId,
     setSelectedSubjectId,
     onCreateSubjectForLink,
+
+    isAddGroupModalOpen,
+    onCloseAddGroupModal,
+    onSubmitAddGroup,
+    selectedGroupId,
+    setSelectedGroupId,
 
     isCreateLessonModalOpen,
     onCloseCreateLessonModal,
@@ -165,6 +179,41 @@ export function StudentModals({
                     />
                 </form>
             </Modal>
+
+            {/* Add Group Modal */}
+            {isAddGroupModalOpen && onCloseAddGroupModal && onSubmitAddGroup && setSelectedGroupId && (
+                <Modal
+                    isOpen={isAddGroupModalOpen}
+                    onClose={onCloseAddGroupModal}
+                    title={<>
+                        Добавить ученика в группу <br />
+                        <span style={{ color: stringToColor(student.name) }}>{student.name}</span>
+                    </>}
+                    footer={
+                        <ModalFooter
+                            onCancel={onCloseAddGroupModal}
+                            onSubmit={onSubmitAddGroup}
+                            isLoading={isSubmitting}
+                            submitText="Добавить"
+                        />
+                    }
+                >
+                    <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+                        <Dropdown
+                            label="Группа"
+                            placeholder="Выберите группу"
+                            value={selectedGroupId || ''}
+                            onChange={setSelectedGroupId}
+                            options={allGroups
+                                ?.filter(g => !student?.groups?.some(sg => sg.id === g.id))
+                                .map(g => ({ value: g.id, label: g.name })) || []
+                            }
+                            searchable
+                            menuPosition="relative"
+                        />
+                    </form>
+                </Modal>
+            )}
 
             {/* Create Lesson Modal */}
             <LessonFormModal

@@ -6,6 +6,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { StudentHeader } from "@/components/students/StudentHeader";
 import { StudentSubjects } from "@/components/students/StudentSubjects";
+import { StudentGroups } from "@/components/students/StudentGroups";
 import { StudentLessons } from "@/components/students/StudentLessons";
 import { StudentModals } from "@/components/students/StudentModals";
 import { useStudentDetail } from "@/hooks/useStudentDetail";
@@ -26,6 +27,7 @@ export default function StudentDetailPage({
   const {
     student,
     allSubjects,
+    allGroups,
     isLoading,
     isSubmitting,
 
@@ -33,6 +35,8 @@ export default function StudentDetailPage({
     setIsEditModalOpen,
     isAddSubjectModalOpen,
     setIsAddSubjectModalOpen,
+    isAddGroupModalOpen,
+    setIsAddGroupModalOpen,
     isCreateLessonModalOpen,
     setIsCreateLessonModalOpen,
 
@@ -40,6 +44,8 @@ export default function StudentDetailPage({
     setEditFormData,
     selectedSubjectId,
     setSelectedSubjectId,
+    selectedGroupId,
+    setSelectedGroupId,
     lessonFormData,
     setLessonFormData,
 
@@ -47,12 +53,16 @@ export default function StudentDetailPage({
     setDeleteStudentConfirm,
     deleteSubjectConfirm,
     setDeleteSubjectConfirm,
+    deleteGroupConfirm,
+    setDeleteGroupConfirm,
 
     handleDeleteStudent,
     handleDeleteSubject,
     handleUpdateStudent,
     handleAddSubject,
+    handleAddGroup,
     handleCreateLesson,
+    handleDeleteGroup,
     handleCreateSubject,
     handleEditLesson,
     handleDeleteLesson,
@@ -119,6 +129,14 @@ export default function StudentDetailPage({
         }}
         onDeleteSubject={(subjectId) => setDeleteSubjectConfirm(subjectId)}
       />
+      <StudentGroups
+        student={student}
+        onAddGroup={() => {
+          setSelectedGroupId("");
+          setIsAddGroupModalOpen(true);
+        }}
+        onDeleteGroup={(groupId) => setDeleteGroupConfirm(groupId)}
+      />
 
       <StudentNote student={student} />
 
@@ -170,6 +188,12 @@ export default function StudentDetailPage({
         selectedSubjectId={selectedSubjectId}
         setSelectedSubjectId={setSelectedSubjectId}
         onCreateSubjectForLink={(name) => handleCreateSubject(name, true)}
+        allGroups={allGroups}
+        isAddGroupModalOpen={isAddGroupModalOpen}
+        onCloseAddGroupModal={() => setIsAddGroupModalOpen(false)}
+        onSubmitAddGroup={handleAddGroup}
+        selectedGroupId={selectedGroupId}
+        setSelectedGroupId={setSelectedGroupId}
         isCreateLessonModalOpen={isCreateLessonModalOpen}
         onCloseCreateLessonModal={() => setIsCreateLessonModalOpen(false)}
         onSubmitCreateLesson={handleCreateLesson}
@@ -198,6 +222,17 @@ export default function StudentDetailPage({
         onConfirm={handleDeleteSubject}
         title="Удалить предмет?"
         message="Вы уверены, что хотите удалить этот предмет у ученика?"
+        confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteGroupConfirm}
+        onClose={() => setDeleteGroupConfirm(null)}
+        onConfirm={handleDeleteGroup}
+        title="Удалить из группы?"
+        message="Вы уверены, что хотите исключить ученика из этой группы?"
         confirmText="Удалить"
         cancelText="Отмена"
         variant="danger"

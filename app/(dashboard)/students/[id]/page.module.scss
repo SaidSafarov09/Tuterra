@@ -333,7 +333,7 @@
   }
 
   @media (max-width: 768px) {
-    padding: 20px;
+    padding: 18px;
   }
 }
 
@@ -381,6 +381,7 @@
 }
 
 .lessonGroupText {
+  width: max-content;
   font-size: 18px;
   font-weight: 600;
   margin-left: 0;

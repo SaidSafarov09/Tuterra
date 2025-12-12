@@ -66,3 +66,51 @@ export async function deleteGroup(id: string): Promise<boolean> {
         return false
     }
 }
+
+export async function linkStudentToGroup(groupId: string, studentId: string): Promise<boolean> {
+    try {
+        const response = await fetch(`/api/groups/${groupId}/students/link`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentId }),
+        })
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'An error occurred' }))
+            throw new Error(error.message || error.error || 'Failed to link student to group')
+        }
+
+        toast.success('Ученик добавлен в группу')
+        return true
+    } catch (error: any) {
+        console.error('Link student to group error:', error)
+        toast.error(error.message || 'Ошибка при добавлении ученика в группу')
+        return false
+    }
+}
+
+export async function unlinkStudentFromGroup(groupId: string, studentId: string): Promise<boolean> {
+    try {
+        const response = await fetch(`/api/groups/${groupId}/students/link`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentId }),
+        })
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'An error occurred' }))
+            throw new Error(error.message || error.error || 'Failed to unlink student from group')
+        }
+
+        toast.success('Ученик удален из группы')
+        return true
+    } catch (error: any) {
+        console.error('Unlink student from group error:', error)
+        toast.error(error.message || 'Ошибка при удалении ученика из группы')
+        return false
+    }
+}

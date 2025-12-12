@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useModalStore } from '@/store/useModalStore'
-import { Student, Subject } from '@/types'
+import { Student, Subject, Group } from '@/types'
 import {
     fetchStudents as loadStudents,
     fetchSubjects as loadSubjects,
+    fetchGroups as loadGroups,
     createStudent as createNewStudent,
     createSubjectWithRandomColor,
 } from '@/services/actions'
@@ -12,6 +13,7 @@ import { ContactType } from '@/lib/contactUtils'
 export function useStudents(onSuccess?: () => void) {
     const [students, setStudents] = useState<Student[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
+    const [groups, setGroups] = useState<Group[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -25,6 +27,7 @@ export function useStudents(onSuccess?: () => void) {
         note: '',
         subjectId: '',
         subjectName: '',
+        groupId: '',
     })
 
     const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('all')
@@ -41,10 +44,15 @@ export function useStudents(onSuccess?: () => void) {
         setSubjects(data)
     }
 
+    const fetchGroups = async () => {
+        const data = await loadGroups()
+        setGroups(data)
+    }
+
     useEffect(() => {
         const loadData = async () => {
             setIsLoading(true)
-            await Promise.all([fetchStudents(), fetchSubjects()])
+            await Promise.all([fetchStudents(), fetchSubjects(), fetchGroups()])
             setIsLoading(false)
         }
         loadData()
@@ -60,6 +68,7 @@ export function useStudents(onSuccess?: () => void) {
             note: '',
             subjectId: '',
             subjectName: '',
+            groupId: '',
         })
         setError('')
         openModal('create')
@@ -115,6 +124,7 @@ export function useStudents(onSuccess?: () => void) {
     return {
         students,
         subjects,
+        groups,
         isLoading,
         isSubmitting,
         error,

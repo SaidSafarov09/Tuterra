@@ -32,6 +32,10 @@
     padding: 16px;
     background: var(--surface);
     border-radius: 12px;
+
+    @media (max-width: 768px) {
+        margin-bottom: 18px;
+    }
 }
 
 .filterChip {
@@ -321,6 +325,11 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 12px;
+
+    @media (max-width: 768px) {
+        max-height: 100%;
+        overflow-y: unset;
+    }
 }
 
 .studentItem {
@@ -366,10 +375,15 @@
 .groupHeader {
     background: var(--surface);
     border-radius: 24px;
-    padding: 32px;
-    margin-bottom: 32px;
+    padding: 24px;
+    margin-bottom: 24px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
+
+    @media (max-width: 768px) {
+        padding: 18px;
+        margin-bottom: 18px;
+    }
 }
 
 .headerTop {
@@ -452,6 +466,14 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    cursor: pointer;
+
+    div {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
 }
 
 .headerMeta {

@@ -17,6 +17,7 @@ export default function StudentsPage() {
     const {
         students,
         subjects,
+        groups,
         isLoading,
         isSubmitting,
         error,
@@ -87,6 +88,7 @@ export default function StudentsPage() {
                 setFormData={setFormData}
                 handleChange={handleChange}
                 subjects={subjects}
+                groups={groups}
                 onCreateSubject={handleCreateSubject}
             />
         </div>
