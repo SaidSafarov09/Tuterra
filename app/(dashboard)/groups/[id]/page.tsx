@@ -83,7 +83,7 @@ export default function GroupDetailPage({
             <StudentLessons
                 lessons={(group.lessons || []).map((l) => ({
                     ...l,
-                    group: { id: group.id, name: group.name },
+                    group: { id: group.id, name: group.name, students: group.students },
                     subject: group.subject || null,
                 }))}
                 student={{ id: group.id, name: group.name } as any} // Mock student for compatibility
@@ -161,6 +161,7 @@ export default function GroupDetailPage({
                         : []
                 }
                 isSubmitting={isSubmitting}
+                price={paymentLessonId ? Number(group.lessons?.find(l => l.id === paymentLessonId)?.price) : 0}
             />
         </div>
     )

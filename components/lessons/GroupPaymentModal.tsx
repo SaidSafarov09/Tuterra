@@ -12,6 +12,7 @@ interface GroupPaymentModalProps {
     students: { id: string; name: string }[]
     initialPaidStudentIds: string[]
     isSubmitting: boolean
+    price?: number
 }
 
 export function GroupPaymentModal({
@@ -20,7 +21,8 @@ export function GroupPaymentModal({
     onSubmit,
     students,
     initialPaidStudentIds,
-    isSubmitting
+    isSubmitting,
+    price
 }: GroupPaymentModalProps) {
     const [paidStudentIds, setPaidStudentIds] = useState<string[]>(initialPaidStudentIds)
 
@@ -60,6 +62,11 @@ export function GroupPaymentModal({
                 <p className={styles.description}>
                     Отметьте учеников, которые оплатили занятие:
                 </p>
+                {price && price > 0 && (
+                    <p style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--text-primary)' }}>
+                        Цена за ученика: <strong>{price} ₽</strong>
+                    </p>
+                )}
                 <div className={styles.studentsList}>
                     {students.map(student => (
                         <Checkbox

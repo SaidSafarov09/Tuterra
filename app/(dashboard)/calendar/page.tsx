@@ -256,6 +256,7 @@ export default function CalendarPage() {
                 students={paymentLesson?.group?.students || []}
                 initialPaidStudentIds={paymentLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []}
                 isSubmitting={isActionsLoading}
+                price={Number(paymentLesson?.price || 0)}
             />
         </div>
     )

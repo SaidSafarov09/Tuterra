@@ -37,19 +37,23 @@ export function StudentLessons({
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
 
-
     const filteredLessons = useMemo(() => {
         const now = new Date();
+        let filtered = [];
 
         switch (activeTab) {
             case "upcoming":
-                return lessons.filter((l) => !l.isCanceled && new Date(l.date) >= now);
+                filtered = lessons.filter((l) => !l.isCanceled && new Date(l.date) >= now);
+                return filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Ascending (Nearest first)
             case "past":
-                return lessons.filter((l) => !l.isCanceled && new Date(l.date) < now);
+                filtered = lessons.filter((l) => !l.isCanceled && new Date(l.date) < now);
+                return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Descending (Recent first)
             case "unpaid":
-                return lessons.filter((l) => !l.isCanceled && !l.isPaid && l.price > 0);
+                filtered = lessons.filter((l) => !l.isCanceled && !l.isPaid && l.price > 0);
+                return filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Ascending (Oldest unpaid first? Or nearest?)
             case "canceled":
-                return lessons.filter((l) => l.isCanceled);
+                filtered = lessons.filter((l) => l.isCanceled);
+                return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Descending
             default:
                 return lessons;
         }
@@ -123,15 +127,8 @@ export function StudentLessons({
                                                 </span>
                                             )}
                                             {lesson.group && (
-                                                <span
-                                                    className={styles.lessonSubject}
-                                                    style={{
-                                                        color: '#6366f1',
-                                                        backgroundColor: '#6366f115',
-                                                        borderColor: '#6366f130',
-                                                    }}
-                                                >
-                                                    {lesson.group.name}
+                                                <span className={styles.lessonGroupText}>
+                                                    {lesson.group.name} - группа
                                                 </span>
                                             )}
                                         </div>

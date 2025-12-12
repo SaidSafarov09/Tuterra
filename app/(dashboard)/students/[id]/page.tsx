@@ -235,6 +235,7 @@ export default function StudentDetailPage({
           paymentGroupLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
         }
         isSubmitting={isSubmitting}
+        price={paymentGroupLesson ? Number(paymentGroupLesson.price) : 0}
       />
     </div>
   );

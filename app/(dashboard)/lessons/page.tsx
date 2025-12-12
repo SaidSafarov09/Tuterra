@@ -248,6 +248,7 @@ function LessonsContent() {
                 students={paymentLesson?.group?.students || []}
                 initialPaidStudentIds={paymentLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []}
                 isSubmitting={isLoading}
+                price={Number(paymentLesson?.price || 0)}
             />
         </div>
     )

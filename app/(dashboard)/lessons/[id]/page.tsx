@@ -329,6 +329,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 students={paymentLesson?.group?.students || lesson?.group?.students || []}
                 initialPaidStudentIds={paymentLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || lesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []}
                 isSubmitting={isActionLoading}
+                price={Number(paymentLesson?.price || lesson?.price || 0)}
             />
         </div>
     )

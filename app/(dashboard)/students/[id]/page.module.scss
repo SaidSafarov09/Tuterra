@@ -380,6 +380,14 @@
   width: fit-content;
 }
 
+.lessonGroupText {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-left: 0;
+  display: block;
+}
+
 .lessonTopic {
   display: flex;
   align-items: center;
