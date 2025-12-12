@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
             where.isCanceled = true
         }
 
-        const lessons = await prisma.lesson.findMany({
+        let lessons = await prisma.lesson.findMany({
             where,
             include: {
                 student: true,
@@ -87,6 +87,20 @@ export async function GET(request: NextRequest) {
             },
             orderBy: { date: filter === 'past' ? 'desc' : 'asc' },
         })
+
+        if (filter === 'unpaid') {
+            lessons = lessons.filter(lesson => {
+                if (lesson.group && lesson.lessonPayments && lesson.lessonPayments.length > 0) {
+                    const paidCount = lesson.lessonPayments.filter(p => p.hasPaid).length
+                    const totalStudents = lesson.group.students?.length || 0
+                    // If everyone paid, it is NOT unpaid. Filter it out.
+                    if (totalStudents > 0 && paidCount >= totalStudents) {
+                        return false
+                    }
+                }
+                return true
+            })
+        }
 
         return NextResponse.json(lessons)
     } catch (error) {

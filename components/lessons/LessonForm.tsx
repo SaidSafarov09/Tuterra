@@ -82,6 +82,14 @@ export function LessonForm({
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
+    useEffect(() => {
+        if (fixedStudentId && formData.studentId !== fixedStudentId) {
+            // Use functional update to avoid dependency on setFormData if possible, but here we use handleChange or setFormData
+            // Safest is to just update it.
+            setFormData(prev => ({ ...prev, studentId: fixedStudentId }))
+        }
+    }, [fixedStudentId])
+
     const defaultRecurrence: RecurrenceRule = {
         enabled: true,
         type: 'weekly',
