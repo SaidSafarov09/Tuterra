@@ -218,7 +218,7 @@ export function LessonForm({
 
                 <div className={styles.row}>
                     <Dropdown
-                        label="Ученик / Группа"
+                        label={fixedStudentId ? "Ученик" : "Ученик / Группа"}
                         placeholder="Выберите ученика или группу"
                         value={selectedValue}
                         onChange={handleStudentOrGroupChange}

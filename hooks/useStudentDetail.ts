@@ -60,6 +60,9 @@ export function useStudentDetail(studentId: string) {
         seriesPrice: undefined as string | undefined,
     })
 
+    const [isGroupPaymentModalOpen, setIsGroupPaymentModalOpen] = useState(false)
+    const [paymentLessonId, setPaymentLessonId] = useState<string | null>(null)
+
     const [deleteStudentConfirm, setDeleteStudentConfirm] = useState(false)
     const [deleteSubjectConfirm, setDeleteSubjectConfirm] = useState<string | null>(null)
     const [deleteLessonConfirm, setDeleteLessonConfirm] = useState<string | null>(null)
@@ -101,16 +104,16 @@ export function useStudentDetail(studentId: string) {
 
         const subject = allSubjects.find(s => s.id === deleteSubjectConfirm)
         const subjectName = subject?.name || 'предмет'
-        
+
         const studentLessons = student?.lessons || []
-        
+
         const success = await unlinkStudentFromSubjectWithLessonsNotification(
             deleteSubjectConfirm,
             student?.id || studentId,
             subjectName,
             studentLessons
         )
-        
+
         if (success) {
             await fetchStudent()
             await loadSubjects()
@@ -241,6 +244,23 @@ export function useStudentDetail(studentId: string) {
         }
     }
 
+    const handleGroupPaymentSubmit = async (paidStudentIds: string[]) => {
+        if (!paymentLessonId) return
+
+        setIsSubmitting(true)
+        try {
+            await updateLesson(paymentLessonId, { paidStudentIds })
+            await fetchStudent()
+            setIsGroupPaymentModalOpen(false)
+            setPaymentLessonId(null)
+        } catch (error) {
+            console.error('Payment update error:', error)
+            toast.error('Ошибка при обновлении статуса оплаты')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
     const handleToggleCancelLesson = async (lessonId: string, isCanceled: boolean) => {
         const updated = await toggleLessonCanceled(lessonId, isCanceled)
         if (updated) {
@@ -324,6 +344,9 @@ export function useStudentDetail(studentId: string) {
         isCreateLessonModalOpen, setIsCreateLessonModalOpen,
         isEditLessonModalOpen, setIsEditLessonModalOpen,
         isRescheduleModalOpen, setIsRescheduleModalOpen,
+        isGroupPaymentModalOpen, setIsGroupPaymentModalOpen,
+        paymentLessonId, setPaymentLessonId,
+        handleGroupPaymentSubmit,
         reschedulingLessonId,
 
 

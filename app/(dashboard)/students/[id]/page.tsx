@@ -12,6 +12,7 @@ import { useStudentDetail } from "@/hooks/useStudentDetail";
 import { StudentDetailSkeleton } from "@/components/skeletons";
 import { StudentNote } from "@/components/students/StudentNote";
 import { RescheduleModal } from "@/components/lessons/RescheduleModal";
+import { GroupPaymentModal } from "@/components/lessons/GroupPaymentModal";
 
 export default function StudentDetailPage({
   params,
@@ -74,7 +75,16 @@ export default function StudentDetailPage({
     setDeleteLessonConfirm,
     handleUpdateLesson,
     confirmDeleteLesson,
+    isGroupPaymentModalOpen,
+    setIsGroupPaymentModalOpen,
+    paymentLessonId,
+    setPaymentLessonId,
+    handleGroupPaymentSubmit,
   } = useStudentDetail(id);
+
+  const paymentGroupLesson = paymentLessonId
+    ? student?.groups?.flatMap(g => (g.lessons || []).map(l => ({ ...l, group: g }))).find(l => l.id === paymentLessonId)
+    : null;
 
   const handleCreateLessonMobile = () => {
     openCreateLessonModal();
@@ -139,6 +149,10 @@ export default function StudentDetailPage({
         onTogglePaidStatus={handleTogglePaidStatus}
         onToggleCancelLesson={handleToggleCancelLesson}
         onRescheduleLesson={handleRescheduleLessonMobile}
+        onOpenGroupPayment={(l) => {
+          setPaymentLessonId(l.id);
+          setIsGroupPaymentModalOpen(true);
+        }}
       />
 
       <StudentModals
@@ -208,6 +222,17 @@ export default function StudentDetailPage({
           reschedulingLessonId
             ? new Date(student?.lessons?.find((l) => l.id === reschedulingLessonId)?.date || new Date())
             : new Date()
+        }
+        isSubmitting={isSubmitting}
+      />
+
+      <GroupPaymentModal
+        isOpen={isGroupPaymentModalOpen}
+        onClose={() => setIsGroupPaymentModalOpen(false)}
+        onSubmit={handleGroupPaymentSubmit}
+        students={paymentGroupLesson?.group?.students || []}
+        initialPaidStudentIds={
+          paymentGroupLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
         }
         isSubmitting={isSubmitting}
       />

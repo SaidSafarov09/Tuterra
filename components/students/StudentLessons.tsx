@@ -20,6 +20,7 @@ interface StudentLessonsProps {
     onTogglePaidStatus: (lessonId: string, isPaid: boolean) => void;
     onToggleCancelLesson: (lessonId: string, isCanceled: boolean) => void;
     onRescheduleLesson: (lessonId: string) => void;
+    onOpenGroupPayment?: (lesson: Lesson) => void;
 }
 
 export function StudentLessons({
@@ -31,6 +32,7 @@ export function StudentLessons({
     onTogglePaidStatus,
     onToggleCancelLesson,
     onRescheduleLesson,
+    onOpenGroupPayment,
 }: StudentLessonsProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
@@ -146,7 +148,11 @@ export function StudentLessons({
                                         )}
                                     </div>
                                     <div className={styles.lessonPriceContainer}>
-                                        <span className={styles.lessonPrice}>{lesson.price} ₽</span>
+                                        <span className={styles.lessonPrice}>
+                                            {lesson.group && lesson.lessonPayments
+                                                ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
+                                                : lesson.price} ₽
+                                        </span>
                                         <LessonBadges
                                             price={lesson.price}
                                             isPaid={lesson.isPaid}
@@ -161,7 +167,13 @@ export function StudentLessons({
                                 <div onClick={(e) => e.stopPropagation()}>
                                     <LessonActions
                                         lesson={lesson}
-                                        onTogglePaid={(l) => onTogglePaidStatus(l.id, !l.isPaid)}
+                                        onTogglePaid={(l) => {
+                                            if (l.group && onOpenGroupPayment) {
+                                                onOpenGroupPayment(l)
+                                            } else {
+                                                onTogglePaidStatus(l.id, !l.isPaid)
+                                            }
+                                        }}
                                         onToggleCancel={(l) =>
                                             onToggleCancelLesson(l.id, !l.isCanceled)
                                         }

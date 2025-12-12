@@ -244,6 +244,7 @@ export default function SubjectsPage() {
                 onCreateSubject={handleCreateSubject}
                 handleChange={handleLessonChange}
                 fixedSubjectId={selectedSubject?.id}
+                groups={subjectGroups}
                 customTitle={customTitle}
             />
 

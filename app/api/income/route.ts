@@ -141,7 +141,10 @@ export async function GET(request: NextRequest) {
         const recentTransactions = await prisma.lesson.findMany({
             where: {
                 ownerId: user.id,
-                isPaid: true,
+                OR: [
+                    { isPaid: true },
+                    { lessonPayments: { some: { hasPaid: true } } }
+                ]
             },
             orderBy: { updatedAt: 'desc' },
             take: 3,
@@ -149,7 +152,16 @@ export async function GET(request: NextRequest) {
                 student: { select: { name: true } },
                 subject: { select: { name: true, color: true, icon: true } },
                 group: { select: { name: true } },
+                lessonPayments: true,
             },
+        })
+
+        const processedTransactions = recentTransactions.map(tx => {
+            if (tx.group && tx.lessonPayments && tx.lessonPayments.length > 0) {
+                const paidAmount = tx.lessonPayments.filter(p => p.hasPaid).length * tx.price
+                return { ...tx, price: paidAmount }
+            }
+            return tx
         })
 
         return NextResponse.json({
@@ -163,7 +175,7 @@ export async function GET(request: NextRequest) {
             hasAnyIncomeEver,
             currentMonthDuration: (currentMonthDuration._sum as any)?.duration || 0,
             previousMonthDuration: (previousMonthDuration._sum as any)?.duration || 0,
-            recentTransactions,
+            recentTransactions: processedTransactions,
         })
     } catch (error) {
         console.error('Get income stats error:', error)
