@@ -8,7 +8,7 @@ import { formatSmartDate } from "@/lib/dateUtils";
 import { LESSON_TABS, stringToColor } from "@/constants";
 import { LessonActions } from "@/components/lessons/LessonActions";
 import { LessonBadges } from "@/components/lessons/LessonBadges";
-import { getLessonTimeInfo } from "@/lib/lessonTimeUtils";
+import { getLessonTimeInfo, isLessonPast, isLessonOngoing } from "@/lib/lessonTimeUtils";
 import styles from "../../app/(dashboard)/students/[id]/page.module.scss";
 
 interface StudentLessonsProps {
@@ -38,15 +38,14 @@ export function StudentLessons({
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
 
     const filteredLessons = useMemo(() => {
-        const now = new Date();
         let filtered = [];
 
         switch (activeTab) {
             case "upcoming":
-                filtered = lessons.filter((l) => !l.isCanceled && new Date(l.date) >= now);
+                filtered = lessons.filter((l) => !l.isCanceled && !isLessonPast(l.date, l.duration || 60));
                 return filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Ascending (Nearest first)
             case "past":
-                filtered = lessons.filter((l) => !l.isCanceled && new Date(l.date) < now);
+                filtered = lessons.filter((l) => !l.isCanceled && isLessonPast(l.date, l.duration || 60));
                 return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Descending (Recent first)
             case "unpaid":
                 filtered = lessons.filter((l) => {
@@ -120,23 +119,32 @@ export function StudentLessons({
                                     <div>
                                         <div className={styles.lessonDateContainer}>
 
-                                            {lesson.group && student.id !== lesson.group.id && (
+                                            {(lesson.group || lesson.groupName) && (!lesson.group || student.id !== lesson.group.id) && (
                                                 <p className={styles.lessonGroupText}
                                                 >
-                                                    <span style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</span> - группа
+                                                    <span style={{ color: stringToColor(lesson.group?.name || lesson.groupName || '') }}>
+                                                        {lesson.group?.name || lesson.groupName}
+                                                    </span> - группа
                                                 </p>
                                             )}
                                             <h3 className={styles.lessonDate}>
                                                 {formatSmartDate(new Date(lesson.date))}
                                             </h3>
-                                            <span
-                                                className={styles.lessonTime}
-                                            >
-                                                {getLessonTimeInfo(
-                                                    new Date(lesson.date),
-                                                    lesson.duration
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <span
+                                                    className={styles.lessonTime}
+                                                >
+                                                    {getLessonTimeInfo(
+                                                        new Date(lesson.date),
+                                                        lesson.duration
+                                                    )}
+                                                </span>
+                                                {isLessonOngoing(lesson.date, lesson.duration) && (
+                                                    <span style={{ color: 'var(--success)', fontSize: '12px', fontWeight: 500 }}>
+                                                        Занятие началось
+                                                    </span>
                                                 )}
-                                            </span>
+                                            </div>
                                             {subject ? (
                                                 <span
                                                     className={styles.lessonSubject}

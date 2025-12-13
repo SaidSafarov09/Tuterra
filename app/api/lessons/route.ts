@@ -55,11 +55,18 @@ export async function GET(request: NextRequest) {
         let where: any = { ownerId: payload.userId }
 
         if (filter === 'upcoming') {
-            where.date = { gte: now }
             where.isCanceled = false
+            // Для upcoming нужно получить занятия, которые еще не закончились
+            // Это включает и те, которые уже начались (ongoing)
+            // Используем широкий диапазон: получаем занятия за последние 24 часа и будущие
+            // чтобы покрыть все возможные ongoing занятия (даже очень длинные)
+            const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+            where.date = { gte: oneDayAgo }
         } else if (filter === 'past') {
-            where.date = { lt: now }
             where.isCanceled = false
+            // Для past можно предварительно отфильтровать по дате начала
+            // Но все равно нужно проверить с учетом длительности
+            where.date = { lt: now }
         } else if (filter === 'unpaid') {
             // For groups, "unpaid" is tricky. Maybe if not everyone paid?
             // Or we just rely on isPaid flag for now, or check payments.
@@ -87,6 +94,15 @@ export async function GET(request: NextRequest) {
             },
             orderBy: { date: filter === 'past' ? 'desc' : 'asc' },
         })
+
+        // Фильтруем занятия с учетом длительности для фильтров 'upcoming' и 'past'
+        if (filter === 'upcoming' || filter === 'past') {
+            const { isLessonPast } = await import('@/lib/lessonTimeUtils')
+            lessons = lessons.filter(lesson => {
+                const lessonIsPast = isLessonPast(lesson.date, lesson.duration || 60)
+                return filter === 'upcoming' ? !lessonIsPast : lessonIsPast
+            })
+        }
 
         if (filter === 'unpaid') {
             lessons = lessons.filter(lesson => {
@@ -205,6 +221,20 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
         }
     }
 
+    // Если это групповое занятие, получаем текущих студентов группы для создания lessonPayments
+    let groupStudents: { id: string }[] = []
+    let groupName: string | null = null
+    if (data.groupId) {
+        const group = await prisma.group.findUnique({
+            where: { id: data.groupId },
+            include: { students: { select: { id: true } } }
+        })
+        if (group) {
+            groupStudents = group.students
+            groupName = group.name
+        }
+    }
+
     const lesson = await prisma.lesson.create({
         data: {
             date: data.date,
@@ -218,13 +248,14 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             ownerId: userId,
             studentId: data.studentId,
             groupId: data.groupId,
+            groupName,
             subjectId: data.subjectId,
             subjectName,
             subjectColor,
-            lessonPayments: data.groupId && data.paidStudentIds ? {
-                create: data.paidStudentIds.map(studentId => ({
-                    studentId,
-                    hasPaid: true
+            lessonPayments: data.groupId ? {
+                create: groupStudents.map(student => ({
+                    studentId: student.id,
+                    hasPaid: data.paidStudentIds?.includes(student.id) || false
                 }))
             } : undefined
         } as any,
@@ -304,6 +335,18 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             notes: data.notes,
         } as any,
     })
+    // Получаем название группы для сохранения в занятиях
+    let groupName: string | null = null
+    if (data.groupId) {
+        const group = await prisma.group.findUnique({
+            where: { id: data.groupId },
+            select: { name: true }
+        })
+        if (group) {
+            groupName = group.name
+        }
+    }
+
     const lessons = await prisma.lesson.createMany({
         data: dates.map((date, index) => ({
             date,
@@ -318,26 +361,35 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             ownerId: userId,
             studentId: data.studentId,
             groupId: data.groupId,
+            groupName,
             subjectId: data.subjectId,
             seriesId: series.id,
         })),
     })
 
-    // Create lesson payments for recurring lessons if paidStudentIds is provided
-    if (data.groupId && data.paidStudentIds) {
+    // Create lesson payments for recurring lessons - для групповых занятий создаем записи для всех студентов группы
+    if (data.groupId) {
         const createdLessons = await prisma.lesson.findMany({
             where: { seriesId: series.id },
             select: { id: true }
         });
 
-        for (const lesson of createdLessons) {
-            await prisma.lessonPayment.createMany({
-                data: data.paidStudentIds.map(studentId => ({
-                    lessonId: lesson.id,
-                    studentId,
-                    hasPaid: true
-                }))
-            });
+        // Получаем всех студентов группы
+        const group = await prisma.group.findUnique({
+            where: { id: data.groupId },
+            include: { students: { select: { id: true } } }
+        })
+
+        if (group && group.students.length > 0) {
+            for (const lesson of createdLessons) {
+                await prisma.lessonPayment.createMany({
+                    data: group.students.map(student => ({
+                        lessonId: lesson.id,
+                        studentId: student.id,
+                        hasPaid: data.paidStudentIds?.includes(student.id) || false
+                    }))
+                });
+            }
         }
     }
     

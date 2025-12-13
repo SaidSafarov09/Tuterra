@@ -82,7 +82,9 @@ export async function updateLesson(
         topic: string
         notes: string
         paidStudentIds: string[]
-    }>
+        attendedStudentIds: string[]
+    }>,
+    options?: { showToast?: boolean }
 ): Promise<Lesson | null> {
     try {
         const updateData: any = { ...data }
@@ -106,11 +108,15 @@ export async function updateLesson(
         }
 
         const lesson = await lessonsApi.update(lessonId, updateData)
-        toast.success(LESSON_MESSAGES.UPDATED)
+        if (options?.showToast !== false) {
+            toast.success(LESSON_MESSAGES.UPDATED)
+        }
         return lesson
     } catch (error: any) {
         const errorMessage = error?.message || LESSON_MESSAGES.UPDATE_ERROR
-        toast.error(errorMessage)
+        if (options?.showToast !== false) {
+            toast.error(errorMessage)
+        }
         return null
     }
 }

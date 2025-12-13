@@ -1,116 +1,232 @@
 .content {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
 }
 
-.date {
-    font-size: 16px;
-    color: var(--text-primary);
-    margin: 0;
-    padding: 10px;
-    background: var(--background);
-    border-radius: 8px;
-    font-weight: 600;
-}
-
-.description {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-.hint {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    margin: 0 0 10px 0;
-    padding: 8px;
-    background: var(--background);
-    border-radius: 6px;
-    line-height: 1.4;
-}
-
-.modeSelector {
+.dateCard {
     display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--background);
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
 }
 
-.modeButton {
+.dateIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+.dateInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     flex: 1;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
+}
+
+.dateLabel {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.dateValue {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    @media (max-width: 768px)
+    {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+.statCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
     background: var(--background);
-    border-radius: 6px;
-    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
     transition: all 0.2s;
     
-    &.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-    
     &:hover {
-        background: var(--hover);
+        border-color: var(--border);
+        transform: translateY(-1px);
     }
 }
 
-.price {
-    font-size: 14px;
-    color: var(--text-primary);
-    margin-bottom: 16px;
+.statIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
 
-    strong {
-        font-weight: 600;
-        color: var(--success);
-        font-size: 18px;
-    }
+.statIconPaid {
+    color: var(--success);
+}
+
+.statIconAmount {
+    color: var(--warning);
+}
+
+.statInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.statLabel {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.statValue {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.statTotal {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+.warningBanner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    color: var(--error);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.successBanner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+    color: var(--success);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.partialBanner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 10px;
+    color: var(--warning);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.studentsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sectionTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.sectionDescription {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
 }
 
 .studentsList {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    max-height: 300px;
+    gap: 8px;
+    max-height: 400px;
     overflow-y: auto;
     padding: 4px;
+    margin-top: 8px;
 
     &::-webkit-scrollbar {
-        width: 4px;
+        width: 6px;
     }
 
     &::-webkit-scrollbar-thumb {
         background: var(--scroll-thumb);
-        border-radius: 4px;
+        border-radius: 3px;
     }
 
-    label {
-        margin: 0;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 8px;
-        transition: background 0.2s;
-        
-        &:hover {
-            background: var(--background);
-        }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+}
+
+.studentItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    background: var(--surface);
+    transition: all 0.2s;
+    
+    &:hover {
+        border-color: var(--border);
+        background: var(--background);
     }
     
-    .studentItem {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 8px;
-        border-radius: 8px;
-        transition: background 0.2s;
-        
-        &:hover {
-            background: var(--background);
-        }
-        
-        .paymentCheckbox {
-            margin-left: auto;
-        }
+    &.studentItemAttended {
+        border-color: var(--success);
+        background: rgba(16, 185, 129, 0.05);
     }
+}
+
+.studentMain {
+    flex: 1;
+    min-width: 0;
+}
+
+.studentPayment {
+    display: flex;
+    align-items: center;
+    padding-left: 16px;
+    border-left: 1px solid var(--border-light);
+    flex-shrink: 0;
 }

@@ -129,8 +129,46 @@ export async function DELETE(
         const payload = await verifyToken(token)
         if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
+        const groupId = params.id
+        const now = new Date()
+
+        // Получаем группу с названием для сохранения в прошедших занятиях
+        const group = await prisma.group.findUnique({
+            where: { id: groupId, ownerId: payload.userId },
+            select: { name: true }
+        })
+
+        if (!group) {
+            return NextResponse.json({ error: 'Группа не найдена' }, { status: 404 })
+        }
+
+        // Сохраняем название группы в прошедших занятиях перед удалением
+        await prisma.lesson.updateMany({
+            where: {
+                groupId: groupId,
+                date: {
+                    lt: now
+                }
+            },
+            data: {
+                groupName: group.name,
+                groupId: null // Обнуляем groupId, чтобы связь с удаленной группой не осталась
+            }
+        })
+
+        // Удаляем только будущие занятия группы
+        await prisma.lesson.deleteMany({
+            where: {
+                groupId: groupId,
+                date: {
+                    gte: now
+                }
+            }
+        })
+
+        // Удаляем группу
         await prisma.group.delete({
-            where: { id: params.id, ownerId: payload.userId },
+            where: { id: groupId },
         })
 
         return NextResponse.json({ success: true })

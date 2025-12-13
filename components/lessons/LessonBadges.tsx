@@ -3,6 +3,7 @@ import { LessonStatusBadge } from './LessonStatusBadge'
 import { TrialBadge } from './TrialBadge'
 import styles from './LessonBadges.module.scss'
 import { LessonPayment } from '@/types'
+import { getGroupLessonPaymentStatus } from '@/lib/lessonUtils'
 
 interface LessonBadgesProps {
     price: number
@@ -21,24 +22,11 @@ export function LessonBadges({
     totalStudents = 0,
     lessonPayments = []
 }: LessonBadgesProps) {
-    // For group lessons, determine payment status
+    // For group lessons, determine payment status using utility function
     let paymentStatus: 'paid' | 'unpaid' | 'partial' = isPaid ? 'paid' : 'unpaid'
 
-    if (isGroupLesson && lessonPayments && lessonPayments.length > 0) {
-        // Рассчитываем статус оплаты только на основе присутствовавших студентов
-        const attendedPayments = lessonPayments.filter(p => p.hasPaid || !p.hasPaid) // Все, кто присутствовал (оплатил или не оплатил)
-        const totalAttended = attendedPayments.length
-        const paidAttended = attendedPayments.filter(p => p.hasPaid).length
-
-        if (totalAttended === 0) {
-            paymentStatus = 'unpaid'
-        } else if (paidAttended === 0) {
-            paymentStatus = 'unpaid'
-        } else if (paidAttended === totalAttended) {
-            paymentStatus = 'paid' // Все присутствовавшие оплатили
-        } else {
-            paymentStatus = 'partial' // Только часть присутствовавших оплатила
-        }
+    if (isGroupLesson && lessonPayments) {
+        paymentStatus = getGroupLessonPaymentStatus(lessonPayments)
     }
 
     return (

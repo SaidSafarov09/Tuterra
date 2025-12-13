@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { isPast, isAfter, addMinutes } from 'date-fns'
+import { isLessonPast } from '@/lib/lessonTimeUtils'
 import { CheckIcon, XCircleIcon, EditIcon, DeleteIcon, RescheduleIcon, MoreVerticalIcon } from '@/components/icons/Icons'
 import { Lesson } from '@/types'
 import { isTrial } from '@/lib/lessonUtils'
@@ -34,8 +34,7 @@ export function LessonActions({
     const [isMobile, setIsMobile] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
-    const lessonEndTime = addMinutes(new Date(lesson.date), lesson.duration || 60)
-    const isLessonEnded = isPast(lessonEndTime)
+    const isLessonEnded = isLessonPast(lesson.date, lesson.duration || 60)
     const isTrialLesson = isTrial(lesson.price)
 
     const isLastItem = totalItems > 0 && index === totalItems - 1

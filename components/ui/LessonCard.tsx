@@ -7,7 +7,7 @@ import { Repeat } from 'lucide-react'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { LessonActions } from '@/components/lessons/LessonActions'
 import { getRecurrenceDescription } from '@/lib/recurring-lessons'
-import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
+import { getLessonTimeInfo, isLessonOngoing } from '@/lib/lessonTimeUtils'
 import styles from './LessonCard.module.scss'
 import { stringToColor } from '@/lib/utils'
 
@@ -61,7 +61,11 @@ export const LessonCard: React.FC<LessonCardProps> = ({
             <div className={styles.header}>
                 <div className={styles.info}>
                     <h4 className={styles.studentName}>
-                        {lesson.student?.name || (lesson.group && (<><span style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</span> — группа</>))}
+                        {lesson.student?.name || (lesson.group ? (
+                            <><span style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</span> — группа</>
+                        ) : lesson.groupName ? (
+                            <><span style={{ color: stringToColor(lesson.groupName) }}>{lesson.groupName}</span> — группа</>
+                        ) : null)}
                     </h4>
                     {(lesson.subject || (lesson.subjectName && lesson.subjectColor)) && (
                         <span
@@ -81,9 +85,16 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                             {formatSmartDate(lesson.date)}
                         </p>
 
-                        <span className={styles.duration}>
-                            {getLessonTimeInfo(new Date(lesson.date), lesson.duration)}
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span className={styles.duration}>
+                                {getLessonTimeInfo(new Date(lesson.date), lesson.duration)}
+                            </span>
+                            {isLessonOngoing(lesson.date, lesson.duration || 60) && (
+                                <span style={{ color: 'var(--success)', fontSize: '12px', fontWeight: 500 }}>
+                                    Занятие началось
+                                </span>
+                            )}
+                        </div>
                     </div>
                     {recurrenceText && (
                         <p className={styles.recurrence}>

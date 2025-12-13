@@ -121,7 +121,7 @@ export default function GroupDetailPage({
                 onClose={() => setDeleteGroupConfirm(false)}
                 onConfirm={handleDeleteGroup}
                 title="Удалить группу?"
-                message="Вы уверены, что хотите удалить эту группу? Все занятия и история оплат также будут удалены. Это действие нельзя отменить."
+                message="Вы уверены, что хотите удалить эту группу? Все ближайшие занятия связанные с этой группой будут удалены. Это действие нельзя отменить."
                 confirmText="Удалить"
                 cancelText="Отмена"
                 variant="danger"
@@ -158,6 +158,11 @@ export default function GroupDetailPage({
                 initialPaidStudentIds={
                     paymentLessonId
                         ? group.lessons?.find(l => l.id === paymentLessonId)?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
+                        : []
+                }
+                initialAttendedStudentIds={
+                    paymentLessonId
+                        ? group.lessons?.find(l => l.id === paymentLessonId)?.lessonPayments?.map(p => p.studentId) || []
                         : []
                 }
                 isSubmitting={isSubmitting}

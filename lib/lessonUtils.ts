@@ -1,10 +1,32 @@
-import type { Lesson, DayData } from '@/types'
+import type { Lesson, DayData, LessonPayment } from '@/types'
 
 export type LessonStatus = 'free' | 'paid' | 'unpaid' | 'partial'
 
 export function getLessonStatus(price: number, isPaid: boolean): LessonStatus {
     if (price === 0) return 'free'
     return isPaid ? 'paid' : 'unpaid'
+}
+
+/**
+ * Определяет статус оплаты группового урока на основе посещаемости и оплаты
+ * @param lessonPayments - массив платежей урока (lessonPayments содержит только присутствовавших студентов)
+ * @returns 'paid' | 'partial' | 'unpaid'
+ */
+export function getGroupLessonPaymentStatus(lessonPayments: LessonPayment[]): 'paid' | 'partial' | 'unpaid' {
+    if (!lessonPayments || lessonPayments.length === 0) {
+        return 'unpaid' // Никто не пришел
+    }
+    
+    const paidCount = lessonPayments.filter(p => p.hasPaid).length
+    const totalAttended = lessonPayments.length
+    
+    if (paidCount === 0) {
+        return 'unpaid' // Никто не оплатил
+    } else if (paidCount === totalAttended) {
+        return 'paid' // Все, кто пришел, оплатили
+    } else {
+        return 'partial' // Частично оплачено
+    }
 }
 
 export function isTrial(price: number): boolean {

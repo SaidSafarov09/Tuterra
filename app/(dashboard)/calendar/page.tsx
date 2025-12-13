@@ -242,11 +242,15 @@ export default function CalendarPage() {
             <GroupPaymentModal
                 isOpen={isGroupPaymentModalOpen}
                 onClose={() => setIsGroupPaymentModalOpen(false)}
-                onSubmit={async (paidStudentIds) => {
+                onSubmit={async (paidStudentIds, attendedStudentIds) => {
                     if (!paymentLesson) return
                     try {
-                        await lessonsApi.update(paymentLesson.id, { paidStudentIds })
-                        toast.success('Статус оплаты обновлен')
+                        await lessonsApi.update(paymentLesson.id, { paidStudentIds, attendedStudentIds })
+                        if (attendedStudentIds.length === 0) {
+                            toast.warning('Никто не пришел на занятие. Занятие отменено.')
+                        } else {
+                            toast.success('Статус оплаты обновлен')
+                        }
                         setIsGroupPaymentModalOpen(false)
                         fetchLessons()
                     } catch (error) {
@@ -255,6 +259,7 @@ export default function CalendarPage() {
                 }}
                 students={paymentLesson?.group?.students || []}
                 initialPaidStudentIds={paymentLesson?.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || []}
+                initialAttendedStudentIds={paymentLesson?.lessonPayments?.map((p: any) => p.studentId) || []}
                 isSubmitting={isActionsLoading}
                 price={Number(paymentLesson?.price || 0)}
                 lessonDate={paymentLesson?.date}

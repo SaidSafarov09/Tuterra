@@ -56,3 +56,43 @@ export function getLessonTimeInfo(startDate: Date, durationMinutes: number = 60)
     const duration = formatLessonDuration(durationMinutes)
     return `${endTime}, ${duration}`
 }
+
+/**
+ * Определяет статус занятия с учетом времени начала и длительности
+ * @param startDate - Дата и время начала занятия
+ * @param durationMinutes - Длительность занятия в минутах (по умолчанию 60)
+ * @returns 'upcoming' | 'ongoing' | 'past'
+ */
+export function getLessonStatus(startDate: Date | string, durationMinutes: number = 60): 'upcoming' | 'ongoing' | 'past' {
+    const now = new Date()
+    const start = new Date(startDate)
+    const end = calculateLessonEndTime(start, durationMinutes)
+    
+    if (now < start) {
+        return 'upcoming'
+    } else if (now >= start && now < end) {
+        return 'ongoing'
+    } else {
+        return 'past'
+    }
+}
+
+/**
+ * Проверяет, является ли занятие прошедшим (учитывая длительность)
+ * @param startDate - Дата и время начала занятия
+ * @param durationMinutes - Длительность занятия в минутах (по умолчанию 60)
+ * @returns true если занятие полностью закончилось
+ */
+export function isLessonPast(startDate: Date | string, durationMinutes: number = 60): boolean {
+    return getLessonStatus(startDate, durationMinutes) === 'past'
+}
+
+/**
+ * Проверяет, идет ли занятие сейчас
+ * @param startDate - Дата и время начала занятия
+ * @param durationMinutes - Длительность занятия в минутах (по умолчанию 60)
+ * @returns true если занятие началось, но еще не закончилось
+ */
+export function isLessonOngoing(startDate: Date | string, durationMinutes: number = 60): boolean {
+    return getLessonStatus(startDate, durationMinutes) === 'ongoing'
+}

@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
                     lessonPayments: true,
                 },
                 orderBy: { date: 'asc' },
-                take: 5,
+                take: 10, // Берем больше, чтобы после фильтрации осталось достаточно
             }),
 
 
@@ -114,9 +114,15 @@ export async function GET(request: NextRequest) {
             return paidCount < totalStudents
         })
 
+        // Фильтруем ближайшие занятия с учетом длительности
+        const { isLessonPast } = await import('@/lib/lessonTimeUtils')
+        const filteredUpcomingLessons = upcomingLessons
+            .filter(lesson => !isLessonPast(lesson.date, lesson.duration || 60))
+            .slice(0, 5) // Берем первые 5 после фильтрации
+
         return NextResponse.json({
             studentsCount,
-            upcomingLessons,
+            upcomingLessons: filteredUpcomingLessons,
             unpaidLessons,
             monthlyIncome: (monthlyIncome as any[]).reduce((total, lesson) => {
                 if (lesson.group && lesson.lessonPayments?.length > 0) {

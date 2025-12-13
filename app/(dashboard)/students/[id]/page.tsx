@@ -272,6 +272,9 @@ export default function StudentDetailPage({
           initialPaidStudentIds={
               paymentGroupLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
           }
+          initialAttendedStudentIds={
+              paymentGroupLesson?.lessonPayments?.map(p => p.studentId) || []
+          }
           isSubmitting={isSubmitting}
           price={paymentGroupLesson ? Number(paymentGroupLesson.price) : 0}
           lessonDate={paymentGroupLesson ? paymentGroupLesson.date : undefined}

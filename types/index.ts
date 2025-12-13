@@ -85,6 +85,7 @@ export interface Lesson {
     seriesId?: string | null
     subjectName?: string | null
     subjectColor?: string | null
+    groupName?: string | null
     student?: {
         slug?: string
         id: string

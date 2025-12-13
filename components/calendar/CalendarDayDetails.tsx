@@ -1,11 +1,11 @@
 import React from 'react'
-import { format, isPast, addMinutes } from 'date-fns'
+import { format, isPast } from 'date-fns'
 import { MoneyIcon, ClockIcon, PlusIcon, CheckIcon, XCircleIcon, RescheduleIcon } from '@/components/icons/Icons'
 import { Button } from '@/components/ui/Button'
 import { Lesson, DayData } from '@/types'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { isTrial } from '@/lib/lessonUtils'
-import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
+import { getLessonTimeInfo, isLessonOngoing, isLessonPast } from '@/lib/lessonTimeUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
 import { stringToColor } from '@/constants'
 
@@ -94,7 +94,13 @@ export function CalendarDayDetails({
                                 <div className={styles.lessonMain}>
                                     <div className={styles.lessonInfo}>
                                         <div className={styles.lessonStudent}>
-                                            {lesson.group ? <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</p>&nbsp;-&nbsp;группа</> : <>{lesson.student?.name}</>}
+                                            {lesson.group ? (
+                                                <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</p>&nbsp;-&nbsp;группа</>
+                                            ) : lesson.groupName ? (
+                                                <><p style={{ color: stringToColor(lesson.groupName) }}>{lesson.groupName}</p>&nbsp;-&nbsp;группа</>
+                                            ) : (
+                                                <>{lesson.student?.name}</>
+                                            )}
                                             {lesson.isCanceled && (
                                                 <span className={styles.canceledBadge}>Отменено</span>
                                             )}
@@ -117,10 +123,17 @@ export function CalendarDayDetails({
                                                     {lesson.subject.name}
                                                 </span>
                                             )}
-                                            <span style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <ClockIcon size={12} />
-                                                {getLessonTimeInfo(new Date(lesson.date), lesson.duration)}
-                                            </span>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <span style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <ClockIcon size={12} />
+                                                    {getLessonTimeInfo(new Date(lesson.date), lesson.duration)}
+                                                </span>
+                                                {isLessonOngoing(lesson.date, lesson.duration || 60) && (
+                                                    <span style={{ color: 'var(--success)', fontSize: '12px', fontWeight: 500 }}>
+                                                        Занятие началось
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                     {lesson.notes && (
@@ -153,7 +166,7 @@ export function CalendarDayDetails({
                                         </button>
                                     )}
 
-                                    {!isPast(addMinutes(new Date(lesson.date), lesson.duration || 60)) && (
+                                    {!isLessonPast(lesson.date, lesson.duration || 60) && (
                                         <button
                                             className={styles.actionButton}
                                             onClick={() => onReschedule(lesson)}
@@ -163,7 +176,7 @@ export function CalendarDayDetails({
                                         </button>
                                     )}
 
-                                    {!isPast(new Date(lesson.date)) && (
+                                    {!isLessonPast(lesson.date, lesson.duration || 60) && (
                                         <button
                                             className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
                                             onClick={() => onToggleCancel(lesson)}

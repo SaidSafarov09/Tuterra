@@ -4,7 +4,8 @@ import React, { useEffect, useState, use as usePromise } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { format, isPast } from 'date-fns'
+import { format } from 'date-fns'
+import { isLessonPast, isLessonOngoing } from '@/lib/lessonTimeUtils'
 import { ru } from 'date-fns/locale'
 import { Lesson, Student, Subject } from '@/types'
 import { useLessonActions } from '@/hooks/useLessonActions'
@@ -172,7 +173,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     if (!lesson) return null
 
     const lessonDate = new Date(lesson.date)
-    const isLessonPast = isPast(lessonDate)
+    const lessonIsPast = isLessonPast(lesson.date, lesson.duration || 60)
+    const lessonIsOngoing = isLessonOngoing(lesson.date, lesson.duration || 60)
 
     // Определяем статус оплаты для группового занятия
     const isFullyPaid = lesson.group
@@ -200,7 +202,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         <div className={styles.studentNameRow}>
                             <div onClick={() => lesson?.student ? router.push(`/students/${lesson.student.slug || lesson.student.id}`) : lesson?.group ? router.push(`/groups/${lesson.group.id}`) : null}>
                                 <h1 className={styles.studentName}>
-                                    {lesson?.student?.name || (lesson?.group ? `${lesson.group.name} - группа` : 'Неизвестно')}
+                                    {lesson?.student?.name || (lesson?.group ? `${lesson.group.name} - группа` : lesson?.groupName ? `${lesson.groupName} - группа` : 'Неизвестно')}
                                 </h1>
                             </div>
                             {lesson.subject && (
@@ -220,17 +222,24 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                             )}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <p className={styles.lessonDate} style={{ color: isLessonPast ? 'var(--warning)' : 'var(--success)' }}>
-                                {isLessonPast
+                            <p className={styles.lessonDate} style={{ color: lessonIsPast ? 'var(--warning)' : lessonIsOngoing ? 'var(--success)' : 'var(--text-primary)' }}>
+                                {lessonIsPast
                                     ? `Занятие было ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
                                     : `${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
                                 }
                             </p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
-                                <ClockIcon size={16} />
-                                <span className={styles.lessonTime}>
-                                    {getLessonTimeInfo(lessonDate, lesson.duration)}
-                                </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+                                    <ClockIcon size={16} />
+                                    <span className={styles.lessonTime}>
+                                        {getLessonTimeInfo(lessonDate, lesson.duration)}
+                                    </span>
+                                </div>
+                                {lessonIsOngoing && (
+                                    <span style={{ color: 'var(--success)', fontSize: '13px', fontWeight: 500 }}>
+                                        Занятие началось
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -337,6 +346,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 onSubmit={handleGroupPaymentSubmit}
                 students={paymentLesson?.group?.students || lesson?.group?.students || []}
                 initialPaidStudentIds={paymentLesson?.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || lesson?.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || []}
+                initialAttendedStudentIds={paymentLesson?.lessonPayments?.map((p: any) => p.studentId) || lesson?.lessonPayments?.map((p: any) => p.studentId) || []}
                 isSubmitting={isActionLoading}
                 price={Number(paymentLesson?.price || lesson?.price || 0)}
                 lessonDate={paymentLesson?.date || lesson?.date}

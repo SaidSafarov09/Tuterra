@@ -286,12 +286,17 @@ export function useStudentDetail(studentId: string) {
         }
     }
 
-    const handleGroupPaymentSubmit = async (paidStudentIds: string[]) => {
+    const handleGroupPaymentSubmit = async (paidStudentIds: string[], attendedStudentIds: string[]) => {
         if (!paymentLessonId) return
 
         setIsSubmitting(true)
         try {
-            await updateLesson(paymentLessonId, { paidStudentIds })
+            await updateLesson(paymentLessonId, { paidStudentIds, attendedStudentIds }, { showToast: false })
+            if (attendedStudentIds.length === 0) {
+                toast.warning('Никто не пришел на занятие. Занятие отменено.')
+            } else {
+                toast.success('Статус оплаты обновлен')
+            }
             await fetchStudent()
             setIsGroupPaymentModalOpen(false)
             setPaymentLessonId(null)

@@ -109,6 +109,7 @@ model Lesson {
   ownerId    String
   studentId  String?
   groupId    String?
+  groupName  String?
   subjectId  String?
   subjectName   String?
   subjectColor  String?
