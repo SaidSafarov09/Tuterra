@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
-                    date: { gte: now },
+                    // Сдвигаем начало выборки на сутки назад, чтобы включить ongoing-занятия
+                    date: { gte: new Date(now.getTime() - 24*60*60*1000) },
                     isCanceled: false,
                 } as any,
                 include: {
