@@ -8,6 +8,8 @@ import { useAuthStore } from '@/store/auth'
 import { settingsApi } from '@/services/api'
 import { useTheme } from 'next-themes'
 import styles from './DashboardLayout.module.scss'
+import { MobileHeader } from './MobileHeader'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -17,6 +19,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const { user, setUser } = useAuthStore()
     const { setTheme } = useTheme()
+    const isMobile = useMediaQuery('(max-width: 768px)')
+    const pathname = usePathname()
 
     useEffect(() => {
         if (isMobileMenuOpen) {
@@ -68,7 +72,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             window.removeEventListener('closeMobileSidebar', handleCloseSidebar)
         }
     }, [])
-    const pathname = usePathname()
+    const pageTitles: Record<string, string> = {
+      '/dashboard': 'Главная',
+      '/groups': 'Группы',
+      '/students': 'Ученики',
+      '/income': 'Доходы',
+      '/lessons': 'Занятия',
+      '/calendar': 'Календарь',
+      '/settings': 'Настройки',
+    }
+    let headerTitle = pageTitles[pathname] || ''
+
     useEffect(() => {
         setIsMobileMenuOpen(false)
     }, [pathname])
@@ -95,17 +109,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             )}
 
             <main className={styles.main}>
-                {!isMobilePage && (
-                    <button
-                        className={styles.mobileMenuButton}
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        <MenuIcon size={20} />
-                        <span>Меню</span>
-                    </button>
+                {/* Новый MobileHeader только на мобильном */}
+                {isMobile && !isMobilePage && (
+                    <MobileHeader
+                        title={headerTitle}
+                        onBurgerClick={() => setIsMobileMenuOpen(true)}
+                    />
                 )}
-
                 <div className={styles.content}>{children}</div>
             </main>
         </div>
