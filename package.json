@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:sqlite": "DATABASE_URL=\"file:./dev.db\" next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push --accept-data-loss",
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
@@ -42,5 +45,8 @@
     "prisma": "^5.7.0",
     "sass": "^1.69.5",
     "typescript": "^5"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   }
 }

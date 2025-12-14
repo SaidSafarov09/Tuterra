@@ -79,7 +79,9 @@ export const RecurrenceSection: React.FC<RecurrenceSectionProps> = ({
                         <div className={styles.field}>
                             <label className={styles.label}>Дни недели</label>
                             <WeekdayPicker
-                                value={value.daysOfWeek}
+                                value={typeof value.daysOfWeek === 'string'
+                                    ? JSON.parse(value.daysOfWeek || '[]')
+                                    : value.daysOfWeek}
                                 onChange={(days) => updateRule({ daysOfWeek: days })}
                                 disabled={disabled}
                             />

@@ -11,7 +11,7 @@ interface UnsavedChangesModalProps {
 
 export function UnsavedChangesModal({ isOpen, onClose, onDiscard }: UnsavedChangesModalProps) {
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="">
+        <Modal isOpen={isOpen} onClose={onClose} title="" withHeader={false}>
             <div className={styles.content}>
                 <div className={styles.icon}>
                     <AlertTriangle size={48} />

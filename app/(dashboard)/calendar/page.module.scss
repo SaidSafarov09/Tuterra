@@ -161,7 +161,7 @@
 
         .dayNumber {
             background: var(--primary);
-            color: white;
+            color: var(--text-on-primary);
             width: 28px;
             height: 28px;
             border-radius: 50%;
@@ -171,6 +171,7 @@
 
             @media(max-width: 768px) {
                 background: none;
+                color: var(--text-primary);
             }
         }
     }

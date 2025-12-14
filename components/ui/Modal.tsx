@@ -15,6 +15,7 @@ interface ModalProps {
     maxWidth?: string
     minHeight?: string
     mobileView?: 'page' | 'modal'
+    withHeader?: boolean
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -27,6 +28,7 @@ export const Modal: React.FC<ModalProps> = ({
     maxWidth = '500px',
     minHeight = "auto",
     mobileView = 'page',
+    withHeader = true,
 }) => {
     const modalRef = useRef<HTMLDivElement>(null)
 
@@ -82,12 +84,12 @@ export const Modal: React.FC<ModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 style={{ maxWidth: isMobile ? "100%" : maxWidth }}
             >
+                {withHeader && (
 
                 <div className={styles.header}>
                     {mobileView === 'page' && (
                         <div className={styles.mobileBackButton} onClick={onClose}>
                             <ArrowLeft size={20} />
-                            {/* <span>Назад</span> */}
                         </div>
                     )}
                     <h2 className={styles.title}>{title}</h2>
@@ -95,6 +97,7 @@ export const Modal: React.FC<ModalProps> = ({
                         <XIcon size={24} />
                     </div>
                 </div>
+                )}
                 <div style={{ minHeight }} className={styles.content}>{children}</div>
                 {footer && <div className={styles.footer}>{footer}</div>}
             </div>

@@ -98,12 +98,13 @@ export function getRecurrenceDescription(rule: RecurrenceRule, startDate: Date):
             break
 
         case 'weekly':
-            if (rule.daysOfWeek.length === 1) {
-                parts.push(`Каждую ${getWeekdayName(rule.daysOfWeek[0], 'accusative')}`)
-            } else if (rule.daysOfWeek.length > 1) {
-                const days = rule.daysOfWeek
-                    .sort((a, b) => a - b)
-                    .map(d => getWeekdayName(d, 'short'))
+            const daysArray: number[] = typeof rule.daysOfWeek === 'string' ? JSON.parse(rule.daysOfWeek || '[]') : rule.daysOfWeek;
+            if (daysArray.length === 1) {
+                parts.push(`Каждую ${getWeekdayName(daysArray[0], 'accusative')}`)
+            } else if (daysArray.length > 1) {
+                const days = daysArray
+                    .sort((a: number, b: number) => a - b)
+                    .map((d: number) => getWeekdayName(d, 'short'))
                     .join(', ')
                 parts.push(`Каждую неделю: ${days}`)
             }
@@ -113,8 +114,9 @@ export function getRecurrenceDescription(rule: RecurrenceRule, startDate: Date):
             const interval = rule.interval || 1
             const weeksText = interval === 1 ? 'неделю' : `${interval} ${getPluralWeeks(interval)}`
             parts.push(`Каждые ${weeksText}`)
-            if (rule.daysOfWeek.length > 0) {
-                const days = rule.daysOfWeek.map(d => getWeekdayName(d, 'short')).join(', ')
+            const daysArray2: number[] = typeof rule.daysOfWeek === 'string' ? JSON.parse(rule.daysOfWeek || '[]') : rule.daysOfWeek;
+            if (daysArray2.length > 0) {
+                const days = daysArray2.map((d: number) => getWeekdayName(d, 'short')).join(', ')
                 parts.push(`(${days})`)
             }
             break
@@ -140,7 +142,8 @@ export function validateRecurrenceRule(rule: RecurrenceRule): { valid: boolean; 
     if (!rule.enabled) {
         return { valid: true }
     }
-    if ((rule.type === 'weekly' || rule.type === 'every_x_weeks') && rule.daysOfWeek.length === 0) {
+    const daysArray = typeof rule.daysOfWeek === 'string' ? JSON.parse(rule.daysOfWeek || '[]') : rule.daysOfWeek;
+    if ((rule.type === 'weekly' || rule.type === 'every_x_weeks') && daysArray.length === 0) {
         return { valid: false, error: 'Выберите хотя бы один день недели' }
     }
 
@@ -206,13 +209,14 @@ function generateDailyDates(
 function generateWeeklyDates(
     startDate: Date,
     endDate: Date | null,
-    daysOfWeek: number[],
+    daysOfWeek: number[] | string,
     dates: Date[],
     limit: number
 ): void {
-    if (daysOfWeek.length === 0) return
+    const daysArray = typeof daysOfWeek === 'string' ? JSON.parse(daysOfWeek || '[]') : daysOfWeek;
+    if (daysArray.length === 0) return
 
-    const sortedDays = [...daysOfWeek].sort((a, b) => a - b)
+    const sortedDays = [...daysArray].sort((a, b) => a - b)
     let currentWeekStart = startOfDay(startDate)
     currentWeekStart = addDays(currentWeekStart, -currentWeekStart.getDay())
 
@@ -250,13 +254,14 @@ function generateEveryXWeeksDates(
     startDate: Date,
     endDate: Date | null,
     interval: number,
-    daysOfWeek: number[],
+    daysOfWeek: number[] | string,
     dates: Date[],
     limit: number
 ): void {
-    if (daysOfWeek.length === 0) return
+    const daysArray = typeof daysOfWeek === 'string' ? JSON.parse(daysOfWeek || '[]') : daysOfWeek;
+    if (daysArray.length === 0) return
 
-    const sortedDays = [...daysOfWeek].sort((a, b) => a - b)
+    const sortedDays = [...daysArray].sort((a, b) => a - b)
 
     let currentWeekStart = startOfDay(startDate)
     currentWeekStart = addDays(currentWeekStart, -currentWeekStart.getDay())

@@ -94,7 +94,9 @@ export function LessonForm({
         enabled: true,
         type: 'weekly',
         interval: 1,
-        daysOfWeek: [],
+        daysOfWeek: typeof formData.recurrence?.daysOfWeek === 'string'
+            ? JSON.parse(formData.recurrence.daysOfWeek || '[]')
+            : formData.recurrence?.daysOfWeek || [],
         endType: 'never',
     }
 

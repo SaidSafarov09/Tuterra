@@ -4,8 +4,8 @@ export type RecurrenceEndType = 'never' | 'until_date' | 'count'
 export interface RecurrenceRule {
     enabled: boolean
     type: RecurrenceType
-    interval: number 
-    daysOfWeek: number[] 
+    interval: number
+    daysOfWeek: number[] | string
     endType: RecurrenceEndType
     endDate?: Date | string
     occurrencesCount?: number
@@ -16,7 +16,7 @@ export interface LessonSeriesData {
     userId: string
     type: RecurrenceType
     interval: number
-    daysOfWeek: number[]
+    daysOfWeek: number[] | string
     startDate: Date | string
     endDate?: Date | string | null
     occurrencesCount?: number | null

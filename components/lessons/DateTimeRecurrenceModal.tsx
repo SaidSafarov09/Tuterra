@@ -50,10 +50,13 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
     const willAutoAddWeekday = () => {
         if (!date || !recurrence?.enabled) return false
         if (recurrence.type === 'daily') return false
-        if (recurrence.daysOfWeek.length === 0) return false
+        const daysArray = typeof recurrence.daysOfWeek === 'string'
+            ? JSON.parse(recurrence.daysOfWeek || '[]')
+            : recurrence.daysOfWeek;
+        if (daysArray.length === 0) return false
 
         const selectedDayOfWeek = date.getDay()
-        return !recurrence.daysOfWeek.includes(selectedDayOfWeek)
+        return !daysArray.includes(selectedDayOfWeek)
     }
 
     const getWeekdayName = (day: number, form: 'nominative' | 'accusative' = 'nominative') => {

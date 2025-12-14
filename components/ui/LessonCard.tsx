@@ -48,7 +48,9 @@ export const LessonCard: React.FC<LessonCardProps> = ({
             enabled: true,
             type: lesson.series.type,
             interval: lesson.series.interval,
-            daysOfWeek: lesson.series.daysOfWeek,
+            daysOfWeek: typeof lesson.series.daysOfWeek === 'string'
+                ? JSON.parse(lesson.series.daysOfWeek || '[]')
+                : lesson.series.daysOfWeek,
             endType: lesson.series.endDate ? 'until_date' : lesson.series.occurrencesCount ? 'count' : 'never',
             endDate: lesson.series.endDate,
             occurrencesCount: lesson.series.occurrencesCount,

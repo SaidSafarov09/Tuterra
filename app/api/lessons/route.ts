@@ -13,7 +13,7 @@ const recurrenceRuleSchema = z.object({
     enabled: z.boolean(),
     type: z.enum(['weekly', 'daily', 'every_x_weeks']),
     interval: z.number().int().min(1).default(1),
-    daysOfWeek: z.array(z.number().int().min(0).max(6)).default([]),
+    daysOfWeek: z.union([z.array(z.number().int().min(0).max(6)), z.string()]).default([]),
     endType: z.enum(['never', 'until_date', 'count']),
     endDate: z.string().optional().transform(str => str ? new Date(str) : undefined),
     occurrencesCount: z.number().int().min(1).optional(),
@@ -322,7 +322,9 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             userId,
             type: recurrence.type,
             interval: recurrence.interval,
-            daysOfWeek: recurrence.daysOfWeek,
+            daysOfWeek: typeof recurrence.daysOfWeek === 'string'
+                ? recurrence.daysOfWeek
+                : JSON.stringify(recurrence.daysOfWeek),
             startDate: data.date,
             endDate: recurrence.endDate,
             occurrencesCount: recurrence.occurrencesCount,
