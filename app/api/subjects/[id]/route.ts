@@ -28,10 +28,25 @@ export async function GET(
                 userId: user.id,
             },
             include: {
-                students: true,
+                students: {
+                    include: {
+                        lessons: {
+                            where: {
+                                subjectId: id
+                            },
+                            orderBy: { date: 'asc' }
+                        }
+                    }
+                },
                 groups: {
                     include: {
-                        students: true
+                        students: true,
+                        lessons: {
+                            where: {
+                                subjectId: id
+                            },
+                            orderBy: { date: 'asc' }
+                        }
                     }
                 },
                 lessons: {

@@ -19,14 +19,19 @@ export function StudentGroups({ student, onAddGroup, onDeleteGroup }: StudentGro
             </div>
 
             <div className={styles.subjectsGrid}>
-                {student.groups?.map((group) => (
+                {student.groups?.map((group) => {
+                    const baseColor = stringToColor(group.name);
+                    const backgroundColor = baseColor.replace(')', ', 0.08)').replace('hsl', 'hsla');
+                    const borderColor = baseColor.replace(')', ', 0.19)').replace('hsl', 'hsla');
+                    
+                    return (
                     <div
                         key={group.id}
                         className={styles.subjectChip}
                         style={{
-                            backgroundColor: stringToColor(group.name) + '15',
-                            color: stringToColor(group.name),
-                            borderColor: stringToColor(group.name) + '30',
+                            backgroundColor: backgroundColor,
+                            color: baseColor,
+                            borderColor: borderColor,
                         }}
                     >
                         {group.name}
@@ -38,7 +43,7 @@ export function StudentGroups({ student, onAddGroup, onDeleteGroup }: StudentGro
                             <DeleteIcon size={14} />
                         </button>
                     </div>
-                ))}
+                )})}
 
                 <button
                     className={styles.addSubjectChip}

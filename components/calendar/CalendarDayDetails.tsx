@@ -4,7 +4,7 @@ import { MoneyIcon, ClockIcon, PlusIcon, CheckIcon, XCircleIcon, RescheduleIcon 
 import { Button } from '@/components/ui/Button'
 import { Lesson, DayData } from '@/types'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
-import { isTrial } from '@/lib/lessonUtils'
+import { isTrial, isGroupLesson, isFullyPaidGroupLesson, getLessonPaymentStatus } from '@/lib/lessonUtils'
 import { getLessonTimeInfo, isLessonOngoing, isLessonPast } from '@/lib/lessonTimeUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
 import { stringToColor } from '@/constants'
@@ -82,10 +82,8 @@ export function CalendarDayDetails({
 
                 <div className={styles.lessonsScroll}>
                     {dayData.lessons.map(lesson => {
-                        const isFullyPaid = lesson.group
-                            ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
-                            : lesson.isPaid
-
+                        const isFullyPaid = isFullyPaidGroupLesson(lesson)
+    
                         return (
                             <div
                                 key={lesson.id}
@@ -157,12 +155,12 @@ export function CalendarDayDetails({
                                 <div className={styles.lessonActions}>
                                     {!lesson.isCanceled && !isTrial(lesson.price) && (
                                         <button
-                                            className={styles.actionButton}
+                                            className={`${styles.actionButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
                                             onClick={() => onTogglePaid(lesson)}
                                             disabled={lesson.isCanceled}
                                         >
                                             <CheckIcon size={16} />
-                                            {isFullyPaid ? (lesson.group ? 'Изменить оплату' : 'Отменить оплату') : 'Отметить оплаченным'}
+                                            {isGroupLesson(lesson) && !isFullyPaid ? 'Управлять' : (isFullyPaid ? (isGroupLesson(lesson) ? 'Изменить оплату' : 'Отменить оплату') : 'Отметить оплаченным')}
                                         </button>
                                     )}
 
@@ -203,3 +201,4 @@ export function CalendarDayDetails({
         </div >
     )
 }
+

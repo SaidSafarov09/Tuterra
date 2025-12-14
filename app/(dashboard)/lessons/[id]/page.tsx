@@ -224,8 +224,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <p className={styles.lessonDate} style={{ color: lessonIsPast ? 'var(--warning)' : lessonIsOngoing ? 'var(--success)' : 'var(--text-primary)' }}>
                                 {lessonIsPast
-                                    ? `Занятие было ${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
-                                    : `${format(lessonDate, 'd MMMM yyyy', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
+                                    ? `Занятие было ${format(lessonDate, 'd MMMM', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
+                                    : `${format(lessonDate, 'd MMMM', { locale: ru })} в ${format(lessonDate, 'HH:mm')}`
                                 }
                             </p>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

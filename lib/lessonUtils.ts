@@ -23,10 +23,38 @@ export function getGroupLessonPaymentStatus(lessonPayments: LessonPayment[]): 'p
     if (paidCount === 0) {
         return 'unpaid' // Никто не оплатил
     } else if (paidCount === totalAttended) {
-        return 'paid' // Все, кто пришел, оплатили
+        return 'paid' // Все, кто пришли, оплатили
     } else {
         return 'partial' // Частично оплачено
     }
+}
+
+/**
+ * Проверяет, является ли занятие групповым
+ * @param lesson - занятие
+ * @returns true если занятие групповое, false если индивидуальное
+ */
+export function isGroupLesson(lesson: Lesson): boolean {
+    return !!lesson.group;
+}
+
+/**
+ * Проверяет, полностью ли оплачено групповое занятие
+ * @param lesson - занятие
+ * @returns true если групповое занятие полностью оплачено, false в противном случае
+ */
+export function isFullyPaidGroupLesson(lesson: Lesson): boolean {
+    if (!isGroupLesson(lesson)) {
+        return false;
+    }
+    
+    // Для индивидуальных занятий просто проверяем isPaid
+    if (!lesson.group) {
+        return lesson.isPaid;
+    }
+    
+    // Для групповых занятий проверяем статус через lessonPayments
+    return getGroupLessonPaymentStatus(lesson.lessonPayments || []) === 'paid';
 }
 
 export function isTrial(price: number): boolean {
@@ -103,5 +131,35 @@ export function calculateDayData(lessons: Lesson[], date: Date): DayData {
         lessons: dayLessons,
         totalEarned,
         potentialEarnings
+    }
+}
+
+/**
+ * Возвращает статус оплаты для занятия (включая групповые)
+ * @param lesson - занятие
+ * @returns статус оплаты: 'free', 'paid', 'unpaid', 'partial'
+ */
+export function getLessonPaymentStatus(lesson: Lesson): LessonStatus {
+    if (lesson.price === 0) return 'free';
+    
+    if (lesson.group) {
+        // Для группового занятия определяем статус на основе lessonPayments
+        if (!lesson.lessonPayments || lesson.lessonPayments.length === 0) {
+            return 'unpaid'; // Никто не пришёл
+        }
+        
+        const attendedCount = lesson.lessonPayments.length;
+        const paidCount = lesson.lessonPayments.filter(p => p.hasPaid).length;
+        
+        if (paidCount === 0) {
+            return 'unpaid'; // Никто из пришедших не оплатил
+        } else if (paidCount === attendedCount) {
+            return 'paid'; // Все пришедшие оплатили
+        } else {
+            return 'partial'; // Частично оплачено
+        }
+    } else {
+        // Для индивидуального занятия используем isPaid
+        return lesson.isPaid ? 'paid' : 'unpaid';
     }
 }

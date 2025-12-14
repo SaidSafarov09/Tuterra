@@ -3,10 +3,24 @@ import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { ClockIcon } from '@/components/icons/Icons'
-import { Subject, Student, Group } from '@/types'
+import { Subject, Student, Group, Lesson } from '@/types'
 import { getInitials, stringToColor } from '@/lib/utils'
 import styles from '../../app/(dashboard)/subjects/page.module.scss'
 import { formatSmartDate } from '@/lib/dateUtils'
+
+// Вспомогательная функция для получения ближайшего будущего занятия
+const getNextLesson = (lessons: Lesson[] | undefined) => {
+    if (!lessons || lessons.length === 0) return null;
+    
+    const now = new Date();
+    const futureLessons = lessons.filter(lesson => new Date(lesson.date) >= now);
+    
+    if (futureLessons.length === 0) return null;
+    
+    return futureLessons
+        .slice()
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+};
 
 interface SubjectDetailsModalProps {
     isOpen: boolean
@@ -68,10 +82,27 @@ export function SubjectDetailsModal({
                                                 >
                                                     {getInitials(group.name)}
                                                 </div>
-                                                <span className={styles.studentName}>{group.name}</span>
+                                                <div className={styles.groupInfo}>
+                                                    <span className={styles.studentName}>{group.name}</span>
+                                                    <span className={styles.groupStudentsCount}>
+                                                        {group.students?.length || 0} {group.students?.length === 1 ? 'ученик' : group.students?.length > 1 && group.students?.length < 5 ? 'ученика' : 'учеников'}
+                                                    </span>
+                                                </div>
                                             </div>
                                             <div className={styles.lessonInfo}>
-                                                <span className={styles.noLesson}>{group.students?.length || 0} учеников</span>
+                                                {getNextLesson(group.lessons) ? (
+                                                    <div className={styles.nextLesson}>
+                                                        <ClockIcon size={14} className={styles.clockIcon} />
+                                                        <span>
+                                                            {(() => {
+                                                                const nextLesson = getNextLesson(group.lessons);
+                                                                return nextLesson ? formatSmartDate(new Date(nextLesson.date)) : null;
+                                                            })()}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className={styles.noLesson}>Нет занятий</span>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -103,11 +134,14 @@ export function SubjectDetailsModal({
                                                 <span className={styles.studentName}>{student.name}</span>
                                             </div>
                                             <div className={styles.lessonInfo}>
-                                                {student.lessons && student.lessons.length > 0 ? (
+                                                {getNextLesson(student.lessons) ? (
                                                     <div className={styles.nextLesson}>
                                                         <ClockIcon size={14} className={styles.clockIcon} />
                                                         <span>
-                                                            {formatSmartDate(new Date(student.lessons[0].date))}
+                                                            {(() => {
+                                                                const nextLesson = getNextLesson(student.lessons);
+                                                                return nextLesson ? formatSmartDate(new Date(nextLesson.date)) : null;
+                                                            })()}
                                                         </span>
                                                     </div>
                                                 ) : (

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { isLessonPast } from '@/lib/lessonTimeUtils'
 import { CheckIcon, XCircleIcon, EditIcon, DeleteIcon, RescheduleIcon, MoreVerticalIcon } from '@/components/icons/Icons'
 import { Lesson } from '@/types'
-import { isTrial } from '@/lib/lessonUtils'
+import { isTrial, isGroupLesson, isFullyPaidGroupLesson, getLessonPaymentStatus } from '@/lib/lessonUtils'
 import styles from './LessonActions.module.scss'
 
 interface LessonActionsProps {
@@ -82,15 +82,15 @@ export function LessonActions({
             <div className={styles.lessonActions} onClick={(e) => isDropdownOpen && e.stopPropagation()}>
                 {!isTrialLesson && (
                     <button
-                        className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
+                        className={`${styles.actionButton} ${styles.paidButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
                         onClick={() => onTogglePaid(lesson)}
                         disabled={lesson.isCanceled}
                     >
-                        <CheckIcon size={16} />
-                        {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
+                        {isGroupLesson(lesson) ? (isFullyPaidGroupLesson(lesson) ? <CheckIcon size={16} /> : null) : <CheckIcon size={16} />}
+                        {isGroupLesson(lesson) ? (isFullyPaidGroupLesson(lesson) ? 'Оплачено' : 'Управлять') : (lesson.isPaid ? 'Оплачено' : 'Оплатить')}
                     </button>
                 )}
-
+    
                 {lesson.isCanceled && showCancelButton && !isLessonEnded && onToggleCancel && (
                     <button
                         className={`${styles.actionButton} ${styles.restoreButton}`}
@@ -159,12 +159,12 @@ export function LessonActions({
         <div className={styles.lessonActions}>
             {!isTrialLesson && (
                 <button
-                    className={`${styles.actionButton} ${styles.paidButton} ${lesson.isPaid ? styles.isPaid : ''}`}
+                    className={`${styles.actionButton} ${styles.paidButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
                     onClick={() => onTogglePaid(lesson)}
                     disabled={lesson.isCanceled}
                 >
-                    <CheckIcon size={16} />
-                    {lesson.isPaid ? 'Оплачено' : 'Оплатить'}
+                    {isGroupLesson(lesson) ? (isFullyPaidGroupLesson(lesson) ? <CheckIcon size={16} /> : null) : <CheckIcon size={16} />}
+                    {isGroupLesson(lesson) ? (isFullyPaidGroupLesson(lesson) ? 'Оплачено' : 'Управлять') : (lesson.isPaid ? 'Оплачено' : 'Оплатить')}
                 </button>
             )}
 

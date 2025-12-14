@@ -243,6 +243,17 @@
     color: var(--text-primary);
 }
 
+.groupInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.groupStudentsCount {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
 .lessonInfo {
     font-size: 13px;
 }
