@@ -5,10 +5,10 @@
   "scripts": {
     "dev": "node scripts/sync-schema.js && prisma generate --schema=prisma/schema.sqlite.prisma && next dev",
     "dev:fresh": "rm -rf dev.db && node scripts/sync-schema.js && prisma db push --schema=prisma/schema.sqlite.prisma && npm run dev",
-    "build": "npx prisma generate --schema=prisma/schema.prisma && next build",
+    "build": "echo 'Building...' && prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "npx prisma generate --schema=prisma/schema.prisma",
+    "postinstall": "echo 'Running postinstall...' && prisma generate --schema=prisma/schema.prisma",
     "db:push:local": "node scripts/sync-schema.js && prisma db push --schema=prisma/schema.sqlite.prisma",
     "db:migrate:prod": "prisma migrate deploy --schema=prisma/schema.prisma"
   },

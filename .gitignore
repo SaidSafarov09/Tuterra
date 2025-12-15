@@ -1,14 +1,19 @@
+```
 node_modules
 .next
-.env
+# local env files
 .env*.local
-dist
+.env
+
+# databases
+*.db
+*.db-journal
+dev.db
 build
 *.log
 .DS_Store
 
 # Database
-prisma/dev.db
 prisma/dev.db-journal
 *.db
 *.db-journal
