@@ -5,10 +5,10 @@
   "scripts": {
     "dev": "node scripts/sync-schema.js && prisma generate --schema=prisma/schema.sqlite.prisma && next dev",
     "dev:fresh": "rm -rf dev.db && node scripts/sync-schema.js && prisma db push --schema=prisma/schema.sqlite.prisma && npm run dev",
-    "build": "echo 'Building...' && prisma generate --schema=prisma/schema.prisma && next build",
+    "build": "prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "echo 'Running postinstall...' && prisma generate --schema=prisma/schema.prisma",
+    "postinstall": "prisma generate --schema=prisma/schema.prisma",
     "db:push:local": "node scripts/sync-schema.js && prisma db push --schema=prisma/schema.sqlite.prisma",
     "db:migrate:prod": "prisma migrate deploy --schema=prisma/schema.prisma"
   },
@@ -33,7 +33,8 @@
     "recharts": "^3.5.0",
     "sonner": "^2.0.7",
     "zod": "^3.22.4",
-    "zustand": "^4.5.7"
+    "zustand": "^4.5.7",
+    "prisma": "^5.7.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -42,7 +43,6 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "^15.0.0",
-    "prisma": "^5.7.0",
     "sass": "^1.69.5",
     "typescript": "^5"
   }
