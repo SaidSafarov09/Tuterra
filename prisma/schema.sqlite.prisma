@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  hashedPassword    String?
+  phone             String?            @unique
+  avatar            String?
+  currency          String             @default("₽")
+  timezone          String             @default("Europe/Moscow")
+  theme             String             @default("system")
+  emailVerified     Boolean            @default(false)
+  phoneVerified     Boolean            @default(false)
+  twoFactorEnabled  Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  firstName         String?
+  lastName          String?
+  authProviders     AuthProvider[]
+  lessons           Lesson[]
+  lessonSeries      LessonSeries[]
+  students          Student[]
+  subjects          Subject[]
+  groups            Group[]
+  verificationCodes VerificationCode[]
+}
+
+model Subject {
+  id           String         @id @default(cuid())
+  name         String
+  color        String         @default("#4A6CF7")
+  icon         String?
+  userId       String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  lessons      Lesson[]
+  lessonSeries LessonSeries[]
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students     Student[]      @relation("StudentToSubject")
+  groups       Group[]
+
+  @@unique([userId, name])
+}
+
+model Student {
+  id           String         @id @default(cuid())
+  name         String
+  slug         String?        @unique
+  contact           String?
+  contactType       String?        @default("phone") 
+  parentContact     String?
+  parentContactType String?        @default("phone")
+  note              String?
+  ownerId      String
+  skinColor    String?        @default("#F4C2A6")
+  hairStyle    String?        @default("short")
+  hairColor    String?        @default("#2C1B18")
+  eyeStyle     String?        @default("default")
+  accessory    String?        @default("none")
+  bgColor      String?        @default("#E3F2FD")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  lessons      Lesson[]
+  lessonSeries LessonSeries[]
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  subjects     Subject[]      @relation("StudentToSubject")
+  groups       Group[]        @relation("GroupToStudent")
+  lessonPayments LessonPayment[]
+
+  @@index([ownerId])
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  subjectId String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  subject      Subject        @relation(fields: [subjectId], references: [id])
+  students     Student[]      @relation("GroupToStudent")
+  lessons      Lesson[]
+  lessonSeries LessonSeries[]
+
+  @@index([ownerId])
+  @@index([subjectId])
+}
+
+model Lesson {
+  id         String        @id @default(cuid())
+  slug       String?       @unique
+  date       DateTime
+  price      Int
+  isPaid     Boolean       @default(false)
+  isCanceled Boolean       @default(false)
+  isTrial    Boolean       @default(false)
+  notes      String?
+  ownerId    String
+  studentId  String?
+  groupId    String?
+  groupName  String?
+  subjectId  String?
+  subjectName   String?
+  subjectColor  String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  topic      String?
+  duration   Int           @default(60)
+  seriesId   String?
+  owner      User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  series     LessonSeries? @relation(fields: [seriesId], references: [id])
+  student    Student?      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group      Group?        @relation(fields: [groupId], references: [id])
+  subject    Subject?      @relation(fields: [subjectId], references: [id])
+  lessonPayments LessonPayment[]
+
+  @@index([ownerId])
+  @@index([studentId])
+  @@index([groupId])
+  @@index([subjectId])
+  @@index([seriesId])
+}
+
+model LessonSeries {
+  id               String    @id @default(cuid())
+  userId           String
+  type             String
+  interval         Int       @default(1)
+  daysOfWeek       String
+  startDate        DateTime
+  endDate          DateTime?
+  occurrencesCount Int?
+  studentId        String?
+  groupId          String?
+  subjectId        String?
+  price            Int
+  topic            String?
+  duration         Int       @default(60)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  lessons          Lesson[]
+  student          Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group            Group?    @relation(fields: [groupId], references: [id])
+  subject          Subject?  @relation(fields: [subjectId], references: [id])
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([studentId])
+  @@index([groupId])
+  @@index([subjectId])
+}
+
+model LessonPayment {
+  id        String   @id @default(cuid())
+  lessonId  String
+  studentId String
+  hasPaid   Boolean  @default(false)
+  
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@index([lessonId])
+  @@index([studentId])
+}
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  type      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+}
+
+model VerificationSession {
+  id           String   @id @default(uuid())
+  phone        String
+  code         String
+  expiresAt    DateTime
+  attemptsLeft Int      @default(5)
+  createdAt    DateTime @default(now())
+
+  @@index([phone])
+}
+
+model AuthProvider {
+  id         String   @id @default(cuid())
+  userId     String
+  provider   String
+  providerId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
