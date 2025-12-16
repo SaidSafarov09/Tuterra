@@ -193,6 +193,7 @@ interface UserSettings {
     email: string
     phone?: string
     avatar?: string | null
+    birthDate?: string | null
     timezone?: string
     currency?: string
     hasOAuthProvider?: boolean
