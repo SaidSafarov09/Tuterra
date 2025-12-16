@@ -80,7 +80,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                     onChange={handlePhoneChange}
                     placeholder="+7 (___) ___-__-__"
                     autoFocus
-                    
+
                     disabled
                 />
 
@@ -100,6 +100,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
 
             <div className={styles.socialButtons}>
                 <button
+                    type="button"
                     className={styles.socialYandex}
                     onClick={() => window.location.href = '/api/auth/yandex/login'}
                 >
@@ -109,6 +110,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                     </div>
                 </button>
                 <button
+                    type="button"
                     className={styles.socialGoogle}
                     onClick={() => window.location.href = '/api/auth/google/login'}
                 >
