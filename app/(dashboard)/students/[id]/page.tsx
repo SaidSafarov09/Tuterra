@@ -152,6 +152,28 @@ export default function StudentDetailPage({
           ...(student.groups || []).flatMap((g) =>
             (g.lessons || []).map((l) => {
               const payment = l.lessonPayments?.find(p => p.studentId === student.id)
+
+              // Логика отображения групповых уроков:
+              // 1. Если есть запись об этом студенте (payment) -> ПОКАЗЫВАЕМ (значит, он в списке).
+              // 2. Если записей НЕТ вообще ни для кого (l.lessonPayments пуст) -> ПОКАЗЫВАЕМ (значит, урок только запланирован и состав еще не уточнялся, идут все "по умолчанию").
+              // 3. Если записи ЕСТЬ для других, но НЕТ для этого -> СКРЫВАЕМ (значит, состав определен, и этого студента там нет).
+
+              const hasAnyPayments = l.lessonPayments && l.lessonPayments.length > 0;
+
+              if (hasAnyPayments && !payment) {
+                return null;
+              }
+
+              // Если урок прошел (или идет), не отменен, и ученика не было (нет записи об оплате/посещении),
+              // то не показываем этот урок в его истории.
+              // Для будущих уроков показываем (так как посещаемость еще не отмечена).
+              const lessonDate = new Date(l.date);
+              const isPast = lessonDate.getTime() < new Date().getTime();
+
+              if (!l.isCanceled && isPast && !payment) {
+                return null;
+              }
+
               return {
                 ...l,
                 student: { id: student.id, name: student.name },
@@ -159,7 +181,7 @@ export default function StudentDetailPage({
                 group: g,
                 isPaid: payment ? payment.hasPaid : false,
               }
-            })
+            }).filter((l): l is NonNullable<typeof l> => l !== null)
           ),
         ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
         student={student}
@@ -170,9 +192,9 @@ export default function StudentDetailPage({
         onToggleCancelLesson={handleToggleCancelLesson}
         onRescheduleLesson={handleRescheduleLessonMobile}
         onOpenGroupPayment={(l) => {
-            setPaymentLessonId(l.id);
-            setPaymentLessonDate(l.date);
-            setIsGroupPaymentModalOpen(true);
+          setPaymentLessonId(l.id);
+          setPaymentLessonDate(l.date);
+          setIsGroupPaymentModalOpen(true);
         }}
       />
 
@@ -265,19 +287,19 @@ export default function StudentDetailPage({
       />
 
       <GroupPaymentModal
-          isOpen={isGroupPaymentModalOpen}
-          onClose={() => setIsGroupPaymentModalOpen(false)}
-          onSubmit={handleGroupPaymentSubmit}
-          students={paymentGroupLesson?.group?.students || []}
-          initialPaidStudentIds={
-              paymentGroupLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
-          }
-          initialAttendedStudentIds={
-              paymentGroupLesson?.lessonPayments?.map(p => p.studentId) || []
-          }
-          isSubmitting={isSubmitting}
-          price={paymentGroupLesson ? Number(paymentGroupLesson.price) : 0}
-          lessonDate={paymentGroupLesson ? paymentGroupLesson.date : undefined}
+        isOpen={isGroupPaymentModalOpen}
+        onClose={() => setIsGroupPaymentModalOpen(false)}
+        onSubmit={handleGroupPaymentSubmit}
+        students={paymentGroupLesson?.group?.students || []}
+        initialPaidStudentIds={
+          paymentGroupLesson?.lessonPayments?.filter(p => p.hasPaid).map(p => p.studentId) || []
+        }
+        initialAttendedStudentIds={
+          paymentGroupLesson?.lessonPayments?.map(p => p.studentId) || []
+        }
+        isSubmitting={isSubmitting}
+        price={paymentGroupLesson ? Number(paymentGroupLesson.price) : 0}
+        lessonDate={paymentGroupLesson ? paymentGroupLesson.date : undefined}
       />
     </div>
   );

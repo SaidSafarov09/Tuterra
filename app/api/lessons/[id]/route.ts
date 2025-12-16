@@ -153,19 +153,59 @@ export async function PUT(
         }
 
         // Update payments if provided
+        // Update payments if provided
         if (paidStudentIds !== undefined || attendedStudentIds !== undefined) {
-            const finalAttendedStudentIds = attendedStudentIds || []
+            let finalAttendedStudentIds = attendedStudentIds
+
+            // Если список присутствующих не передан, получаем текущий список из БД
+            if (finalAttendedStudentIds === undefined) {
+                const currentPayments = await prisma.lessonPayment.findMany({
+                    where: { lessonId: lessonId },
+                    select: { studentId: true }
+                })
+                finalAttendedStudentIds = currentPayments.map(p => p.studentId)
+            }
+
             const finalPaidStudentIds = paidStudentIds || []
-            
-            // Если никто не пришел, отменяем урок
+
+            // Если занятие индивидуальное и список студентов пуст, 
+            // но есть studentId в самом занятии, добавляем его
+            if (finalAttendedStudentIds.length === 0 && validatedData.studentId) {
+                finalAttendedStudentIds.push(validatedData.studentId)
+            } else if (finalAttendedStudentIds.length === 0 && !validatedData.groupId && !validatedData.studentId) {
+                // Если это не группа и не индивидуальное занятие (возможно ли это?), 
+                // то попробуем найти studentId в текущем занятии, если мы его не обновляли
+                const currentLesson = await prisma.lesson.findUnique({
+                    where: { id: lessonId },
+                    select: { studentId: true }
+                })
+                if (currentLesson?.studentId) {
+                    finalAttendedStudentIds.push(currentLesson.studentId)
+                }
+            }
+
+            // Если список всё ещё пуст, проверяем, не пытаемся ли мы просто обновить статус оплаты
+            // для существующего урока. Если это индивидуальный урок, attendance может и не быть в payments явно?
+            // (Зависит от того, как мы создаем payments для индивидуальных уроков. 
+            // Обычно payments создаются только когда есть "факт" урока.
+            // Но в логике выше: if (finalAttendedStudentIds.length === 0) -> cancel.
+
+            // ПРОБЛЕМА: Для индивидуальных занятий мы можем вообще не использовать LessonPayment для трекинга посещения,
+            // если только это не "группа из 1 человека".
+            // Но код ниже ПЫТАЕТСЯ создать LessonPayment для всех в finalAttendedStudentIds.
+
+            // Если это ГРУППОВОЙ урок, то finalAttendedStudentIds должен быть заполнен.
+            // Если ИНДИВИДУАЛЬНЫЙ, то validatedData.studentId должен быть.
+
+            // Если никто не пришел (и это явно пустой список), отменяем урок
             if (finalAttendedStudentIds.length === 0) {
                 await prisma.lessonPayment.deleteMany({
                     where: { lessonId: lessonId }
                 })
-                
+
                 await prisma.lesson.update({
                     where: { id: lessonId },
-                    data: { 
+                    data: {
                         isCanceled: true,
                         isPaid: false
                     }
@@ -175,7 +215,7 @@ export async function PUT(
                 await prisma.lessonPayment.deleteMany({
                     where: { lessonId: lessonId }
                 })
-                
+
                 // Создаем записи для всех присутствовавших студентов
                 if (finalAttendedStudentIds.length > 0) {
                     await prisma.lessonPayment.createMany({
@@ -186,7 +226,7 @@ export async function PUT(
                         }))
                     })
                 }
-                
+
                 // Обновляем статус оплаты занятия на основе данных о посещаемости и оплате
                 const { getGroupLessonPaymentStatus } = await import('@/lib/lessonUtils')
                 const lessonWithGroup = await prisma.lesson.findUnique({
@@ -200,15 +240,17 @@ export async function PUT(
                         lessonPayments: true
                     }
                 })
-                
+
                 if (lessonWithGroup?.group && lessonWithGroup.lessonPayments) {
                     const paymentStatus = getGroupLessonPaymentStatus(lessonWithGroup.lessonPayments)
-                    const isLessonPaid = paymentStatus === 'paid' || paymentStatus === 'partial'
-                    
+                    // Теперь считаем урок оплаченным, только если он полностью оплачен ('paid')
+                    // 'partial' (частично) будет считаться неоплаченным (isPaid = false), чтобы попадать в списки должников
+                    const isLessonPaid = paymentStatus === 'paid'
+
                     // Обновляем статус оплаты занятия
                     await prisma.lesson.update({
                         where: { id: lessonId },
-                        data: { 
+                        data: {
                             isPaid: isLessonPaid,
                             isCanceled: false // Восстанавливаем урок, если кто-то пришел
                         }
@@ -346,19 +388,45 @@ export async function PATCH(
         }
 
         // Update payments if provided
+        // Update payments if provided
         if (body.paidStudentIds !== undefined || body.attendedStudentIds !== undefined) {
-            const finalAttendedStudentIds = body.attendedStudentIds || []
+            let finalAttendedStudentIds = body.attendedStudentIds
+
+            // Если список присутствующих не передан, получаем текущий список из БД
+            if (finalAttendedStudentIds === undefined) {
+                const currentPayments = await prisma.lessonPayment.findMany({
+                    where: { lessonId: lessonId },
+                    select: { studentId: true }
+                })
+                finalAttendedStudentIds = currentPayments.map((p: any) => p.studentId)
+            }
+
             const finalPaidStudentIds = body.paidStudentIds || []
-            
+
+            // Для PATCH нам может понадобиться studentId если его нет в attended
+            // Но в PATCH мы могли обновлять не все, поэтому studentId может не быть в body.
+            // Нужно проверить текущий урок.
+            if (finalAttendedStudentIds.length === 0) {
+                const currentLesson = await prisma.lesson.findUnique({
+                    where: { id: lessonId },
+                    select: { studentId: true, groupId: true }
+                })
+
+                // Если это индивидуальный урок (есть studentId, нет groupId), считаем студента присутствующим по умолчанию
+                if (currentLesson?.studentId && !currentLesson.groupId) {
+                    finalAttendedStudentIds.push(currentLesson.studentId)
+                }
+            }
+
             // Если никто не пришел, отменяем урок
             if (finalAttendedStudentIds.length === 0) {
                 await prisma.lessonPayment.deleteMany({
                     where: { lessonId: lessonId }
                 })
-                
+
                 await prisma.lesson.update({
                     where: { id: lessonId },
-                    data: { 
+                    data: {
                         isCanceled: true,
                         isPaid: false
                     }
@@ -368,7 +436,7 @@ export async function PATCH(
                 await prisma.lessonPayment.deleteMany({
                     where: { lessonId: lessonId }
                 })
-                
+
                 // Создаем записи для всех присутствовавших студентов
                 if (finalAttendedStudentIds.length > 0) {
                     await prisma.lessonPayment.createMany({
@@ -379,7 +447,7 @@ export async function PATCH(
                         }))
                     })
                 }
-                
+
                 // Обновляем статус оплаты занятия на основе данных о посещаемости и оплате
                 const { getGroupLessonPaymentStatus } = await import('@/lib/lessonUtils')
                 const lessonWithGroup = await prisma.lesson.findUnique({
@@ -393,15 +461,17 @@ export async function PATCH(
                         lessonPayments: true
                     }
                 })
-                
+
                 if (lessonWithGroup?.group && lessonWithGroup.lessonPayments) {
                     const paymentStatus = getGroupLessonPaymentStatus(lessonWithGroup.lessonPayments)
-                    const isLessonPaid = paymentStatus === 'paid' || paymentStatus === 'partial'
-                    
+                    // Теперь считаем урок оплаченным, только если он полностью оплачен ('paid')
+                    // 'partial' (частично) будет считаться неоплаченным (isPaid = false), чтобы попадать в списки должников
+                    const isLessonPaid = paymentStatus === 'paid'
+
                     // Обновляем статус оплаты занятия
                     await prisma.lesson.update({
                         where: { id: lessonId },
-                        data: { 
+                        data: {
                             isPaid: isLessonPaid,
                             isCanceled: false // Восстанавливаем урок, если кто-то пришел
                         }
