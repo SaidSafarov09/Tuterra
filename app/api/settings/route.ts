@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { validatePhoneNumber, validateEmail, capitalizeFirstLetter, isSingleWord } from '@/lib/validation'
+import { validatePhoneNumber, validateEmail, capitalizeFirstLetter, isSingleWord, validateBirthDate } from '@/lib/validation'
 
 const settingsSchema = z.object({
     firstName: z.string()
@@ -31,20 +31,27 @@ const settingsSchema = z.object({
             'Неверный формат телефона. Используйте формат +7XXXXXXXXXX'
         ),
     avatar: z.string().nullable().optional(),
+    birthDate: z.string().optional().nullable()
+        .transform(v => v ? new Date(v) : null)
+        .refine(date => {
+            if (!date) return true
+            const { valid } = validateBirthDate(date)
+            return valid
+        }, 'Некорректная дата рождения (должна быть с 1940 года и до сегодня)'),
     currency: z.string().optional(),
     timezone: z.string(),
 })
 
 export async function GET(request: NextRequest) {
     try {
-        
+
         const token = request.cookies.get('auth-token')?.value
 
         if (!token) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        
+
         const payload = await verifyToken(token)
 
         if (!payload) {
@@ -60,6 +67,7 @@ export async function GET(request: NextRequest) {
                 email: true,
                 phone: true,
                 avatar: true,
+                birthDate: true,
                 currency: true,
                 timezone: true,
                 theme: true,
@@ -174,6 +182,7 @@ export async function PUT(request: NextRequest) {
                 email: true,
                 phone: true,
                 avatar: true,
+                birthDate: true,
                 currency: true,
                 timezone: true,
             },

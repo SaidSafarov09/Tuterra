@@ -24,6 +24,7 @@ model User {
   updatedAt         DateTime           @updatedAt
   firstName         String?
   lastName          String?
+  birthDate         DateTime?
   authProviders     AuthProvider[]
   lessons           Lesson[]
   lessonSeries      LessonSeries[]

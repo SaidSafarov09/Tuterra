@@ -20,6 +20,7 @@ import {
 } from '@/components/icons/Icons'
 import styles from './UserProfileModal.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { calculateAge, getAgeString } from '@/lib/validation'
 
 interface UserProfileModalProps {
     isOpen: boolean
@@ -80,6 +81,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                         <div className={styles.userInfo}>
                             <h3 className={styles.userName}>
                                 {user?.firstName || user?.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : user?.name || <Skeleton width={150} height={28} />}
+                                {user?.birthDate && (
+                                    <span>
+                                        , {(() => {
+                                            const age = calculateAge(new Date(user.birthDate));
+                                            return getAgeString(age);
+                                        })()}
+                                    </span>
+                                )}
                             </h3>
                             <div className={styles.userEmail}>
                                 {user?.phone || user?.email || <Skeleton width={100} height={16} />}
@@ -125,9 +134,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
                 <div className={styles.footer}>
                     <Link href="/settings" onClick={handleNavigate}>
-                        <Button variant="secondary" size="small">
+                        <Button variant="secondary">
                             <SettingsIcon size={16} style={{ marginRight: isMobile ? "0" : "8px" }} />
-                            {isMobile ? '' : 'Настройки'}
+                            Настройки
                         </Button>
                     </Link>
                     <Button

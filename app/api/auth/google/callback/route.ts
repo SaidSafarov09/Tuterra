@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
             firstName: googleUser.given_name,
             lastName: googleUser.family_name || '',
             avatar: googleUser.picture,
+            birthDate: null,
             provider: 'google',
             providerId: googleUser.sub,
         })

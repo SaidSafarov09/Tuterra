@@ -8,6 +8,7 @@ interface CreateUserParams {
     firstName: string
     lastName: string
     avatar: string | null
+    birthDate: Date | null
     provider: string
     providerId: string
 }
@@ -27,9 +28,9 @@ export function formatPhoneForDB(rawPhone: string | null | undefined): string | 
 
 
 export async function findOrCreateOAuthUser(params: CreateUserParams) {
-    const { email, phone, firstName, lastName, avatar, provider, providerId } = params
+    const { email, phone, firstName, lastName, avatar, birthDate, provider, providerId } = params
 
-    
+
     let user = await prisma.user.findFirst({
         where: {
             authProviders: {
@@ -43,7 +44,7 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
 
     if (user) return user
 
-    
+
     const formattedPhone = formatPhoneForDB(phone)
 
     user = await prisma.user.findFirst({
@@ -56,7 +57,7 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
     })
 
     if (user) {
-        
+
         await prisma.authProvider.create({
             data: {
                 userId: user.id,
@@ -64,16 +65,26 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
                 providerId,
             },
         })
+
+        // Update user if needed (e.g. fill missing birthdate)
+        if (birthDate && !user.birthDate) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { birthDate }
+            })
+        }
+
         return user
     }
 
-    
+
     user = await prisma.user.create({
         data: {
             email,
             phone: formattedPhone,
             firstName,
             lastName,
+            birthDate,
             name: `${firstName} ${lastName}`.trim(),
             avatar,
             emailVerified: !!email,
@@ -101,7 +112,7 @@ export async function createAuthSession(userId: string, phone: string, requestUr
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, 
+        maxAge: 60 * 60 * 24 * 7,
         path: '/',
     })
 

@@ -134,9 +134,15 @@
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
-    min-height: 100px;
+    min-height: 120px;
+    height: auto;
     display: flex;
     flex-direction: column;
+    overflow: visible;
+
+    @media (max-width: 1024px) {
+        min-height: 100px;
+    }
 
     &:hover:not(.disabled) {
         background: var(--border-light);

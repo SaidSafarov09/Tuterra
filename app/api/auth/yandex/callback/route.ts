@@ -60,6 +60,7 @@ export async function GET(req: NextRequest) {
       firstName: yandexUser.first_name,
       lastName: yandexUser.last_name,
       avatar: avatarUrl,
+      birthDate: yandexUser.birthday ? new Date(yandexUser.birthday) : null,
       provider: "yandex",
       providerId: yandexUser.id,
     });

@@ -47,6 +47,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         email: data.email || null,
                         phone: data.phone || null,
                         avatar: data.avatar || null,
+                        birthDate: data.birthDate || null,
                     })
 
 
@@ -73,13 +74,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         }
     }, [])
     const pageTitles: Record<string, string> = {
-      '/dashboard': 'Главная',
-      '/groups': 'Группы',
-      '/students': 'Ученики',
-      '/income': 'Доходы',
-      '/lessons': 'Занятия',
-      '/calendar': 'Календарь',
-      '/settings': 'Настройки',
+        '/dashboard': 'Главная',
+        '/groups': 'Группы',
+        '/students': 'Ученики',
+        '/income': 'Доходы',
+        '/lessons': 'Занятия',
+        '/calendar': 'Календарь',
+        '/settings': 'Настройки',
     }
     let headerTitle = pageTitles[pathname] || ''
 

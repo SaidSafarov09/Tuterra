@@ -38,6 +38,7 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
         lastName: '',
         email: '',
         phone: '',
+        birthDate: '',
         avatar: null as string | null,
         timezone: 'Europe/Moscow',
     })
@@ -54,6 +55,7 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                 lastName: data.lastName || (data.name ? data.name.split(' ').slice(1).join(' ') || '' : ''),
                 email: data.email || '',
                 phone: data.phone || '',
+                birthDate: data.birthDate ? new Date(data.birthDate).toISOString().split('T')[0] : '',
                 avatar: data.avatar || null,
                 timezone: data.timezone || 'Europe/Moscow',
             }
@@ -67,7 +69,7 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
         }
     }
 
-    
+
     useEffect(() => {
         if (!initialDataRef.current) return
 
@@ -75,7 +77,7 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
         setHasUnsavedChanges(hasChanges)
     }, [formData])
 
-    
+
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (hasUnsavedChanges) {
@@ -111,7 +113,7 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
         const { name, value } = e.target
 
         if (name === 'phone') {
-            
+
             const formatted = formatPhoneNumber(value)
             setFormData((prev) => ({ ...prev, [name]: formatted }))
         } else {
@@ -146,9 +148,10 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                 email: updatedUser.email || null,
                 phone: updatedUser.phone || null,
                 avatar: updatedUser.avatar || null,
+                birthDate: updatedUser.birthDate || null,
             })
 
-            
+
             initialDataRef.current = { ...formData }
             setHasUnsavedChanges(false)
 
@@ -237,13 +240,24 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                                             disabled={hasOAuthProvider}
                                             hint={hasOAuthProvider ? "Email нельзя изменить (вход через соцсеть)" : undefined}
                                         />
-                                        <Input
-                                            label="Телефон"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            placeholder="+7XXXXXXXXXX"
-                                        />
+                                        <div className={styles.nameFields}>
+                                            <Input
+                                                label="Телефон"
+                                                name="phone"
+                                                value={formData.phone}
+                                                onChange={handleChange}
+                                                placeholder="+7XXXXXXXXXX"
+                                            />
+                                            <Input
+                                                label="Дата рождения"
+                                                name="birthDate"
+                                                type="date"
+                                                value={formData.birthDate || ''}
+                                                onChange={handleChange}
+                                                min="1940-01-01"
+                                                max={new Date(Date.now() - 86400000).toISOString().split('T')[0]}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

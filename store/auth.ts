@@ -5,10 +5,11 @@ interface User {
     id: string
     firstName: string | null
     lastName: string | null
-    name: string | null | undefined  
+    name: string | null | undefined
     email: string | null
     phone: string | null
     avatar: string | null
+    birthDate: string | null
 }
 
 interface AuthState {
@@ -28,7 +29,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
 
             login: (token: string, user: User) => {
-                
+
                 localStorage.setItem('auth-token', token)
 
                 set({
@@ -40,10 +41,10 @@ export const useAuthStore = create<AuthState>()(
 
             logout: async () => {
                 try {
-                    
+
                     localStorage.removeItem('auth-token')
 
-                    
+
                     await fetch('/api/auth/logout', { method: 'POST' })
                 } catch (error) {
                     console.error('Logout error:', error)
