@@ -42,22 +42,22 @@ export function GroupPaymentModal({
             students.forEach(student => {
                 initialRecords[student.id] = { attended: false, paid: false };
             });
-            
+
             const attendedIds = initialAttendedStudentIds || initialPaidStudentIds
             attendedIds.forEach(studentId => {
                 if (initialRecords[studentId]) {
-                    initialRecords[studentId] = { 
-                        attended: true, 
-                        paid: initialPaidStudentIds.includes(studentId) 
+                    initialRecords[studentId] = {
+                        attended: true,
+                        paid: initialPaidStudentIds.includes(studentId)
                     };
                 }
             });
-            
+
             setAttendanceRecords(initialRecords);
         }
         prevIsOpenRef.current = isOpen
     }, [isOpen, students, initialPaidStudentIds, initialAttendedStudentIds])
-    
+
     const handleToggleAttendance = (studentId: string) => {
         setAttendanceRecords(prev => ({
             ...prev,
@@ -67,7 +67,7 @@ export function GroupPaymentModal({
             }
         }))
     }
-    
+
     const handleTogglePayment = (studentId: string) => {
         setAttendanceRecords(prev => {
             const currentRecord = prev[studentId]
@@ -83,36 +83,36 @@ export function GroupPaymentModal({
             }
         })
     }
-    
+
     const handleSubmit = () => {
         const paidStudentIds = Object.entries(attendanceRecords)
             .filter(([_, record]) => record.paid)
             .map(([studentId, _]) => studentId)
-            
+
         const attendedStudentIds = Object.entries(attendanceRecords)
             .filter(([_, record]) => record.attended)
             .map(([studentId, _]) => studentId)
-        
+
         if (attendedStudentIds.length === 0) {
             toast.warning('Никто не пришел на занятие. Занятие будет отменено.')
         }
-            
+
         onSubmit(paidStudentIds, attendedStudentIds)
     }
-    
+
     const presentCount = Object.values(attendanceRecords).filter(record => record.attended).length
     const paidCount = Object.values(attendanceRecords).filter(record => record.paid && record.attended).length
     const totalCount = students.length
     const amountDue = paidCount * (price || 0)
-    
+
     // Определяем статус оплаты занятия
-    const paymentStatus = presentCount === 0 
-        ? 'none' 
-        : paidCount === 0 
-        ? 'unpaid' 
-        : paidCount === presentCount 
-        ? 'paid' 
-        : 'partial'
+    const paymentStatus = presentCount === 0
+        ? 'none'
+        : paidCount === 0
+            ? 'unpaid'
+            : paidCount === presentCount
+                ? 'paid'
+                : 'partial'
 
     return (
         <Modal
@@ -142,14 +142,12 @@ export function GroupPaymentModal({
                                     ? new Date(lessonDate).toLocaleString('ru-RU', {
                                         day: 'numeric',
                                         month: 'long',
-                                        year: 'numeric',
                                         hour: '2-digit',
                                         minute: '2-digit'
                                     })
                                     : (lessonDate as Date).toLocaleString('ru-RU', {
                                         day: 'numeric',
                                         month: 'long',
-                                        year: 'numeric',
                                         hour: '2-digit',
                                         minute: '2-digit'
                                     })
@@ -158,7 +156,7 @@ export function GroupPaymentModal({
                         </div>
                     </div>
                 )}
-                
+
                 <div className={styles.statsGrid}>
                     <div className={styles.statCard}>
                         <div className={styles.statIcon}>
@@ -171,12 +169,12 @@ export function GroupPaymentModal({
                             </span>
                         </div>
                     </div>
-                    
+
                     {price && price > 0 && (
                         <>
                             <div className={styles.statCard}>
                                 <div className={`${styles.statIcon} ${styles.statIconPaid}`}>
-                                <MoneyIcon size={24} color="#10B981" />
+                                    <MoneyIcon size={24} color="#10B981" />
                                 </div>
                                 <div className={styles.statInfo}>
                                     <span className={styles.statLabel}>Оплатили</span>
@@ -185,10 +183,10 @@ export function GroupPaymentModal({
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div className={styles.statCard}>
                                 <div className={`${styles.statIcon} ${styles.statIconAmount}`}>
-                                <MoneyIcon size={24} color="#6366f1" />
+                                    <MoneyIcon size={24} color="#6366f1" />
                                 </div>
                                 <div className={styles.statInfo}>
                                     <span className={styles.statLabel}>Сумма</span>
@@ -218,19 +216,19 @@ export function GroupPaymentModal({
                         <span>Частично оплачено: {paidCount} из {presentCount} учеников</span>
                     </div>
                 )}
-                
+
                 <div className={styles.studentsSection}>
                     <h3 className={styles.sectionTitle}>Ученики</h3>
                     <p className={styles.sectionDescription}>
                         Отметьте учеников, которые присутствовали на занятии. Для присутствовавших можно отметить оплату.
                     </p>
-                    
+
                     <div className={styles.studentsList}>
                         {students.map(student => {
                             const record = attendanceRecords[student.id] || { attended: false, paid: false }
                             return (
-                                <div 
-                                    key={student.id} 
+                                <div
+                                    key={student.id}
                                     className={`${styles.studentItem} ${record.attended ? styles.studentItemAttended : ''}`}
                                 >
                                     <div className={styles.studentMain}>

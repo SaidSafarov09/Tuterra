@@ -4,7 +4,7 @@ import { MoneyIcon, ClockIcon, PlusIcon, CheckIcon, XCircleIcon, RescheduleIcon 
 import { Button } from '@/components/ui/Button'
 import { Lesson, DayData } from '@/types'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
-import { isTrial, isGroupLesson, isFullyPaidGroupLesson, getLessonPaymentStatus } from '@/lib/lessonUtils'
+import { isTrial, isGroupLesson, isFullyPaidLesson, getLessonPaymentStatus } from '@/lib/lessonUtils'
 import { getLessonTimeInfo, isLessonOngoing, isLessonPast } from '@/lib/lessonTimeUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
 import { stringToColor } from '@/constants'
@@ -82,8 +82,8 @@ export function CalendarDayDetails({
 
                 <div className={styles.lessonsScroll}>
                     {dayData.lessons.map(lesson => {
-                        const isFullyPaid = isFullyPaidGroupLesson(lesson)
-    
+                        const isFullyPaid = isFullyPaidLesson(lesson)
+
                         return (
                             <div
                                 key={lesson.id}

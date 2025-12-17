@@ -6,8 +6,13 @@ import { Button } from '@/components/ui/Button'
 import { PlusIcon } from '@/components/icons/Icons'
 import { TabNav } from '@/components/ui/TabNav'
 import { LessonsList } from '@/components/lessons/LessonsList'
-import { LessonFormModal } from '@/components/lessons/LessonFormModal'
-import { DeleteLessonDialog } from '@/components/lessons/DeleteLessonDialog'
+
+import dynamic from 'next/dynamic'
+const LessonFormModal = dynamic(() => import('@/components/lessons/LessonFormModal').then(mod => mod.LessonFormModal), { ssr: false })
+const DeleteLessonDialog = dynamic(() => import('@/components/lessons/DeleteLessonDialog').then(mod => mod.DeleteLessonDialog), { ssr: false })
+const RescheduleModal = dynamic(() => import('@/components/lessons/RescheduleModal').then(mod => mod.RescheduleModal), { ssr: false })
+const GroupPaymentModal = dynamic(() => import('@/components/lessons/GroupPaymentModal').then(mod => mod.GroupPaymentModal), { ssr: false })
+
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { useFetch } from '@/hooks/useFetch'
@@ -17,8 +22,6 @@ import styles from './page.module.scss'
 import { LESSON_TABS } from '@/constants'
 import { LessonDetailSkeleton } from '@/components/skeletons'
 import { EmptyLessonsState } from '@/components/lessons/EmptyLessonsState'
-import { RescheduleModal } from '@/components/lessons/RescheduleModal'
-import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { lessonsApi } from '@/services/api'
 import { toast } from 'sonner'
@@ -182,7 +185,7 @@ function LessonsContent() {
             ) : lessons.length === 0 ? (
                 <EmptyLessonsState
                     onAddLesson={handleOpenModal}
-                    filter={allLessonsCount === 0 ? 'all' : activeTab}
+                    filter="all"
                 />
             ) : (
                 <LessonsList

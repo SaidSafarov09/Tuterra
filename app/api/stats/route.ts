@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
                 where: {
                     ownerId: payload.userId,
                     // Сдвигаем начало выборки на сутки назад, чтобы включить ongoing-занятия
-                    date: { gte: new Date(now.getTime() - 24*60*60*1000) },
+                    date: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
                     isCanceled: false,
                 } as any,
                 include: {
@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
                     lessonPayments: true,
                 },
                 orderBy: { date: 'desc' },
+                take: 20, // Limit dashboard view to most recent 20 unpaid
             }),
 
 

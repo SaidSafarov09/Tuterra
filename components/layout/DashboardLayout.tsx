@@ -117,7 +117,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         onBurgerClick={() => setIsMobileMenuOpen(true)}
                     />
                 )}
-                <div className={styles.content}>{children}</div>
+                <div className={`${styles.content} page-transition`} key={pathname}>
+                    {children}
+                </div>
             </main>
         </div>
     )

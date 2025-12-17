@@ -19,9 +19,9 @@ export async function GET(request: NextRequest) {
         const monthsCount = 6
 
 
-        const monthlyData = []
-
-        for (let i = monthsCount - 1; i >= 0; i--) {
+        // Fetch monthly data in parallel
+        const monthlyDataPromises = Array.from({ length: monthsCount }).map(async (_, index) => {
+            const i = monthsCount - 1 - index
             const date = subMonths(currentDate, i)
             const monthStart = startOfMonth(date)
             const monthEnd = endOfMonth(date)
@@ -45,9 +45,7 @@ export async function GET(request: NextRequest) {
                 if (lesson.group) {
                     const totalStudents = lesson.group.students?.length || 0
                     const paidPayments = lesson.lessonPayments?.filter(p => p.hasPaid).length || 0
-                    const lessonIncome = paidPayments * lesson.price
-
-                    income += lessonIncome
+                    income += paidPayments * lesson.price
 
                     if (totalStudents > 0 && paidPayments >= totalStudents) {
                         paidCount++
@@ -64,14 +62,15 @@ export async function GET(request: NextRequest) {
                 }
             })
 
-            monthlyData.push({
+            return {
                 month: format(date, 'MMM', { locale: ru }),
                 income,
                 lessons: lessonsInMonth.length,
                 paid: paidCount,
                 unpaid: unpaidCount,
-            })
-        }
+                _date: date // use for sorting
+            }
+        })
 
         const currentMonthStart = startOfMonth(currentDate)
         const currentMonthEnd = endOfMonth(currentDate)
@@ -116,8 +115,65 @@ export async function GET(request: NextRequest) {
             return { income, lessonsCount }
         }
 
-        const currentStats = await getMonthStats(currentMonthStart, currentMonthEnd)
-        const prevStats = await getMonthStats(prevMonthStart, prevMonthEnd)
+        const [
+            monthlyDataResults,
+            currentStats,
+            prevStats,
+            paidLessonsCount,
+            currentMonthDuration,
+            previousMonthDuration,
+            recentTransactions
+        ] = await Promise.all([
+            Promise.all(monthlyDataPromises),
+            getMonthStats(currentMonthStart, currentMonthEnd),
+            getMonthStats(prevMonthStart, prevMonthEnd),
+            prisma.lesson.count({
+                where: {
+                    ownerId: user.id,
+                    OR: [
+                        { isPaid: true },
+                        { lessonPayments: { some: { hasPaid: true } } }
+                    ]
+                },
+            }),
+            prisma.lesson.aggregate({
+                where: {
+                    ownerId: user.id,
+                    date: { gte: currentMonthStart, lte: currentMonthEnd },
+                    isCanceled: false,
+                },
+                _sum: { duration: true } as any,
+            }),
+            prisma.lesson.aggregate({
+                where: {
+                    ownerId: user.id,
+                    date: { gte: prevMonthStart, lte: prevMonthEnd },
+                    isCanceled: false,
+                },
+                _sum: { duration: true } as any,
+            }),
+            prisma.lesson.findMany({
+                where: {
+                    ownerId: user.id,
+                    OR: [
+                        { isPaid: true },
+                        { lessonPayments: { some: { hasPaid: true } } }
+                    ]
+                },
+                orderBy: { updatedAt: 'desc' },
+                take: 3,
+                include: {
+                    student: { select: { name: true } },
+                    subject: { select: { name: true, color: true, icon: true } },
+                    group: { select: { name: true } },
+                    lessonPayments: true,
+                },
+            })
+        ])
+
+        const monthlyData = monthlyDataResults.sort((a, b) => a._date.getTime() - b._date.getTime())
+            .map(({ _date, ...rest }) => rest)
+
 
         const currentIncome = currentStats.income
         const currentLessonsCount = currentStats.lessonsCount
@@ -128,54 +184,8 @@ export async function GET(request: NextRequest) {
         const previousAverageCheck = previousLessonsCount > 0 ? Math.round(previousIncome / previousLessonsCount) : 0
 
 
-        const paidLessonsCount = await prisma.lesson.count({ // This is "all time paid lessons"
-            where: {
-                ownerId: user.id,
-                OR: [
-                    { isPaid: true },
-                    { lessonPayments: { some: { hasPaid: true } } }
-                ]
-            },
-        })
         const hasAnyIncomeEver = paidLessonsCount > 0
 
-
-        const currentMonthDuration = await prisma.lesson.aggregate({
-            where: {
-                ownerId: user.id,
-                date: { gte: currentMonthStart, lte: currentMonthEnd },
-                isCanceled: false,
-            },
-            _sum: { duration: true } as any,
-        })
-
-        const previousMonthDuration = await prisma.lesson.aggregate({
-            where: {
-                ownerId: user.id,
-                date: { gte: prevMonthStart, lte: prevMonthEnd },
-                isCanceled: false,
-            },
-            _sum: { duration: true } as any,
-        })
-
-
-        const recentTransactions = await prisma.lesson.findMany({
-            where: {
-                ownerId: user.id,
-                OR: [
-                    { isPaid: true },
-                    { lessonPayments: { some: { hasPaid: true } } }
-                ]
-            },
-            orderBy: { updatedAt: 'desc' },
-            take: 3,
-            include: {
-                student: { select: { name: true } },
-                subject: { select: { name: true, color: true, icon: true } },
-                group: { select: { name: true } },
-                lessonPayments: true,
-            },
-        })
 
         const processedTransactions = recentTransactions.map(tx => {
             if (tx.group && tx.lessonPayments && tx.lessonPayments.length > 0) {

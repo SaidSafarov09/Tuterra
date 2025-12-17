@@ -10,8 +10,12 @@ import { Modal } from '@/components/ui/Modal'
 import { MonthNavigation } from '@/components/common/MonthNavigation'
 import { CalendarWeekDays } from '@/components/calendar/CalendarWeekDays'
 import { CalendarGrid } from '@/components/calendar/CalendarGrid'
-import { CalendarDayDetails } from '@/components/calendar/CalendarDayDetails'
-import { LessonFormModal } from '@/components/lessons/LessonFormModal'
+
+import dynamic from 'next/dynamic'
+const LessonFormModal = dynamic(() => import('@/components/lessons/LessonFormModal').then(mod => mod.LessonFormModal), { ssr: false })
+const RescheduleModal = dynamic(() => import('@/components/lessons/RescheduleModal').then(mod => mod.RescheduleModal), { ssr: false })
+const GroupPaymentModal = dynamic(() => import('@/components/lessons/GroupPaymentModal').then(mod => mod.GroupPaymentModal), { ssr: false })
+const CalendarDayDetails = dynamic(() => import('@/components/calendar/CalendarDayDetails').then(mod => mod.CalendarDayDetails), { ssr: false })
 
 import { calculateDayData } from '@/lib/lessonUtils'
 import { Lesson, DayData, Student, Subject, Group } from '@/types'
@@ -19,8 +23,6 @@ import { toast } from 'sonner'
 import { lessonsApi, studentsApi, subjectsApi, groupsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { CalendarSkeleton } from '@/components/skeletons'
-import { RescheduleModal } from '@/components/lessons/RescheduleModal'
-import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { useLessonActions } from '@/hooks/useLessonActions'
 

@@ -33,7 +33,9 @@ const EMPTY_MESSAGES: Record<LessonFilter, { title: string; description: string 
 }
 
 export function EmptyLessonsState({ onAddLesson, filter = 'all' }: EmptyLessonsStateProps) {
-    const message = EMPTY_MESSAGES[filter]
+    // If we're on a specific tab but there are no lessons at all in the system, 
+    // or if the user wants to keep it simple, we use the "all" message.
+    const message = filter === 'all' ? EMPTY_MESSAGES.all : EMPTY_MESSAGES[filter] || EMPTY_MESSAGES.all
 
     return (
         <div className={styles.emptyState}>

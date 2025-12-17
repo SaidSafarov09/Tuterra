@@ -1,0 +1,33 @@
+.progressBar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 50%, var(--primary) 100%);
+    background-size: 200% 100%;
+    z-index: 9999;
+    animation: progressMove 1s infinite linear, progressAppear 0.2s ease-out forwards;
+}
+
+@keyframes progressMove {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes progressAppear {
+    from {
+        opacity: 0;
+        transform: scaleX(0);
+    }
+
+    to {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}

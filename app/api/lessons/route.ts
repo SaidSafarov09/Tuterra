@@ -209,34 +209,26 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
         )
     }
 
-    let subjectName = null
-    let subjectColor = null
-    if (data.subjectId) {
-        const subject = await prisma.subject.findUnique({
-            where: { id: data.subjectId }
-        })
-        if (subject) {
-            subjectName = subject.name
-            subjectColor = subject.color
-        }
-    }
-
-    // Если это групповое занятие, получаем текущих студентов группы для создания lessonPayments
-    let groupStudents: { id: string }[] = []
-    let groupName: string | null = null
-    if (data.groupId) {
-        const group = await prisma.group.findUnique({
+    // Fetch required data in parallel
+    const [subject, group] = await Promise.all([
+        data.subjectId ? prisma.subject.findUnique({ where: { id: data.subjectId } }) : Promise.resolve(null),
+        data.groupId ? prisma.group.findUnique({
             where: { id: data.groupId },
             include: { students: { select: { id: true } } }
-        })
-        if (group) {
-            groupStudents = group.students
-            groupName = group.name
-        }
-    }
+        }) : Promise.resolve(null)
+    ])
+
+    const subjectName = subject?.name || null
+    const subjectColor = subject?.color || null
+    const groupName = group?.name || null
+    const groupStudents = group?.students || []
+
+    const entityName = groupName || (data.studentId ? (await prisma.student.findUnique({ where: { id: data.studentId }, select: { name: true } }))?.name : null) || 'Занятие'
+    const slug = generateLessonSlug(entityName, data.date, data.topic || undefined)
 
     const lesson = await prisma.lesson.create({
         data: {
+            slug,
             date: data.date,
             price: data.price,
             isPaid: data.isPaid || false,
@@ -267,39 +259,20 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
         },
     })
 
-    let slug;
-    if ((lesson as any).student) {
-        slug = generateLessonSlug((lesson as any).student.name, new Date(lesson.date), lesson.topic || undefined)
-    } else if ((lesson as any).group) {
-        slug = generateLessonSlug((lesson as any).group.name, new Date(lesson.date), lesson.topic || undefined)
-    }
-
-    const updatedLesson = await prisma.lesson.update({
-        where: { id: lesson.id },
-        data: { slug } as any,
-        include: {
-            student: true,
-            group: true,
-            subject: true,
-            lessonPayments: true,
-        },
-    })
     if (data.subjectId && data.studentId) {
         await linkSubjectToStudent(data.studentId, data.subjectId)
     }
 
-    return NextResponse.json(updatedLesson, { status: 201 })
+    return NextResponse.json(lesson, { status: 201 })
 }
 
 async function createRecurringLesson(userId: string, data: z.infer<typeof lessonSchema>) {
     const recurrence = data.recurrence!
     const validation = validateRecurrenceRule(recurrence)
     if (!validation.valid) {
-        return NextResponse.json(
-            { error: validation.error },
-            { status: 400 }
-        )
+        return NextResponse.json({ error: validation.error }, { status: 400 })
     }
+
     const threeMonthsFromNow = new Date()
     threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3)
 
@@ -310,13 +283,24 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         endDate: threeMonthsFromNow,
     })
 
-    const conflict = await checkRecurringConflicts(userId, dates, data.duration)
+    const [conflict, group] = await Promise.all([
+        checkRecurringConflicts(userId, dates, data.duration),
+        data.groupId ? prisma.group.findUnique({
+            where: { id: data.groupId },
+            include: { students: { select: { id: true } } }
+        }) : Promise.resolve(null)
+    ])
+
     if (conflict) {
         return NextResponse.json(
             { error: formatConflictMessage(conflict, data.studentId) },
             { status: 400 }
         )
     }
+
+    const groupName = group?.name || null
+    const groupStudents = group?.students || []
+
     const series = await prisma.lessonSeries.create({
         data: {
             userId,
@@ -337,70 +321,54 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             notes: data.notes,
         } as any,
     })
-    // Получаем название группы для сохранения в занятиях
-    let groupName: string | null = null
-    if (data.groupId) {
-        const group = await prisma.group.findUnique({
-            where: { id: data.groupId },
-            select: { name: true }
-        })
-        if (group) {
-            groupName = group.name
-        }
-    }
 
-    const lessons = await prisma.lesson.createMany({
-        data: dates.map((date, index) => ({
-            date,
-            price: index === 0 ? data.price : (data.seriesPrice !== undefined ? data.seriesPrice : data.price),
+    const lessonsData = dates.map((date, index) => ({
+        date,
+        price: index === 0 ? data.price : (data.seriesPrice !== undefined ? data.seriesPrice : data.price),
+        isPaid: data.isPaidAll || (data.paidStudentIds && data.paidStudentIds.length > 0) ? true : (index === 0 ? (data.isPaid || false) : false),
+        isTrial: index === 0 ? (data.isTrial || false) : false,
+        isCanceled: false,
+        notes: data.notes,
+        topic: data.topic,
+        duration: data.duration,
+        ownerId: userId,
+        studentId: data.studentId,
+        groupId: data.groupId,
+        groupName,
+        subjectId: data.subjectId,
+        seriesId: series.id,
+    }))
 
-            isPaid: data.isPaidAll || (data.paidStudentIds && data.paidStudentIds.length > 0) ? true : (index === 0 ? (data.isPaid || false) : false),
-            isTrial: index === 0 ? (data.isTrial || false) : false,
-            isCanceled: false,
-            notes: data.notes,
-            topic: data.topic,
-            duration: data.duration,
-            ownerId: userId,
-            studentId: data.studentId,
-            groupId: data.groupId,
-            groupName,
-            subjectId: data.subjectId,
-            seriesId: series.id,
-        })),
-    })
+    // Batch create lessons
+    await prisma.lesson.createMany({ data: lessonsData })
 
-    // Create lesson payments for recurring lessons - для групповых занятий создаем записи для всех студентов группы
-    if (data.groupId) {
+    // If it's a group, we need to batch create lesson payments for ALL students for ALL lessons
+    if (data.groupId && groupStudents.length > 0) {
         const createdLessons = await prisma.lesson.findMany({
             where: { seriesId: series.id },
             select: { id: true }
-        });
-
-        // Получаем всех студентов группы
-        const group = await prisma.group.findUnique({
-            where: { id: data.groupId },
-            include: { students: { select: { id: true } } }
         })
 
-        if (group && group.students.length > 0) {
-            for (const lesson of createdLessons) {
-                await prisma.lessonPayment.createMany({
-                    data: group.students.map(student => ({
-                        lessonId: lesson.id,
-                        studentId: student.id,
-                        hasPaid: data.paidStudentIds?.includes(student.id) || false
-                    }))
-                });
+        const paymentsData = []
+        for (const lesson of createdLessons) {
+            for (const student of groupStudents) {
+                paymentsData.push({
+                    lessonId: lesson.id,
+                    studentId: student.id,
+                    hasPaid: data.paidStudentIds?.includes(student.id) || false
+                })
             }
         }
+
+        if (paymentsData.length > 0) {
+            await prisma.lessonPayment.createMany({ data: paymentsData })
+        }
     }
-    
-    // If isPaidAll is true, we've already handled the payment creation above
-    // The isPaid field is handled separately for individual lesson tracking
 
     if (data.subjectId && data.studentId) {
         await linkSubjectToStudent(data.studentId, data.subjectId)
     }
+
     const firstLesson = await prisma.lesson.findFirst({
         where: { seriesId: series.id },
         include: {
@@ -416,7 +384,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         ...firstLesson,
         _meta: {
             isRecurring: true,
-            totalLessons: lessons.count,
+            totalLessons: dates.length,
         }
     }, { status: 201 })
 }

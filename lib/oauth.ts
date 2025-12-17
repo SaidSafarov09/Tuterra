@@ -67,10 +67,10 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
         })
 
         // Update user if needed (e.g. fill missing birthdate)
-        if (birthDate && !user.birthDate) {
+        if (birthDate && !(user as any).birthDate) {
             await prisma.user.update({
                 where: { id: user.id },
-                data: { birthDate }
+                data: { birthDate } as any
             })
         }
 
@@ -95,7 +95,7 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
                     providerId,
                 },
             },
-        },
+        } as any,
     })
 
     return user

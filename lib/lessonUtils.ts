@@ -16,10 +16,10 @@ export function getGroupLessonPaymentStatus(lessonPayments: LessonPayment[]): 'p
     if (!lessonPayments || lessonPayments.length === 0) {
         return 'unpaid' // Никто не пришел
     }
-    
+
     const paidCount = lessonPayments.filter(p => p.hasPaid).length
     const totalAttended = lessonPayments.length
-    
+
     if (paidCount === 0) {
         return 'unpaid' // Никто не оплатил
     } else if (paidCount === totalAttended) {
@@ -39,20 +39,16 @@ export function isGroupLesson(lesson: Lesson): boolean {
 }
 
 /**
- * Проверяет, полностью ли оплачено групповое занятие
+ * Проверяет, полностью ли оплачено занятие (групповое или индивидуальное)
  * @param lesson - занятие
- * @returns true если групповое занятие полностью оплачено, false в противном случае
+ * @returns true если занятие полностью оплачено, false в противном случае
  */
-export function isFullyPaidGroupLesson(lesson: Lesson): boolean {
-    if (!isGroupLesson(lesson)) {
-        return false;
-    }
-    
+export function isFullyPaidLesson(lesson: Lesson): boolean {
     // Для индивидуальных занятий просто проверяем isPaid
     if (!lesson.group) {
         return lesson.isPaid;
     }
-    
+
     // Для групповых занятий проверяем статус через lessonPayments
     return getGroupLessonPaymentStatus(lesson.lessonPayments || []) === 'paid';
 }
@@ -141,16 +137,16 @@ export function calculateDayData(lessons: Lesson[], date: Date): DayData {
  */
 export function getLessonPaymentStatus(lesson: Lesson): LessonStatus {
     if (lesson.price === 0) return 'free';
-    
+
     if (lesson.group) {
         // Для группового занятия определяем статус на основе lessonPayments
         if (!lesson.lessonPayments || lesson.lessonPayments.length === 0) {
             return 'unpaid'; // Никто не пришёл
         }
-        
+
         const attendedCount = lesson.lessonPayments.length;
         const paidCount = lesson.lessonPayments.filter(p => p.hasPaid).length;
-        
+
         if (paidCount === 0) {
             return 'unpaid'; // Никто из пришедших не оплатил
         } else if (paidCount === attendedCount) {

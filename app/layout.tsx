@@ -14,6 +14,8 @@ export const metadata: Metadata = {
 }
 
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
+import { ProgressBar } from '@/components/ui/ProgressBar'
+import { Suspense } from 'react'
 
 export default function RootLayout({
     children,
@@ -24,6 +26,9 @@ export default function RootLayout({
         <html lang="ru" suppressHydrationWarning>
             <body>
                 <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
+                    <Suspense fallback={null}>
+                        <ProgressBar />
+                    </Suspense>
                     {children}
                     <Toaster position="bottom-right" richColors />
                 </ThemeProvider>

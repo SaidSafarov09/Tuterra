@@ -18,12 +18,12 @@ export function useLessonsByTab(activeTab: LessonFilter) {
     const loadedTabs = useRef<Set<LessonFilter>>(new Set())
     const hasPreloaded = useRef(false)
 
-    const fetchLessons = useCallback(async (tab: LessonFilter, force = false) => {
+    const fetchLessons = useCallback(async (tab: LessonFilter, force = false, isBackground = false) => {
         const isFirstLoad = !loadedTabs.current.has(tab)
 
-        if (isFirstLoad && !force) {
+        if (isFirstLoad && !force && !isBackground) {
             setIsLoading(true)
-        } else {
+        } else if (!isBackground) {
             setIsRefreshing(true)
         }
         setError(null)
@@ -40,8 +40,10 @@ export function useLessonsByTab(activeTab: LessonFilter) {
             setError(errorMessage)
             toast.error(errorMessage)
         } finally {
-            setIsLoading(false)
-            setIsRefreshing(false)
+            if (!isBackground) {
+                setIsLoading(false)
+                setIsRefreshing(false)
+            }
         }
     }, [])
 
@@ -49,36 +51,35 @@ export function useLessonsByTab(activeTab: LessonFilter) {
         fetchLessons(activeTab, true)
     }, [activeTab, fetchLessons])
 
-    
+
     useEffect(() => {
         fetchLessons(activeTab)
     }, [activeTab, fetchLessons])
 
-    
-    useEffect(() => {
-        if (hasPreloaded.current) return
 
-        const preloadAllTabs = async () => {
+    // Preload other tabs only after the active tab is loaded and with a delay
+    useEffect(() => {
+        if (hasPreloaded.current || isLoading) return
+
+        const preloadOtherTabs = async () => {
             const tabs: LessonFilter[] = ['upcoming', 'past', 'unpaid', 'canceled']
-            
-            await Promise.all(
-                tabs.map(tab => {
-                    if (!loadedTabs.current.has(tab)) {
-                        return fetchLessons(tab)
-                    }
-                    return Promise.resolve()
-                })
-            )
+            const otherTabs = tabs.filter(t => t !== activeTab && !loadedTabs.current.has(t))
+
+            // Fetch other tabs sequentially with a small delay to not slam the server
+            for (const tab of otherTabs) {
+                await new Promise(resolve => setTimeout(resolve, 500))
+                await fetchLessons(tab, false, true)
+            }
         }
 
         hasPreloaded.current = true
-        preloadAllTabs()
-    }, [fetchLessons])
+        preloadOtherTabs()
+    }, [activeTab, fetchLessons, isLoading])
 
-    
+
     const allLessonsCount = Object.values(lessonsCache).reduce((total, lessons) => total + lessons.length, 0)
 
-    
+
     const lessonsCounts = {
         upcoming: lessonsCache.upcoming.length,
         past: lessonsCache.past.length,
@@ -87,7 +88,7 @@ export function useLessonsByTab(activeTab: LessonFilter) {
     }
 
     const isTabLoaded = loadedTabs.current.has(activeTab)
-    
+
     const shouldShowLoading = isLoading || !isTabLoaded
 
     return {
