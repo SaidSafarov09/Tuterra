@@ -101,20 +101,48 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
     return user
 }
 
+import { cookies } from 'next/headers'
+
 export async function createAuthSession(userId: string, phone: string, requestUrl: string) {
-    const token = await signToken({
-        userId,
-        phone: phone || '',
-    })
+    console.log(`[OAuth] Starting session creation for userId: ${userId}`)
 
-    const response = NextResponse.redirect(new URL('/dashboard', requestUrl))
-    response.cookies.set('auth-token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-    })
+    try {
+        const token = await signToken({
+            userId,
+            phone: phone || '',
+        })
 
-    return response
+        if (!token) {
+            throw new Error('Failed to generate JWT token')
+        }
+
+        console.log(`[OAuth] JWT token generated`)
+
+        // Determination of secure flag based on request URL
+        const isLocalhost = requestUrl.includes('localhost')
+        const secure = !isLocalhost
+
+        const cookieOptions = {
+            httpOnly: true,
+            secure: secure,
+            sameSite: 'lax' as const,
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            path: '/',
+        }
+
+        // In Next.js 15+, using cookies() from next/headers is the standard for Route Handlers
+        const cookieStore = await cookies()
+        cookieStore.set('auth-token', token, cookieOptions)
+
+        console.log(`[OAuth] Auth cookie set (Secure: ${secure})`)
+
+        // Construct absolute redirect URL to be safe
+        const redirectUrl = new URL('/dashboard', requestUrl)
+        console.log(`[OAuth] Redirecting to: ${redirectUrl.toString()}`)
+
+        return NextResponse.redirect(redirectUrl)
+    } catch (error) {
+        console.error(`[OAuth] Fatal error in createAuthSession:`, error)
+        return NextResponse.redirect(new URL('/auth?error=session_error', requestUrl))
+    }
 }

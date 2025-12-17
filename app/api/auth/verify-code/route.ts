@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { signToken } from '@/lib/jwt'
+import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
     try {
@@ -77,7 +78,20 @@ export async function POST(request: NextRequest) {
             userId: user.id,
             phone: user.phone!,
         })
-        const response = NextResponse.json({
+
+        const isLocalhost = request.url.includes('localhost')
+        const secure = !isLocalhost
+
+        const cookieStore = await cookies()
+        cookieStore.set('auth-token', token, {
+            httpOnly: true,
+            secure: secure,
+            sameSite: 'lax',
+            maxAge: 30 * 24 * 60 * 60,
+            path: '/',
+        })
+
+        return NextResponse.json({
             success: true,
             token,
             user: {
@@ -87,15 +101,6 @@ export async function POST(request: NextRequest) {
                 avatar: user.avatar,
             },
         })
-        response.cookies.set('auth-token', token, {
-            httpOnly: process.env.NODE_ENV === 'production',
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 30 * 24 * 60 * 60,
-            path: '/',
-        })
-
-        return response
     } catch (error) {
         console.error('Verify code error:', error)
         return NextResponse.json(

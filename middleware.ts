@@ -11,7 +11,7 @@ const protectedPaths = ['/dashboard', '/students', '/subjects', '/lessons', '/ca
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
-    
+
     if (pathname === '/') {
         const token = request.cookies.get('auth-token')?.value
         const payload = token ? await verifyToken(token) : null
@@ -24,24 +24,27 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    
+
     const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
     const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
 
-    
+
     const token = request.cookies.get('auth-token')?.value
 
-    
+
     const payload = token ? await verifyToken(token) : null
     const isAuthenticated = payload !== null
 
-    
+    console.log(`[Middleware] Path: ${pathname}, Authenticated: ${isAuthenticated}, Has Token: ${!!token}`)
+
+
     if (isProtectedPath && !isAuthenticated) {
+        console.log(`[Middleware] Redirecting to /auth from ${pathname}`)
         const url = new URL('/auth', request.url)
         return NextResponse.redirect(url)
     }
 
-    
+
     if (isPublicPath && isAuthenticated) {
         const url = new URL('/dashboard', request.url)
         return NextResponse.redirect(url)
