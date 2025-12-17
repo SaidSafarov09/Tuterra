@@ -54,11 +54,6 @@ export default function IncomePage() {
             setPreviousMonthDuration(data.previousMonthDuration || 0)
             setRecentTransactions(data.recentTransactions || [])
 
-            console.log('Income Data:', {
-                currentMonthIncome: data.currentMonthIncome,
-                hasAnyIncomeEver: data.hasAnyIncomeEver
-            })
-
             setHasAnyIncomeEver(Boolean(data.hasAnyIncomeEver))
         } catch (error) {
             console.error('Income Fetch Error:', error)

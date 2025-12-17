@@ -19,7 +19,5 @@ export async function GET() {
 
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope.replace(/ /g, '%20')}&access_type=offline&prompt=consent`
 
-    console.log('Redirecting to Google Auth:', googleAuthUrl)
-
     return NextResponse.redirect(googleAuthUrl)
 }

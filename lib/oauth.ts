@@ -104,8 +104,6 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
 import { cookies } from 'next/headers'
 
 export async function createAuthSession(userId: string, phone: string, requestUrl: string) {
-    console.log(`[OAuth] Starting session creation for userId: ${userId}`)
-
     try {
         const token = await signToken({
             userId,
@@ -116,9 +114,6 @@ export async function createAuthSession(userId: string, phone: string, requestUr
             throw new Error('Failed to generate JWT token')
         }
 
-        console.log(`[OAuth] JWT token generated`)
-
-        // Determination of secure flag based on request URL
         const isLocalhost = requestUrl.includes('localhost')
         const secure = !isLocalhost
 
@@ -130,15 +125,10 @@ export async function createAuthSession(userId: string, phone: string, requestUr
             path: '/',
         }
 
-        // In Next.js 15+, using cookies() from next/headers is the standard for Route Handlers
         const cookieStore = await cookies()
         cookieStore.set('auth-token', token, cookieOptions)
 
-        console.log(`[OAuth] Auth cookie set (Secure: ${secure})`)
-
-        // Construct absolute redirect URL to be safe
         const redirectUrl = new URL('/dashboard', requestUrl)
-        console.log(`[OAuth] Redirecting to: ${redirectUrl.toString()}`)
 
         return NextResponse.redirect(redirectUrl)
     } catch (error) {

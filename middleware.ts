@@ -35,11 +35,8 @@ export async function middleware(request: NextRequest) {
     const payload = token ? await verifyToken(token) : null
     const isAuthenticated = payload !== null
 
-    console.log(`[Middleware] Path: ${pathname}, Authenticated: ${isAuthenticated}, Has Token: ${!!token}`)
-
 
     if (isProtectedPath && !isAuthenticated) {
-        console.log(`[Middleware] Redirecting to /auth from ${pathname}`)
         const url = new URL('/auth', request.url)
         return NextResponse.redirect(url)
     }
