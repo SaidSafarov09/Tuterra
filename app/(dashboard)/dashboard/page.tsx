@@ -20,11 +20,12 @@ import { GENERAL_MESSAGES } from '@/constants/messages'
 import { toast } from 'sonner'
 import { DashboardStats } from '@/types'
 import styles from './page.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 export default function DashboardPage() {
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
-
+    const isMobile = useMediaQuery('(max-width: 768px)')
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -56,13 +57,13 @@ export default function DashboardPage() {
                         <>
                             <StatCard
                                 icon={<UsersGroupIcon size={32} color="#4F46E5" />}
-                                label="Всего учеников"
+                                label={<>Всего{isMobile ? <br /> : ''} учеников</>}
                                 value={stats?.studentsCount || 0}
                                 href="/students"
                             />
                             <StatCard
                                 icon={<BookIcon size={32} color="#10B981" />}
-                                label="Ближайших занятий"
+                                label={<>Ближайших{isMobile ? <br /> : ''} занятий</>}
                                 value={stats?.upcomingLessons?.length || 0}
                                 href="/lessons"
                             />

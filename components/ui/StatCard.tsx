@@ -4,7 +4,7 @@ import styles from './StatCard.module.scss'
 
 interface StatCardProps {
     icon: React.ReactNode
-    label: string
+    label: string | React.ReactNode
     value: string | number
     href?: string
 }

@@ -237,12 +237,20 @@
     font-weight: 600;
     color: var(--text-secondary);
     margin: 0 0 8px;
+
+    @media (max-width: 768px) {
+        font-size: 18px;
+    }
 }
 
 .emptyStateText {
-    font-size: 15px;
+    font-size: 16px;
     color: var(--text-muted);
     margin: 0 0 24px;
+
+    @media (max-width: 768px) {
+        font-size: 14px;
+    }
 }
 
 .loading {
