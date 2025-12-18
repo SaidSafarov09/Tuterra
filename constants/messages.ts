@@ -1,7 +1,7 @@
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 
-const MONTHS_GENITIVE: Record<string, string> = {
+export const MONTHS_GENITIVE: Record<string, string> = {
     январь: "январе",
     февраль: "феврале",
     март: "марте",

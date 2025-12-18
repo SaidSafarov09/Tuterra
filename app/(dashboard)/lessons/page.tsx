@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/Button'
 import { PlusIcon } from '@/components/icons/Icons'
 import { TabNav } from '@/components/ui/TabNav'
 import { LessonsList } from '@/components/lessons/LessonsList'
+import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
+import { Dropdown } from '@/components/ui/Dropdown'
 
 import dynamic from 'next/dynamic'
 const LessonFormModal = dynamic(() => import('@/components/lessons/LessonFormModal').then(mod => mod.LessonFormModal), { ssr: false })
@@ -31,15 +34,14 @@ function LessonsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-
     const [activeTab, setActiveTab] = useState<LessonFilter>('upcoming')
+    const [selectedMonth, setSelectedMonth] = useState<string>('all')
     const [isOpen, setIsOpen] = useState(false)
     const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
     const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; lesson: Lesson | null }>({
         isOpen: false,
         lesson: null,
     })
-
 
     const {
         lessons,
@@ -101,6 +103,29 @@ function LessonsContent() {
         refetchSubjects
     )
 
+    const monthOptions = useMemo(() => {
+        const options: any[] = [{ value: 'all', label: 'Все занятия' }]
+        const currentYear = new Date().getFullYear()
+
+        const lessonsYears = lessons.map(l => new Date(l.date).getFullYear())
+        const availableYears = Array.from(new Set([currentYear, ...lessonsYears])).sort((a, b) => b - a)
+
+        availableYears.forEach(year => {
+            const monthsInYear = []
+            for (let m = 11; m >= 0; m--) {
+                const date = new Date(year, m, 1)
+                monthsInYear.push({
+                    value: format(date, 'yyyy-MM'),
+                    label: format(date, 'LLLL', { locale: ru })
+                })
+            }
+            options.push({
+                label: year.toString(),
+                options: monthsInYear
+            })
+        })
+        return options
+    }, [lessons])
 
     const tabsWithCounts = useMemo(() =>
         LESSON_TABS.map(tab => ({
@@ -110,18 +135,41 @@ function LessonsContent() {
         [lessonsCounts]
     )
 
-
     useEffect(() => {
         const tab = searchParams.get('tab') as LessonFilter
-        if (tab && ['upcoming', 'past', 'unpaid', 'canceled'].includes(tab)) {
+        if (tab && ['all', 'upcoming', 'past', 'unpaid', 'canceled'].includes(tab)) {
             setActiveTab(tab)
+        }
+
+        const month = searchParams.get('month')
+        if (month) {
+            setSelectedMonth(month)
+        } else {
+            setSelectedMonth('all')
         }
     }, [searchParams])
 
+    const filteredLessons = useMemo(() => {
+        if (selectedMonth === 'all') return lessons
+        return lessons.filter(lesson => format(new Date(lesson.date), 'yyyy-MM') === selectedMonth)
+    }, [lessons, selectedMonth])
 
     const handleTabChange = (id: string) => {
         setActiveTab(id as LessonFilter)
-        router.push(`/lessons?tab=${id}`)
+        const params = new URLSearchParams(searchParams.toString())
+        params.set('tab', id)
+        router.push(`/lessons?${params.toString()}`)
+    }
+
+    const handleMonthChange = (month: string) => {
+        setSelectedMonth(month)
+        const params = new URLSearchParams(searchParams.toString())
+        if (month === 'all') {
+            params.delete('month')
+        } else {
+            params.set('month', month)
+        }
+        router.push(`/lessons?${params.toString()}`)
     }
 
     const isMobile = useMediaQuery('(max-width: 768px)')
@@ -169,12 +217,37 @@ function LessonsContent() {
                 </Button>
             </div>
 
-            <TabNav
-                tabs={tabsWithCounts}
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                className={styles.tabs}
-            />
+            <div className={styles.filterSection}>
+                <TabNav
+                    tabs={tabsWithCounts}
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    className={styles.tabs}
+                />
+                {!isMobile && (
+                    <div className={styles.monthFilter}>
+                        <Dropdown
+                            value={selectedMonth}
+                            onChange={handleMonthChange}
+                            options={monthOptions}
+                            placeholder="Все время"
+                            className={styles.monthDropdown}
+                        />
+                    </div>
+                )}
+            </div>
+
+            {isMobile && (
+                <div className={styles.monthFilterMobile}>
+                    <Dropdown
+                        value={selectedMonth}
+                        onChange={handleMonthChange}
+                        options={monthOptions}
+                        placeholder="Все время"
+                        className={styles.monthDropdown}
+                    />
+                </div>
+            )}
 
             {isLessonsLoading ? (
                 <div className={styles.lessonsList}>
@@ -182,14 +255,14 @@ function LessonsContent() {
                     <LessonDetailSkeleton />
                     <LessonDetailSkeleton />
                 </div>
-            ) : lessons.length === 0 ? (
+            ) : filteredLessons.length === 0 ? (
                 <EmptyLessonsState
                     onAddLesson={handleOpenModal}
-                    filter="all"
+                    filter={selectedMonth !== 'all' ? 'all' : activeTab}
                 />
             ) : (
                 <LessonsList
-                    lessons={lessons || []}
+                    lessons={filteredLessons || []}
                     isLoading={isLessonsLoading}
                     isRefreshing={isLessonsRefreshing}
                     onTogglePaid={togglePaid}

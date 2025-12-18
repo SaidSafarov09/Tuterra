@@ -1,4 +1,5 @@
 export const LESSON_TABS = [
+    { id: 'all' as const, label: 'Все' },
     { id: 'upcoming' as const, label: 'Ближайшие' },
     { id: 'past' as const, label: 'Прошедшие' },
     { id: 'unpaid' as const, label: 'Неоплаченные' },
@@ -6,14 +7,14 @@ export const LESSON_TABS = [
 ]
 
 export const SUBJECT_COLORS = [
-    '#4A6CF7', 
-    '#10B981', 
-    '#F59E0B', 
-    '#EF4444', 
-    '#8B5CF6', 
-    '#EC4899', 
-    '#14B8A6', 
-    '#F97316', 
+    '#4A6CF7',
+    '#10B981',
+    '#F59E0B',
+    '#EF4444',
+    '#8B5CF6',
+    '#EC4899',
+    '#14B8A6',
+    '#F97316',
 ]
 
 export const STATUS_COLORS = {

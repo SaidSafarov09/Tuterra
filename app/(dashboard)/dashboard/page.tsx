@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
 import {
     UsersGroupIcon,
     BookIcon,
@@ -8,6 +10,7 @@ import {
     MoneyIcon,
     CelebrationIcon,
     CalendarIcon,
+    StudentsIcon,
 } from '@/components/icons/Icons'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatCard } from '@/components/ui/StatCard'
@@ -21,11 +24,13 @@ import { toast } from 'sonner'
 import { DashboardStats } from '@/types'
 import styles from './page.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { MONTHS_GENITIVE } from '@/constants/messages'
 
 export default function DashboardPage() {
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
     const isMobile = useMediaQuery('(max-width: 768px)')
+    const currentMonth = Date.now()
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -56,22 +61,22 @@ export default function DashboardPage() {
                     ) : (
                         <>
                             <StatCard
-                                icon={<UsersGroupIcon size={32} color="#4F46E5" />}
-                                label={<>Всего{isMobile ? <br /> : ''} учеников</>}
+                                icon={<StudentsIcon size={32} color="#3B82F6" />}
+                                label="Ученики"
                                 value={stats?.studentsCount || 0}
                                 href="/students"
                             />
                             <StatCard
-                                icon={<BookIcon size={32} color="#10B981" />}
-                                label={<>Ближайших{isMobile ? <br /> : ''} занятий</>}
-                                value={stats?.upcomingLessons?.length || 0}
-                                href="/lessons"
+                                icon={<UsersGroupIcon size={32} color="#F59E0B" />}
+                                label="Группы"
+                                value={stats?.groupsCount || 0}
+                                href="/groups"
                             />
                             <StatCard
-                                icon={<AlertIcon size={32} color="#F59E0B" />}
-                                label="Неоплаченных"
-                                value={stats?.unpaidLessons?.length || 0}
-                                href="/lessons?tab=unpaid"
+                                icon={<CalendarIcon size={32} color="#3B5BD9" />}
+                                label={<>Занятий в{isMobile ? <br /> : ''} {MONTHS_GENITIVE[format(currentMonth, 'LLLL', { locale: ru }).toLowerCase()]}</>}
+                                value={stats?.monthLessonsCount || 0}
+                                href={`/lessons?tab=all&month=${format(currentMonth, 'yyyy-MM')}`}
                             />
                             <StatCard
                                 icon={<MoneyIcon size={32} color="#14B8A6" />}

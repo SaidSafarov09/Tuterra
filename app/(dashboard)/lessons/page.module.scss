@@ -26,15 +26,48 @@
 }
 
 .tabs {
+    flex: 1;
     display: flex;
     gap: 12px;
-    border-bottom: 1px solid var(--border-light);
-    margin-bottom: 24px;
+    margin-bottom: 0;
 
     @media (max-width: 768px) {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(124px, 2fr));
-        margin-bottom: 28px;
+    }
+}
+
+.filterSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 24px;
+    gap: 24px;
+}
+
+.monthFilter {
+    width: 200px;
+    margin-bottom: 4px;
+}
+
+.monthFilterMobile {
+    margin-bottom: 24px;
+}
+
+.monthDropdown {
+    div[class*="trigger"] {
+        background: transparent;
+        border: none;
+        padding-left: 0;
+        padding-right: 0;
+        font-weight: 600;
+        color: var(--primary);
+        box-shadow: none !important;
+
+        span[class*="placeholder"] {
+            color: var(--primary);
+        }
     }
 }
 

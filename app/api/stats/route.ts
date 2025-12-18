@@ -16,17 +16,13 @@ export async function GET(request: NextRequest) {
         const monthEnd = endOfMonth(now)
 
 
-        const [studentsCount, upcomingLessons, rawUnpaidLessons, monthlyIncome, totalLessons, subjectsCount, userProfile] = await Promise.all([
-
+        const [studentsCount, upcomingLessons, rawUnpaidLessons, monthlyIncome, totalLessons, subjectsCount, userProfile, groupsCount, monthLessonsCount] = await Promise.all([
             prisma.student.count({
                 where: { ownerId: payload.userId },
             }),
-
-
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
-                    // Сдвигаем начало выборки на сутки назад, чтобы включить ongoing-занятия
                     date: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
                     isCanceled: false,
                 } as any,
@@ -41,10 +37,8 @@ export async function GET(request: NextRequest) {
                     lessonPayments: true,
                 },
                 orderBy: { date: 'asc' },
-                take: 10, // Берем больше, чтобы после фильтрации осталось достаточно
+                take: 10,
             }),
-
-
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
@@ -63,10 +57,8 @@ export async function GET(request: NextRequest) {
                     lessonPayments: true,
                 },
                 orderBy: { date: 'desc' },
-                take: 20, // Limit dashboard view to most recent 20 unpaid
+                take: 20,
             }),
-
-
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
@@ -86,8 +78,6 @@ export async function GET(request: NextRequest) {
                     }
                 }
             }),
-
-
             prisma.lesson.count({
                 where: {
                     ownerId: payload.userId,
@@ -95,16 +85,25 @@ export async function GET(request: NextRequest) {
                     isCanceled: false,
                 } as any,
             }),
-
-
             prisma.subject.count({
                 where: { userId: payload.userId },
             }),
-
-
             prisma.user.findUnique({
                 where: { id: payload.userId },
                 select: { createdAt: true },
+            }),
+            prisma.group.count({
+                where: { ownerId: payload.userId },
+            }),
+            prisma.lesson.count({
+                where: {
+                    ownerId: payload.userId,
+                    date: {
+                        gte: monthStart,
+                        lte: monthEnd,
+                    },
+                    isCanceled: false,
+                } as any,
             }),
         ])
 
@@ -116,14 +115,14 @@ export async function GET(request: NextRequest) {
             return paidCount < totalStudents
         })
 
-        // Фильтруем ближайшие занятия с учетом длительности
         const { isLessonPast } = await import('@/lib/lessonTimeUtils')
         const filteredUpcomingLessons = upcomingLessons
             .filter(lesson => !isLessonPast(lesson.date, lesson.duration || 60))
-            .slice(0, 5) // Берем первые 5 после фильтрации
+            .slice(0, 5)
 
         return NextResponse.json({
             studentsCount,
+            groupsCount,
             upcomingLessons: filteredUpcomingLessons,
             unpaidLessons,
             monthlyIncome: (monthlyIncome as any[]).reduce((total, lesson) => {
@@ -134,6 +133,7 @@ export async function GET(request: NextRequest) {
             }, 0),
             totalLessons,
             subjectsCount,
+            monthLessonsCount,
             createdAt: userProfile?.createdAt,
         })
     } catch (error) {

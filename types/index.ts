@@ -106,11 +106,13 @@ export interface Lesson {
 
 export interface DashboardStats {
     studentsCount: number
+    groupsCount: number
     upcomingLessons: Lesson[]
     unpaidLessons: Lesson[]
     monthlyIncome: number
     totalLessons?: number
     subjectsCount?: number
+    monthLessonsCount?: number
     createdAt?: string
 }
 
