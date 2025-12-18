@@ -40,8 +40,8 @@
 .filterSection {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
-    border-bottom: 1px solid var(--border-light);
     margin-bottom: 24px;
     gap: 24px;
 }

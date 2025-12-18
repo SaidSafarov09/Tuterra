@@ -137,7 +137,7 @@ function LessonsContent() {
 
     useEffect(() => {
         const tab = searchParams.get('tab') as LessonFilter
-        if (tab && ['all', 'upcoming', 'past', 'unpaid', 'canceled'].includes(tab)) {
+        if (tab && ['upcoming', 'past', 'unpaid', 'canceled'].includes(tab)) {
             setActiveTab(tab)
         }
 
@@ -258,7 +258,7 @@ function LessonsContent() {
             ) : filteredLessons.length === 0 ? (
                 <EmptyLessonsState
                     onAddLesson={handleOpenModal}
-                    filter={selectedMonth !== 'all' ? 'all' : activeTab}
+                    filter={activeTab}
                 />
             ) : (
                 <LessonsList

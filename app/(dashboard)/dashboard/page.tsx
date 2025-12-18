@@ -76,7 +76,7 @@ export default function DashboardPage() {
                                 icon={<CalendarIcon size={32} color="#3B5BD9" />}
                                 label={<>Занятий в{isMobile ? <br /> : ''} {MONTHS_GENITIVE[format(currentMonth, 'LLLL', { locale: ru }).toLowerCase()]}</>}
                                 value={stats?.monthLessonsCount || 0}
-                                href={`/lessons?tab=all&month=${format(currentMonth, 'yyyy-MM')}`}
+                                href={`/lessons?month=${format(currentMonth, 'yyyy-MM')}`}
                             />
                             <StatCard
                                 icon={<MoneyIcon size={32} color="#14B8A6" />}
