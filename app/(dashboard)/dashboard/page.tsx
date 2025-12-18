@@ -80,7 +80,7 @@ export default function DashboardPage() {
                             />
                             <StatCard
                                 icon={<MoneyIcon size={32} color="#14B8A6" />}
-                                label="Доход за месяц"
+                                label={<>Доход{isMobile ? <br /> : ''} за месяц</>}
                                 value={`${stats?.monthlyIncome || 0} ₽`}
                                 href="/income"
                             />
