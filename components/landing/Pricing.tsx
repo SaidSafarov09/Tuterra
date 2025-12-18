@@ -6,71 +6,79 @@ import { Button } from '@/components/ui/Button'
 import { Check, Sparkles, Zap } from 'lucide-react'
 import Link from 'next/link'
 import styles from './Pricing.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 const plans = [
     {
-        name: 'Стартовый',
+        name: 'Базовый',
         price: '0',
-        description: 'Подойдет для тех, кто только начинает вести электронный учет уроков.',
+        description: 'Идеален для частных преподавателей с небольшой нагрузкой, которые хотят уйти от хаоса и таблиц.',
         features: [
-            'До 5 активных студентов',
-            'Полный учет финансовых потоков',
-            'Интеллектуальный календарь',
-            'Мобильное приложение (PWA)',
-            'Базовая аналитика'
+            'До 5 активных учеников',
+            'Расписание занятий без накладок',
+            'Учет оплат и задолженностей',
+            'Работа с телефона и компьютера',
+            'История занятий и тем'
         ],
-        cta: 'Начать бесплатно',
+        cta: 'Попробовать бесплатно',
         primary: false
     },
     {
-        name: 'Профессиональный',
-        price: '990',
-        description: 'Для тех, кто хочет иметь полный контроль над своим расписанием и доходами.',
+        name: 'Профи',
+        price: '490',
+        description: 'Для тех, кто зарабатывает на преподавании и хочет полный контроль над временем и доходом.',
         features: [
-            'Безлимитное количество студентов',
-            'Групповые занятия любой сложности',
-            'Глубокая аналитика доходов',
-            'Приоритетный доступ к новым функциям',
-            'Персональная поддержка 24/7',
-            'Отчеты для родителей в вашем стиле'
+            'Неограниченное количество учеников',
+            'Групповые и индивидуальные занятия',
+            'Подробная аналитика доходов',
+            'Автоматический контроль оплат',
+            'Отчеты и заметки по каждому ученику',
+            'Приоритетная поддержка'
         ],
-        cta: 'Стать профессионалом',
+        cta: 'Перейти на Профи',
         primary: true
     }
 ]
 
 export const Pricing = () => {
+    const isTouch = useMediaQuery('(pointer: coarse)')
+    const MotionDiv = isTouch ? 'div' : motion.div;
+
     return (
         <section id="pricing" className={styles.section}>
             <div className={styles.container}>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
+                <MotionDiv
+                    {...(isTouch ? {} : {
+                        initial: { opacity: 0, y: 20 },
+                        whileInView: { opacity: 1, y: 0 },
+                        viewport: { once: true }
+                    })}
                     className={styles.header}
                 >
                     <div className={styles.badge}>
-                        <Zap size={16} fill="currentColor" /> Понятные и честные тарифы
+                        <Zap size={16} fill="currentColor" /> Прозрачная модель без скрытых условий
                     </div>
                     <h2 className={styles.title}>
-                        Выбирайте то, что <br /> <span>подходит вам</span>
+                        Платите только за порядок <br /> <span>а не за лишние функции</span>
                     </h2>
-                    <p className={styles.subtitle}>Начните бесплатно и переходите на профи, когда будете готовы.</p>
-                </motion.div>
+                    <p className={styles.subtitle}>Начните бесплатно, протестируйте в реальной работе и решите, нужен ли вам максимум.</p>
+                </MotionDiv>
 
                 <div className={styles.pricingGrid}>
                     {plans.map((plan, i) => (
-                        <motion.div
+                        <MotionDiv
                             key={i}
-                            initial={{ opacity: 0, y: 40 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            {...(isTouch ? {} : {
+                                initial: { opacity: 0, y: 40 },
+                                whileInView: { opacity: 1, y: 0 },
+                                viewport: { once: true },
+                                transition: { delay: i * 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+                            })}
                             className={`${styles.plan} ${plan.primary ? styles.primary : ''}`}
                         >
                             {plan.primary && (
                                 <div className={styles.recommended}>
-                                    <Sparkles size={14} /> РЕКОМЕНДУЕМЫЙ
+                                    <Sparkles size={14} /> ВЫБОР ОПЫТНЫХ ПРЕПОДАВАТЕЛЕЙ
                                 </div>
                             )}
 
@@ -103,7 +111,7 @@ export const Pricing = () => {
                                     {plan.cta}
                                 </Button>
                             </Link>
-                        </motion.div>
+                        </MotionDiv>
                     ))}
                 </div>
             </div>

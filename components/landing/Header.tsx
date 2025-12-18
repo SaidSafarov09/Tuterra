@@ -91,7 +91,7 @@ export const Header = () => {
                             </Link>
                         ))}
                         <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                            <Button variant="ghost" fullWidth>Войти</Button>
+                            <Button variant="secondary" fullWidth>Войти</Button>
                         </Link>
                     </motion.div>
                 )}

@@ -42,6 +42,9 @@ import {
     Line
 } from 'recharts'
 import styles from './ProductDemo.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { TabNav } from '../ui/TabNav'
+import { LESSON_TABS } from '@/constants'
 
 // Mock Data
 const mockSubjects = [
@@ -116,8 +119,10 @@ const mockMonthlyData = [
 ]
 
 export const ProductDemo = () => {
+    const isTouch = useMediaQuery('(pointer: coarse)')
     const [activeNav, setActiveNav] = useState('dashboard')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const MotionDiv = isTouch ? 'div' : motion.div;
 
     const navigationLinks = [
         { id: 'dashboard', name: 'Главная', icon: DashboardIcon },
@@ -138,9 +143,9 @@ export const ProductDemo = () => {
         <section id="demo" className={styles.section}>
             <div className={styles.container}>
                 <div className={styles.header}>
-                    <h2>Почувствуйте качество исполнения</h2>
+                    <h2>Посмотрите, как выглядит рабочий день репетитора</h2>
                     <p>
-                        Мы используем реальные компоненты нашего приложения в этой демонстрации. Интерфейс, который вы видите здесь — это ровно то, что вы получите в работе.
+                        Минимум лишнего. Только то, чем вы действительно пользуетесь каждый день.
                     </p>
                 </div>
 
@@ -206,11 +211,13 @@ export const ProductDemo = () => {
                             <div className={styles.content}>
                                 <AnimatePresence mode="wait">
                                     {activeNav === 'dashboard' && (
-                                        <motion.div
+                                        <MotionDiv
                                             key="dashboard"
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
+                                            {...(isTouch ? {} : {
+                                                initial: { opacity: 0, y: 10 },
+                                                animate: { opacity: 1, y: 0 },
+                                                exit: { opacity: 0, y: -10 }
+                                            })}
                                         >
                                             <PageHeader title="Главная" subtitle="Обзор вашей активности" />
 
@@ -239,14 +246,16 @@ export const ProductDemo = () => {
                                                     </div>
                                                 </Section>
                                             </div>
-                                        </motion.div>
+                                        </MotionDiv>
                                     )}
 
                                     {activeNav === 'calendar' && (
-                                        <motion.div
+                                        <MotionDiv
                                             key="calendar"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
+                                            {...(isTouch ? {} : {
+                                                initial: { opacity: 0 },
+                                                animate: { opacity: 1 }
+                                            })}
                                         >
                                             <div style={{ marginBottom: '32px' }}>
                                                 <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1A1A1A' }}>Январь 2026</h2>
@@ -257,28 +266,37 @@ export const ProductDemo = () => {
                                                     <CalendarGrid currentMonth={DEMO_DATE} lessons={mockLessons} onDateClick={() => { }} />
                                                 </div>
                                             </div>
-                                        </motion.div>
+                                        </MotionDiv>
                                     )}
 
                                     {activeNav === 'groups' && (
-                                        <motion.div
+                                        <MotionDiv
                                             key="groups"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
+                                            {...(isTouch ? {} : {
+                                                initial: { opacity: 0 },
+                                                animate: { opacity: 1 }
+                                            })}
                                         >
-                                            <PageHeader title="Ваши группы" subtitle="Управление групповым обучением" />
+                                            <PageHeader title="Группы" subtitle="Управляйте списком ваших групп" />
                                             <GroupsList groups={mockGroups} />
-                                        </motion.div>
+                                        </MotionDiv>
                                     )}
 
                                     {activeNav === 'lessons' && (
-                                        <motion.div
+                                        <MotionDiv
                                             key="lessons"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
+                                            {...(isTouch ? {} : {
+                                                initial: { opacity: 0 },
+                                                animate: { opacity: 1 }
+                                            })}
                                         >
-                                            <PageHeader title="Все занятия" subtitle="История и планы" />
+                                            <PageHeader title="Занятия" subtitle="Управление расписанием" />
                                             <div className={styles.cardList}>
+                                                <TabNav
+                                                    tabs={LESSON_TABS}
+                                                    activeTab={LESSON_TABS[1]}
+                                                    onTabChange={() => { }}
+                                                />
                                                 {mockLessons.map((lesson: any) => (
                                                     <LessonCard key={lesson.id} lesson={lesson} variant="default" />
                                                 ))}
@@ -294,14 +312,16 @@ export const ProductDemo = () => {
                                                     ))}
                                                 </div>
                                             </div>
-                                        </motion.div>
+                                        </MotionDiv>
                                     )}
 
                                     {activeNav === 'income' && (
-                                        <motion.div
+                                        <MotionDiv
                                             key="income"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
+                                            {...(isTouch ? {} : {
+                                                initial: { opacity: 0 },
+                                                animate: { opacity: 1 }
+                                            })}
                                             style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
                                         >
                                             <PageHeader title="Доходы" subtitle="Аналитика ваших доходов" />
@@ -309,9 +329,8 @@ export const ProductDemo = () => {
                                             {/* Navigation mockup */}
                                             <div className={styles.incomeNav}>
                                                 <button><ArrowLeftIcon size={18} /></button>
-                                                <div className={styles.current}>Январь 2025</div>
+                                                <div className={styles.current}>Январь 2026</div>
                                                 <button style={{ opacity: 0.5 }} disabled><ArrowRightIcon size={18} /></button>
-                                                <button><HomeIcon size={18} /></button>
                                             </div>
 
                                             <div className={styles.incomeCardsGrid}>
@@ -410,7 +429,7 @@ export const ProductDemo = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </motion.div>
+                                        </MotionDiv>
                                     )}
                                 </AnimatePresence>
                             </div>

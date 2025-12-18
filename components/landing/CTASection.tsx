@@ -6,41 +6,50 @@ import { Button } from '@/components/ui/Button'
 import { ArrowRight, Sparkles, Zap, Star } from 'lucide-react'
 import Link from 'next/link'
 import styles from './CTASection.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 export const CTASection = () => {
+    const isTouch = useMediaQuery('(pointer: coarse)')
+    const MotionDiv = isTouch ? 'div' : motion.div;
+
     return (
         <section className={styles.section}>
-            <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            <MotionDiv
+                {...(isTouch ? {} : {
+                    initial: { opacity: 0, y: 40 },
+                    whileInView: { opacity: 1, y: 0 },
+                    viewport: { once: true },
+                    transition: { duration: 1, ease: [0.16, 1, 0.3, 1] }
+                })}
                 className={styles.container}
             >
                 <div className={styles.content}>
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
+                    <MotionDiv
+                        {...(isTouch ? {} : {
+                            initial: { opacity: 0, scale: 0.9 },
+                            whileInView: { opacity: 1, scale: 1 }
+                        })}
                         className={styles.badge}
                     >
-                        <Sparkles size={16} /> Попробуйте Tuterra бесплатно
-                    </motion.div>
+                        <Sparkles size={16} /> Начните без риска
+                    </MotionDiv>
 
                     <h2 className={styles.title}>
                         <span className={styles.gradientText}>
-                            Пора навести порядок<br />
+                            Сделайте работу<br />
                         </span>
-                        <span className={styles.accentText}>в своих делах</span>
+                        <span className={styles.accentText}>проще и спокойнее</span>
                     </h2>
 
                     <p className={styles.description}>
-                        Присоединяйтесь к 500+ преподавателям, которые уже автоматизировали свой рост с Tuterra.
+                        Берём на себя расписание, оплаты и учет учеников -
+                        чтобы вы могли сосредоточиться на преподавании, а не на рутине.
                     </p>
 
                     <div className={styles.actions}>
                         <Link href="/auth" style={{ textDecoration: 'none' }}>
                             <Button size="large" variant="primary" className={styles.ctaButton}>
-                                Начать бесплатно <ArrowRight style={{ marginLeft: '12px' }} size={24} />
+                                Попробовать бесплатно <ArrowRight style={{ marginLeft: '12px' }} size={24} />
                             </Button>
                         </Link>
 
@@ -49,7 +58,7 @@ export const CTASection = () => {
                                 <div className={styles.stars}>
                                     {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="#F59E0B" color="#F59E0B" />)}
                                 </div>
-                                <p>4.9/5 рейтинг</p>
+                                <p>Преподаватели рекомендуют</p>
                             </div>
                             <div className={styles.trustItem}>
                                 <Zap size={16} color="#4A6CF7" fill="#4A6CF7" />
@@ -62,7 +71,7 @@ export const CTASection = () => {
                 {/* Decorative Elements */}
                 <div className={`${styles.decoration} ${styles.decorationTop}`} />
                 <div className={`${styles.decoration} ${styles.decorationBottom}`} />
-            </motion.div>
+            </MotionDiv>
         </section>
     )
 }

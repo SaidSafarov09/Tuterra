@@ -4,12 +4,16 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { Check, X, Shield, Zap, Sparkles, TrendingUp } from 'lucide-react'
 import styles from './Comparison.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 export const Comparison = () => {
+    const isTouch = useMediaQuery('(pointer: coarse)')
+    const MotionDiv = isTouch ? 'div' : motion.div;
+
     const stats = [
-        { label: 'Лояльность студентов', value: '98%', sub: '+24% к среднему', icon: Shield },
-        { label: 'Свободное время', value: '12ч', sub: 'В неделю', icon: Zap },
-        { label: 'Рост дохода', value: '+30%', sub: 'Через 3 месяца', icon: TrendingUp },
+        { label: 'Доверие учеников', value: '98%', sub: 'Остаются надолго', icon: Shield },
+        { label: 'Освобождённое время', value: '10-12ч', sub: 'Каждую неделю', icon: Zap },
+        { label: 'Финансовый рост', value: '+25-30%', sub: 'За первые месяцы', icon: TrendingUp },
     ]
 
     return (
@@ -19,37 +23,41 @@ export const Comparison = () => {
 
             <div className={styles.container}>
                 <div className={styles.header}>
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
+                    <MotionDiv
+                        {...(isTouch ? {} : {
+                            initial: { opacity: 0, scale: 0.9 },
+                            whileInView: { opacity: 1, scale: 1 },
+                            viewport: { once: true }
+                        })}
                         className={styles.badge}
                     >
-                        <Sparkles size={16} /> Результат, который можно измерить
-                    </motion.div>
+                        <Sparkles size={16} /> Эффект, а не обещания
+                    </MotionDiv>
                     <h2 className={styles.title}>
-                        <span className={styles.gradientText}>Наведите порядок</span> <br />
-                        <span className={styles.accentText}>в своем расписании</span>
+                        <span className={styles.gradientText}>Система, которая</span> <br />
+                        <span className={styles.accentText}>работает за вас</span>
                     </h2>
                 </div>
 
                 <div className={styles.comparisonGrid}>
                     {/* The Chaos */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
+                    <MotionDiv
+                        {...(isTouch ? {} : {
+                            initial: { opacity: 0, x: -50 },
+                            whileInView: { opacity: 1, x: 0 },
+                            viewport: { once: true }
+                        })}
                         className={`${styles.card} ${styles.cardChaos}`}
                     >
                         <div className={`${styles.cardHeader} ${styles.chaos}`}>
-                            <X size={24} /> Работа без системы
+                            <X size={24} /> Как обычно бывает
                         </div>
                         <div className={styles.list}>
                             {[
-                                'Мессенджеры вместо системы (сообщения теряются)',
-                                'Таблицы, которые неудобно вести с телефона',
-                                'Забытые оплаты и неловкие напоминания',
-                                'Траты времени на ручной сбор отчетов и планов'
+                                'Всё держится на голове',
+                                'Страх что-то забыть',
+                                'Деньги считаются вручную',
+                                'Усталость накапливается незаметно'
                             ].map((item, i) => (
                                 <div key={i} className={`${styles.listItem} ${styles.chaos}`}>
                                     <div className={`${styles.dot} ${styles.chaos}`} />
@@ -57,26 +65,27 @@ export const Comparison = () => {
                                 </div>
                             ))}
                         </div>
-                    </motion.div>
+                    </MotionDiv>
 
-                    {/* The Tuterra */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
+                    <MotionDiv
+                        {...(isTouch ? {} : {
+                            initial: { opacity: 0, x: 50 },
+                            whileInView: { opacity: 1, x: 0 },
+                            viewport: { once: true }
+                        })}
                         className={`${styles.card} ${styles.cardTuterra}`}
                     >
                         <div className={styles.innerBlur} />
 
                         <div className={`${styles.cardHeader} ${styles.tuterra}`}>
-                            <Check size={24} /> Стандарт Tuterra
+                            <Check size={24} /> Современный подход
                         </div>
                         <div className={styles.list}>
                             {[
-                                'Централизованный учет прогресса студентов',
-                                'Интерфейс, спроектированный для мобильных',
-                                'Автоматизированный контроль задолженностей',
-                                'Прозрачная аналитика дохода в несколько нажатий'
+                                'Вся информация по ученикам в одном месте',
+                                'Удобная работа с телефона и ноутбука',
+                                'Автоматический контроль оплат и долгов',
+                                'Понятная картина доходов без ручного подсчёта'
                             ].map((item, i) => (
                                 <div key={i} className={`${styles.listItem} ${styles.tuterra}`}>
                                     <div className={`${styles.dot} ${styles.tuterra}`} />
@@ -84,17 +93,19 @@ export const Comparison = () => {
                                 </div>
                             ))}
                         </div>
-                    </motion.div>
+                    </MotionDiv>
                 </div>
 
                 <div className={styles.statsGrid}>
                     {stats.map((stat, i) => (
-                        <motion.div
+                        <MotionDiv
                             key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
+                            {...(isTouch ? {} : {
+                                initial: { opacity: 0, y: 20 },
+                                whileInView: { opacity: 1, y: 0 },
+                                viewport: { once: true },
+                                transition: { delay: i * 0.1 }
+                            })}
                             className={styles.statCard}
                         >
                             <div className={styles.statIcon}>
@@ -103,23 +114,25 @@ export const Comparison = () => {
                             <div className={styles.statValue}>{stat.value}</div>
                             <div className={styles.statLabel}>{stat.label}</div>
                             <div className={styles.statSub}>{stat.sub}</div>
-                        </motion.div>
+                        </MotionDiv>
                     ))}
                 </div>
 
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
+                <MotionDiv
+                    {...(isTouch ? {} : {
+                        initial: { opacity: 0, scale: 0.95 },
+                        whileInView: { opacity: 1, scale: 1 },
+                        viewport: { once: true }
+                    })}
                     className={styles.footer}
                 >
                     <div className={styles.footerBadge}>
                         <Zap size={24} color="#4A6CF7" fill="#4A6CF7" />
                         <span className={styles.footerText}>
-                            В 2.5 раза меньше времени на бумажную рутину
+                            Вы занимаетесь преподаванием, а не учётом
                         </span>
                     </div>
-                </motion.div>
+                </MotionDiv>
             </div>
         </section>
     )

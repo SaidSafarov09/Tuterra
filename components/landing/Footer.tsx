@@ -16,7 +16,7 @@ export const Footer = () => {
                             <span className={styles.companyName}>Tuterra</span>
                         </Link>
                         <p className={styles.brandDesc}>
-                            Лучшая платформа для тех, кто делает образование доступным и качественным.
+                            Лучшая платформа для преподавателей, которые хотят автоматизировать работу и сосредоточиться на учениках.
                         </p>
                     </div>
 
@@ -39,7 +39,7 @@ export const Footer = () => {
                     </div>
 
                     <div>
-                        <h4 className={styles.columnTitle}>Юридическая инфо</h4>
+                        <h4 className={styles.columnTitle}>Юридическая информация</h4>
                         <ul className={styles.list}>
                             <li><Link href="#">Публичная оферта</Link></li>
                             <li><Link href="#">Конфиденциальность</Link></li>

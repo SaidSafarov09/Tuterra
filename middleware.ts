@@ -2,49 +2,38 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { verifyToken } from './lib/jwt'
 
-
 export const runtime = 'nodejs'
 
 const publicPaths = ['/auth', '/debug-auth']
-const protectedPaths = ['/dashboard', '/students', '/subjects', '/lessons', '/calendar', '/income', '/settings']
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
-
+    // 1. Landing Page logic
     if (pathname === '/') {
         const token = request.cookies.get('auth-token')?.value
         const payload = token ? await verifyToken(token) : null
-        const isAuthenticated = payload !== null
 
-        if (isAuthenticated) {
+        if (payload) {
             return NextResponse.redirect(new URL('/dashboard', request.url))
         }
-        // Если не авторизован, просто показываем лендинг (NextResponse.next())
         return NextResponse.next()
     }
 
-
-    const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
-    const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
-
-
+    // 2. Auth check
     const token = request.cookies.get('auth-token')?.value
-
-
     const payload = token ? await verifyToken(token) : null
     const isAuthenticated = payload !== null
 
+    const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
 
-    if (isProtectedPath && !isAuthenticated) {
-        const url = new URL('/auth', request.url)
-        return NextResponse.redirect(url)
+    // 3. Redirect logic
+    if (!isPublicPath && !isAuthenticated) {
+        return NextResponse.redirect(new URL('/auth', request.url))
     }
 
-
     if (isPublicPath && isAuthenticated) {
-        const url = new URL('/dashboard', request.url)
-        return NextResponse.redirect(url)
+        return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
     return NextResponse.next()

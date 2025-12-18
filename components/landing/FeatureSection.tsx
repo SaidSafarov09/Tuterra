@@ -10,74 +10,96 @@ import {
     Users
 } from 'lucide-react'
 import styles from './FeatureSection.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
-const FeatureCard = ({ title, description, icon: Icon, color, children, delay }: any) => (
-    <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className={styles.card}
-    >
-        <div className={styles.iconBox} style={{ background: `${color}10`, color }}>
-            <Icon size={30} />
-        </div>
-        <div>
-            <h3 className={styles.cardTitle}>{title}</h3>
-            <p className={styles.cardDesc}>{description}</p>
-        </div>
-        <div className={styles.preview}>
-            {children}
-        </div>
-    </motion.div>
-)
+const FeatureCard = ({ title, description, icon: Icon, color, children, delay, isTouch }: any) => {
+    const Component: any = isTouch ? 'div' : motion.div;
+    const motionProps = isTouch ? {} : {
+        initial: { opacity: 0, y: 30 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true },
+        transition: { delay, duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+    };
+
+    return (
+        <Component
+            {...motionProps}
+            className={styles.card}
+        >
+            <div className={styles.iconBox} style={{ background: `${color}10`, color }}>
+                <Icon size={30} />
+            </div>
+            <div>
+                <h3 className={styles.cardTitle}>{title}</h3>
+                <p className={styles.cardDesc}>{description}</p>
+            </div>
+            <div className={styles.preview}>
+                {children}
+            </div>
+        </Component>
+    );
+};
 
 export const FeatureSection = () => {
+    const isTouch = useMediaQuery('(pointer: coarse)')
+
+    const HeaderComponent = isTouch ? 'div' : motion.div;
+    const headerMotionProps = isTouch ? {} : {
+        initial: { opacity: 0, y: 20 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true }
+    };
+
     return (
         <section id="features" className={styles.section}>
             <div className={styles.container}>
                 <div className={styles.header}>
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
+                    <HeaderComponent
+                        {...(isTouch ? {} : {
+                            initial: { opacity: 0, x: -20 },
+                            whileInView: { opacity: 1, x: 0 },
+                            viewport: { once: true }
+                        })}
                         className={styles.badge}
                     >
-                        <Zap size={18} fill="currentColor" /> Всё для ежедневной работы
-                    </motion.div>
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        <Zap size={18} fill="currentColor" /> Инструменты для репетитора
+                    </HeaderComponent>
+
+                    <HeaderComponent
+                        {...headerMotionProps}
                         className={styles.title}
                     >
-                        Современный сервис <br />
-                        <span>для частных преподавателей</span>
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
+                        <span className={styles.gradientText}>Сервис</span>, который упрощает<br />
+                        <span>жизнь преподавателя</span>
+                    </HeaderComponent>
+
+                    <HeaderComponent
+                        {...(isTouch ? {} : {
+                            initial: { opacity: 0, y: 20 },
+                            whileInView: { opacity: 1, y: 0 },
+                            viewport: { once: true },
+                            transition: { delay: 0.1 }
+                        })}
                         className={styles.description}
                     >
-                        Мы собрали все необходимые инструменты в одном интерфейсе, чтобы вы могли тратить время на учеников, а не на заполнение таблиц.
-                    </motion.p>
+                        Расписание, оплаты и информация об учениках - без таблиц, блокнотов и хаоса.
+                        Всё, что обычно разбросано по разным сервисам, теперь в одном месте.
+                    </HeaderComponent>
                 </div>
 
                 <div className={styles.featureGrid}>
-                    {/* Feature 1: Intelligent Scheduling */}
                     <FeatureCard
                         title="Удобное расписание"
-                        description="Все ваши занятия перед глазами. Система помогает избежать накладок и автоматически напоминает о предстоящих уроках."
+                        description="Все занятия - в одном календаре. Переносы, отмены и занятые окна видны сразу, без путаницы и накладок между уроками"
                         icon={Calendar}
                         color="#4A6CF7"
                         delay={0}
+                        isTouch={isTouch}
                     >
                         <div className={styles.mockLesson}>
                             <div className={styles.mockLessonHeader}>
                                 <div className={styles.time}>Сегодня, 18:30</div>
-                                <div className={styles.status}>ПОДТВЕРЖДЕНО</div>
+                                <div className={styles.status}>Оплачено</div>
                             </div>
                             <div className={styles.studentInfo}>
                                 <div className={styles.avatar}>М</div>
@@ -89,18 +111,18 @@ export const FeatureSection = () => {
                         </div>
                     </FeatureCard>
 
-                    {/* Feature 2: Financial Order */}
                     <FeatureCard
-                        title="Финансовый порядок"
-                        description="Автоматизируйте учет платежей. Забудьте о бесконечных сверках и напоминаниях — система сама покажет, кто и когда должен оплатить."
+                        title="Контроль оплат"
+                        description="Вы всегда видите, кто оплатил занятия, а у кого есть задолженность. Никаких списков и переписок - всё понятно с первого взгляда."
                         icon={TrendingUp}
                         color="#10B981"
                         delay={0.1}
+                        isTouch={isTouch}
                     >
                         <div className={styles.mockStats}>
                             <div className={`${styles.statItem} ${styles.positive}`}>
-                                <div className={styles.label}>ВЫРУЧКА</div>
-                                <div className={styles.value}>+145%</div>
+                                <div className={styles.label}>Доход</div>
+                                <div className={styles.value}>+120.000₽</div>
                             </div>
                             <div className={`${styles.statItem} ${styles.negative}`}>
                                 <div className={styles.label}>ДОЛГИ</div>
@@ -109,13 +131,13 @@ export const FeatureSection = () => {
                         </div>
                     </FeatureCard>
 
-                    {/* Feature 3: Student CRM */}
                     <FeatureCard
                         title="Личные дела учеников"
-                        description="Полноценная база данных ваших учеников: контакты, история уроков и пройденные темы всегда под рукой."
+                        description="Карточки учеников с историей занятий, заметками и прогрессом. Вся важная информация - там, где она нужна."
                         icon={Users}
                         color="#8B5CF6"
                         delay={0.2}
+                        isTouch={isTouch}
                     >
                         <div className={styles.mockStudentCard}>
                             <div className={styles.bar} style={{ background: '#8B5CF6' }} />
@@ -129,13 +151,13 @@ export const FeatureSection = () => {
                         </div>
                     </FeatureCard>
 
-                    {/* Feature 4: High Security */}
                     <FeatureCard
-                        title="Надежность и защита"
-                        description="Ваша база учеников — это ценный капитал. Мы гарантируем защиту данных и 99.9% доступность системы с любого устройства."
+                        title="Спокойствие за данные"
+                        description="Данные учеников хранятся в облаке и доступны с любого устройства. Без потерь, с резервным копированием и защитой соединения."
                         icon={ShieldCheck}
                         color="#F59E0B"
                         delay={0.3}
+                        isTouch={isTouch}
                     >
                         <div className={styles.tags}>
                             {['Защита SSL', 'Облачный бэкап', 'Шифрование', 'Доступ 24/7'].map(tag => (

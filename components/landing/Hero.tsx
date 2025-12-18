@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import styles from './Hero.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 const FloatingIcon = ({ Icon, size, color, top, left, delay, rotate }: any) => (
     <motion.div
@@ -45,6 +46,8 @@ const FloatingIcon = ({ Icon, size, color, top, left, delay, rotate }: any) => (
 )
 
 export const Hero = () => {
+    const isTouch = useMediaQuery('(pointer: coarse)')
+    const is540 = useMediaQuery('(max-width: 540px)')
     const scienceIcons = [
         { Icon: Atom, size: 40, color: '#4A6CF7', top: '15%', left: '10%', delay: 0, rotate: 15 },
         { Icon: Binary, size: 32, color: '#10B981', top: '25%', left: '85%', delay: 1, rotate: -10 },
@@ -59,60 +62,59 @@ export const Hero = () => {
     const features = [
         {
             icon: Smartphone,
-            title: 'Всегда под рукой',
-            desc: 'Tuterra устанавливается на смартфон как обычное приложение. Быстрый доступ к расписанию даже на ходу, без долгого ожидания загрузки сайта.',
+            title: 'Удобно с любого устройства',
+            desc: 'Работайте с расписанием и учениками с ноутбука, планшета или телефона. Ничего устанавливать не нужно — всё открывается прямо в браузере.',
             color: '#4A6CF7'
         },
         {
-            icon: ShieldCheck,
-            title: 'Надежность в деталях',
-            desc: 'Ваши данные и история оплат в безопасности. Мы используем надежные протоколы защиты, чтобы вы могли спокойно заниматься любимым делом.',
-            color: '#10B981'
+            icon: Cpu,
+            title: 'Минимум действий - максимум порядка',
+            desc: 'Добавляйте занятия, отмечайте оплаты и переносы за пару кликов. Интерфейс создан специально под логику репетитора.',
+            color: '#8B5CF6',
         },
         {
-            icon: Cpu,
-            title: 'Порядок в календаре',
-            desc: 'Система сама предупредит о накладках в расписании. Занятия, переносы и праздники — всё под вашим контролем в одном понятном окне.',
-            color: '#8B5CF6'
-        }
+            icon: ShieldCheck,
+            title: 'Данные под контролем',
+            desc: 'История занятий, оплат и учеников хранится в одном месте. Ничего не теряется и всегда доступно, когда нужно.',
+            color: '#10B981',
+        },
     ]
 
     return (
         <section className={styles.hero}>
-            {/* Animated Science Icons */}
-            {scienceIcons.map((icon, i) => <FloatingIcon key={i} {...icon} />)}
+            {is540 || isTouch ? null : scienceIcons.map((icon, i) => <FloatingIcon key={i} {...icon} />)}
 
             <div className={styles.container}>
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={isTouch ? false : { opacity: 0, y: 30 }}
+                    animate={isTouch ? false : { opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 >
                     <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
+                        initial={isTouch ? false : { scale: 0.9, opacity: 0 }}
+                        animate={isTouch ? false : { scale: 1, opacity: 1 }}
                         transition={{ delay: 0.2 }}
                         className={styles.badge}
                     >
                         <Zap size={16} fill="currentColor" />
-                        МЕСТО УПРАВЛЕНИЯ ВАШИМИ ЗАНЯТИЯМИ
+                        ИНСТРУМЕНТ ДЛЯ РЕПЕТИТОРОВ
                     </motion.div>
 
                     <h1 className={styles.title}>
-                        Масштабируйте свой <br />
+                        Управляйте занятиями<br />
                         <span className={styles.gradientText}>
-                            талант преподавателя
+                            профессионально
                         </span>
                     </h1>
 
                     <p className={styles.description}>
-                        Удобный органайзер для репетиторов. Ведите расписание, отмечайте оплаты и следите за прогрессом учеников в одном месте без лишних хлопот.
+                        Больше никакой путаницы в занятиях и оплатах.<br /> Всё, что нужно <span className={styles.gradientText}>репетитору</span> - в одном месте.
                     </p>
 
                     <div className={styles.actions}>
                         <Link href="/auth">
                             <Button size="large" className={styles.primaryButton}>
-                                Попробовать бесплатно <ArrowRight style={{ marginLeft: '12px' }} size={22} />
+                                Начать бесплатно <ArrowRight style={{ marginLeft: '12px' }} size={22} />
                             </Button>
                         </Link>
                         <Button
@@ -121,7 +123,7 @@ export const Hero = () => {
                             className={styles.ghostButton}
                             onClick={() => document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' })}
                         >
-                            <Play style={{ marginRight: '12px', fill: 'currentColor' }} size={18} /> Увидеть в действии
+                            <Play style={{ marginRight: '12px', fill: 'currentColor' }} size={18} /> Увидеть платформу
                         </Button>
                     </div>
                 </motion.div>
@@ -131,8 +133,8 @@ export const Hero = () => {
                     {features.map((f, i) => (
                         <motion.div
                             key={i}
-                            initial={{ opacity: 0, y: 40 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={isTouch ? false : { opacity: 0, y: 40 }}
+                            animate={isTouch ? false : { opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 + i * 0.1, duration: 1 }}
                             className={styles.featureCard}
                         >

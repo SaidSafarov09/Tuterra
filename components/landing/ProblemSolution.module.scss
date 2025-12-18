@@ -201,3 +201,11 @@
         border-radius: 16px;
     }
 }
+
+.gradientText {
+    background: linear-gradient(90deg, #4A6CF7 0%, #00D2FF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+}

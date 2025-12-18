@@ -9,7 +9,7 @@ interface Tab {
 
 interface TabNavProps {
     tabs: Tab[]
-    activeTab: string
+    activeTab: string | any
     onTabChange: (tabId: string) => void
     className?: string
 }

@@ -78,7 +78,6 @@
 
 .sliderWrapper {
     position: relative;
-    padding-bottom: 40px;
 }
 
 .sliderTrack {
@@ -94,11 +93,41 @@
     @media (max-width: 1100px) {
         flex: 0 0 50%;
     }
+}
 
-    @media (max-width: 768px) {
-        flex: 0 0 100%;
+.mobileScrollContainer {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 16px;
+    padding: 20px 0 40px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.mobileSlide {
+    flex: 0 0 85%;
+    scroll-snap-align: center;
+
+    &:first-child {
+        margin-left: 0;
     }
 
+    &:last-child {
+        margin-right: 0;
+    }
+}
+
+.swipeHint {
+    text-align: center;
+    font-size: 14px;
+    color: #9ca3af;
+    font-weight: 600;
+    margin-top: -10px;
 }
 
 .card {
