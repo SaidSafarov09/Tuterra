@@ -19,9 +19,9 @@ export async function middleware(request: NextRequest) {
 
         if (isAuthenticated) {
             return NextResponse.redirect(new URL('/dashboard', request.url))
-        } else {
-            return NextResponse.redirect(new URL('/auth', request.url))
         }
+        // Если не авторизован, просто показываем лендинг (NextResponse.next())
+        return NextResponse.next()
     }
 
 

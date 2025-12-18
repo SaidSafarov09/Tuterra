@@ -1,0 +1,146 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 12px;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: transparent;
+
+    @media (max-width: 768px) {
+        position: relative;
+    }
+
+    &.scrolled {
+        padding-top: 16px;
+        padding-bottom: 16px;
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+
+    .name {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        color: var(--text-primary);
+    }
+}
+
+.nav {
+    display: flex;
+    gap: 24px;
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+.navLink {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    opacity: 0.8;
+
+    &:hover {
+        color: var(--primary);
+        opacity: 1;
+    }
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.loginLink {
+    text-decoration: none;
+
+    span {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 0 12px;
+    }
+
+    @media (max-width: 640px) {
+        display: none;
+    }
+}
+
+.ctaButton {
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 800;
+    font-size: 14px;
+
+    &.withShadow {
+        box-shadow: 0 10px 20px rgba(74, 108, 247, 0.15);
+    }
+
+    @media (max-width: 768px) {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+}
+
+.menuButton {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    display: none;
+
+    @media (max-width: 768px) {
+        display: block;
+    }
+}
+
+.mobileMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 49;
+    box-shadow: var(--shadow-lg);
+}
+
+.mobileNavLink {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+}

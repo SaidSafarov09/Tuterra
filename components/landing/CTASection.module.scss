@@ -1,0 +1,159 @@
+.section {
+    padding: 140px 24px;
+    background: #ffffff;
+
+    @media (max-width: 768px) {
+        padding: 0;
+    }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 16px;
+    padding: 100px 48px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 50px 100px -30px rgba(15, 23, 42, 0.3);
+
+    @media (max-width: 768px) {
+        padding: 40px 18px;
+        border-radius: 0;
+    }
+}
+
+.content {
+    position: relative;
+    z-index: 5;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 100px;
+    color: #4a6cf7;
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    @media (max-width: 768px) {
+        margin-bottom: 24px;
+        padding: 10px;
+        font-size: 12px;
+    }
+}
+
+.title {
+    font-size: clamp(36px, 7vw, 72px);
+    font-weight: 950;
+    margin-bottom: 28px;
+    letter-spacing: -0.05em;
+    line-height: 1;
+
+    @media (max-width: 768px) {
+        font-size: 28px;
+    }
+
+    .gradientText {
+        background: linear-gradient(90deg, #4a6cf7 0%, #00d2ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        position: relative;
+    }
+
+    .accentText {
+        color: #4a6cf7 !important;
+    }
+}
+
+.description {
+    font-size: 22px;
+    color: #fff !important;
+    max-width: 640px;
+    margin: 0 auto 60px;
+    font-weight: 500;
+    line-height: 1.5;
+
+    @media (max-width: 768px) {
+        font-size: 18px;
+        margin-bottom: 24px;
+    }
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.ctaButton {
+    padding: 0 60px;
+    height: 80px;
+    border-radius: 12px;
+    font-size: 24px;
+    font-weight: 900;
+    color: #0f172a;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+
+    @media (max-width: 640px) {
+        padding: 0 32px;
+        height: 64px;
+        font-size: 18px;
+    }
+}
+
+.trustBadges {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-top: 16px;
+
+    @media (max-width: 640px) {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
+.trustItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0.8;
+    color: #fff !important;
+}
+
+.stars {
+    display: flex;
+    gap: 2px;
+}
+
+.decoration {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    filter: blur(150px);
+    opacity: 0.2;
+}
+
+.decorationTop {
+    top: -10%;
+    right: -10%;
+    background: #4a6cf7;
+}
+
+.decorationBottom {
+    bottom: -10%;
+    left: -10%;
+    background: #3182ce;
+}
