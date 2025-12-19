@@ -118,6 +118,11 @@
             animation: shimmer 1.5s infinite;
         }
     }
+
+    @media (min-width: 1660px) {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @keyframes shimmer {

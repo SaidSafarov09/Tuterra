@@ -127,6 +127,9 @@ const REGIONAL_FIXED: Record<string, Record<string, string>> = {
     },
     'RU-CU': {
         '06-24': 'С Днем Республики Чувашия! 🌽🏢'
+    },
+    'RU-SE': {
+        '09-20': 'С Днем Республики Северная Осетия — Алания! 🏔️🛡️'
     }
 }
 
@@ -147,7 +150,8 @@ const NON_WORKING_REGIONAL: Set<string> = new Set([
     'RU-TY:08-15', 'RU-TY:05-06',
     'RU-KK:07-03',
     'RU-CE:03-23',
-    'RU-CU:06-24'
+    'RU-CU:06-24',
+    'RU-SE:09-20'
 ])
 
 export const getDayInfo = (date: Date, userBirthDate?: string | null, region?: string | null): DayInfo => {
