@@ -40,6 +40,7 @@ const settingsSchema = z.object({
         }, 'Некорректная дата рождения (должна быть с 1940 года и до сегодня)'),
     currency: z.string().optional(),
     timezone: z.string(),
+    region: z.string().optional().nullable(),
 })
 
 export async function GET(request: NextRequest) {
@@ -70,6 +71,7 @@ export async function GET(request: NextRequest) {
                 birthDate: true,
                 currency: true,
                 timezone: true,
+                region: true,
                 theme: true,
                 authProviders: {
                     select: {
@@ -185,6 +187,7 @@ export async function PUT(request: NextRequest) {
                 birthDate: true,
                 currency: true,
                 timezone: true,
+                region: true,
             },
         })
 

@@ -24,13 +24,14 @@ interface DropdownProps {
     searchable?: boolean
     creatable?: boolean
     onCreate?: (value: string) => void
-    menuPosition?: 'absolute' | 'relative'
+    menuPosition?: 'absolute' | 'relative' | 'top'
     disabled?: boolean
     required?: boolean
     error?: string
     onOpen?: () => void
     className?: string
     placeholderSearch?: string
+    hint?: string
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -48,7 +49,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
     error,
     onOpen,
     className = '',
-    placeholderSearch = "Найти/Создать"
+    placeholderSearch = "Найти/Создать",
+    hint
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
@@ -162,7 +164,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
             </button>
 
             {isOpen && (
-                <div className={`${styles.menu} ${menuPosition === 'relative' ? styles.menuRelative : ''}`}>
+                <div className={`
+                    ${styles.menu} 
+                    ${menuPosition === 'relative' ? styles.menuRelative : ''}
+                    ${menuPosition === 'top' ? styles.menuTop : ''}
+                `}>
                     {searchable && (
                         <div className={styles.search}>
                             <input
@@ -225,6 +231,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
             )}
 
             {error && <div className={styles.errorMessage}>{error}</div>}
+            {hint && !error && <div className={styles.hintMessage}>{hint}</div>}
         </div>
     )
 }

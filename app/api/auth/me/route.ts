@@ -4,7 +4,7 @@ import { verifyToken } from '@/lib/jwt'
 
 export async function GET(request: NextRequest) {
     try {
-        
+
         const token = request.cookies.get('auth-token')?.value
 
         if (!token) {
@@ -34,6 +34,8 @@ export async function GET(request: NextRequest) {
                 avatar: true,
                 currency: true,
                 timezone: true,
+                birthDate: true,
+                region: true,
             },
         })
 

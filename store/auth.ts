@@ -10,6 +10,7 @@ interface User {
     phone: string | null
     avatar: string | null
     birthDate: string | null
+    region: string | null
 }
 
 interface AuthState {

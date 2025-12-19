@@ -99,6 +99,8 @@ export async function POST(request: NextRequest) {
                 name: user.name,
                 phone: user.phone,
                 avatar: user.avatar,
+                birthDate: user.birthDate,
+                region: user.region,
             },
         })
     } catch (error) {

@@ -41,6 +41,32 @@ export const TIMEZONES = [
     { value: 'Asia/Vladivostok', label: 'Владивосток (UTC+10)' },
 ]
 
+export const REGIONS = [
+    { value: 'all', label: 'РФ (федеральные праздники)' },
+    { value: 'RU-AD', label: 'Республика Адыгея' },
+    { value: 'RU-AL', label: 'Республика Алтай' },
+    { value: 'RU-BA', label: 'Республика Башкортостан' },
+    { value: 'RU-BU', label: 'Республика Бурятия' },
+    { value: 'RU-DA', label: 'Республика Дагестан' },
+    { value: 'RU-IN', label: 'Республика Ингушетия' },
+    { value: 'RU-KB', label: 'Кабардино-Балкарская Республика' },
+    { value: 'RU-KL', label: 'Республика Калмыкия' },
+    { value: 'RU-KC', label: 'Карачаево-Черкесская Республика' },
+    { value: 'RU-KR', label: 'Республика Карелия' },
+    { value: 'RU-KO', label: 'Республика Коми' },
+    { value: 'RU-CR', label: 'Республика Крым' },
+    { value: 'RU-ME', label: 'Республика Марий Эл' },
+    { value: 'RU-MO', label: 'Республика Мордовия' },
+    { value: 'RU-SA', label: 'Республика Саха (Якутия)' },
+    { value: 'RU-SE', label: 'Республика Северная Осетия - Алания' },
+    { value: 'RU-TA', label: 'Республика Татарстан' },
+    { value: 'RU-TY', label: 'Республика Тыва' },
+    { value: 'RU-UD', label: 'Удмуртская Республика' },
+    { value: 'RU-KK', label: 'Республика Хакасия' },
+    { value: 'RU-CE', label: 'Чеченская Республика' },
+    { value: 'RU-CU', label: 'Чувашская Республика' },
+]
+
 export const stringToColor = (str: string): string => {
     let hash = 0
     for (let i = 0; i < str.length; i++) {

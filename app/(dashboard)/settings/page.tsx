@@ -15,7 +15,7 @@ import { GENERAL_MESSAGES } from '@/constants/messages'
 import { SettingsFormSkeleton } from '@/components/skeletons'
 import { formatPhoneNumber } from '@/lib/validation'
 import styles from './page.module.scss'
-import { TABS, TIMEZONES } from '@/constants'
+import { TABS, TIMEZONES, REGIONS } from '@/constants'
 import { AnimatePresence, motion } from 'framer-motion'
 
 
@@ -42,6 +42,7 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
         birthDate: '',
         avatar: null as string | null,
         timezone: 'Europe/Moscow',
+        region: 'all',
     })
 
     useEffect(() => {
@@ -59,6 +60,7 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                 birthDate: data.birthDate ? new Date(data.birthDate).toISOString().split('T')[0] : '',
                 avatar: data.avatar || null,
                 timezone: data.timezone || 'Europe/Moscow',
+                region: data.region || 'all',
             }
             setFormData(initialData)
             initialDataRef.current = initialData
@@ -150,6 +152,7 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                 phone: updatedUser.phone || null,
                 avatar: updatedUser.avatar || null,
                 birthDate: updatedUser.birthDate || null,
+                region: updatedUser.region || null,
             })
 
 
@@ -283,12 +286,23 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                                     <h2 className={styles.sectionTitle}>Региональные настройки</h2>
                                     <div className={styles.appGrid}>
                                         <Dropdown
+                                            label="Регион (Субъект РФ)"
+                                            value={formData.region}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, region: value }))}
+                                            options={REGIONS}
+                                            searchable
+                                            placeholderSearch="Поиск..."
+                                            menuPosition="top"
+                                            hint="Выберите вашу республику - мы покажем в календаре дополнительные региональные выходные."
+                                        />
+                                        <Dropdown
                                             label="Часовой пояс"
                                             value={formData.timezone}
                                             onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
                                             options={TIMEZONES}
                                             searchable
-                                            menuPosition="relative"
+                                            placeholderSearch="Поиск..."
+                                            menuPosition="top"
                                             onOpen={() => {
                                                 setTimeout(() => {
                                                     window.scrollBy({ top: 250, behavior: 'smooth' })

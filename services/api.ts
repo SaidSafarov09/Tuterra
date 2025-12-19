@@ -197,6 +197,7 @@ interface UserSettings {
     phone?: string
     avatar?: string | null
     birthDate?: string | null
+    region?: string | null
     timezone?: string
     currency?: string
     hasOAuthProvider?: boolean

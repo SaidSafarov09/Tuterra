@@ -26,10 +26,14 @@ import { LESSON_MESSAGES } from '@/constants/messages'
 import { CalendarSkeleton } from '@/components/skeletons'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { useLessonActions } from '@/hooks/useLessonActions'
+import { useAuthStore } from '@/store/auth'
 
 import styles from './page.module.scss'
 
 export default function CalendarPage() {
+    const { user } = useAuthStore()
+    const userBirthDate = user?.birthDate
+    const userRegion = user?.region
     const router = useRouter()
     const isMobile = useMediaQuery('(max-width: 768px)')
     const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -202,6 +206,8 @@ export default function CalendarPage() {
                                 currentMonth={currentMonth}
                                 lessons={lessons}
                                 onDateClick={handleDayClick}
+                                userBirthDate={userBirthDate}
+                                region={userRegion}
                             />
                         </motion.div>
                     </AnimatePresence>
@@ -222,6 +228,8 @@ export default function CalendarPage() {
                     onTogglePaid={togglePaid}
                     onToggleCancel={toggleCancel}
                     onReschedule={handleRescheduleLesson}
+                    userBirthDate={userBirthDate}
+                    region={userRegion}
                 />
             </Modal>
 

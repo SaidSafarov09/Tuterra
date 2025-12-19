@@ -101,6 +101,24 @@
     }
 }
 
+.menuTop {
+    top: auto;
+    bottom: calc(100% + -24px);
+    animation: dropdownAppearTop 0.3s ease;
+}
+
+@keyframes dropdownAppearTop {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @keyframes dropdownExpand {
     from {
         opacity: 0;
@@ -225,9 +243,10 @@
     font-size: 13px;
     color: var(--error);
 }
+
 .group {
     border-bottom: 1px solid var(--border-light);
-    
+
     &:last-child {
         border-bottom: none;
     }
@@ -241,4 +260,10 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     background: var(--bg-secondary);
+}
+
+.hintMessage {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
 }
