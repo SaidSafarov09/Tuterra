@@ -11,6 +11,7 @@ import { StudentCardSkeleton } from '@/components/skeletons'
 import { useGroups } from '@/hooks/useGroups'
 import styles from './page.module.scss'
 import { GroupFilters } from '@/components/groups/GroupFilters'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function GroupsPage() {
     const {
@@ -62,17 +63,40 @@ export default function GroupsPage() {
                 />
             )}
 
-            {isLoading ? (
-                <div className={styles.groupsGrid}>
-                    <StudentCardSkeleton />
-                    <StudentCardSkeleton />
-                    <StudentCardSkeleton />
-                </div>
-            ) : groups.length === 0 ? (
-                <EmptyGroupsState onAddGroup={handleOpenModal} />
-            ) : (
-                <GroupsList groups={filteredGroups} />
-            )}
+            <AnimatePresence mode="wait">
+                {isLoading ? (
+                    <motion.div
+                        key="skeleton"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className={styles.groupsGrid}
+                    >
+                        <StudentCardSkeleton />
+                        <StudentCardSkeleton />
+                        <StudentCardSkeleton />
+                    </motion.div>
+                ) : groups.length === 0 ? (
+                    <motion.div
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <EmptyGroupsState onAddGroup={handleOpenModal} />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key={selectedSubjectFilter}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <GroupsList groups={filteredGroups} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <CreateGroupModal
                 isOpen={isOpen}

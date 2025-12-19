@@ -16,6 +16,7 @@ import { SettingsFormSkeleton } from '@/components/skeletons'
 import { formatPhoneNumber } from '@/lib/validation'
 import styles from './page.module.scss'
 import { TABS, TIMEZONES } from '@/constants'
+import { AnimatePresence, motion } from 'framer-motion'
 
 
 interface SettingsPageProps {
@@ -199,106 +200,123 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                 ))}
             </div>
 
-            {isLoading ? (
-                <SettingsFormSkeleton />
-            ) : (
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    {activeTab === 'general' && (
-                        <>
-                            <div className={styles.section}>
-                                <h2 className={styles.sectionTitle}>Профиль</h2>
-                                <div className={styles.profileGrid}>
-                                    <div className={styles.avatarColumn}>
-                                        <UserAvatarUpload
-                                            currentAvatar={formData.avatar}
-                                            userName={`${formData.firstName} ${formData.lastName}`.trim()}
-                                            onAvatarChange={handleAvatarChange}
-                                        />
-                                    </div>
-                                    <div className={styles.fieldsColumn}>
-                                        <div className={styles.nameFields}>
-                                            <Input
-                                                label="Имя"
-                                                name="firstName"
-                                                value={formData.firstName}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                            <Input
-                                                label="Фамилия"
-                                                name="lastName"
-                                                value={formData.lastName}
-                                                onChange={handleChange}
-                                                required
+            <AnimatePresence mode="wait">
+                {isLoading ? (
+                    <motion.div
+                        key="skeleton"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <SettingsFormSkeleton />
+                    </motion.div>
+                ) : (
+                    <motion.form
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        onSubmit={handleSubmit}
+                        className={styles.form}
+                    >
+                        {activeTab === 'general' && (
+                            <>
+                                <div className={styles.section}>
+                                    <h2 className={styles.sectionTitle}>Профиль</h2>
+                                    <div className={styles.profileGrid}>
+                                        <div className={styles.avatarColumn}>
+                                            <UserAvatarUpload
+                                                currentAvatar={formData.avatar}
+                                                userName={`${formData.firstName} ${formData.lastName}`.trim()}
+                                                onAvatarChange={handleAvatarChange}
                                             />
                                         </div>
-                                        <Input
-                                            label="Email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            disabled={hasOAuthProvider}
-                                            hint={hasOAuthProvider ? "Email нельзя изменить (вход через соцсеть)" : undefined}
-                                        />
-                                        <div className={styles.nameFields}>
+                                        <div className={styles.fieldsColumn}>
+                                            <div className={styles.nameFields}>
+                                                <Input
+                                                    label="Имя"
+                                                    name="firstName"
+                                                    value={formData.firstName}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
+                                                <Input
+                                                    label="Фамилия"
+                                                    name="lastName"
+                                                    value={formData.lastName}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
+                                            </div>
                                             <Input
-                                                label="Телефон"
-                                                name="phone"
-                                                value={formData.phone}
+                                                label="Email"
+                                                name="email"
+                                                value={formData.email}
                                                 onChange={handleChange}
-                                                placeholder="+7XXXXXXXXXX"
+                                                disabled={hasOAuthProvider}
+                                                hint={hasOAuthProvider ? "Email нельзя изменить (вход через соцсеть)" : undefined}
                                             />
-                                            <Input
-                                                label="Дата рождения"
-                                                name="birthDate"
-                                                type="date"
-                                                value={formData.birthDate || ''}
-                                                onChange={handleChange}
-                                                min="1940-01-01"
-                                                max={new Date(Date.now() - 86400000).toISOString().split('T')[0]}
-                                            />
+                                            <div className={styles.nameFields}>
+                                                <Input
+                                                    label="Телефон"
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={handleChange}
+                                                    placeholder="+7XXXXXXXXXX"
+                                                />
+                                                <Input
+                                                    label="Дата рождения"
+                                                    name="birthDate"
+                                                    type="date"
+                                                    value={formData.birthDate || ''}
+                                                    onChange={handleChange}
+                                                    min="1940-01-01"
+                                                    max={new Date(Date.now() - 86400000).toISOString().split('T')[0]}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
+                                <div className={styles.section}>
+                                    <h2 className={styles.sectionTitle}>Региональные настройки</h2>
+                                    <div className={styles.appGrid}>
+                                        <Dropdown
+                                            label="Часовой пояс"
+                                            value={formData.timezone}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
+                                            options={TIMEZONES}
+                                            searchable
+                                            menuPosition="relative"
+                                            onOpen={() => {
+                                                setTimeout(() => {
+                                                    window.scrollBy({ top: 250, behavior: 'smooth' })
+                                                }, 100)
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {activeTab === 'appearance' && (
                             <div className={styles.section}>
-                                <h2 className={styles.sectionTitle}>Региональные настройки</h2>
+                                <h2 className={styles.sectionTitle}>Оформление</h2>
                                 <div className={styles.appGrid}>
-                                    <Dropdown
-                                        label="Часовой пояс"
-                                        value={formData.timezone}
-                                        onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
-                                        options={TIMEZONES}
-                                        searchable
-                                        menuPosition="relative"
-                                        onOpen={() => {
-                                            setTimeout(() => {
-                                                window.scrollBy({ top: 250, behavior: 'smooth' })
-                                            }, 100)
-                                        }}
-                                    />
+                                    <ThemeToggle />
                                 </div>
                             </div>
-                        </>
-                    )}
+                        )}
 
-                    {activeTab === 'appearance' && (
-                        <div className={styles.section}>
-                            <h2 className={styles.sectionTitle}>Оформление</h2>
-                            <div className={styles.appGrid}>
-                                <ThemeToggle />
-                            </div>
+                        <div className={styles.submitSection}>
+                            <Button type="submit" disabled={isSaving}>
+                                {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
+                            </Button>
                         </div>
-                    )}
-
-                    <div className={styles.submitSection}>
-                        <Button type="submit" disabled={isSaving}>
-                            {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
-                        </Button>
-                    </div>
-                </form>
-            )}
+                    </motion.form>
+                )}
+            </AnimatePresence>
 
             <UnsavedChangesModal
                 isOpen={showUnsavedModal}

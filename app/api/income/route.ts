@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-
 import { prisma } from '@/lib/prisma'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
         const dateParam = searchParams.get('date')
         const currentDate = dateParam ? new Date(dateParam) : new Date()
         const monthsCount = 6
-
 
         // Fetch monthly data in parallel
         const monthlyDataPromises = Array.from({ length: monthsCount }).map(async (_, index) => {
@@ -68,7 +66,7 @@ export async function GET(request: NextRequest) {
                 lessons: lessonsInMonth.length,
                 paid: paidCount,
                 unpaid: unpaidCount,
-                _date: date // use for sorting
+                _date: date
             }
         })
 
@@ -90,19 +88,12 @@ export async function GET(request: NextRequest) {
             })
 
             let income = 0
-            let lessonsCount = 0 // Count of "Paid" lessons (or lessons with income?)
-            // Usually "Lessons Count" in stats refers to Total Lessons or Paid Lessons?
-            // In original code: `currentLessonsCount = currentMonthIncome._count` (which was filtered by isPaid=true).
-            // So default behavior was counting PAID lessons.
-
+            let lessonsCount = 0
             lessons.forEach(lesson => {
                 if (lesson.group) {
                     const paidPayments = lesson.lessonPayments?.filter(p => p.hasPaid).length || 0
                     if (paidPayments > 0) {
                         income += paidPayments * lesson.price
-                        // For count: should we count it if ANY payment? Or only full?
-                        // Original was isPaid=true (so only fully paid in theory, but buggy).
-                        // Let's count it if it generates income (has >0 payments).
                         lessonsCount++
                     }
                 } else {
@@ -120,9 +111,10 @@ export async function GET(request: NextRequest) {
             currentStats,
             prevStats,
             paidLessonsCount,
-            currentMonthDuration,
-            previousMonthDuration,
-            recentTransactions
+            currentMonthDurationResult,
+            previousMonthDurationResult,
+            recentTransactions,
+            debtsRaw
         ] = await Promise.all([
             Promise.all(monthlyDataPromises),
             getMonthStats(currentMonthStart, currentMonthEnd),
@@ -155,6 +147,7 @@ export async function GET(request: NextRequest) {
             prisma.lesson.findMany({
                 where: {
                     ownerId: user.id,
+                    date: { gte: currentMonthStart, lte: currentMonthEnd },
                     OR: [
                         { isPaid: true },
                         { lessonPayments: { some: { hasPaid: true } } }
@@ -168,12 +161,31 @@ export async function GET(request: NextRequest) {
                     group: { select: { name: true } },
                     lessonPayments: true,
                 },
+            }),
+            prisma.lesson.findMany({
+                where: {
+                    ownerId: user.id,
+                    isCanceled: false,
+                    OR: [
+                        { isPaid: false, groupId: null },
+                        { lessonPayments: { some: { hasPaid: false } } }
+                    ]
+                },
+                include: {
+                    student: { select: { name: true } },
+                    subject: { select: { name: true, color: true } },
+                    group: { select: { name: true } },
+                    lessonPayments: {
+                        where: { hasPaid: false },
+                        include: { student: { select: { name: true } } }
+                    }
+                },
+                orderBy: { date: 'asc' }
             })
         ])
 
-        const monthlyData = monthlyDataResults.sort((a, b) => a._date.getTime() - b._date.getTime())
+        const monthlyData = monthlyDataResults.sort((a, b) => (a as any)._date.getTime() - (b as any)._date.getTime())
             .map(({ _date, ...rest }) => rest)
-
 
         const currentIncome = currentStats.income
         const currentLessonsCount = currentStats.lessonsCount
@@ -183,9 +195,7 @@ export async function GET(request: NextRequest) {
         const previousLessonsCount = prevStats.lessonsCount
         const previousAverageCheck = previousLessonsCount > 0 ? Math.round(previousIncome / previousLessonsCount) : 0
 
-
         const hasAnyIncomeEver = paidLessonsCount > 0
-
 
         const processedTransactions = recentTransactions.map(tx => {
             if (tx.group && tx.lessonPayments && tx.lessonPayments.length > 0) {
@@ -193,6 +203,45 @@ export async function GET(request: NextRequest) {
                 return { ...tx, price: paidAmount }
             }
             return tx
+        })
+
+        const now = new Date()
+        const debts: any[] = []
+
+        debtsRaw.forEach(lesson => {
+            const lessonEnd = new Date(lesson.date.getTime() + (lesson.duration || 60) * 60000)
+            if (lessonEnd > now) return
+
+            if (lesson.groupId) {
+                if (lesson.lessonPayments.length > 0) {
+                    lesson.lessonPayments.forEach(p => {
+                        if (!p.hasPaid) {
+                            debts.push({
+                                id: `${lesson.id}-${p.studentId}`,
+                                lessonId: lesson.id,
+                                slug: lesson.slug,
+                                studentName: p.student?.name || 'Неизвестно',
+                                amount: lesson.price,
+                                date: lesson.date,
+                                isGroup: true,
+                                groupName: lesson.group?.name,
+                                subject: lesson.subject
+                            })
+                        }
+                    })
+                }
+            } else if (!lesson.isPaid && lesson.student) {
+                debts.push({
+                    id: lesson.id,
+                    lessonId: lesson.id,
+                    slug: lesson.slug,
+                    studentName: lesson.student.name,
+                    amount: lesson.price,
+                    date: lesson.date,
+                    isGroup: false,
+                    subject: lesson.subject
+                })
+            }
         })
 
         return NextResponse.json({
@@ -204,9 +253,10 @@ export async function GET(request: NextRequest) {
             averageCheck,
             previousAverageCheck,
             hasAnyIncomeEver,
-            currentMonthDuration: (currentMonthDuration._sum as any)?.duration || 0,
-            previousMonthDuration: (previousMonthDuration._sum as any)?.duration || 0,
+            currentMonthDuration: (currentMonthDurationResult as any)._sum?.duration || 0,
+            previousMonthDuration: (previousMonthDurationResult as any)._sum?.duration || 0,
             recentTransactions: processedTransactions,
+            debts
         })
     } catch (error) {
         console.error('Get income stats error:', error)

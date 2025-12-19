@@ -1,0 +1,103 @@
+.debtsContainer {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    span {
+        background: var(--error);
+        color: white;
+        font-size: 12px;
+        padding: 3px 6px;
+        border-radius: 20px;
+    }
+}
+
+.debtsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.debtCard {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--error);
+        opacity: 0.7;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(239, 68, 68, 0.1);
+        border-color: var(--error);
+    }
+}
+
+.mainInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.studentName {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lessonInfo {
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.groupBadge {
+    font-size: 11px;
+    padding: 2px 6px;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--error);
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .debtsGrid {
+        grid-template-columns: 1fr;
+    }
+}

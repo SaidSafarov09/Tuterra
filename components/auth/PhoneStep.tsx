@@ -6,6 +6,7 @@ import { YandexLogo } from '@/components/icons/YandexLogo'
 import { GoogleLogo } from '@/components/icons/GoogleLogo'
 import styles from './Auth.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { Check } from 'lucide-react'
 
 interface PhoneStepProps {
     onSuccess: (sessionId: string, phone: string) => void
@@ -14,6 +15,7 @@ interface PhoneStepProps {
 export function PhoneStep({ onSuccess }: PhoneStepProps) {
     const [phone, setPhone] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [userRole, setUserRole] = useState<'tutor' | 'student'>('tutor')
     const isDesk = useMediaQuery('(min-width: 768px)')
     const formatPhoneNumber = (value: string) => {
         const digits = value.replace(/\D/g, '')
@@ -67,20 +69,40 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
     return (
         <div className={styles.stepContainer}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Добро пожаловать в Tuterra</h1>
+                <h1 className={styles.title}>Вход в Tuterra</h1>
                 <p className={styles.subtitle}>
-                    Введите номер телефона для входа или регистрации
+                    Выберите роль и воспользуйтесь удобным способом входа
                 </p>
             </div>
 
             <form onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.roleSelection}>
+                    <div
+                        className={`${styles.roleOption} ${userRole === 'tutor' ? styles.selected : ''}`}
+                        onClick={() => setUserRole('tutor')}
+                    >
+                        <div className={`${styles.checkbox} ${userRole === 'tutor' ? styles.checked : ''}`}>
+                            {userRole === 'tutor' && <Check size={12} strokeWidth={4} />}
+                        </div>
+                        <span className={styles.roleLabel}>Я репетитор</span>
+                    </div>
+                    <div
+                        className={`${styles.roleOption} ${userRole === 'student' ? styles.selected : ''}`}
+                        onClick={() => setUserRole('student')}
+                    >
+                        <div className={`${styles.checkbox} ${userRole === 'student' ? styles.checked : ''}`}>
+                            {userRole === 'student' && <Check size={12} strokeWidth={4} />}
+                        </div>
+                        <span className={styles.roleLabel}>Я ученик</span>
+                    </div>
+                </div>
+
                 <Input
                     type="tel"
                     value={phone}
                     onChange={handlePhoneChange}
                     placeholder="+7 (___) ___-__-__"
                     autoFocus
-
                     disabled
                 />
 

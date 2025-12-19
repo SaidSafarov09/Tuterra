@@ -12,6 +12,7 @@ import { EmptyStudentsState } from '@/components/students/EmptyStudentsState'
 import { StudentCardSkeleton } from '@/components/skeletons'
 import { useStudents } from '@/hooks/useStudents'
 import styles from './page.module.scss'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function StudentsPage() {
     const {
@@ -63,20 +64,43 @@ export default function StudentsPage() {
                 />
             )}
 
-            {isLoading ? (
-                <div className={styles.studentsGrid}>
-                    <StudentCardSkeleton />
-                    <StudentCardSkeleton />
-                    <StudentCardSkeleton />
-                    <StudentCardSkeleton />
-                    <StudentCardSkeleton />
-                    <StudentCardSkeleton />
-                </div>
-            ) : students.length === 0 ? (
-                <EmptyStudentsState onAddStudent={handleOpenModal} />
-            ) : (
-                <StudentsList students={filteredStudents} />
-            )}
+            <AnimatePresence mode="wait">
+                {isLoading ? (
+                    <motion.div
+                        key="skeleton"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className={styles.studentsGrid}
+                    >
+                        <StudentCardSkeleton />
+                        <StudentCardSkeleton />
+                        <StudentCardSkeleton />
+                        <StudentCardSkeleton />
+                        <StudentCardSkeleton />
+                        <StudentCardSkeleton />
+                    </motion.div>
+                ) : students.length === 0 ? (
+                    <motion.div
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <EmptyStudentsState onAddStudent={handleOpenModal} />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key={selectedSubjectFilter}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <StudentsList students={filteredStudents} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <CreateStudentModal
                 isOpen={isOpen}

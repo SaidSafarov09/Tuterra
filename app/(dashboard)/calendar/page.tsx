@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { addMonths, subMonths, format } from 'date-fns'
@@ -189,11 +190,21 @@ export default function CalendarPage() {
                     />
 
                     <CalendarWeekDays />
-                    <CalendarGrid
-                        currentMonth={currentMonth}
-                        lessons={lessons}
-                        onDateClick={handleDayClick}
-                    />
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentMonth.toISOString()}
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.98 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <CalendarGrid
+                                currentMonth={currentMonth}
+                                lessons={lessons}
+                                onDateClick={handleDayClick}
+                            />
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             )}
 

@@ -9,6 +9,7 @@ import { LessonsList } from '@/components/lessons/LessonsList'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { Dropdown } from '@/components/ui/Dropdown'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import dynamic from 'next/dynamic'
 const LessonFormModal = dynamic(() => import('@/components/lessons/LessonFormModal').then(mod => mod.LessonFormModal), { ssr: false })
@@ -249,29 +250,52 @@ function LessonsContent() {
                 </div>
             )}
 
-            {isLessonsLoading ? (
-                <div className={styles.lessonsList}>
-                    <LessonDetailSkeleton />
-                    <LessonDetailSkeleton />
-                    <LessonDetailSkeleton />
-                </div>
-            ) : filteredLessons.length === 0 ? (
-                <EmptyLessonsState
-                    onAddLesson={handleOpenModal}
-                    filter={activeTab}
-                />
-            ) : (
-                <LessonsList
-                    lessons={filteredLessons || []}
-                    isLoading={isLessonsLoading}
-                    isRefreshing={isLessonsRefreshing}
-                    onTogglePaid={togglePaid}
-                    onToggleCancel={toggleCancel}
-                    onReschedule={handleRescheduleClick}
-                    onEdit={handleEditLesson}
-                    onDelete={handleDeleteClick}
-                />
-            )}
+            <AnimatePresence mode="wait">
+                {isLessonsLoading ? (
+                    <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className={styles.lessonsList}
+                    >
+                        <LessonDetailSkeleton />
+                        <LessonDetailSkeleton />
+                        <LessonDetailSkeleton />
+                    </motion.div>
+                ) : filteredLessons.length === 0 ? (
+                    <motion.div
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <EmptyLessonsState
+                            onAddLesson={handleOpenModal}
+                            filter={activeTab}
+                        />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key={`${activeTab}-${selectedMonth}`}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <LessonsList
+                            lessons={filteredLessons || []}
+                            isLoading={isLessonsLoading}
+                            isRefreshing={isLessonsRefreshing}
+                            onTogglePaid={togglePaid}
+                            onToggleCancel={toggleCancel}
+                            onReschedule={handleRescheduleClick}
+                            onEdit={handleEditLesson}
+                            onDelete={handleDeleteClick}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <LessonFormModal
                 isOpen={isOpen}

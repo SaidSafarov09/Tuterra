@@ -178,11 +178,14 @@ interface IncomeData {
     currentMonthDuration: number
     previousMonthDuration: number
     recentTransactions: any[]
+    debts: any[]
 }
 
 export const incomeApi = {
     get: (date: string) =>
         fetch(`/api/income?date=${date}`).then(res => handleResponse<IncomeData>(res)),
+    getTransactions: (filter: string) =>
+        fetch(`/api/income/transactions?filter=${filter}`).then(res => handleResponse<{ transactions: any[] }>(res)),
 }
 
 interface UserSettings {

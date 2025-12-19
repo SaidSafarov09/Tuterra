@@ -61,13 +61,7 @@ export async function GET(
         }
 
 
-        if (isId && lesson.slug) {
-            return NextResponse.redirect(
-                new URL(`/lessons/${lesson.slug}`, request.url),
-                { status: 301 }
-            )
-        }
-
+        // Just return the lesson directly, no need for redirect in API
         return NextResponse.json(lesson)
     } catch (error) {
         console.error('Get lesson error:', error)

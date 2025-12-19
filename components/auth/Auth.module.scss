@@ -10,28 +10,31 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(90deg, #4A6CF7 0%, #00D2FF 100%);
     overflow: hidden;
     touch-action: none;
 
     @media (max-width: 768px) {
         padding: 16px;
+        background: #FFFFFF;
     }
 }
 
 .card {
-    background: var(--surface);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-2xl);
+    background: #FFFFFF;
+    border-radius: 24px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
     padding: 48px;
     width: 100%;
-    max-width: 484px;
-    animation: slideUp 0.4s ease;
+    max-width: 580px;
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 
     @media (max-width: 768px) {
-        padding: 32px 24px;
-        border-radius: var(--radius-lg);
-        max-width: 400px;
+        padding: 32px 20px;
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
     }
 }
 
@@ -59,7 +62,7 @@
 
 .title {
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 900;
     color: var(--text-primary);
     margin: 0 0 12px;
 
@@ -103,11 +106,69 @@
 .form {
     display: flex;
     flex-direction: column;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
 
     @media (max-width: 768px) {
-        margin-bottom: 18px;
+        margin-bottom: 24px;
     }
+}
+
+.roleSelection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.roleOption {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #E5E7EB;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #F9FAFB;
+    user-select: none;
+    color: var(--text-secondary);
+
+    &:hover {
+        border-color: var(--primary);
+        background: rgba(74, 108, 247, 0.02);
+    }
+
+    &.selected {
+        border-color: var(--primary);
+        background: rgba(74, 108, 247, 0.05);
+        color: var(--primary);
+        font-weight: 700;
+    }
+}
+
+.checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #D1D5DB;
+    /* Более заметная граница */
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background: #FFFFFF;
+
+    &.checked {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+}
+
+.roleLabel {
+    font-size: 15px;
+    font-weight: 500;
 }
 
 .submitButton {

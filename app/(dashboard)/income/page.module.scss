@@ -412,16 +412,3 @@
         opacity: 0.8;
     }
 }
-
-.durationBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: rgba(74, 108, 247, 0.1);
-    color: var(--primary);
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-top: 8px;
-}
