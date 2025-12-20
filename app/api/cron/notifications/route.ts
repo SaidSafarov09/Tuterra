@@ -247,7 +247,13 @@ export async function GET(request: NextRequest) {
             const isProfileComplete = user.firstName && user.lastName && user.phone
             if (!isProfileComplete) {
                 const key = 'onboarding_profile'
-                const existing = await prisma.notification.findFirst({ userId, type: 'onboarding', data: { contains: key } })
+                const existing = await prisma.notification.findFirst({
+                    where: {
+                        userId,
+                        type: 'onboarding',
+                        data: { contains: key }
+                    }
+                })
 
                 if (!existing) {
                     await prisma.notification.create({
