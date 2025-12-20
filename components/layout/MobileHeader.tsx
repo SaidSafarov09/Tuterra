@@ -8,6 +8,8 @@ interface MobileHeaderProps {
   onBurgerClick?: () => void
 }
 
+import { NotificationCenter } from '@/components/notifications/NotificationCenter'
+
 export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, onBurgerClick }) => {
   return (
     <header className={styles.mobileHeader}>
@@ -20,6 +22,9 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, onBurgerClick
       </button>
       <div className={styles.logoBlock}>
         <Logo size={28} />
+      </div>
+      <div className={styles.actions}>
+        <NotificationCenter />
       </div>
     </header>
   )

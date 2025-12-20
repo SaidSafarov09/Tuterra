@@ -131,6 +131,47 @@ export async function PUT(
             )
         }
 
+        // Notification Logic for Date Change
+        // Fetch currentLesson if not already available (we need it for date comparison)
+        const currentLessonForNotify = await prisma.lesson.findUnique({
+            where: { id: lessonId },
+            include: { student: true, subject: true, group: true }
+        })
+
+        if (currentLessonForNotify && currentLessonForNotify.date.getTime() !== validatedData.date.getTime()) {
+            try {
+                const settings = await prisma.notificationSettings.findUnique({
+                    where: { userId: user.id }
+                })
+
+                if (settings?.statusChanges) {
+                    const oldDate = new Date(currentLessonForNotify.date)
+                    const newDate = new Date(validatedData.date)
+                    const formatter = new Intl.DateTimeFormat('ru-RU', {
+                        day: 'numeric',
+                        month: 'long',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })
+
+                    const subjectName = currentLessonForNotify.subject?.name || 'Занятие'
+                    const studentName = currentLessonForNotify.student?.name || currentLessonForNotify.group?.name || 'Ученик'
+
+                    await prisma.notification.create({
+                        data: {
+                            userId: user.id,
+                            title: 'Занятие перенесено',
+                            message: `${subjectName} с ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
+                            type: 'status_change',
+                            isRead: false
+                        }
+                    })
+                }
+            } catch (error) {
+                console.error('Failed to create notification:', error)
+            }
+        }
+
         const { paidStudentIds, attendedStudentIds, ...lessonData } = validatedData
 
         // Update lesson
@@ -331,7 +372,8 @@ export async function PATCH(
         if (body.date !== undefined || body.duration !== undefined) {
             // Get current lesson to check duration if not provided
             const currentLesson = await prisma.lesson.findFirst({
-                where: { id: lessonId, ownerId: user.id }
+                where: { id: lessonId, ownerId: user.id },
+                include: { student: true, subject: true, group: true }
             })
 
             if (!currentLesson) {
@@ -354,6 +396,42 @@ export async function PATCH(
                     { error: formatConflictMessage(conflict, body.studentId || currentLesson.studentId) },
                     { status: 400 }
                 )
+            }
+
+            // Notification Logic for Date Change (Reschedule)
+            if (body.date && new Date(body.date).getTime() !== new Date(currentLesson.date).getTime()) {
+                try {
+                    const settings = await prisma.notificationSettings.findUnique({
+                        where: { userId: user.id }
+                    })
+
+                    if (settings?.statusChanges) {
+                        const oldDate = new Date(currentLesson.date)
+                        const newDate = new Date(body.date)
+                        const formatter = new Intl.DateTimeFormat('ru-RU', {
+                            day: 'numeric',
+                            month: 'long',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })
+
+                        const subjectName = currentLesson.subject?.name || 'Занятие'
+                        const studentName = currentLesson.student?.name || currentLesson.group?.name || 'Ученик'
+
+                        await prisma.notification.create({
+                            data: {
+                                userId: user.id,
+                                title: 'Занятие перенесено',
+                                message: `${subjectName} с ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
+                                type: 'status_change',
+                                isRead: false
+                            }
+                        })
+                    }
+                } catch (error) {
+                    console.error('Failed to create notification:', error)
+                    // Don't block the update if notification fails
+                }
             }
         }
 

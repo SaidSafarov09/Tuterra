@@ -32,6 +32,8 @@ model User {
   lessonSeries      LessonSeries[]
   students          Student[]
   subjects          Subject[]
+  notifications     Notification[]
+  notificationSettings NotificationSettings?
   verificationCodes VerificationCode[]
 }
 
@@ -209,4 +211,40 @@ model AuthProvider {
 
   @@unique([provider, providerId])
   @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // lesson_reminder, unpaid_lesson, status_change, income, debt, missing_lessons, onboarding
+  isRead    Boolean  @default(false)
+  link      String?
+  data      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model NotificationSettings {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  lessonReminders   Boolean  @default(true)
+  unpaidLessons     Boolean  @default(true)
+  statusChanges     Boolean  @default(true)
+  incomeReports     Boolean  @default(true)
+  studentDebts      Boolean  @default(true)
+  missingLessons    Boolean  @default(true)
+  onboardingTips    Boolean  @default(true)
+  
+  deliveryWeb       Boolean  @default(true)
+  deliveryTelegram  Boolean  @default(false)
+  
+  quietHoursEnabled Boolean  @default(false)
+  quietHoursStart   String?  @default("22:00")
+  quietHoursEnd     String?  @default("08:00")
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

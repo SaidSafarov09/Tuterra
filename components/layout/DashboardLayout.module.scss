@@ -9,6 +9,10 @@
     margin-left: 280px;
     background: var(--background);
     position: relative;
+
+    @media (min-width: 768.5px) and (max-width: 1080px) {
+        margin-left: 80px;
+    }
 }
 
 .content {

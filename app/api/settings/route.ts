@@ -41,6 +41,20 @@ const settingsSchema = z.object({
     currency: z.string().optional(),
     timezone: z.string(),
     region: z.string().optional().nullable(),
+    notificationSettings: z.object({
+        lessonReminders: z.boolean(),
+        unpaidLessons: z.boolean(),
+        statusChanges: z.boolean(),
+        incomeReports: z.boolean(),
+        studentDebts: z.boolean(),
+        missingLessons: z.boolean(),
+        onboardingTips: z.boolean(),
+        deliveryWeb: z.boolean(),
+        deliveryTelegram: z.boolean(),
+        quietHoursEnabled: z.boolean(),
+        quietHoursStart: z.string().nullable().optional(),
+        quietHoursEnd: z.string().nullable().optional(),
+    }).optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -73,6 +87,7 @@ export async function GET(request: NextRequest) {
                 timezone: true,
                 region: true,
                 theme: true,
+                notificationSettings: true,
                 authProviders: {
                     select: {
                         provider: true,
@@ -170,11 +185,19 @@ export async function PUT(request: NextRequest) {
             }
         }
 
+        const { notificationSettings, ...userData } = validatedData
+
         const updatedUser = await prisma.user.update({
             where: { id: payload.userId },
             data: {
-                ...validatedData,
+                ...userData,
                 name: validatedData.firstName ? `${validatedData.firstName}${validatedData.lastName ? ' ' + validatedData.lastName : ''}` : null,
+                notificationSettings: notificationSettings ? {
+                    upsert: {
+                        create: notificationSettings,
+                        update: notificationSettings
+                    }
+                } : undefined
             },
             select: {
                 id: true,
@@ -188,6 +211,7 @@ export async function PUT(request: NextRequest) {
                 currency: true,
                 timezone: true,
                 region: true,
+                notificationSettings: true,
             },
         })
 

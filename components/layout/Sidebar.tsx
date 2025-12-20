@@ -60,7 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                                 <span className={styles.navIcon}>
                                     <Icon size={20} />
                                 </span>
-                                {item.name}
+                                <span className={styles.navText}>{item.name}</span>
                             </Link>
                         )
                     })}
@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                         className={styles.logoutButton}
                     >
                         <LogoutIcon size={16} />
-                        Выйти
+                        <span className={styles.navText}>Выйти</span>
                     </Button>
                 </div>
             </aside>

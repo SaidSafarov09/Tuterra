@@ -1,16 +1,17 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Toaster } from 'sonner'
 import './globals.css'
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+}
 
 export const metadata: Metadata = {
     title: 'Tuterra — CRM-система для репетиторов и коучей',
     description: 'Масштабируйте свой талант с Tuterra. Умное расписание, учет оплат и контроль прогресса учеников в одном месте. Начните бесплатно прямо сейчас!',
-    viewport: {
-        width: 'device-width',
-        initialScale: 1,
-        maximumScale: 1,
-        userScalable: false,
-    },
     keywords: ['репетитор', 'органайзер', 'учет оплат', 'Tuterra', 'ученик', 'преподаватель'],
     openGraph: {
         title: 'Tuterra — Современный органайзер для репетиторов и коучей',
@@ -30,6 +31,10 @@ export const metadata: Metadata = {
     alternates: {
         canonical: 'https://www.tuterra.online/',
     },
+    icons: {
+        icon: '/icon.svg',
+        apple: '/icon.svg',
+    },
     robots: {
         index: true,
         follow: true,
@@ -38,7 +43,6 @@ export const metadata: Metadata = {
             follow: true,
         },
     },
-
 }
 
 import { ThemeProvider } from '@/components/providers/ThemeProvider'

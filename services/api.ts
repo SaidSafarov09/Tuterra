@@ -2,7 +2,7 @@ import { Lesson, Student, Subject } from '@/types'
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'An error occurred' }))
-        throw new Error(error.message || error.error || 'API request failed')
+        throw new Error(error?.message || error?.error || 'API request failed')
     }
     if (response.status === 204) {
         return {} as T
@@ -202,6 +202,22 @@ interface UserSettings {
     currency?: string
     hasOAuthProvider?: boolean
     theme?: string
+    notificationSettings?: NotificationSettingsDTO
+}
+
+export interface NotificationSettingsDTO {
+    lessonReminders: boolean
+    unpaidLessons: boolean
+    statusChanges: boolean
+    incomeReports: boolean
+    studentDebts: boolean
+    missingLessons: boolean
+    onboardingTips: boolean
+    deliveryWeb: boolean
+    deliveryTelegram: boolean
+    quietHoursEnabled: boolean
+    quietHoursStart: string
+    quietHoursEnd: string
 }
 
 export const settingsApi = {
@@ -214,6 +230,30 @@ export const settingsApi = {
             headers,
             body: JSON.stringify(data),
         }).then(res => handleResponse<UserSettings>(res)),
+}
+
+export const notificationsApi = {
+    getAll: () =>
+        fetch('/api/notifications').then(res => handleResponse<any[]>(res)),
+
+    markAsRead: (id: string) =>
+        fetch(`/api/notifications/${id}`, { method: 'POST' }).then(res => handleResponse<any>(res)),
+
+    markAllAsRead: () =>
+        fetch('/api/notifications/read-all', { method: 'POST' }).then(res => handleResponse<any>(res)),
+
+    delete: (id: string) =>
+        fetch(`/api/notifications/${id}`, { method: 'DELETE' }).then(res => handleResponse<any>(res)),
+
+    getSettings: () =>
+        fetch('/api/notifications/settings').then(res => handleResponse<NotificationSettingsDTO>(res)),
+
+    updateSettings: (data: Partial<NotificationSettingsDTO>) =>
+        fetch('/api/notifications/settings', {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(data),
+        }).then(res => handleResponse<NotificationSettingsDTO>(res)),
 }
 
 export const statsApi = {

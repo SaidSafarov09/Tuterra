@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +11,7 @@ import { UserAvatarUpload } from '@/components/ui/UserAvatarUpload'
 import { UnsavedChangesModal } from '@/components/ui/UnsavedChangesModal'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { settingsApi } from '@/services/api'
+import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { GENERAL_MESSAGES } from '@/constants/messages'
 import { SettingsFormSkeleton } from '@/components/skeletons'
 import { formatPhoneNumber } from '@/lib/validation'
@@ -25,6 +26,7 @@ interface SettingsPageProps {
 
 export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const { user, setUser } = useAuthStore()
     const [activeTab, setActiveTab] = useState('general')
     const [isLoading, setIsLoading] = useState(true)
@@ -43,11 +45,29 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
         avatar: null as string | null,
         timezone: 'Europe/Moscow',
         region: 'all',
+        notificationSettings: {
+            lessonReminders: true,
+            unpaidLessons: true,
+            statusChanges: true,
+            incomeReports: true,
+            studentDebts: true,
+            missingLessons: true,
+            onboardingTips: true,
+            deliveryWeb: true,
+            deliveryTelegram: false,
+            quietHoursEnabled: false,
+            quietHoursStart: '22:00',
+            quietHoursEnd: '08:00',
+        },
     })
 
     useEffect(() => {
+        const tab = searchParams.get('tab')
+        if (tab && TABS.some(t => t.id === tab)) {
+            setActiveTab(tab)
+        }
         fetchSettings()
-    }, [])
+    }, [searchParams])
 
     const fetchSettings = async () => {
         try {
@@ -61,6 +81,20 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                 avatar: data.avatar || null,
                 timezone: data.timezone || 'Europe/Moscow',
                 region: data.region || 'all',
+                notificationSettings: data.notificationSettings || {
+                    lessonReminders: true,
+                    unpaidLessons: true,
+                    statusChanges: true,
+                    incomeReports: true,
+                    studentDebts: true,
+                    missingLessons: true,
+                    onboardingTips: true,
+                    deliveryWeb: true,
+                    deliveryTelegram: false,
+                    quietHoursEnabled: false,
+                    quietHoursStart: '22:00',
+                    quietHoursEnd: '08:00',
+                }
             }
             setFormData(initialData)
             initialDataRef.current = initialData
@@ -312,6 +346,19 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                                     </div>
                                 </div>
                             </>
+                        )}
+
+                        {activeTab === 'notifications' && (
+                            <div className={styles.section}>
+                                <h2 className={styles.sectionTitle}>Уведомления</h2>
+                                <NotificationSettings
+                                    settings={formData.notificationSettings}
+                                    onChange={(newSettings) => setFormData(prev => ({
+                                        ...prev,
+                                        notificationSettings: { ...prev.notificationSettings, ...newSettings }
+                                    }))}
+                                />
+                            </div>
                         )}
 
                         {activeTab === 'appearance' && (

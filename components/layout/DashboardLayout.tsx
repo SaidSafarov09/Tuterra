@@ -9,6 +9,7 @@ import { settingsApi } from '@/services/api'
 import { useTheme } from 'next-themes'
 import styles from './DashboardLayout.module.scss'
 import { MobileHeader } from './MobileHeader'
+import { DesktopHeader } from './DesktopHeader'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface DashboardLayoutProps {
@@ -111,6 +112,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             )}
 
             <main className={styles.main}>
+                {!isMobile && <DesktopHeader />}
                 {/* Новый MobileHeader только на мобильном */}
                 {isMobile && !isMobilePage && (
                     <MobileHeader

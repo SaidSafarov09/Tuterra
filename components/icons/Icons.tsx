@@ -46,7 +46,8 @@ import {
     History,
     Receipt,
     CalendarClock,
-    MoreVertical
+    MoreVertical,
+    Bell
 } from 'lucide-react'
 
 
@@ -119,3 +120,4 @@ export const WhatsAppIcon: React.FC<IconProps> = (props) => <MessageCircle {...p
 
 export const RescheduleIcon: React.FC<IconProps> = (props) => <CalendarClock {...props} />
 export const MoreVerticalIcon: React.FC<IconProps> = (props) => <MoreVertical {...props} />
+export const BellIcon: React.FC<IconProps> = (props) => <Bell {...props} />
