@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { toast } from 'sonner'
@@ -19,12 +19,11 @@ import styles from './page.module.scss'
 import { TABS, TIMEZONES, REGIONS } from '@/constants'
 import { AnimatePresence, motion } from 'framer-motion'
 
-
 interface SettingsPageProps {
     onLeaveSettings?: () => void
 }
 
-export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
+function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { user, setUser } = useAuthStore()
@@ -385,5 +384,13 @@ export default function SettingsPage({ onLeaveSettings }: SettingsPageProps) {
                 onDiscard={handleDiscardChanges}
             />
         </div>
+    )
+}
+
+export default function SettingsPage(props: SettingsPageProps) {
+    return (
+        <Suspense fallback={<SettingsFormSkeleton />}>
+            <SettingsContent {...props} />
+        </Suspense>
     )
 }
