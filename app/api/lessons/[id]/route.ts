@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { isCuid } from '@/lib/slugUtils'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 const lessonSchema = z.object({
     studentId: z.string().optional(),
@@ -157,6 +158,13 @@ export async function PUT(
                     const subjectName = currentLessonForNotify.subject?.name || 'Занятие'
                     const studentName = currentLessonForNotify.student?.name || currentLessonForNotify.group?.name || 'Ученик'
 
+                    const notifyMsg = `📅 **Занятие перенесено**
+                    
+👤 Ученик: **${studentName}**
+📚 Предмет: **${subjectName}**
+⏳ Было: ${formatter.format(oldDate)}
+🚀 Стало: **${formatter.format(newDate)}**`
+
                     await prisma.notification.create({
                         data: {
                             userId: user.id,
@@ -166,6 +174,7 @@ export async function PUT(
                             isRead: false
                         }
                     })
+                    await sendTelegramNotification(user.id, notifyMsg, 'statusChanges')
                 }
             } catch (error) {
                 console.error('Failed to create notification:', error)
@@ -628,8 +637,13 @@ export async function DELETE(
                 where: {
                     id: lesson.id,
                 },
+                include: { student: true, group: true, subject: true }
             })
         }
+
+        const subjectName = (lesson as any).subject?.name || 'Занятие'
+        const studentName = (lesson as any).student?.name || (lesson as any).group?.name || 'Ученик'
+        await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\n**${subjectName}** с **${studentName}** было удалено из расписания.`, 'statusChanges')
 
         return NextResponse.json({ success: true })
     } catch (error) {

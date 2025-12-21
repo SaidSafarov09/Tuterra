@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime, timedelta
 import pytz
 from dotenv import load_dotenv
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from db import (
     get_db_pool, get_user_by_telegram_id, link_user_telegram, verify_telegram_code,
@@ -23,391 +23,289 @@ logging.basicConfig(
 )
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "@tuterra_news") # Make sure to set this in .env or change default
+CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "@tuterra_news")
 PENDING_LINK = set()
 
 # --- Helpers ---
 async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     try:
-        # Check if user is member/admin/creator/restricted
         member = await context.bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
-        if member.status in ['left', 'kicked']:
-            return False
+        if member.status in ['left', 'kicked']: return False
         return True
     except Exception as e:
-        # If bot is not admin in channel, or channel invalid, default to True to not block
-        logging.error(f"Subscription check error: {e}")
+        if "Chat not found" not in str(e): logging.error(f"Subscription check error: {e}")
         return True
 
 def to_local_time(dt, zone="Europe/Moscow"):
-    if not dt:
-        return None
-    if dt.tzinfo is None:
-        dt = pytz.utc.localize(dt)
-    try:
-        tz = pytz.timezone(zone)
-    except:
-        tz = pytz.timezone("Europe/Moscow")
+    if not dt: return None
+    if dt.tzinfo is None: dt = pytz.utc.localize(dt)
+    try: tz = pytz.timezone(zone)
+    except: tz = pytz.timezone("Europe/Moscow")
     return dt.astimezone(tz)
 
 async def send_subscription_wall(update: Update):
     channel_url = f"https://t.me/{CHANNEL_ID.replace('@', '')}"
-    keyboard = [
-        [InlineKeyboardButton("📢 Подписаться на канал", url=channel_url)],
-        [InlineKeyboardButton("✅ Я подписался", callback_data='check_sub')]
-    ]
-    text = (
-        "🔒 **Доступ ограничен**\n\n"
-        "Чтобы пользоваться ботом и получать уведомления, "
-        "пожалуйста, подпишитесь на наш канал новостей."
-    )
-    
+    keyboard = [[InlineKeyboardButton("📢 Подписаться на канал", url=channel_url)], [InlineKeyboardButton("✅ Я подписался", callback_data='check_sub')]]
+    text = "🔒 **Доступ ограничен**\n\nЧтобы пользоваться ботом и получать уведомления, подпишитесь на наш канал новостей."
     if update.callback_query:
-        # Try edit, if content same it might throw, so ignore
-        try:
-             await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
-        except:
-             await update.callback_query.answer("Подпишитесь на канал!", show_alert=True)
+        try: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        except: await update.callback_query.answer("Подпишитесь на канал!", show_alert=True)
     else:
         await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 # --- Keyboards ---
+def main_reply_keyboard():
+    return ReplyKeyboardMarkup([
+        ["📅 Расписание", "👥 Ученики"],
+        ["💰 Финансы", "📉 Должники"],
+        ["⚙️ Настройки", "🏠 Главное меню"],
+        ["📎 Справка"]
+    ], resize_keyboard=True)
+
 def main_menu_keyboard():
-    keyboard = [
-        [InlineKeyboardButton("📅 Расписание", callback_data='menu_schedule'),
-         InlineKeyboardButton("👥 Ученики", callback_data='menu_students')],
-        [InlineKeyboardButton("💰 Финансы", callback_data='menu_finance'),
-         InlineKeyboardButton("⚙️ Настройки", callback_data='menu_settings')]
-    ]
-    return InlineKeyboardMarkup(keyboard)
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("📅 Расписание", callback_data='menu_schedule'), InlineKeyboardButton("👥 Ученики", callback_data='menu_students')],
+        [InlineKeyboardButton("💰 Финансы", callback_data='menu_finance'), InlineKeyboardButton("⚙️ Настройки", callback_data='menu_settings')],
+        [InlineKeyboardButton("📉 Должники", callback_data='menu_debtors')]
+    ])
 
 def back_button(data='menu_main'):
     return InlineKeyboardButton("🔙 Назад", callback_data=data)
+
+# --- Action Logic Functions ---
+
+async def action_show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, user, is_start=False):
+    pool = context.bot_data['pool']
+    stats = await get_dashboard_stats(pool, user['id'], user.get('timezone', 'Europe/Moscow'))
+    
+    greeting = f"👋 Привет, {user['firstName'] or 'Преподаватель'}!\n\n" if is_start else ""
+    
+    text = (
+        f"{greeting}📊 **Общая сводка:**\n\n"
+        f"• Учеников всего: **{stats['students']}**\n"
+        f"• Уроков сегодня: **{stats['lessons_today']}**\n"
+        f"• Доход за сегодня: **{stats['income_today']} ₽**\n"
+        f"• Доход за месяц: **{stats['income']} ₽**\n\n"
+        "Выберите нужное действие в меню. 👇"
+    )
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, reply_markup=main_menu_keyboard(), parse_mode='Markdown')
+    else:
+        await update.message.reply_text(text, reply_markup=main_reply_keyboard(), parse_mode='Markdown')
+
+async def action_show_schedule_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [[InlineKeyboardButton("Сегодня", callback_data='sched_today'), InlineKeyboardButton("Завтра", callback_data='sched_tomorrow')], [back_button()]]
+    text = "📅 **Расписание: выберите день**"
+    if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+    else: await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+
+async def action_show_students_list(update: Update, context: ContextTypes.DEFAULT_TYPE, user):
+    pool = context.bot_data['pool']
+    students = await get_all_students(pool, user['id'])
+    if not students:
+        msg = "У вас пока нет учеников."
+        if update.callback_query: await update.callback_query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup([[back_button()]]))
+        else: await update.message.reply_text(msg, reply_markup=main_reply_keyboard())
+        return
+    keyboard = [[InlineKeyboardButton(s['name'], callback_data=f"student_{s['id']}")] for s in students[:15]]
+    keyboard.append([back_button()])
+    text = "👥 **Ваши ученики:**"
+    if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+    else: await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+
+async def action_show_finance_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, user):
+    pool = context.bot_data['pool']
+    stats = await get_dashboard_stats(pool, user['id'], user.get('timezone', 'Europe/Moscow'))
+    unpaid = await get_unpaid_lessons(pool, user['id'], limit=5)
+    
+    text = (
+        "💰 **Финансовый отчет**\n\n"
+        f"💵 Заработано сегодня: **{stats['income_today']} ₽**\n"
+        f"📈 Заработано за месяц: **{stats['income']} ₽**\n\n"
+    )
+    
+    if unpaid:
+        text += "⚠️ **Последние неоплаченные уроки:**"
+        keyboard = [[InlineKeyboardButton(f"{l['studentName']} ({l['price']}₽)", callback_data=f"lesson_{l['id']}")] for l in unpaid]
+        keyboard.append([back_button()])
+    else:
+        text += "Все уроки оплачены! 🎉"
+        keyboard = [[back_button()]]
+    if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+    else: await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+
+async def action_show_debtors(update: Update, context: ContextTypes.DEFAULT_TYPE, user):
+    pool = context.bot_data['pool']
+    unpaid = await get_unpaid_lessons(pool, user['id'])
+    if not unpaid:
+        text = "🎉 Должников нет."
+        if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup([[back_button()]]))
+        else: await update.message.reply_text(text)
+        return
+    text = "📉 **Должники:**\n\nНажмите на урок, чтобы отметить оплату."
+    keyboard = [[InlineKeyboardButton(f"{l['studentName']} ({l['price']}₽)", callback_data=f"lesson_{l['id']}")] for l in unpaid[:15]]
+    keyboard.append([back_button()])
+    if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+    else: await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+
+async def action_show_settings(update: Update, context: ContextTypes.DEFAULT_TYPE, user):
+    text = f"⚙️ **Настройки**\n\nEmail: {user['email']}\nЧасовой пояс: {user.get('timezone', 'Europe/Moscow')}\nУведомления: ✅\nID Чата: `{update.effective_chat.id}`"
+    if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup([[back_button()]]), parse_mode='Markdown')
+    else: await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup([[back_button()]]), parse_mode='Markdown')
 
 # --- Handlers ---
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     pool = context.bot_data['pool']
-    
-    # Check Subscription first
-    if not await check_subscription(update, context):
-        await send_subscription_wall(update)
-        return
+    if not await check_subscription(update, context): return await send_subscription_wall(update)
 
-    # 1. Broadly check for deep linking arguments
-    if context.args and len(context.args) > 0:
-        code = context.args[0]
-        linked_user = await verify_telegram_code(pool, code, user_id, update.effective_chat.id)
-        if linked_user:
-            await update.message.reply_text(f"🚀 Аккаунт **{linked_user['email']}** успешно привязан!", parse_mode='Markdown')
-        else:
-             await update.message.reply_text("❌ Неверный или истекший код привязки.")
+    if context.args:
+        linked_user = await verify_telegram_code(pool, context.args[0], user_id, update.effective_chat.id)
+        if linked_user: 
+            await update.message.reply_text(f"🚀 Аккаунт **{linked_user['email']}** привязан!", parse_mode='Markdown')
 
-    # 2. Normal Auth Check
-    user = await get_user_by_telegram_id(pool, user_id)
-    
-    if user:
-        user_tz = user.get('timezone', 'Europe/Moscow')
-        stats = await get_dashboard_stats(pool, user['id'], user_tz)
-        text = (
-            f"👋 Привет, {user['firstName'] or 'Преподаватель'}!\n\n"
-            f"📊 **Сводка:**\n"
-            f"• Учеников: {stats['students']}\n"
-            f"• Уроков сегодня: {stats['lessons_today']}\n"
-            f"• Доход за месяц: {stats['income']} ₽\n\n"
-            "Что будем делать?"
-        )
-        await update.message.reply_text(text, reply_markup=main_menu_keyboard(), parse_mode='Markdown')
+    user_rec = await get_user_by_telegram_id(pool, user_id)
+    if user_rec: await action_show_main_menu(update, context, dict(user_rec), is_start=True)
     else:
-        await update.message.reply_text(
-            "🔒 **Требуется авторизация**\n\n"
-            "Вы можете привязать аккаунт двумя способами:\n"
-            "1. Перейдите по ссылке из настроек на сайте (рекомендуется).\n"
-            "2. Отправьте мне свой **Email** прямо здесь.",
-            parse_mode='Markdown'
-        )
+        await update.message.reply_text("🔒 **Авторизация**\nПривяжите аккаунт на сайте или отправьте Email здесь.", parse_mode='Markdown')
         PENDING_LINK.add(user_id)
 
 async def check_sub_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    
     if await check_subscription(update, context):
         await query.answer("Спасибо за подписку! 🎉")
-        # Proceed to main menu logic
-        # Retrieve user to show main menu
-        pool = context.bot_data['pool']
-        user_id = update.effective_user.id
-        user = await get_user_by_telegram_id(pool, user_id)
-        
-        if user:
-            user_tz = user.get('timezone', 'Europe/Moscow')
-            stats = await get_dashboard_stats(pool, user['id'], user_tz)
-            text = (
-                f"👋 Привет, {user['firstName'] or 'Преподаватель'}!\n\n"
-                f"📊 **Сводка:**\n"
-                f"• Учеников: {stats['students']}\n"
-                f"• Уроков сегодня: {stats['lessons_today']}\n"
-                f"• Доход за месяц: {stats['income']} ₽"
-            )
-            await query.edit_message_text(text, reply_markup=main_menu_keyboard(), parse_mode='Markdown')
-        else:
-             await query.edit_message_text(
-                "🔒 **Требуется авторизация**\n\nПривяжите аккаунт через настройки на сайте.",
-                parse_mode='Markdown'
-            )
-    else:
-        await query.answer("Вы все еще не подписаны 😢", show_alert=True)
+        user_rec = await get_user_by_telegram_id(context.bot_data['pool'], update.effective_user.id)
+        if user_rec: await action_show_main_menu(update, context, dict(user_rec), is_start=True)
+        else: await query.edit_message_text("🔒 Авторизуйтесь на сайте.")
+    else: await query.answer("Вы все еще не подписаны 😢", show_alert=True)
 
 async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    # Check Sub
-    if not await check_subscription(update, context):
-        await send_subscription_wall(update)
-        return
-
     await query.answer()
-    
+    user_rec = await get_user_by_telegram_id(context.bot_data['pool'], update.effective_user.id)
+    if not user_rec: return
+    user = dict(user_rec)
     data = query.data
-    pool = context.bot_data['pool']
-    user_id = update.effective_user.id
-    user = await get_user_by_telegram_id(pool, user_id) 
-    
-    if not user:
-        await query.edit_message_text("Ошибка авторизации. Введите /start")
-        return
-
-    if data == 'menu_main':
-        user_tz = user.get('timezone', 'Europe/Moscow')
-        stats = await get_dashboard_stats(pool, user['id'], user_tz)
-        text = (
-            f"👋 Привет, {user['firstName'] or 'Преподаватель'}!\n\n"
-            f"📊 **Сводка:**\n"
-            f"• Учеников: {stats['students']}\n"
-            f"• Уроков сегодня: {stats['lessons_today']}\n"
-            f"• Доход за месяц: {stats['income']} ₽"
-        )
-        await query.edit_message_text(text, reply_markup=main_menu_keyboard(), parse_mode='Markdown')
-
-    elif data == 'menu_schedule':
-        keyboard = [
-            [InlineKeyboardButton("Сегодня", callback_data='sched_today'),
-             InlineKeyboardButton("Завтра", callback_data='sched_tomorrow')],
-            [back_button()]
-        ]
-        await query.edit_message_text("📅 **Выберите день:**", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
-
-    elif data == 'menu_students':
-        students = await get_all_students(pool, user['id'])
-        if not students:
-             await query.edit_message_text("У вас пока нет учеников.", reply_markup=InlineKeyboardMarkup([[back_button()]]))
-             return
-
-        keyboard = []
-        for s in students[:10]: 
-            keyboard.append([InlineKeyboardButton(s['name'], callback_data=f"student_{s['id']}")])
-        
-        keyboard.append([back_button()])
-        await query.edit_message_text("👥 **Ваши ученики:**", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
-
-    elif data == 'menu_finance':
-        unpaid = await get_unpaid_lessons(pool, user['id'], limit=5)
-        text = "💰 **Финансы**\n\n"
-        
-        if unpaid:
-            text += "⚠️ **Неоплаченные уроки:**\n"
-            keyboard = []
-            user_tz = user.get('timezone', 'Europe/Moscow')
-            for l in unpaid:
-                local_date = to_local_time(l['date'], user_tz)
-                date_str = local_date.strftime("%d.%m")
-                label = f"{date_str} {l['studentName']} ({l['price']}₽)"
-                keyboard.append([InlineKeyboardButton(label, callback_data=f"lesson_{l['id']}")])
-            
-            keyboard.append([back_button()])
-            await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
-        else:
-             text += "Все уроки оплачены! 🎉"
-             await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup([[back_button()]]), parse_mode='Markdown')
-
-    elif data == 'menu_settings':
-         await query.edit_message_text(
-             "⚙️ **Настройки**\n\n"
-             f"Привязанный Email: {user['email']}\n"
-             "Уведомления: Включены ✅",
-             reply_markup=InlineKeyboardMarkup([[back_button()]]),
-             parse_mode='Markdown'
-         )
+    if data == 'menu_main': await action_show_main_menu(update, context, user)
+    elif data == 'menu_schedule': await action_show_schedule_menu(update, context)
+    elif data == 'menu_students': await action_show_students_list(update, context, user)
+    elif data == 'menu_finance': await action_show_finance_menu(update, context, user)
+    elif data == 'menu_debtors': await action_show_debtors(update, context, user)
+    elif data == 'menu_settings': await action_show_settings(update, context, user)
 
 async def schedule_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    
-    if not await check_subscription(update, context):
-        await send_subscription_wall(update)
-        return
-
     await query.answer()
-    data = query.data
-    user_rec = await get_user_by_telegram_id(pool, user_id)
-    if not user_rec:
-        await query.edit_message_text("Ошибка авторизации")
-        return
-
-    user_tz = user_rec.get('timezone', 'Europe/Moscow')
-    tz = pytz.timezone(user_tz)
-    local_now = datetime.now(tz)
-    
-    target_date = local_now
+    user_rec = await get_user_by_telegram_id(context.bot_data['pool'], update.effective_user.id)
+    if not user_rec: return
+    user = dict(user_rec)
+    user_tz = user.get('timezone', 'Europe/Moscow')
+    target_date = datetime.now(pytz.timezone(user_tz))
     title = "Сегодня"
-    
-    if data == 'sched_tomorrow':
-        target_date += timedelta(days=1)
-        title = "Завтра"
-
-    lessons = await get_lessons_by_date(pool, user_rec['id'], target_date, user_tz)
-    
+    if query.data == 'sched_tomorrow': target_date += timedelta(days=1); title = "Завтра"
+    lessons = await get_lessons_by_date(context.bot_data['pool'], user['id'], target_date, user_tz)
     if not lessons:
-        await query.edit_message_text(
-            f"📅 **{title}:** Занятий нет. Отдыхаем! 🏖", 
-            reply_markup=InlineKeyboardMarkup([[back_button('menu_schedule')]]),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text(f"📅 **{title}:** Занятий нет. 🏖", reply_markup=InlineKeyboardMarkup([[back_button('menu_schedule')]]), parse_mode='Markdown')
         return
-
-    text = f"📅 **Расписание на {title} ({to_local_time(target_date, user_rec.get('timezone', 'Europe/Moscow')).strftime('%d.%m')}):**\n\n"
-    keyboard = []
-    
-    user_tz = user_rec.get('timezone', 'Europe/Moscow')
-    for l in lessons:
-        local_date = to_local_time(l['date'], user_tz)
-        time_str = local_date.strftime("%H:%M")
-        subj = l['subjectName'] or "Урок"
-        student = l['studentName'] or l['groupName'] or "Ученик"
-        status_icon = "✅" if l['isPaid'] else "⚠️"
-        if l['isCanceled']: status_icon = "❌"
-        
-        btn_text = f"{status_icon} {time_str} - {student} ({subj})"
-        keyboard.append([InlineKeyboardButton(btn_text, callback_data=f"lesson_{l['id']}")])
-    
+    text = f"📅 **Расписание на {title}:**"
+    keyboard = [[InlineKeyboardButton(f"{'✅' if l['isPaid'] else ('❌' if l['isCanceled'] else '⚠️')} {to_local_time(l['date'], user_tz).strftime('%H:%M')} - {l['studentName'] or l['groupName']}", callback_data=f"lesson_{l['id']}")] for l in lessons]
     keyboard.append([back_button('menu_schedule')])
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    
-    if not await check_subscription(update, context):
-        await send_subscription_wall(update)
-        return
-
-    lesson_id = query.data.split('_')[1]
+    await query.answer()
+    data_parts = query.data.split('_')
+    lesson_id = data_parts[1]
     pool = context.bot_data['pool']
-    
-    # Check manual actions
-    action = None
-    if len(query.data.split('_')) > 2:
-        action = query.data.split('_')[2]
-        if action == 'pay':
-            await toggle_lesson_paid(pool, lesson_id, True)
-            await query.answer("Отмечено оплаченным ✅")
-        elif action == 'unpay':
-            await toggle_lesson_paid(pool, lesson_id, False)
-            await query.answer("Отмечено неоплаченным ⚠️")
+    if len(data_parts) > 2:
+        action = data_parts[2]
+        if action == 'pay': await toggle_lesson_paid(pool, lesson_id, True)
+        elif action == 'unpay': await toggle_lesson_paid(pool, lesson_id, False)
+        elif action == 'togglecancel':
+            l = await get_lesson_by_id(pool, lesson_id)
+            if l: await toggle_lesson_cancel(pool, lesson_id, not l['isCanceled'])
 
     lesson = await get_lesson_by_id(pool, lesson_id)
-    if not lesson:
-        await query.answer("Урок не найден", show_alert=True)
-        return
+    if not lesson: return
+    user_rec = await get_user_by_telegram_id(pool, update.effective_user.id)
+    user_tz = dict(user_rec).get('timezone', 'Europe/Moscow') if user_rec else 'Europe/Moscow'
+    time_str = to_local_time(lesson['date'], user_tz).strftime("%d.%m %H:%M")
+    status = "❌ ОТМЕНЕНО" if lesson['isCanceled'] else ("✅ ОПЛАЧЕНО" if lesson['isPaid'] else "⚠️ НЕ ОПЛАЧЕНО")
+    text = f"📚 **Урок: {lesson['studentName'] or lesson['groupName']}**\n📅 {time_str}\n📖 {lesson['subjectName'] or '---'}\n💰 {lesson['price']} ₽\n📊 {status}"
+    btns = []
+    if not lesson['isCanceled']: btns.append(InlineKeyboardButton("↩️ Не оплачено" if lesson['isPaid'] else "✅ Оплачено", callback_data=f"lesson_{lesson_id}_{'unpay' if lesson['isPaid'] else 'pay'}"))
+    btns.append(InlineKeyboardButton("Восстановить" if lesson['isCanceled'] else "❌ Отменить", callback_data=f"lesson_{lesson_id}_togglecancel"))
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup([btns, [back_button('menu_schedule')]]), parse_mode='Markdown')
 
-    if action == 'togglecancel':
-        new_status = not lesson['isCanceled']
-        await toggle_lesson_cancel(pool, lesson_id, new_status)
-        lesson = dict(lesson) 
-        lesson['isCanceled'] = new_status
-        await query.answer("Статус отмены изменен")
-
-    # Retrieve user to get timezone
-    user_id = update.effective_user.id
-    user_rec = await get_user_by_telegram_id(pool, user_id)
-    user_tz = user_rec.get('timezone', 'Europe/Moscow') if user_rec else 'Europe/Moscow'
-
-    # Build view
-    local_date = to_local_time(lesson['date'], user_tz)
-    time_str = local_date.strftime("%d.%m.%Y %H:%M")
-    subj = lesson['subjectName'] or "Без предмета"
-    student = lesson['studentName'] or lesson['groupName'] or "Ученик"
-    price = lesson['price']
+async def student_details_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    student_id = query.data.split('_')[1]
+    pool = context.bot_data['pool']
     
-    status_text = []
-    if lesson['isCanceled']: status_text.append("❌ ОТМЕНЕНО")
-    if lesson['isPaid']: status_text.append("✅ ОПЛАЧЕНО")
-    else: status_text.append("⚠️ НЕ ОПЛАЧЕНО")
+    details = await get_student_details(pool, student_id)
+    if not details: return
+    
+    info = details['info']
+    stats = details['stats']
+    
+    subjects_str = ", ".join(details['subjects']) or "Не указаны"
+    groups_str = ", ".join(details['groups']) or "Нет"
     
     text = (
-        f"📚 **Информация об уроке**\n\n"
-        f"📅 Дата: **{time_str}**\n"
-        f"👨‍🎓 Ученик: **{student}**\n"
-        f"📖 Предмет: **{subj}**\n"
-        f"💰 Стоимость: **{price} ₽**\n"
-        f"📊 Статус: {' '.join(status_text)}"
+        f"👤 **Карточка ученика: {info['name']}**\n\n"
+        f"📱 Контакт: `{info['contact'] or '---'}`\n"
+        f"📖 Предметы: {subjects_str}\n"
+        f"👥 Группы: {groups_str}\n\n"
+        f"📊 **Статистика:**\n"
+        f"• Всего занятий: {stats['total']}\n"
+        f"• Неоплаченных: {stats['unpaid']}\n"
+        f"• Долг: **{stats['debt']} ₽**\n\n"
+        f"📝 Заметка: {info['note'] or '---'}"
     )
     
-    btns = []
-    if not lesson['isCanceled']:
-        if lesson['isPaid']:
-            btns.append(InlineKeyboardButton("↩️ Отменить оплату", callback_data=f"lesson_{lesson_id}_unpay"))
-        else:
-            btns.append(InlineKeyboardButton("✅ Отметить оплаченным", callback_data=f"lesson_{lesson_id}_pay"))
-            
-    cancel_text = "Восстановить урок" if lesson['isCanceled'] else "❌ Отменить урок"
-    btns.append(InlineKeyboardButton(cancel_text, callback_data=f"lesson_{lesson_id}_togglecancel"))
-    
-    keyboard = [
-        btns,
-        [back_button('menu_schedule')]
-    ]
-    
+    keyboard = [[back_button('menu_students')]]
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
-
 
 async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    
-    if not await check_subscription(update, context):
-        await send_subscription_wall(update)
-        return
-
     text = update.message.text.strip()
     pool = context.bot_data['pool']
-    
+    user_rec = await get_user_by_telegram_id(pool, user_id)
+
+    # Menu checks
+    if text in ["📅 Расписание", "👥 Ученики", "💰 Финансы", "📉 Должники", "⚙️ Настройки", "🏠 Главное меню"]:
+        if not user_rec: return await update.message.reply_text("🔒 Авторизуйтесь.")
+        user = dict(user_rec)
+        if text == "📅 Расписание": await action_show_schedule_menu(update, context)
+        elif text == "👥 Ученики": await action_show_students_list(update, context, user)
+        elif text == "💰 Финансы": await action_show_finance_menu(update, context, user)
+        elif text == "📉 Должники": await action_show_debtors(update, context, user)
+        elif text == "⚙️ Настройки": await action_show_settings(update, context, user)
+        elif text == "🏠 Главное меню": await action_show_main_menu(update, context, user, is_start=False)
+        return
+
+    if text == "📎 Справка":
+        return await update.message.reply_text("📚 **Справка**\nЭтот бот синхронизирован с вашим сайтом. Все изменения (оплаты, отмены) сразу видны везде.", parse_mode='Markdown')
+
     if user_id in PENDING_LINK:
         user = await link_user_telegram(pool, text, user_id, update.effective_chat.id)
-        if user:
-            PENDING_LINK.remove(user_id)
-            await update.message.reply_text("🎉 Аккаунт успешно привязан!", reply_markup=main_menu_keyboard())
-        else:
-            await update.message.reply_text("❌ Email не найден. Попробуй еще раз.")
+        if user: PENDING_LINK.remove(user_id); await update.message.reply_text("🎉 Готово! Аккаунт привязан.", reply_markup=main_reply_keyboard())
+        else: await update.message.reply_text("❌ Email не найден.")
 
 if __name__ == '__main__':
-    if not TOKEN:
-        print("Error: TELEGRAM_BOT_TOKEN not found")
-        exit(1)
-
+    if not TOKEN: exit(1)
     app = ApplicationBuilder().token(TOKEN).build()
-    
-    async def post_init(application):
-        application.bot_data['pool'] = await get_db_pool()
-        print("Bot ready!")
-
+    async def post_init(a): a.bot_data['pool'] = await get_db_pool(); print("Bot ready!")
     app.post_init = post_init
-
     app.add_handler(CommandHandler('start', start))
-    
     app.add_handler(CallbackQueryHandler(check_sub_callback, pattern='^check_sub'))
     app.add_handler(CallbackQueryHandler(menu_callback, pattern='^menu_'))
     app.add_handler(CallbackQueryHandler(schedule_callback, pattern='^sched_'))
     app.add_handler(CallbackQueryHandler(lesson_details_callback, pattern='^lesson_'))
-    
+    app.add_handler(CallbackQueryHandler(student_details_callback, pattern='^student_'))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), text_handler))
-    
     app.run_polling()

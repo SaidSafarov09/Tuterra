@@ -62,26 +62,57 @@ async def get_dashboard_stats(pool, user_id, user_tz="Europe/Moscow"):
         today_start = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
         today_end = today_start + timedelta(days=1)
         
-        # Convert to UTC for DB query
-        today_start_utc = today_start.astimezone(pytz.utc)
-        today_end_utc = today_end.astimezone(pytz.utc)
+        # Convert to UTC for DB query (Postgres TIMESTAMP is usually naive UTC)
+        today_start_utc = today_start.astimezone(pytz.utc).replace(tzinfo=None)
+        today_end_utc = today_end.astimezone(pytz.utc).replace(tzinfo=None)
         
         lessons_today = await conn.fetchval(
             'SELECT COUNT(*) FROM "Lesson" WHERE "ownerId" = $1 AND date >= $2 AND date < $3 AND "isCanceled" = false', 
             user_id, today_start_utc, today_end_utc
         )
         
-        # Month income (paid lessons in current month)
-        month_start = today_start.replace(day=1).astimezone(pytz.utc)
-        income = await conn.fetchval('''
-            SELECT COALESCE(SUM(price), 0) FROM "Lesson" 
-            WHERE "ownerId" = $1 AND "isPaid" = true AND date >= $2
-        ''', user_id, month_start)
+        # Calculate income (sync with web app logic)
+        sync_month_start = today_start.replace(day=1).astimezone(pytz.utc).replace(tzinfo=None)
+        
+        # Fetch lessons in current month
+        lessons = await conn.fetch('''
+            SELECT l.id, l.price, l."isPaid", l."groupId", l.date
+            FROM "Lesson" l
+            WHERE l."ownerId" = $1 
+              AND l.date >= $2 
+              AND l."isCanceled" = false
+              AND (
+                  l."isPaid" = true 
+                  OR EXISTS (SELECT 1 FROM "LessonPayment" lp WHERE lp."lessonId" = l.id AND lp."hasPaid" = true)
+              )
+        ''', user_id, sync_month_start)
+        
+        income_month = 0
+        income_today = 0
+        
+        for lesson in lessons:
+            # Check if this lesson is today (using UTC comparison for simplicity or convert back)
+            is_today = today_start_utc <= lesson['date'] < today_end_utc
+            
+            l_income = 0
+            if lesson['groupId']:
+                paid_count = await conn.fetchval(
+                    'SELECT COUNT(*) FROM "LessonPayment" WHERE "lessonId" = $1 AND "hasPaid" = true',
+                    lesson['id']
+                )
+                l_income = (paid_count or 0) * lesson['price']
+            else:
+                l_income = lesson['price']
+            
+            income_month += l_income
+            if is_today:
+                income_today += l_income
         
         return {
             "students": students,
             "lessons_today": lessons_today,
-            "income": income
+            "income": income_month,
+            "income_today": income_today
         }
 
 # --- Lessons ---
@@ -95,8 +126,8 @@ async def get_lessons_by_date(pool, user_id, date: datetime, user_tz="Europe/Mos
     end = start + timedelta(days=1)
     
     # Convert to UTC for DB
-    start_utc = start.astimezone(pytz.utc)
-    end_utc = end.astimezone(pytz.utc)
+    start_utc = start.astimezone(pytz.utc).replace(tzinfo=None)
+    end_utc = end.astimezone(pytz.utc).replace(tzinfo=None)
     
     async with pool.acquire() as conn:
         return await conn.fetch('''
@@ -137,8 +168,37 @@ async def get_all_students(pool, user_id):
 async def get_student_details(pool, student_id):
     async with pool.acquire() as conn:
         student = await conn.fetchrow('SELECT * FROM "Student" WHERE id = $1', student_id)
-        # Get balance/stats could be added here
-        return student
+        if not student: return None
+        
+        # Get subjects
+        subjects = await conn.fetch('''
+            SELECT s.name FROM "Subject" s
+            INNER JOIN "_StudentToSubject" sts ON sts."B" = s.id
+            WHERE sts."A" = $1
+        ''', student_id)
+        
+        # Get groups
+        groups = await conn.fetch('''
+            SELECT g.name FROM "Group" g
+            INNER JOIN "_GroupToStudent" gts ON gts."A" = g.id
+            WHERE gts."B" = $1
+        ''', student_id)
+        
+        # Stats
+        total_lessons = await conn.fetchval('SELECT COUNT(*) FROM "Lesson" WHERE "studentId" = $1', student_id)
+        unpaid_count = await conn.fetchval('SELECT COUNT(*) FROM "Lesson" WHERE "studentId" = $1 AND "isPaid" = false AND "isCanceled" = false AND date < NOW()', student_id)
+        debt_amount = await conn.fetchval('SELECT SUM(price) FROM "Lesson" WHERE "studentId" = $1 AND "isPaid" = false AND "isCanceled" = false AND date < NOW()', student_id)
+        
+        return {
+            "info": dict(student),
+            "subjects": [s['name'] for s in subjects],
+            "groups": [g['name'] for g in groups],
+            "stats": {
+                "total": total_lessons or 0,
+                "unpaid": unpaid_count or 0,
+                "debt": debt_amount or 0
+            }
+        }
 
 # --- Finance ---
 async def get_unpaid_lessons(pool, user_id, limit=20):

@@ -3,6 +3,7 @@ import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateStudentSlug } from '@/lib/slugUtils'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 export const dynamic = 'force-dynamic'
 
@@ -119,6 +120,9 @@ export async function POST(request: NextRequest) {
             where: { id: student.id },
             data: { slug }
         })
+
+        // Notify
+        await sendTelegramNotification(payload.userId, `👤 **Новый ученик:**\n\n**${student.name}** добавлен в систему.`, 'statusChanges')
 
         return NextResponse.json(updatedStudent, { status: 201 })
     } catch (error) {

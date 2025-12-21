@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/jwt'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,22 +64,39 @@ export async function GET(request: NextRequest) {
                 })
 
                 if (!existing) {
-                    // Logic to check if it's exactly ~30 mins (or just within the window and not sent)
-                    // Since we run this often, "within window and not sent" is good.
                     const subjectName = lesson.subject?.name || 'Занятие'
                     const studentName = lesson.student?.name || lesson.group?.name || 'Ученик'
-                    const timeString = new Date(lesson.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+                    // Format time in user's timezone
+                    const timeString = new Intl.DateTimeFormat('ru-RU', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: user.timezone || 'Europe/Moscow'
+                    }).format(lesson.date)
+
+                    const message = `🔔 **Скоро занятие**
+                    
+👤 Ученик: **${studentName}**
+📚 Предмет: **${subjectName}**
+🕒 Время: **${timeString}**
+⏳ Длительность: **${lesson.duration} мин**
+💰 Стоимость: **${lesson.price} ₽**
+📝 Тема: **${lesson.topic || 'Не указана'}**`
 
                     await prisma.notification.create({
                         data: {
                             userId,
                             title: 'Скоро занятие',
-                            message: `${subjectName} с ${studentName} начнется  в ${timeString}.`,
+                            message: `${subjectName} с ${studentName} в ${timeString}`,
                             type: 'lesson_reminder',
                             data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
-                            link: `/calendar?date=${lesson.date.toISOString().split('T')[0]}` // Deep link to calendar
+                            link: `/calendar?date=${lesson.date.toISOString().split('T')[0]}`
                         }
                     })
+
+                    console.log(`CRON: Sending reminder for lesson ${lesson.id} to user ${userId}`)
+                    const sent = await sendTelegramNotification(userId, message, 'lessonReminders')
+                    console.log(`CRON: Telegram send result: ${sent}`)
                     notificationsCreated.push('reminder')
                 }
             }
@@ -119,16 +137,18 @@ export async function GET(request: NextRequest) {
                     const subjectName = lesson.subject?.name || 'Занятие'
                     const studentName = lesson.student?.name || lesson.group?.name || 'Ученик'
 
+                    const msg = `Занятие ${subjectName} с ${studentName} завершилось, но не было оплачено. Не забудьте отметить оплату.`
                     await prisma.notification.create({
                         data: {
                             userId,
                             title: 'Неоплаченное занятие',
-                            message: `Занятие ${subjectName} с ${studentName} завершилось, но не было оплачено. Не забудьте отметить оплату.`,
+                            message: msg,
                             type: 'unpaid_lesson',
                             data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
                             link: `/lessons?filter=unpaid`
                         }
                     })
+                    await sendTelegramNotification(userId, `💰 **Оплата:** ${msg}`, 'unpaidLessons')
                     notificationsCreated.push('unpaid')
                 }
             }
@@ -168,16 +188,18 @@ export async function GET(request: NextRequest) {
                     const potentialIncome = todayLessons.reduce((sum, l) => sum + l.price, 0)
 
                     if (potentialIncome > 0) {
+                        const msg = `Сегодня вы заработали ${income.toLocaleString('ru-RU')} ₽. Всего проведено занятий: ${todayLessons.length}.`
                         await prisma.notification.create({
                             data: {
                                 userId,
                                 title: 'Итоги дня',
-                                message: `Сегодня вы заработали ${income.toLocaleString('ru-RU')} ₽. Всего проведено занятий: ${todayLessons.length}.`,
+                                message: msg,
                                 type: 'income',
                                 data: JSON.stringify({ key: notificationKey, date: todayStr }),
                                 link: '/income'
                             }
                         })
+                        await sendTelegramNotification(userId, `📊 **Итоги дня:**\n${msg}`, 'incomeReports')
                         notificationsCreated.push('daily_income')
                     }
                 }

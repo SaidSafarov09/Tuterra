@@ -6,6 +6,7 @@ import { generateRecurringDates, validateRecurrenceRule } from '@/lib/recurring-
 import type { RecurrenceRule } from '@/types/recurring'
 import { generateLessonSlug } from '@/lib/slugUtils'
 import { checkLessonOverlap, checkRecurringConflicts, formatConflictMessage } from '@/lib/lessonValidation'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 export const dynamic = 'force-dynamic'
 
@@ -263,6 +264,14 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
         await linkSubjectToStudent(data.studentId, data.subjectId)
     }
 
+    // Send Telegram Notification
+    const timeStr = new Date(lesson.date).toLocaleString('ru-RU', {
+        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+    })
+    const entityNameNotify = lesson.group?.name || lesson.student?.name || 'Ученик'
+    const notifyMsg = `🆕 **Новое занятие:**\n📅 ${timeStr}\n👤 ${entityNameNotify}\n📚 ${lesson.subject?.name || 'Без предмета'}`
+    await sendTelegramNotification(userId, notifyMsg, 'statusChanges')
+
     return NextResponse.json(lesson, { status: 201 })
 }
 
@@ -379,6 +388,16 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         },
         orderBy: { date: 'asc' },
     })
+
+    // Send Telegram Notification for recurring series
+    if (firstLesson) {
+        const timeStr = new Date(firstLesson.date).toLocaleString('ru-RU', {
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+        })
+        const entityNameNotify = firstLesson.group?.name || firstLesson.student?.name || 'Ученик'
+        const notifyMsg = `🔁 **Новая серия занятий:**\n📅 Первый урок: ${timeStr}\n👤 ${entityNameNotify}\n📚 ${firstLesson.subject?.name || 'Без предмета'}\n🔢 Всего: ${dates.length} уроков`
+        await sendTelegramNotification(userId, notifyMsg, 'statusChanges')
+    }
 
     return NextResponse.json({
         ...firstLesson,

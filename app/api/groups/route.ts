@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,6 +86,9 @@ export async function POST(request: NextRequest) {
                 console.error('Failed to link students to subject:', e)
             })
         }
+
+        // Notify
+        await sendTelegramNotification(payload.userId, `👥 **Новая группа:**\n\n**${group.name}**\nПредмет: ${group.subject.name}\nУчеников: ${group.students.length}`, 'statusChanges')
 
         return NextResponse.json(group, { status: 201 })
     } catch (error) {
