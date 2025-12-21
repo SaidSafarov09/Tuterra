@@ -132,7 +132,7 @@ async def get_lessons_by_date(pool, user_id, date: datetime, user_tz="Europe/Mos
     async with pool.acquire() as conn:
         return await conn.fetch('''
             SELECT l.id, l.date, s.name as "subjectName", sg.name as "groupName", st.name as "studentName", 
-                   l."isPaid", l."isCanceled", l.price
+                   l."groupId", l."studentId", l."isPaid", l."isCanceled", l.price
             FROM "Lesson" l
             LEFT JOIN "Subject" s ON l."subjectId" = s.id
             LEFT JOIN "Group" sg ON l."groupId" = sg.id
@@ -164,7 +164,14 @@ async def get_group_lesson_payments(pool, lesson_id):
 
 async def toggle_lesson_paid(pool, lesson_id, status: bool):
     async with pool.acquire() as conn:
+        # Update lesson status
         await conn.execute('UPDATE "Lesson" SET "isPaid" = $1 WHERE id = $2', status, lesson_id)
+        # Also update LessonPayment if it's an individual lesson
+        await conn.execute('''
+            UPDATE "LessonPayment" 
+            SET "hasPaid" = $1 
+            WHERE "lessonId" = $2 AND "studentId" = (SELECT "studentId" FROM "Lesson" WHERE id = $2)
+        ''', status, lesson_id)
 
 async def toggle_student_payment(pool, lesson_id, student_id, status: bool):
     async with pool.acquire() as conn:
@@ -199,9 +206,35 @@ async def get_student_details(pool, student_id):
         ''', student_id)
         
         # Stats
-        total_lessons = await conn.fetchval('SELECT COUNT(*) FROM "Lesson" WHERE "studentId" = $1', student_id)
-        unpaid_count = await conn.fetchval('SELECT COUNT(*) FROM "Lesson" WHERE "studentId" = $1 AND "isPaid" = false AND "isCanceled" = false AND date < NOW()', student_id)
-        debt_amount = await conn.fetchval('SELECT SUM(price) FROM "Lesson" WHERE "studentId" = $1 AND "isPaid" = false AND "isCanceled" = false AND date < NOW()', student_id)
+        total_lessons = await conn.fetchval('''
+            SELECT COUNT(*) FROM (
+                SELECT id FROM "Lesson" WHERE "studentId" = $1
+                UNION ALL
+                SELECT "lessonId" FROM "LessonPayment" WHERE "studentId" = $1
+            ) as t
+        ''', student_id)
+        
+        unpaid_count = await conn.fetchval('''
+            SELECT COUNT(*) FROM (
+                SELECT l.id FROM "Lesson" l 
+                WHERE l."studentId" = $1 AND l."isPaid" = false AND l."isCanceled" = false AND l.date < NOW()
+                UNION ALL
+                SELECT lp."lessonId" FROM "LessonPayment" lp
+                JOIN "Lesson" l ON lp."lessonId" = l.id
+                WHERE lp."studentId" = $1 AND lp."hasPaid" = false AND l."isCanceled" = false AND l.date < NOW()
+            ) as t
+        ''', student_id)
+        
+        debt_amount = await conn.fetchval('''
+            SELECT SUM(price) FROM (
+                SELECT l.price FROM "Lesson" l
+                WHERE l."studentId" = $1 AND l."isPaid" = false AND l."isCanceled" = false AND l.date < NOW()
+                UNION ALL
+                SELECT l.price FROM "LessonPayment" lp
+                JOIN "Lesson" l ON lp."lessonId" = l.id
+                WHERE lp."studentId" = $1 AND lp."hasPaid" = false AND l."isCanceled" = false AND l.date < NOW()
+            ) as t
+        ''', student_id)
         
         return {
             "info": dict(student),
@@ -218,12 +251,36 @@ async def get_student_details(pool, student_id):
 async def get_unpaid_lessons(pool, user_id, limit=20):
     async with pool.acquire() as conn:
         return await conn.fetch('''
-            SELECT l.id, l.date, s.name as "subjectName", st.name as "studentName", 
-                   l."groupName", l."groupId", l.price
-            FROM "Lesson" l
-            LEFT JOIN "Subject" s ON l."subjectId" = s.id
-            LEFT JOIN "Student" st ON l."studentId" = st.id
-            WHERE l."ownerId" = $1 AND l."isPaid" = false AND l."isCanceled" = false AND l.date < NOW()
-            ORDER BY l.date DESC
+            SELECT * FROM (
+                -- Individual lessons
+                SELECT l.id, l.date, s.name as "subjectName", st.name as "studentName", 
+                       NULL as "groupName", l."groupId", l.price, l."studentId"
+                FROM "Lesson" l
+                LEFT JOIN "Subject" s ON l."subjectId" = s.id
+                LEFT JOIN "Student" st ON l."studentId" = st.id
+                WHERE l."ownerId" = $1 
+                  AND l."isPaid" = false 
+                  AND l."isCanceled" = false 
+                  AND l."studentId" IS NOT NULL
+                  AND l."groupId" IS NULL
+                  AND l.date < NOW()
+
+                UNION ALL
+
+                -- Group lesson payments
+                SELECT l.id, l.date, s.name as "subjectName", st.name as "studentName", 
+                       sg.name as "groupName", l."groupId", l.price, lp."studentId"
+                FROM "LessonPayment" lp
+                JOIN "Lesson" l ON lp."lessonId" = l.id
+                JOIN "Student" st ON lp."studentId" = st.id
+                LEFT JOIN "Subject" s ON l."subjectId" = s.id
+                LEFT JOIN "Group" sg ON l."groupId" = sg.id
+                WHERE l."ownerId" = $1
+                  AND lp."hasPaid" = false
+                  AND l."isCanceled" = false
+                  AND l."groupId" IS NOT NULL
+                  AND l.date < NOW()
+            ) as unpaid
+            ORDER BY date DESC
             LIMIT $2
         ''', user_id, limit)

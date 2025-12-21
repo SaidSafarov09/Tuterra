@@ -130,8 +130,11 @@ async def action_show_finance_menu(update: Update, context: ContextTypes.DEFAULT
         text += "⚠️ **Последние неоплаченные уроки:**"
         keyboard = []
         for l in unpaid:
-            name = l['studentName'] or l['groupName'] or 'Ученик'
-            keyboard.append([InlineKeyboardButton(f"{name} ({l['price']}₽)", callback_data=f"lesson_{l['id']}")])
+            if l['groupName']:
+                display_name = f"👤 {l['studentName']} (👥 {l['groupName']})"
+            else:
+                display_name = f"👤 {l['studentName']}"
+            keyboard.append([InlineKeyboardButton(f"{display_name} — {l['price']}₽", callback_data=f"l_{l['id']}")])
         keyboard.append([back_button()])
     else:
         text += "Все уроки оплачены! 🎉"
@@ -150,8 +153,11 @@ async def action_show_debtors(update: Update, context: ContextTypes.DEFAULT_TYPE
     text = "📉 **Должники:**\n\nНажмите на урок, чтобы отметить оплату."
     keyboard = []
     for l in unpaid[:15]:
-        name = l['studentName'] or l['groupName'] or 'Ученик'
-        keyboard.append([InlineKeyboardButton(f"{name} ({l['price']}₽)", callback_data=f"lesson_{l['id']}")])
+        if l['groupName']:
+            display_name = f"👤 {l['studentName']} (👥 {l['groupName']})"
+        else:
+            display_name = f"👤 {l['studentName']}"
+        keyboard.append([InlineKeyboardButton(f"{display_name} — {l['price']}₽", callback_data=f"l_{l['id']}")])
     keyboard.append([back_button()])
     if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     else: await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
@@ -217,7 +223,7 @@ async def schedule_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(f"📅 **{title}:** Занятий нет. 🏖", reply_markup=InlineKeyboardMarkup([[back_button('menu_schedule')]]), parse_mode='Markdown')
         return
     text = f"📅 **Расписание на {title}:**"
-    keyboard = [[InlineKeyboardButton(f"{'✅' if l['isPaid'] else ('❌' if l['isCanceled'] else '⚠️')} {to_local_time(l['date'], user_tz).strftime('%H:%M')} - {l['studentName'] or l['groupName']}", callback_data=f"lesson_{l['id']}")] for l in lessons]
+    keyboard = [[InlineKeyboardButton(f"{'✅' if l['isPaid'] else ('❌' if l['isCanceled'] else '⚠️')} {to_local_time(l['date'], user_tz).strftime('%H:%M')} - {l['studentName'] or l['groupName']}", callback_data=f"l_{l['id']}")] for l in lessons]
     keyboard.append([back_button('menu_schedule')])
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
@@ -229,15 +235,15 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
     pool = context.bot_data['pool']
     if len(data_parts) > 2:
         action = data_parts[2]
-        if action == 'pay': await toggle_lesson_paid(pool, lesson_id, True)
-        elif action == 'unpay': await toggle_lesson_paid(pool, lesson_id, False)
-        elif action == 'paystud': 
+        if action == 'p': await toggle_lesson_paid(pool, lesson_id, True)
+        elif action == 'up': await toggle_lesson_paid(pool, lesson_id, False)
+        elif action == 'ps': 
             student_id = data_parts[3]
             await toggle_student_payment(pool, lesson_id, student_id, True)
-        elif action == 'unpaystud':
+        elif action == 'ups':
             student_id = data_parts[3]
             await toggle_student_payment(pool, lesson_id, student_id, False)
-        elif action == 'togglecancel':
+        elif action == 'tc':
             l = await get_lesson_by_id(pool, lesson_id)
             if l: await toggle_lesson_cancel(pool, lesson_id, not l['isCanceled'])
 
@@ -251,12 +257,12 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
         group_payments = await get_group_lesson_payments(pool, lesson_id)
         # Check if all paid
         all_paid = all(p['hasPaid'] for p in group_payments) if group_payments else False
-        status = "✅ ОПЛАЧЕНО ГРУППОЙ" if all_paid else "⚠️ ЕСТЬ ДОЛГИ"
+        status = "✅ Все ученики оплатили" if all_paid else "⚠️ Есть долги"
     else:
-        status = "✅ ОПЛАЧЕНО" if lesson['isPaid'] else "⚠️ НЕ ОПЛАЧЕНО"
+        status = "✅ Оплачено" if lesson['isPaid'] else "⚠️ Не оплачено"
     
     if lesson['isCanceled']:
-        status = "❌ ОТМЕНЕНО"
+        status = "❌ Отменено"
     
     entity_label = f"👤 Ученик: **{lesson['studentName']}**" if lesson['studentName'] else f"👥 Группа: **{lesson['groupName']}**"
     text = f"📚 **Занятие**\n{entity_label}\n📖 Предмет: **{lesson['subjectName'] or '---'}**\n📅 Время: **{time_str}**\n💰 Стоимость: **{lesson['price']} ₽**\n📊 Статус: {status}"
@@ -272,15 +278,15 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
                 p_status = "✅" if p['hasPaid'] else "❌"
                 text += f"\n{p_status} {p['studentName']}"
                 # Toggle button for each student
-                btn_action = 'unpaystud' if p['hasPaid'] else 'paystud'
+                btn_action = 'ups' if p['hasPaid'] else 'ps'
                 btn_text = f"{'🔄' if p['hasPaid'] else '✅'} {p['studentName']}"
-                keyboard.append([InlineKeyboardButton(btn_text, callback_data=f"lesson_{lesson_id}_{btn_action}_{p['studentId']}")])
+                keyboard.append([InlineKeyboardButton(btn_text, callback_data=f"l_{lesson_id}_{btn_action}_{p['studentId']}")])
 
     btns = []
     if not lesson['isCanceled']: 
         if not lesson['groupId']:
-            btns.append(InlineKeyboardButton("↩️ Не оплачено" if lesson['isPaid'] else "✅ Оплачено", callback_data=f"lesson_{lesson_id}_{'unpay' if lesson['isPaid'] else 'pay'}"))
-    btns.append(InlineKeyboardButton("Восстановить" if lesson['isCanceled'] else "❌ Отменить", callback_data=f"lesson_{lesson_id}_togglecancel"))
+            btns.append(InlineKeyboardButton("↩️ Не оплачено" if lesson['isPaid'] else "✅ Оплачено", callback_data=f"l_{lesson_id}_{'up' if lesson['isPaid'] else 'p'}"))
+    btns.append(InlineKeyboardButton("Восстановить" if lesson['isCanceled'] else "❌ Отменить", callback_data=f"l_{lesson_id}_tc"))
     keyboard.append(btns)
     keyboard.append([back_button('menu_schedule')])
     
@@ -351,7 +357,7 @@ if __name__ == '__main__':
     app.add_handler(CallbackQueryHandler(check_sub_callback, pattern='^check_sub'))
     app.add_handler(CallbackQueryHandler(menu_callback, pattern='^menu_'))
     app.add_handler(CallbackQueryHandler(schedule_callback, pattern='^sched_'))
-    app.add_handler(CallbackQueryHandler(lesson_details_callback, pattern='^lesson_'))
+    app.add_handler(CallbackQueryHandler(lesson_details_callback, pattern='^l_'))
     app.add_handler(CallbackQueryHandler(student_details_callback, pattern='^student_'))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), text_handler))
     app.run_polling()
