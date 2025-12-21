@@ -14,7 +14,12 @@ import {
     Info,
     ChevronDown,
     ChevronUp,
-    CheckCircle
+    CheckCircle,
+    Calendar,
+    RefreshCw,
+    PlusCircle,
+    Sun,
+    Moon
 } from 'lucide-react'
 import styles from './NotificationCenter.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -25,7 +30,7 @@ export interface Notification {
     id: string
     title: string
     message: string
-    type: 'lesson_reminder' | 'unpaid_lesson' | 'status_change' | 'income' | 'debt' | 'missing_lessons' | 'onboarding'
+    type: 'lesson_reminder' | 'unpaid_lesson' | 'status_change' | 'income' | 'debt' | 'missing_lessons' | 'onboarding' | 'lesson_deleted' | 'lesson_rescheduled' | 'lesson_created' | 'morning_briefing' | 'evening_summary'
     isRead: boolean
     createdAt: string
     link?: string
@@ -150,8 +155,13 @@ export const NotificationCenter: React.FC = () => {
             case 'lesson_reminder': return <Clock size={20} />
             case 'unpaid_lesson': return <AlertTriangle size={20} />
             case 'income': return <DollarSign size={20} />
-            case 'status_change': return <Info size={20} />
+            case 'status_change': return <RefreshCw size={20} />
+            case 'lesson_deleted': return <Trash2 size={20} />
+            case 'lesson_rescheduled': return <RefreshCw size={20} />
+            case 'lesson_created': return <PlusCircle size={20} />
             case 'debt': return <AlertTriangle size={20} />
+            case 'morning_briefing': return <Sun size={20} />
+            case 'evening_summary': return <Moon size={20} />
             default: return <Info size={20} />
         }
     }
@@ -161,7 +171,11 @@ export const NotificationCenter: React.FC = () => {
             case 'lesson_reminder': return styles.typeIconReminder
             case 'unpaid_lesson': return styles.typeIconWarning
             case 'income': return styles.typeIconSuccess
-            case 'status_change': return styles.typeIconInfo
+            case 'morning_briefing': return styles.typeIconInfo
+            case 'evening_summary': return styles.typeIconSuccess
+            case 'lesson_deleted': return styles.typeIconError
+            case 'lesson_rescheduled': return styles.typeIconInfo
+            case 'lesson_created': return styles.typeIconSuccess
             case 'debt': return styles.typeIconError
             default: return styles.typeIconInfo
         }

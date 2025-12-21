@@ -273,8 +273,8 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
 
     const entityNameNotify = lesson.group?.name || lesson.student?.name || 'Ученик'
     const sName = lesson.subject?.name || 'Без предмета'
-    const entityLabelNotify = lesson.groupId ? '👥 Группа:' : '👤 Ученик:'
-    const notifyMsg = `🆕 **Новое занятие:**\n📅 ${timeStr}\n${entityLabelNotify} **${entityNameNotify}**\n📚 Предмет: **${sName}**`
+    const entityLabel = lesson.groupId ? 'группой' : 'учеником'
+    const notifyMsg = `🆕 **Новое занятие:**\n\nЗанятие по предмету **${sName}** с ${entityLabel} **${entityNameNotify}** добавлено в расписание на **${timeStr}**.`
 
     const settings = await prisma.notificationSettings.findUnique({ where: { userId } })
     if (settings?.statusChanges) {
@@ -283,8 +283,8 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
                 data: {
                     userId,
                     title: 'Новое занятие',
-                    message: `${sName} с ${entityNameNotify} (${lesson.groupId ? 'Группа' : 'Ученик'}) в ${timeStr}`,
-                    type: 'status_change',
+                    message: `Занятие по предмету ${sName} с ${entityLabel} ${entityNameNotify} добавлено на ${timeStr}`,
+                    type: 'lesson_created',
                     isRead: false
                 }
             })

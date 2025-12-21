@@ -160,22 +160,17 @@ export async function PUT(
 
                     const subjectName = currentLessonForNotify.subject?.name || 'Занятие'
                     const studentName = currentLessonForNotify.student?.name || currentLessonForNotify.group?.name || 'Ученик'
-                    const entityLabel = currentLessonForNotify.groupId ? '👥 Группа:' : '👤 Ученик:'
+                    const entityLabel = currentLessonForNotify.groupId ? 'группой' : 'учеником'
 
-                    const notifyMsg = `📅 **Занятие перенесено**
-                    
-${entityLabel} **${studentName}**
-📚 Предмет: **${subjectName}**
-⏳ Было: ${formatter.format(oldDate)}
-🚀 Стало: **${formatter.format(newDate)}**`
+                    const notifyMsg = `📅 **Занятие перенесено:**\n\nЗанятие по предмету **${subjectName}** с ${entityLabel} **${studentName}** перенесено\n⏳ Было: ${formatter.format(oldDate)}\n🚀 Стало: **${formatter.format(newDate)}**`
 
                     if (settings?.deliveryWeb) {
                         await prisma.notification.create({
                             data: {
                                 userId: user.id,
                                 title: 'Занятие перенесено',
-                                message: `${subjectName} с ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
-                                type: 'status_change',
+                                message: `Занятие по предмету ${subjectName} с ${entityLabel} ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
+                                type: 'lesson_rescheduled',
                                 isRead: false
                             }
                         })
@@ -435,20 +430,21 @@ export async function PATCH(
 
                         const subjectName = currentLesson.subject?.name || 'Занятие'
                         const studentName = currentLesson.student?.name || currentLesson.group?.name || 'Ученик'
-                        const entityLabel = currentLesson.groupId ? '👥 Группа:' : '👤 Ученик:'
+                        const entityLabel = currentLesson.groupId ? 'группой' : 'учеником'
+                        const entityFullLabel = currentLesson.groupId ? 'Группой' : 'Учеником'
 
                         if (settings?.deliveryWeb) {
                             await prisma.notification.create({
                                 data: {
                                     userId: user.id,
                                     title: 'Занятие перенесено',
-                                    message: `${subjectName} с ${studentName} (${currentLesson.groupId ? 'Группа' : 'Ученик'}) перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
-                                    type: 'status_change',
+                                    message: `Занятие по предмету ${subjectName} с ${entityLabel} ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
+                                    type: 'lesson_rescheduled',
                                     isRead: false
                                 }
                             })
                         }
-                        await sendTelegramNotification(user.id, `📅 **Занятие перенесено**\n\n${entityLabel} **${studentName}**\n📚 Предмет: **${subjectName}**\n⏳ Было: ${formatter.format(oldDate)}\n🚀 Стало: **${formatter.format(newDate)}**`, 'statusChanges')
+                        await sendTelegramNotification(user.id, `📅 **Занятие перенесено:**\n\nЗанятие по предмету **${subjectName}** с ${entityLabel} **${studentName}** перенесено\n⏳ Было: ${formatter.format(oldDate)}\n🚀 Стало: **${formatter.format(newDate)}**`, 'statusChanges')
                     }
                 } catch (error) {
                     console.error('Failed to create notification:', error)
@@ -656,7 +652,9 @@ export async function DELETE(
         }
 
         const subjectName = (lesson as any).subject?.name || 'Занятие'
-        const studentName = (lesson as any).student?.name || (lesson as any).group?.name || 'Ученик'
+        const entityName = (lesson as any).student?.name || (lesson as any).group?.name || '---'
+        const isGroup = !!(lesson as any).groupId
+        const entityLabel = isGroup ? 'группой' : 'учеником'
 
         const settings = await prisma.notificationSettings.findUnique({ where: { userId: user.id } })
 
@@ -666,13 +664,13 @@ export async function DELETE(
                     data: {
                         userId: user.id,
                         title: 'Занятие удалено',
-                        message: `${subjectName} с ${studentName} удалено из расписания`,
-                        type: 'status_change',
+                        message: `Занятие по предмету ${subjectName} с ${entityLabel} ${entityName} было удалено`,
+                        type: 'lesson_deleted',
                         isRead: false
                     }
                 })
             }
-            await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\n**Занятие **${subjectName}** с **${studentName}** было удалено.`, 'statusChanges')
+            await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\nЗанятие по предмету **${subjectName}** с ${entityLabel} **${entityName}** было удалено.`, 'statusChanges')
         }
 
         return NextResponse.json({ success: true })
