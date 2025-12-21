@@ -28,7 +28,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ sett
                         onChange={(val) => onChange({ unpaidLessons: val })}
                     />
                     <Switch
-                        label="Изменение статуса (отмена/перенос)"
+                        label={<>Изменение статуса <br />(отмена/перенос)</>}
                         checked={settings.statusChanges}
                         onChange={(val) => onChange({ statusChanges: val })}
                     />

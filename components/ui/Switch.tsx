@@ -6,7 +6,7 @@ import styles from './Switch.module.scss'
 interface SwitchProps {
     checked: boolean
     onChange: (checked: boolean) => void
-    label?: string
+    label?: string | React.ReactNode
     disabled?: boolean
 }
 

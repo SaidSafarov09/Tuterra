@@ -13,7 +13,8 @@ import {
     AlertTriangle,
     Info,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    CheckCircle
 } from 'lucide-react'
 import styles from './NotificationCenter.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -33,7 +34,7 @@ export interface Notification {
 export const NotificationCenter: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false)
     const [notifications, setNotifications] = useState<Notification[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    const [, setIsLoading] = useState(true)
     const isMobile = useMediaQuery('(max-width: 768px)')
     const dropdownRef = useRef<HTMLDivElement>(null)
     const router = useRouter()
@@ -117,6 +118,9 @@ export const NotificationCenter: React.FC = () => {
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                // If clicking trigger, don't close immediately (handled by trigger click)
+                const target = event.target as HTMLElement
+                if (target.closest(`.${styles.trigger}`)) return
                 setIsOpen(false)
             }
         }
@@ -129,19 +133,37 @@ export const NotificationCenter: React.FC = () => {
     useEffect(() => {
         if (isOpen && isMobile) {
             document.body.style.overflow = 'hidden'
+            document.documentElement.style.overflow = 'hidden'
         } else {
-            document.body.style.overflow = 'auto'
+            document.body.style.overflow = ''
+            document.documentElement.style.overflow = ''
+        }
+
+        return () => {
+            document.body.style.overflow = ''
+            document.documentElement.style.overflow = ''
         }
     }, [isOpen, isMobile])
 
-    const getTypeIcon = (type: Notification['type']) => {
+    const getIcon = (type: Notification['type']) => {
         switch (type) {
-            case 'lesson_reminder': return <Clock size={16} className={styles.typeIconReminder} />
-            case 'unpaid_lesson': return <AlertTriangle size={16} className={styles.typeIconWarning} />
-            case 'income': return <DollarSign size={16} className={styles.typeIconSuccess} />
-            case 'status_change': return <Info size={16} className={styles.typeIconInfo} />
-            case 'debt': return <AlertTriangle size={16} className={styles.typeIconError} />
-            default: return <Info size={16} className={styles.typeIconInfo} />
+            case 'lesson_reminder': return <Clock size={20} />
+            case 'unpaid_lesson': return <AlertTriangle size={20} />
+            case 'income': return <DollarSign size={20} />
+            case 'status_change': return <Info size={20} />
+            case 'debt': return <AlertTriangle size={20} />
+            default: return <Info size={20} />
+        }
+    }
+
+    const getIconClass = (type: Notification['type']) => {
+        switch (type) {
+            case 'lesson_reminder': return styles.typeIconReminder
+            case 'unpaid_lesson': return styles.typeIconWarning
+            case 'income': return styles.typeIconSuccess
+            case 'status_change': return styles.typeIconInfo
+            case 'debt': return styles.typeIconError
+            default: return styles.typeIconInfo
         }
     }
 
@@ -176,8 +198,8 @@ export const NotificationCenter: React.FC = () => {
                                 className={`${styles.item} ${!notification.isRead ? styles.unread : ''}`}
                                 onClick={() => markAsRead(notification.id, notification.isRead)}
                             >
-                                <div className={styles.itemIcon}>
-                                    {getTypeIcon(notification.type)}
+                                <div className={`${styles.itemIcon} ${getIconClass(notification.type)}`}>
+                                    {getIcon(notification.type)}
                                 </div>
                                 <div className={styles.itemContent}>
                                     <div className={styles.itemHeader}>
@@ -186,14 +208,16 @@ export const NotificationCenter: React.FC = () => {
                                             {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
-                                    <div className={`${styles.messageWrapper} ${isExpanded ? styles.expanded : ''}`}>
-                                        <p className={styles.itemMessage}>{notification.message}</p>
-                                        {notification.message.length > 50 && (
+                                    <div className={styles.messageWrapper}>
+                                        <p className={`${styles.itemMessage} ${isExpanded ? styles.expanded : ''}`}>
+                                            {isExpanded ? notification.message : notification.message.slice(0, 60) + (notification.message.length > 60 ? '...' : '')}
+                                        </p>
+                                        {notification.message.length > 60 && (
                                             <button
                                                 className={styles.expandBtn}
                                                 onClick={(e) => toggleExpand(notification.id, e)}
                                             >
-                                                {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                                {isExpanded ? 'Свернуть' : 'Читать далее'}
                                             </button>
                                         )}
                                     </div>
@@ -204,8 +228,9 @@ export const NotificationCenter: React.FC = () => {
                                         e.stopPropagation()
                                         deleteNotification(notification.id)
                                     }}
+                                    aria-label="Удалить уведомление"
                                 >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={16} />
                                 </button>
                             </div>
                         )
@@ -223,7 +248,7 @@ export const NotificationCenter: React.FC = () => {
     return (
         <div className={styles.wrapper}>
             <button
-                className={`${styles.trigger} ${unreadCount > 0 ? styles.hasUnread : ''}`}
+                className={`${styles.trigger} ${isOpen ? styles.active : ''}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <BellIcon size={20} />
@@ -236,23 +261,17 @@ export const NotificationCenter: React.FC = () => {
                         {isMobile ? (
                             <motion.div
                                 className={styles.mobileModal}
-                                initial={{ y: '100%' }}
-                                animate={{ y: 0 }}
-                                exit={{ y: '100%' }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
                                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             >
                                 {content}
                             </motion.div>
                         ) : (
-                            <motion.div
-                                className={styles.dropdown}
-                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                transition={{ duration: 0.2 }}
-                            >
+                            <div className={styles.dropdown}>
                                 {content}
-                            </motion.div>
+                            </div>
                         )}
                     </>
                 )}
