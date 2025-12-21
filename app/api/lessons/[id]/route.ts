@@ -160,10 +160,11 @@ export async function PUT(
 
                     const subjectName = currentLessonForNotify.subject?.name || 'Занятие'
                     const studentName = currentLessonForNotify.student?.name || currentLessonForNotify.group?.name || 'Ученик'
+                    const entityLabel = currentLessonForNotify.groupId ? '👥 Группа:' : '👤 Ученик:'
 
                     const notifyMsg = `📅 **Занятие перенесено**
                     
-👤 Ученик: **${studentName}**
+${entityLabel} **${studentName}**
 📚 Предмет: **${subjectName}**
 ⏳ Было: ${formatter.format(oldDate)}
 🚀 Стало: **${formatter.format(newDate)}**`
@@ -434,19 +435,20 @@ export async function PATCH(
 
                         const subjectName = currentLesson.subject?.name || 'Занятие'
                         const studentName = currentLesson.student?.name || currentLesson.group?.name || 'Ученик'
+                        const entityLabel = currentLesson.groupId ? '👥 Группа:' : '👤 Ученик:'
 
                         if (settings?.deliveryWeb) {
                             await prisma.notification.create({
                                 data: {
                                     userId: user.id,
                                     title: 'Занятие перенесено',
-                                    message: `${subjectName} с ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
+                                    message: `${subjectName} с ${studentName} (${currentLesson.groupId ? 'Группа' : 'Ученик'}) перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
                                     type: 'status_change',
                                     isRead: false
                                 }
                             })
                         }
-                        await sendTelegramNotification(user.id, `📅 **Занятие перенесено**\n\n👤 Ученик: **${studentName}**\n📚 Предмет: **${subjectName}**\n⏳ Было: ${formatter.format(oldDate)}\n🚀 Стало: **${formatter.format(newDate)}**`, 'statusChanges')
+                        await sendTelegramNotification(user.id, `📅 **Занятие перенесено**\n\n${entityLabel} **${studentName}**\n📚 Предмет: **${subjectName}**\n⏳ Было: ${formatter.format(oldDate)}\n🚀 Стало: **${formatter.format(newDate)}**`, 'statusChanges')
                     }
                 } catch (error) {
                     console.error('Failed to create notification:', error)
@@ -622,6 +624,7 @@ export async function DELETE(
 
         const lesson = await prisma.lesson.findFirst({
             where: whereClause,
+            include: { student: true, group: true, subject: true }
         })
 
         if (!lesson) {
@@ -669,7 +672,7 @@ export async function DELETE(
                     }
                 })
             }
-            await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\n**${subjectName}** с **${studentName}** было удалено из расписания.`, 'statusChanges')
+            await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\n**Занятие **${subjectName}** с **${studentName}** было удалено.`, 'statusChanges')
         }
 
         return NextResponse.json({ success: true })

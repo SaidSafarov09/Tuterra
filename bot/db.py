@@ -152,9 +152,23 @@ async def get_lesson_by_id(pool, lesson_id):
             WHERE l.id = $1
         ''', lesson_id)
 
+async def get_group_lesson_payments(pool, lesson_id):
+    async with pool.acquire() as conn:
+        return await conn.fetch('''
+            SELECT lp."studentId", st.name as "studentName", lp."hasPaid"
+            FROM "LessonPayment" lp
+            JOIN "Student" st ON lp."studentId" = st.id
+            WHERE lp."lessonId" = $1
+            ORDER BY st.name ASC
+        ''', lesson_id)
+
 async def toggle_lesson_paid(pool, lesson_id, status: bool):
     async with pool.acquire() as conn:
         await conn.execute('UPDATE "Lesson" SET "isPaid" = $1 WHERE id = $2', status, lesson_id)
+
+async def toggle_student_payment(pool, lesson_id, student_id, status: bool):
+    async with pool.acquire() as conn:
+        await conn.execute('UPDATE "LessonPayment" SET "hasPaid" = $1 WHERE "lessonId" = $2 AND "studentId" = $3', status, lesson_id, student_id)
 
 async def toggle_lesson_cancel(pool, lesson_id, status: bool):
     async with pool.acquire() as conn:
@@ -204,7 +218,8 @@ async def get_student_details(pool, student_id):
 async def get_unpaid_lessons(pool, user_id, limit=20):
     async with pool.acquire() as conn:
         return await conn.fetch('''
-            SELECT l.id, l.date, s.name as "subjectName", st.name as "studentName", l.price
+            SELECT l.id, l.date, s.name as "subjectName", st.name as "studentName", 
+                   l."groupName", l."groupId", l.price
             FROM "Lesson" l
             LEFT JOIN "Subject" s ON l."subjectId" = s.id
             LEFT JOIN "Student" st ON l."studentId" = st.id

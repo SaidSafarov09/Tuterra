@@ -66,7 +66,8 @@ export async function GET(request: NextRequest) {
 
                 if (!existing) {
                     const subjectName = lesson.subject?.name || 'Занятие'
-                    const studentName = lesson.student?.name || lesson.group?.name || 'Ученик'
+                    const entityName = lesson.student?.name || lesson.group?.name || 'Ученик'
+                    const entityLabel = lesson.studentId ? '👤 Ученик:' : '👥 Группа:'
 
                     // Format time in user's timezone
                     const timeString = new Intl.DateTimeFormat('ru-RU', {
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
 
                     const message = `🔔 **Скоро занятие**
                     
-👤 Ученик: **${studentName}**
+${entityLabel} **${entityName}**
 📚 Предмет: **${subjectName}**
 🕒 Время: **${timeString}**
 ⏳ Длительность: **${lesson.duration} мин**
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest) {
                             data: {
                                 userId,
                                 title: 'Скоро занятие',
-                                message: `${subjectName} с ${studentName} в ${timeString}`,
+                                message: `${subjectName} с ${entityName} в ${timeString}`,
                                 type: 'lesson_reminder',
                                 data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
                                 link: `/calendar?date=${lesson.date.toISOString().split('T')[0]}`
@@ -138,9 +139,10 @@ export async function GET(request: NextRequest) {
 
                 if (!existing) {
                     const subjectName = lesson.subject?.name || 'Занятие'
-                    const studentName = lesson.student?.name || lesson.group?.name || 'Ученик'
+                    const entityName = lesson.student?.name || lesson.group?.name || '---'
+                    const entityLabel = lesson.studentId ? '👤 Ученик:' : '👥 Группа:'
 
-                    const msg = `Занятие ${subjectName} с ${studentName} завершилось, но не было оплачено. Не забудьте отметить оплату.`
+                    const msg = `${entityLabel} **${entityName}**\n📚 Предмет: **${subjectName}**\n\nЗанятие завершилось, но не было оплачено. Не забудьте отметить оплату.`
                     if (settings.deliveryWeb) {
                         await prisma.notification.create({
                             data: {
@@ -186,10 +188,18 @@ export async function GET(request: NextRequest) {
                             ownerId: userId,
                             date: { gte: startOfDay, lte: endOfDay },
                             isCanceled: false
-                        }
+                        },
+                        include: { lessonPayments: true }
                     })
 
-                    const income = todayLessons.reduce((sum, l) => sum + (l.isPaid ? l.price : 0), 0)
+                    const income = todayLessons.reduce((sum, l) => {
+                        if (l.studentId) return sum + (l.isPaid ? l.price : 0)
+                        if (l.groupId) {
+                            const paidCount = l.lessonPayments?.filter(p => p.hasPaid).length || 0
+                            return sum + (paidCount * l.price)
+                        }
+                        return sum
+                    }, 0)
                     if (todayLessons.length > 0) {
                         const msg = `Сегодня вы заработали ${income.toLocaleString('ru-RU')} ₽. Всего проведено занятий: ${todayLessons.length}.`
                         if (settings.deliveryWeb) {
@@ -228,10 +238,18 @@ export async function GET(request: NextRequest) {
                             ownerId: userId,
                             date: { gte: startOfMonth, lte: endOfMonth },
                             isCanceled: false
-                        }
+                        },
+                        include: { lessonPayments: true }
                     })
 
-                    const income = monthLessons.reduce((sum, l) => sum + (l.isPaid ? l.price : 0), 0)
+                    const income = monthLessons.reduce((sum, l) => {
+                        if (l.studentId) return sum + (l.isPaid ? l.price : 0)
+                        if (l.groupId) {
+                            const paidCount = l.lessonPayments?.filter(p => p.hasPaid).length || 0
+                            return sum + (paidCount * l.price)
+                        }
+                        return sum
+                    }, 0)
                     if (monthLessons.length > 0) {
                         const msg = `Итоги прошлого месяца: вы заработали ${income.toLocaleString('ru-RU')} ₽. Проведено занятий: ${monthLessons.length}.`
                         if (settings.deliveryWeb) {
@@ -323,35 +341,44 @@ export async function GET(request: NextRequest) {
                     include: {
                         lessons: {
                             where: { isPaid: false, isCanceled: false, date: { lt: now } }
+                        },
+                        lessonPayments: {
+                            where: { hasPaid: false, lesson: { isCanceled: false, date: { lt: now } } },
+                            include: { lesson: true }
                         }
                     }
                 })
 
                 for (const student of students) {
-                    const unpaidCount = student.lessons.length
-                    if (unpaidCount >= 2) {
-                        const debtAmount = student.lessons.reduce((sum, l) => sum + l.price, 0)
-                        const key = `debt_student_${student.id}_week_${getWeekNumber(now)}`
+                    const individualUnpaid = student.lessons.length
+                    const groupUnpaid = student.lessonPayments.length
+                    const totalUnpaid = individualUnpaid + groupUnpaid
 
+                    if (totalUnpaid >= 2) {
+                        const individualDebt = student.lessons.reduce((sum, l) => sum + l.price, 0)
+                        const groupDebt = student.lessonPayments.reduce((sum, p) => sum + p.lesson.price, 0)
+                        const totalDebtAmount = individualDebt + groupDebt
+
+                        const key = `debt_student_${student.id}_week_${getWeekNumber(now)}`
                         const existing = await prisma.notification.findFirst({
                             where: { userId, type: 'debt', data: { contains: key } }
                         })
 
                         if (!existing) {
-                            const msg = `У ученика ${student.name} накопилось ${unpaidCount} неоплаченных занятий на сумму ${debtAmount} ₽.`
+                            const msg = `👤 Ученик: **${student.name}**\nНакопилось ${totalUnpaid} неоплаченных занятий на сумму ${totalDebtAmount} ₽.`
                             if (settings.deliveryWeb) {
                                 await prisma.notification.create({
                                     data: {
                                         userId,
                                         title: 'Задолженность у ученика',
-                                        message: msg,
+                                        message: `У ученика ${student.name} накоплено долгов на ${totalDebtAmount} ₽`,
                                         type: 'debt',
                                         data: JSON.stringify({ key }),
                                         link: `/students/${student.id}`
                                     }
                                 })
                             }
-                            await sendTelegramNotification(userId, `📉 **Долги:** ${msg}`, 'studentDebts')
+                            await sendTelegramNotification(userId, `📉 **Долги:**\n\n${msg}`, 'studentDebts')
                             notificationsCreated.push('student_debt')
                         }
                     }
@@ -406,7 +433,7 @@ export async function GET(request: NextRequest) {
                 date: { gte: startOfDay, lte: endOfDay },
                 isCanceled: false
             },
-            include: { subject: true, student: true, group: true },
+            include: { subject: true, student: true, group: true, lessonPayments: true },
             orderBy: { date: 'asc' }
         })
 
@@ -429,7 +456,9 @@ export async function GET(request: NextRequest) {
                             const time = new Intl.DateTimeFormat('ru-RU', {
                                 hour: '2-digit', minute: '2-digit', timeZone: userTz
                             }).format(l.date)
-                            return `${i + 1}. **${time}** — ${l.student?.name || l.group?.name} (${l.subject?.name || 'Без предмета'})`
+                            const label = l.studentId ? '👤' : '👥'
+                            const name = l.student?.name || l.group?.name || '---'
+                            return `${i + 1}. **${time}** ${label} ${name} (${l.subject?.name || 'Без предмета'})`
                         }).join('\n')
 
                         const msg = `☀️ **Доброе утро!**\n\nСегодня у вас ${todayLessons.length} занятий:\n\n${lessonsList}\n\nЖелаем удачного дня! ✨`
@@ -464,7 +493,14 @@ export async function GET(request: NextRequest) {
                     })
 
                     if (!existing) {
-                        const incomeTotal = todayLessons.reduce((sum, l) => sum + (l.isPaid ? l.price : 0), 0)
+                        const incomeTotal = todayLessons.reduce((sum, l) => {
+                            if (l.studentId) return sum + (l.isPaid ? l.price : 0)
+                            if (l.groupId) {
+                                const paidCount = l.lessonPayments?.filter(p => p.hasPaid).length || 0
+                                return sum + (paidCount * l.price)
+                            }
+                            return sum
+                        }, 0)
                         const msgText = `Сегодня вы заработали ${incomeTotal.toLocaleString('ru-RU')} ₽. Всего проведено занятий: ${todayLessons.length}.`
                         const msg = `🌟 **Отличная работа!**\n\n${msgText}\n\nХорошего отдыха! ✨`
 

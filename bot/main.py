@@ -10,7 +10,8 @@ from db import (
     get_db_pool, get_user_by_telegram_id, link_user_telegram, verify_telegram_code,
     get_dashboard_stats, get_lessons_by_date, get_lesson_by_id, 
     toggle_lesson_paid, toggle_lesson_cancel, get_all_students, 
-    get_student_details, get_unpaid_lessons
+    get_student_details, get_unpaid_lessons, get_group_lesson_payments,
+    toggle_student_payment
 )
 
 # Load environment variables
@@ -127,7 +128,10 @@ async def action_show_finance_menu(update: Update, context: ContextTypes.DEFAULT
     
     if unpaid:
         text += "⚠️ **Последние неоплаченные уроки:**"
-        keyboard = [[InlineKeyboardButton(f"{l['studentName']} ({l['price']}₽)", callback_data=f"lesson_{l['id']}")] for l in unpaid]
+        keyboard = []
+        for l in unpaid:
+            name = l['studentName'] or l['groupName'] or 'Ученик'
+            keyboard.append([InlineKeyboardButton(f"{name} ({l['price']}₽)", callback_data=f"lesson_{l['id']}")])
         keyboard.append([back_button()])
     else:
         text += "Все уроки оплачены! 🎉"
@@ -144,7 +148,10 @@ async def action_show_debtors(update: Update, context: ContextTypes.DEFAULT_TYPE
         else: await update.message.reply_text(text)
         return
     text = "📉 **Должники:**\n\nНажмите на урок, чтобы отметить оплату."
-    keyboard = [[InlineKeyboardButton(f"{l['studentName']} ({l['price']}₽)", callback_data=f"lesson_{l['id']}")] for l in unpaid[:15]]
+    keyboard = []
+    for l in unpaid[:15]:
+        name = l['studentName'] or l['groupName'] or 'Ученик'
+        keyboard.append([InlineKeyboardButton(f"{name} ({l['price']}₽)", callback_data=f"lesson_{l['id']}")])
     keyboard.append([back_button()])
     if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     else: await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
@@ -224,6 +231,12 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
         action = data_parts[2]
         if action == 'pay': await toggle_lesson_paid(pool, lesson_id, True)
         elif action == 'unpay': await toggle_lesson_paid(pool, lesson_id, False)
+        elif action == 'paystud': 
+            student_id = data_parts[3]
+            await toggle_student_payment(pool, lesson_id, student_id, True)
+        elif action == 'unpaystud':
+            student_id = data_parts[3]
+            await toggle_student_payment(pool, lesson_id, student_id, False)
         elif action == 'togglecancel':
             l = await get_lesson_by_id(pool, lesson_id)
             if l: await toggle_lesson_cancel(pool, lesson_id, not l['isCanceled'])
@@ -233,12 +246,45 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
     user_rec = await get_user_by_telegram_id(pool, update.effective_user.id)
     user_tz = dict(user_rec).get('timezone', 'Europe/Moscow') if user_rec else 'Europe/Moscow'
     time_str = to_local_time(lesson['date'], user_tz).strftime("%d.%m %H:%M")
-    status = "❌ ОТМЕНЕНО" if lesson['isCanceled'] else ("✅ ОПЛАЧЕНО" if lesson['isPaid'] else "⚠️ НЕ ОПЛАЧЕНО")
-    text = f"📚 **Урок: {lesson['studentName'] or lesson['groupName']}**\n📅 {time_str}\n📖 {lesson['subjectName'] or '---'}\n💰 {lesson['price']} ₽\n📊 {status}"
+    
+    if lesson['groupId']:
+        group_payments = await get_group_lesson_payments(pool, lesson_id)
+        # Check if all paid
+        all_paid = all(p['hasPaid'] for p in group_payments) if group_payments else False
+        status = "✅ ОПЛАЧЕНО ГРУППОЙ" if all_paid else "⚠️ ЕСТЬ ДОЛГИ"
+    else:
+        status = "✅ ОПЛАЧЕНО" if lesson['isPaid'] else "⚠️ НЕ ОПЛАЧЕНО"
+    
+    if lesson['isCanceled']:
+        status = "❌ ОТМЕНЕНО"
+    
+    entity_label = f"👤 Ученик: **{lesson['studentName']}**" if lesson['studentName'] else f"👥 Группа: **{lesson['groupName']}**"
+    text = f"📚 **Занятие**\n{entity_label}\n📖 Предмет: **{lesson['subjectName'] or '---'}**\n📅 Время: **{time_str}**\n💰 Стоимость: **{lesson['price']} ₽**\n📊 Статус: {status}"
+    
+    keyboard = []
+    
+    # If group, show list of students
+    if lesson['groupId']:
+        group_payments = await get_group_lesson_payments(pool, lesson_id)
+        if group_payments:
+            text += "\n\n👥 **Ученики в группе:**"
+            for p in group_payments:
+                p_status = "✅" if p['hasPaid'] else "❌"
+                text += f"\n{p_status} {p['studentName']}"
+                # Toggle button for each student
+                btn_action = 'unpaystud' if p['hasPaid'] else 'paystud'
+                btn_text = f"{'🔄' if p['hasPaid'] else '✅'} {p['studentName']}"
+                keyboard.append([InlineKeyboardButton(btn_text, callback_data=f"lesson_{lesson_id}_{btn_action}_{p['studentId']}")])
+
     btns = []
-    if not lesson['isCanceled']: btns.append(InlineKeyboardButton("↩️ Не оплачено" if lesson['isPaid'] else "✅ Оплачено", callback_data=f"lesson_{lesson_id}_{'unpay' if lesson['isPaid'] else 'pay'}"))
+    if not lesson['isCanceled']: 
+        if not lesson['groupId']:
+            btns.append(InlineKeyboardButton("↩️ Не оплачено" if lesson['isPaid'] else "✅ Оплачено", callback_data=f"lesson_{lesson_id}_{'unpay' if lesson['isPaid'] else 'pay'}"))
     btns.append(InlineKeyboardButton("Восстановить" if lesson['isCanceled'] else "❌ Отменить", callback_data=f"lesson_{lesson_id}_togglecancel"))
-    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup([btns, [back_button('menu_schedule')]]), parse_mode='Markdown')
+    keyboard.append(btns)
+    keyboard.append([back_button('menu_schedule')])
+    
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 async def student_details_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
