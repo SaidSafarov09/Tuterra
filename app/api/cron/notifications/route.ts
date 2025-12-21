@@ -465,7 +465,9 @@ export async function GET(request: NextRequest) {
 
                     if (!existing) {
                         const incomeTotal = todayLessons.reduce((sum, l) => sum + (l.isPaid ? l.price : 0), 0)
-                        const msg = `🌟 **Отличная работа!**\n\nДень подошел к концу, вы отлично потрудились! 👏\n\nСегодня вы провели **${todayLessons.length}** занятий и заработали **${incomeTotal.toLocaleString('ru-RU')} ₽**.\n\nХорошего отдыха! ☕️`
+                        const msgText = `Сегодня вы заработали ${incomeTotal.toLocaleString('ru-RU')} ₽. Всего проведено занятий: ${todayLessons.length}.`
+                        const msg = `🌟 **Отличная работа!**\n\n${msgText}\n\nХорошего отдыха! ✨`
+
                         const sent = await sendTelegramNotification(userId, msg, 'eveningSummary')
                         if (sent) {
                             await prisma.notification.create({
