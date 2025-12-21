@@ -165,15 +165,17 @@ export async function PUT(
 ⏳ Было: ${formatter.format(oldDate)}
 🚀 Стало: **${formatter.format(newDate)}**`
 
-                    await prisma.notification.create({
-                        data: {
-                            userId: user.id,
-                            title: 'Занятие перенесено',
-                            message: `${subjectName} с ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
-                            type: 'status_change',
-                            isRead: false
-                        }
-                    })
+                    if (settings?.deliveryWeb) {
+                        await prisma.notification.create({
+                            data: {
+                                userId: user.id,
+                                title: 'Занятие перенесено',
+                                message: `${subjectName} с ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
+                                type: 'status_change',
+                                isRead: false
+                            }
+                        })
+                    }
                     await sendTelegramNotification(user.id, notifyMsg, 'statusChanges')
                 }
             } catch (error) {
@@ -427,15 +429,18 @@ export async function PATCH(
                         const subjectName = currentLesson.subject?.name || 'Занятие'
                         const studentName = currentLesson.student?.name || currentLesson.group?.name || 'Ученик'
 
-                        await prisma.notification.create({
-                            data: {
-                                userId: user.id,
-                                title: 'Занятие перенесено',
-                                message: `${subjectName} с ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
-                                type: 'status_change',
-                                isRead: false
-                            }
-                        })
+                        if (settings?.deliveryWeb) {
+                            await prisma.notification.create({
+                                data: {
+                                    userId: user.id,
+                                    title: 'Занятие перенесено',
+                                    message: `${subjectName} с ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
+                                    type: 'status_change',
+                                    isRead: false
+                                }
+                            })
+                        }
+                        await sendTelegramNotification(user.id, `📅 **Занятие перенесено**\n\n👤 Ученик: **${studentName}**\n📚 Предмет: **${subjectName}**\n⏳ Было: ${formatter.format(oldDate)}\n🚀 Стало: **${formatter.format(newDate)}**`, 'statusChanges')
                     }
                 } catch (error) {
                     console.error('Failed to create notification:', error)
@@ -643,7 +648,23 @@ export async function DELETE(
 
         const subjectName = (lesson as any).subject?.name || 'Занятие'
         const studentName = (lesson as any).student?.name || (lesson as any).group?.name || 'Ученик'
-        await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\n**${subjectName}** с **${studentName}** было удалено из расписания.`, 'statusChanges')
+
+        const settings = await prisma.notificationSettings.findUnique({ where: { userId: user.id } })
+
+        if (settings?.statusChanges) {
+            if (settings.deliveryWeb) {
+                await prisma.notification.create({
+                    data: {
+                        userId: user.id,
+                        title: 'Занятие удалено',
+                        message: `${subjectName} с ${studentName} удалено из расписания`,
+                        type: 'status_change',
+                        isRead: false
+                    }
+                })
+            }
+            await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\n**${subjectName}** с **${studentName}** было удалено из расписания.`, 'statusChanges')
+        }
 
         return NextResponse.json({ success: true })
     } catch (error) {

@@ -18,7 +18,10 @@ export function calculateLessonEndTime(startDate: Date, durationMinutes: number)
  */
 export function formatLessonEndTime(startDate: Date, durationMinutes: number): string {
     const endTime = calculateLessonEndTime(startDate, durationMinutes)
-    return `До ${format(endTime, 'HH:mm')}`
+    const timeStr = new Intl.DateTimeFormat('ru-RU', {
+        hour: '2-digit', minute: '2-digit'
+    }).format(endTime)
+    return `До ${timeStr}`
 }
 
 /**
@@ -67,7 +70,7 @@ export function getLessonStatus(startDate: Date | string, durationMinutes: numbe
     const now = new Date()
     const start = new Date(startDate)
     const end = calculateLessonEndTime(start, durationMinutes)
-    
+
     if (now < start) {
         return 'upcoming'
     } else if (now >= start && now < end) {

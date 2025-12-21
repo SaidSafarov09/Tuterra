@@ -4,19 +4,26 @@ import { ru } from 'date-fns/locale'
 export const formatSmartDate = (date: Date | string): string => {
     const d = new Date(date)
 
+    // Fallback to Intl for precise time if needed, but browser usually handles local time well.
+    // However, to be extra safe and consistent with the bot:
+    const timeStr = new Intl.DateTimeFormat('ru-RU', {
+        hour: '2-digit', minute: '2-digit'
+    }).format(d)
+
     if (isToday(d)) {
-        return `Сегодня, ${format(d, 'HH:mm', { locale: ru })}`
+        return `Сегодня, ${timeStr}`
     }
 
     if (isTomorrow(d)) {
-        return `Завтра, ${format(d, 'HH:mm', { locale: ru })}`
+        return `Завтра, ${timeStr}`
     }
 
     if (isYesterday(d)) {
-        return `Вчера, ${format(d, 'HH:mm', { locale: ru })}`
+        return `Вчера, ${timeStr}`
     }
 
-    return format(d, `dd MMMM , HH:mm`, { locale: ru })
+    const dateStr = format(d, `dd MMMM`, { locale: ru })
+    return `${dateStr}, ${timeStr}`
 }
 
 export const formatDuration = (minutes: number): string => {

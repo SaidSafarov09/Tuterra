@@ -8,7 +8,16 @@ export async function sendTelegramNotification(userId: string, message: string, 
             include: { notificationSettings: true }
         })
 
-        if (!user || !user.telegramChatId || !user.notificationSettings?.deliveryTelegram) {
+        if (!user) {
+            console.error(`DEBUG: sendTelegramNotification failed - User ${userId} not found`)
+            return false
+        }
+        if (!user.telegramChatId) {
+            console.error(`DEBUG: sendTelegramNotification failed - User ${userId} has no telegramChatId`)
+            return false
+        }
+        if (!user.notificationSettings?.deliveryTelegram) {
+            console.error(`DEBUG: sendTelegramNotification failed - User ${userId} has deliveryTelegram disabled`)
             return false
         }
 
@@ -16,6 +25,7 @@ export async function sendTelegramNotification(userId: string, message: string, 
         if (settingKey && user.notificationSettings) {
             const settings = user.notificationSettings as any
             if (settings[settingKey] === false) {
+                console.log(`DEBUG: sendTelegramNotification skipped - ${String(settingKey)} is disabled for user ${userId}`)
                 return false
             }
         }
