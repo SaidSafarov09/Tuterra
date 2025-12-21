@@ -5,12 +5,13 @@ import { motion } from 'framer-motion'
 import {
     Calendar,
     TrendingUp,
-    ShieldCheck,
     Zap,
-    Users
+    Users,
+    Send
 } from 'lucide-react'
 import styles from './FeatureSection.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { Logo } from '../icons/Logo'
 
 const FeatureCard = ({ title, description, icon: Icon, color, children, delay, isTouch }: any) => {
     const Component: any = isTouch ? 'div' : motion.div;
@@ -152,19 +153,24 @@ export const FeatureSection = () => {
                     </FeatureCard>
 
                     <FeatureCard
-                        title="Спокойствие за данные"
-                        description="Данные учеников хранятся в облаке и доступны с любого устройства. Без потерь, с резервным копированием и защитой соединения."
-                        icon={ShieldCheck}
-                        color="#F59E0B"
+                        title="Telegram-бот помощник"
+                        description="Получайте уведомления о новых уроках, напоминания о занятиях и ежедневные отчеты прямо в Telegram. Управляйте расписанием, не заходя на сайт."
+                        icon={Send}
+                        color="#2563eb"
                         delay={0.3}
                         isTouch={isTouch}
                     >
-                        <div className={styles.tags}>
-                            {['Защита SSL', 'Облачный бэкап', 'Шифрование', 'Доступ 24/7'].map(tag => (
-                                <span key={tag} className={styles.tag}>
-                                    {tag}
-                                </span>
-                            ))}
+                        <div className={styles.mockTelegram}>
+                            <div className={styles.mockTelegramHeader}>
+                                <div className={styles.botIcon}>
+                                    <Logo size={24} />
+                                </div>
+                                TuterraBot
+                            </div>
+                            <div className={styles.mockTelegramMessage}>
+                                🔔 <strong>Напоминание:</strong><br />
+                                Через 15 минут занятие с учеником <strong>Ангелина</strong> по предмету Математика.
+                            </div>
                         </div>
                     </FeatureCard>
                 </div>

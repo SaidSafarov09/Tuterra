@@ -297,20 +297,52 @@
     }
 }
 
-.tags {
+// Mock Telegram
+.mockTelegram {
+    background: #eff6ff;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid #dbeafe;
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+    flex-direction: column;
+    gap: 12px;
 
-.tag {
-    padding: 6px 14px;
-    background: #fffbeb;
-    color: #92400e;
-    font-size: 11px;
-    font-weight: 800;
-    border-radius: 100px;
-    border: 1px solid #fef3c7;
+    .mockTelegramHeader {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        color: #1d4ed8;
+
+        .botIcon {
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border: 1px solid var(--border);
+            color: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    .mockTelegramMessage {
+        background: white;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border-bottom-left-radius: 2px;
+        font-size: 13px;
+        line-height: 1.4;
+        color: #1a1a1a;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+
+        strong {
+            font-weight: 800;
+            color: #2563eb;
+        }
+    }
 }
 
 .gradientText {
