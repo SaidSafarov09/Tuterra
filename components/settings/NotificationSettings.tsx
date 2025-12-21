@@ -64,9 +64,10 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ sett
                         onChange={(val) => onChange({ deliveryWeb: val })}
                     />
                     <Switch
-                        label="В Telegram"
+                        label={<>В Telegram<br /> (в разработке)</>}
                         checked={settings.deliveryTelegram}
                         onChange={(val) => onChange({ deliveryTelegram: val })}
+                        disabled
                     />
                 </div>
                 {settings.deliveryTelegram && (
