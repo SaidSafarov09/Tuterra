@@ -64,18 +64,11 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ sett
                         onChange={(val) => onChange({ deliveryWeb: val })}
                     />
                     <Switch
-                        label={<>В Telegram<br /> (в разработке)</>}
+                        label="В Telegram"
                         checked={settings.deliveryTelegram}
                         onChange={(val) => onChange({ deliveryTelegram: val })}
-                        disabled
                     />
                 </div>
-                {settings.deliveryTelegram && (
-                    <div className={styles.telegramBox}>
-                        <p>Чтобы получать уведомления в Telegram, подключите бота: <strong>@TuterraBot</strong></p>
-                        <button className={styles.connectBtn}>Подключить Telegram</button>
-                    </div>
-                )}
             </section>
 
             <section className={styles.section}>

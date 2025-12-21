@@ -26,6 +26,8 @@ model User {
   lastName          String?
   birthDate         DateTime?
   region            String?
+  telegramId        String?            @unique
+  telegramChatId    String?
   authProviders     AuthProvider[]
   groups            Group[]
   lessons           Lesson[]

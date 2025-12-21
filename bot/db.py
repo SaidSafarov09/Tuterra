@@ -1,0 +1,154 @@
+import os
+import asyncpg
+from dotenv import load_dotenv
+from datetime import datetime, timedelta
+import pytz
+
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+async def get_db_pool():
+    return await asyncpg.create_pool(DATABASE_URL)
+
+async def get_user_by_telegram_id(pool, telegram_id):
+    async with pool.acquire() as conn:
+        return await conn.fetchrow('SELECT * FROM "User" WHERE "telegramId" = $1', str(telegram_id))
+
+async def link_user_telegram(pool, email, telegram_id, chat_id):
+    async with pool.acquire() as conn:
+        user = await conn.fetchrow('SELECT * FROM "User" WHERE email = $1', email)
+        if not user:
+            return None
+        await conn.execute(
+            'UPDATE "User" SET "telegramId" = $1, "telegramChatId" = $2 WHERE email = $3',
+            str(telegram_id), str(chat_id), email
+        )
+        return user
+
+async def verify_telegram_code(pool, code, telegram_id, chat_id):
+    async with pool.acquire() as conn:
+        # Find valid code
+        record = await conn.fetchrow("""
+            SELECT * FROM "VerificationCode" 
+            WHERE code = $1 AND type = 'TELEGRAM_LINK' AND "expiresAt" > NOW()
+        """, code)
+        
+        if not record:
+            return None
+        
+        user_id = record['userId']
+        
+        # Link user
+        await conn.execute("""
+            UPDATE "User" SET "telegramId" = $1, "telegramChatId" = $2 WHERE id = $3
+        """, str(telegram_id), str(chat_id), user_id)
+        
+        # Delete used code
+        await conn.execute('DELETE FROM "VerificationCode" WHERE id = $1', record['id'])
+        
+        # Return user
+        return await conn.fetchrow('SELECT * FROM "User" WHERE id = $1', user_id)
+
+# --- Dashboard & Stats ---
+async def get_dashboard_stats(pool, user_id, user_tz="Europe/Moscow"):
+    async with pool.acquire() as conn:
+        # Students count
+        students = await conn.fetchval('SELECT COUNT(*) FROM "Student" WHERE "ownerId" = $1', user_id)
+        
+        # Today's lessons
+        tz = pytz.timezone(user_tz)
+        now_local = datetime.now(tz)
+        today_start = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+        
+        # Convert to UTC for DB query
+        today_start_utc = today_start.astimezone(pytz.utc)
+        today_end_utc = today_end.astimezone(pytz.utc)
+        
+        lessons_today = await conn.fetchval(
+            'SELECT COUNT(*) FROM "Lesson" WHERE "ownerId" = $1 AND date >= $2 AND date < $3 AND "isCanceled" = false', 
+            user_id, today_start_utc, today_end_utc
+        )
+        
+        # Month income (paid lessons in current month)
+        month_start = today_start.replace(day=1).astimezone(pytz.utc)
+        income = await conn.fetchval('''
+            SELECT COALESCE(SUM(price), 0) FROM "Lesson" 
+            WHERE "ownerId" = $1 AND "isPaid" = true AND date >= $2
+        ''', user_id, month_start)
+        
+        return {
+            "students": students,
+            "lessons_today": lessons_today,
+            "income": income
+        }
+
+# --- Lessons ---
+async def get_lessons_by_date(pool, user_id, date: datetime, user_tz="Europe/Moscow"):
+    tz = pytz.timezone(user_tz)
+    # Ensure date is local
+    if date.tzinfo is None:
+        date = tz.localize(date)
+    
+    start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+    end = start + timedelta(days=1)
+    
+    # Convert to UTC for DB
+    start_utc = start.astimezone(pytz.utc)
+    end_utc = end.astimezone(pytz.utc)
+    
+    async with pool.acquire() as conn:
+        return await conn.fetch('''
+            SELECT l.id, l.date, s.name as "subjectName", sg.name as "groupName", st.name as "studentName", 
+                   l."isPaid", l."isCanceled", l.price
+            FROM "Lesson" l
+            LEFT JOIN "Subject" s ON l."subjectId" = s.id
+            LEFT JOIN "Group" sg ON l."groupId" = sg.id
+            LEFT JOIN "Student" st ON l."studentId" = st.id
+            WHERE l."ownerId" = $1 AND l.date >= $2 AND l.date < $3
+            ORDER BY l.date ASC
+        ''', user_id, start_utc, end_utc)
+
+async def get_lesson_by_id(pool, lesson_id):
+    async with pool.acquire() as conn:
+        return await conn.fetchrow('''
+            SELECT l.*, s.name as "subjectName", st.name as "studentName", sg.name as "groupName"
+            FROM "Lesson" l
+            LEFT JOIN "Subject" s ON l."subjectId" = s.id
+            LEFT JOIN "Student" st ON l."studentId" = st.id
+            LEFT JOIN "Group" sg ON l."groupId" = sg.id
+            WHERE l.id = $1
+        ''', lesson_id)
+
+async def toggle_lesson_paid(pool, lesson_id, status: bool):
+    async with pool.acquire() as conn:
+        await conn.execute('UPDATE "Lesson" SET "isPaid" = $1 WHERE id = $2', status, lesson_id)
+
+async def toggle_lesson_cancel(pool, lesson_id, status: bool):
+    async with pool.acquire() as conn:
+        await conn.execute('UPDATE "Lesson" SET "isCanceled" = $1 WHERE id = $2', status, lesson_id)
+
+# --- Students ---
+async def get_all_students(pool, user_id):
+    async with pool.acquire() as conn:
+        return await conn.fetch('SELECT * FROM "Student" WHERE "ownerId" = $1 ORDER BY name ASC', user_id)
+
+async def get_student_details(pool, student_id):
+    async with pool.acquire() as conn:
+        student = await conn.fetchrow('SELECT * FROM "Student" WHERE id = $1', student_id)
+        # Get balance/stats could be added here
+        return student
+
+# --- Finance ---
+async def get_unpaid_lessons(pool, user_id, limit=20):
+    async with pool.acquire() as conn:
+        return await conn.fetch('''
+            SELECT l.id, l.date, s.name as "subjectName", st.name as "studentName", l.price
+            FROM "Lesson" l
+            LEFT JOIN "Subject" s ON l."subjectId" = s.id
+            LEFT JOIN "Student" st ON l."studentId" = st.id
+            WHERE l."ownerId" = $1 AND l."isPaid" = false AND l."isCanceled" = false AND l.date < NOW()
+            ORDER BY l.date DESC
+            LIMIT $2
+        ''', user_id, limit)

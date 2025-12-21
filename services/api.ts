@@ -203,6 +203,7 @@ interface UserSettings {
     hasOAuthProvider?: boolean
     theme?: string
     notificationSettings?: NotificationSettingsDTO
+    telegramId?: string | null
 }
 
 export interface NotificationSettingsDTO {
@@ -222,7 +223,7 @@ export interface NotificationSettingsDTO {
 
 export const settingsApi = {
     get: () =>
-        fetch('/api/settings').then(res => handleResponse<UserSettings>(res)),
+        fetch('/api/settings', { cache: 'no-store' }).then(res => handleResponse<UserSettings>(res)),
 
     update: (data: Partial<UserSettings>) =>
         fetch('/api/settings', {
@@ -230,6 +231,9 @@ export const settingsApi = {
             headers,
             body: JSON.stringify(data),
         }).then(res => handleResponse<UserSettings>(res)),
+
+    generateTelegramAuthCode: () =>
+        fetch('/api/user/telegram-auth', { method: 'POST' }).then(res => handleResponse<{ code: string }>(res)),
 }
 
 export const notificationsApi = {

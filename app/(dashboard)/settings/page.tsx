@@ -58,6 +58,7 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
             quietHoursStart: '22:00',
             quietHoursEnd: '08:00',
         },
+        telegramId: null as string | null,
     })
 
     useEffect(() => {
@@ -70,7 +71,14 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
 
     const fetchSettings = async () => {
         try {
-            const data = await settingsApi.get()
+            const [data, telegramData] = await Promise.all([
+                settingsApi.get(),
+                fetch('/api/user/telegram-status', { cache: 'no-store' }).then(res => res.json())
+            ])
+
+            console.log('Fetched Settings:', data)
+            console.log('Telegram Status:', telegramData)
+
             const initialData = {
                 firstName: data.firstName || (data.name ? data.name.split(' ')[0] || '' : ''),
                 lastName: data.lastName || (data.name ? data.name.split(' ').slice(1).join(' ') || '' : ''),
@@ -93,7 +101,8 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                     quietHoursEnabled: false,
                     quietHoursStart: '22:00',
                     quietHoursEnd: '08:00',
-                }
+                },
+                telegramId: telegramData.telegramId || data.telegramId || null,
             }
             setFormData(initialData)
             initialDataRef.current = initialData
@@ -209,6 +218,19 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
         window.dispatchEvent(new CustomEvent('closeMobileSidebar'))
         if (pendingNavigation) {
             router.push(pendingNavigation)
+        }
+    }
+
+    const handleConnectTelegram = async () => {
+        try {
+            const res = await settingsApi.generateTelegramAuthCode()
+            if (res.code) {
+                window.open(`https://t.me/TuterraBot?start=${res.code}`, '_blank')
+            } else {
+                toast.error('Не удалось получить код привязки')
+            }
+        } catch (e) {
+            toast.error('Ошибка при подключении Telegram')
         }
     }
 
@@ -342,6 +364,63 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                                                 }, 100)
                                             }}
                                         />
+                                    </div>
+                                </div>
+
+                                <div className={styles.section}>
+                                    <h2 className={styles.sectionTitle}>Привязать Telegram</h2>
+                                    <div style={{
+                                        padding: '24px',
+                                        background: 'var(--bg-secondary)',
+                                        borderRadius: '16px',
+                                        border: '1px solid var(--border-light)'
+                                    }}>
+                                        {formData.telegramId ? (
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--success)' }}>
+                                                    <div style={{
+                                                        width: '32px', height: '32px', borderRadius: '50%', background: 'var(--success-50)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                                                    }}>
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: 600, fontSize: '15px' }}>Telegram подключен</div>
+                                                        <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Бот синхронизирован с вашим аккаунтом</div>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => window.open('https://t.me/TuterraBot', '_blank')}
+                                                    style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                                                >
+                                                    Перейти в бота
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}>
+                                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                                    </svg>
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'flex-start' }}>
+                                                <div>
+                                                    <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 600 }}>Tuterra Bot</h3>
+                                                    <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                                                        Подключите нашего бота, чтобы получать уведомления о занятиях и оплатах, а также управлять расписанием прямо из мессенджера.
+                                                    </p>
+                                                </div>
+                                                <Button type="button" onClick={handleConnectTelegram} style={{ background: '#229ED9', borderColor: '#229ED9', color: '#fff' }}>
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                                        <path d="M22 2L11 13"></path>
+                                                        <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+                                                    </svg>
+                                                    Подключить Telegram
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </>

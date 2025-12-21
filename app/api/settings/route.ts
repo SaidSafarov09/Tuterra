@@ -88,6 +88,7 @@ export async function GET(request: NextRequest) {
                 region: true,
                 theme: true,
                 notificationSettings: true,
+                telegramId: true,
                 authProviders: {
                     select: {
                         provider: true,
@@ -99,6 +100,7 @@ export async function GET(request: NextRequest) {
         if (!currentUser) {
             return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
         }
+        console.log('API user:', currentUser.id, 'TelegramID:', currentUser.telegramId)
         const hasOAuthProvider = currentUser.authProviders.length > 0
 
         return NextResponse.json({
