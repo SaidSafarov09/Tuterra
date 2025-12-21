@@ -141,9 +141,11 @@ export async function PUT(
 
         if (currentLessonForNotify && currentLessonForNotify.date.getTime() !== validatedData.date.getTime()) {
             try {
-                const settings = await prisma.notificationSettings.findUnique({
-                    where: { userId: user.id }
-                })
+                const [settings, userFromDb] = await Promise.all([
+                    prisma.notificationSettings.findUnique({ where: { userId: user.id } }),
+                    prisma.user.findUnique({ where: { id: user.id } })
+                ])
+                const tz = userFromDb?.timezone?.trim() || 'Europe/Moscow'
 
                 if (settings?.statusChanges) {
                     const oldDate = new Date(currentLessonForNotify.date)
@@ -152,7 +154,8 @@ export async function PUT(
                         day: 'numeric',
                         month: 'long',
                         hour: '2-digit',
-                        minute: '2-digit'
+                        minute: '2-digit',
+                        timeZone: tz
                     })
 
                     const subjectName = currentLessonForNotify.subject?.name || 'Занятие'
@@ -412,9 +415,11 @@ export async function PATCH(
             // Notification Logic for Date Change (Reschedule)
             if (body.date && new Date(body.date).getTime() !== new Date(currentLesson.date).getTime()) {
                 try {
-                    const settings = await prisma.notificationSettings.findUnique({
-                        where: { userId: user.id }
-                    })
+                    const [settings, userFromDb] = await Promise.all([
+                        prisma.notificationSettings.findUnique({ where: { userId: user.id } }),
+                        prisma.user.findUnique({ where: { id: user.id } })
+                    ])
+                    const tz = userFromDb?.timezone?.trim() || 'Europe/Moscow'
 
                     if (settings?.statusChanges) {
                         const oldDate = new Date(currentLesson.date)
@@ -423,7 +428,8 @@ export async function PATCH(
                             day: 'numeric',
                             month: 'long',
                             hour: '2-digit',
-                            minute: '2-digit'
+                            minute: '2-digit',
+                            timeZone: tz
                         })
 
                         const subjectName = currentLesson.subject?.name || 'Занятие'
