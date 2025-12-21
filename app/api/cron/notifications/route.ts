@@ -393,6 +393,98 @@ export async function GET(request: NextRequest) {
             }
         }
 
+        // 7. Morning Briefing & Evening Summary
+        const userTz = user.timezone || 'Europe/Moscow'
+        const startOfDay = new Date(now)
+        startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(now)
+        endOfDay.setHours(23, 59, 59, 999)
+
+        const todayLessons = await prisma.lesson.findMany({
+            where: {
+                ownerId: userId,
+                date: { gte: startOfDay, lte: endOfDay },
+                isCanceled: false
+            },
+            include: { subject: true, student: true, group: true },
+            orderBy: { date: 'asc' }
+        })
+
+        if (todayLessons.length > 0) {
+            const todayStr = now.toISOString().split('T')[0]
+
+            // Morning Briefing
+            if (settings.morningBriefing) {
+                const firstLesson = todayLessons[0]
+                const oneHourBefore = new Date(firstLesson.date.getTime() - 60 * 60 * 1000)
+
+                if (now >= oneHourBefore && now < firstLesson.date) {
+                    const key = `morning_briefing_${todayStr}`
+                    const existing = await prisma.notification.findFirst({
+                        where: { userId, type: 'morning_briefing', data: { contains: key } }
+                    })
+
+                    if (!existing) {
+                        const lessonsList = todayLessons.map((l, i) => {
+                            const time = new Intl.DateTimeFormat('ru-RU', {
+                                hour: '2-digit', minute: '2-digit', timeZone: userTz
+                            }).format(l.date)
+                            return `${i + 1}. **${time}** — ${l.student?.name || l.group?.name} (${l.subject?.name || 'Без предмета'})`
+                        }).join('\n')
+
+                        const msg = `☀️ **Доброе утро!**\n\nСегодня у вас ${todayLessons.length} занятий:\n\n${lessonsList}\n\nЖелаем удачного дня! ✨`
+                        const sent = await sendTelegramNotification(userId, msg, 'morningBriefing')
+                        if (sent) {
+                            await prisma.notification.create({
+                                data: {
+                                    userId,
+                                    title: 'Утренний план',
+                                    message: `У вас ${todayLessons.length} занятий сегодня.`,
+                                    type: 'morning_briefing',
+                                    data: JSON.stringify({ key }),
+                                    isRead: true
+                                }
+                            })
+                            notificationsCreated.push('morning_briefing')
+                        }
+                    }
+                }
+            }
+
+            // Evening Summary
+            if (settings.eveningSummary) {
+                const lastLesson = todayLessons[todayLessons.length - 1]
+                const lastLessonEnd = new Date(lastLesson.date.getTime() + (lastLesson.duration || 60) * 60 * 1000)
+                const summaryTime = new Date(lastLessonEnd.getTime() + 15 * 60 * 1000)
+
+                if (now >= summaryTime) {
+                    const key = `evening_summary_${todayStr}`
+                    const existing = await prisma.notification.findFirst({
+                        where: { userId, type: 'evening_summary', data: { contains: key } }
+                    })
+
+                    if (!existing) {
+                        const incomeTotal = todayLessons.reduce((sum, l) => sum + (l.isPaid ? l.price : 0), 0)
+                        const msg = `🌟 **Отличная работа!**\n\nДень подошел к концу, вы отлично потрудились! 👏\n\nСегодня вы провели **${todayLessons.length}** занятий и заработали **${incomeTotal.toLocaleString('ru-RU')} ₽**.\n\nХорошего отдыха! ☕️`
+                        const sent = await sendTelegramNotification(userId, msg, 'eveningSummary')
+                        if (sent) {
+                            await prisma.notification.create({
+                                data: {
+                                    userId,
+                                    title: 'Итоги дня',
+                                    message: `Вы провели ${todayLessons.length} занятий и заработали ${incomeTotal} ₽.`,
+                                    type: 'evening_summary',
+                                    data: JSON.stringify({ key }),
+                                    isRead: true
+                                }
+                            })
+                            notificationsCreated.push('evening_summary')
+                        }
+                    }
+                }
+            }
+        }
+
         return NextResponse.json({ success: true, created: notificationsCreated })
     } catch (error) {
         console.error('Cron job error:', error)

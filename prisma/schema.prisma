@@ -220,7 +220,7 @@ model Notification {
   userId    String
   title     String
   message   String
-  type      String   // lesson_reminder, unpaid_lesson, status_change, income, debt, missing_lessons, onboarding
+  type      String   // lesson_reminder, unpaid_lesson, status_change, income, debt, missing_lessons, onboarding, morning_briefing, evening_summary
   isRead    Boolean  @default(false)
   link      String?
   data      String?
@@ -240,6 +240,8 @@ model NotificationSettings {
   studentDebts      Boolean  @default(true)
   missingLessons    Boolean  @default(true)
   onboardingTips    Boolean  @default(true)
+  morningBriefing   Boolean  @default(true)
+  eveningSummary    Boolean  @default(true)
   
   deliveryWeb       Boolean  @default(true)
   deliveryTelegram  Boolean  @default(false)
