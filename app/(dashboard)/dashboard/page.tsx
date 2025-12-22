@@ -25,6 +25,7 @@ import { DashboardStats } from '@/types'
 import styles from './page.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { MONTHS_GENITIVE } from '@/constants/messages'
+import { CircleCheck } from 'lucide-react'
 
 export default function DashboardPage() {
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
@@ -126,7 +127,7 @@ export default function DashboardPage() {
                             </div>
                         ) : (
                             <EmptyState
-                                icon={<CelebrationIcon size={48} color="var(--success)" />}
+                                icon={<CircleCheck size={48} color="var(--success)" />}
                                 title="Все занятия оплачены!" description={undefined} />
                         )}
                     </Section>

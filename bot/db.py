@@ -28,14 +28,25 @@ async def link_user_telegram(pool, email, telegram_id, chat_id):
 
 async def verify_telegram_code(pool, code, telegram_id, chat_id):
     async with pool.acquire() as conn:
+        print(f"DEBUG: Searching for code: {code}")
         # Find valid code
         record = await conn.fetchrow("""
             SELECT * FROM "VerificationCode" 
-            WHERE code = $1 AND type = 'TELEGRAM_LINK' AND "expiresAt" > NOW()
+            WHERE code = $1 AND type = 'TELEGRAM_LINK'
         """, code)
         
         if not record:
             return None
+            
+        # Ensure timezone-aware comparison (DB returns naive UTC usually, or aware UTC)
+        expires_at = record['expiresAt']
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=pytz.utc)
+            
+        now_utc = datetime.now(pytz.utc)
+        
+        if expires_at < now_utc:
+             return None
         
         user_id = record['userId']
         

@@ -78,12 +78,13 @@ export async function GET(request: NextRequest) {
 
                     const message = `🔔 **Скоро занятие**
                     
-${entityLabel} **${entityName}**
-📚 Предмет: **${subjectName}**
-🕒 Время: **${timeString}**
-⏳ Длительность: **${lesson.duration} мин**
-💰 Стоимость: **${lesson.price} ₽**
-📝 Тема: **${lesson.topic || 'Не указана'}**`
+${entityLabel} ${entityName}
+📚 Предмет: ${subjectName}
+🕒 Время: ${timeString}
+⏳ Длительность: ${lesson.duration} мин
+💰 Стоимость: ${lesson.price} ₽
+📝 Тема: ${lesson.topic || 'Не указана'}
+`
 
                     if (settings.deliveryWeb) {
                         await prisma.notification.create({

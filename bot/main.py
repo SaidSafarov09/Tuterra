@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "@tuterra_news")
+CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "@tuterra")
 PENDING_LINK = set()
 
 # --- Helpers ---
@@ -174,13 +174,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     pool = context.bot_data['pool']
     if not await check_subscription(update, context): return await send_subscription_wall(update)
 
+    # 1. SCENARIO: User clicked a link (Linking Flow)
     if context.args:
-        linked_user = await verify_telegram_code(pool, context.args[0], user_id, update.effective_chat.id)
+        code = context.args[0]
+        linked_user = await verify_telegram_code(pool, code, user_id, update.effective_chat.id)
         if linked_user: 
-            await update.message.reply_text(f"🚀 Аккаунт **{linked_user['email']}** привязан!", parse_mode='Markdown')
+            display_name = linked_user['email'] or linked_user['firstName'] or linked_user['name'] or "Пользователь"
+            await update.message.reply_text(f"🚀 Аккаунт **{display_name}** успешно привязан!", parse_mode='Markdown')
+            # Show menu immediately
+            await action_show_main_menu(update, context, dict(linked_user), is_start=True)
+        else:
+            await update.message.reply_text("❌ **Ошибка привязки**\nСсылка недействительна или срок её действия истек (код не найден в базе).", parse_mode='Markdown')
+        return  # STOP HERE to prevent double messages
 
+    # 2. SCENARIO: Just opened the bot (Regular Flow)
     user_rec = await get_user_by_telegram_id(pool, user_id)
-    if user_rec: await action_show_main_menu(update, context, dict(user_rec), is_start=True)
+    if user_rec: 
+        await action_show_main_menu(update, context, dict(user_rec), is_start=True)
     else:
         await update.message.reply_text("🔒 **Авторизация**\nПривяжите аккаунт на сайте или отправьте Email здесь.", parse_mode='Markdown')
         PENDING_LINK.add(user_id)
@@ -351,7 +361,12 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 if __name__ == '__main__':
     if not TOKEN: exit(1)
     app = ApplicationBuilder().token(TOKEN).build()
-    async def post_init(a): a.bot_data['pool'] = await get_db_pool(); print("Bot ready!")
+    async def post_init(a): 
+        a.bot_data['pool'] = await get_db_pool()
+        db_url = os.getenv("DATABASE_URL", "Nodes not found")
+        masked_url = db_url.split('@')[-1] if '@' in db_url else "Unknown"
+        print(f"Bot ready! Connected to DB host: {masked_url}")
+
     app.post_init = post_init
     app.add_handler(CommandHandler('start', start))
     app.add_handler(CallbackQueryHandler(check_sub_callback, pattern='^check_sub'))
