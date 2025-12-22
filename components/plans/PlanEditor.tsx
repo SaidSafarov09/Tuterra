@@ -18,17 +18,30 @@ export function PlanEditor({ planId }: PlanEditorProps) {
     const router = useRouter()
     const [plan, setPlan] = useState<LearningPlan | null>(null)
     const [topics, setTopics] = useState<Partial<LearningPlanTopic>[]>([])
+    const [originalTopics, setOriginalTopics] = useState<Partial<LearningPlanTopic>[]>([])
     const [newTopicTitle, setNewTopicTitle] = useState('')
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
+
+    // Проверка наличия несохраненных изменений
+    const hasUnsavedChanges = () => {
+        if (topics.length !== originalTopics.length) return true
+        return topics.some((topic, index) => {
+            const original = originalTopics[index]
+            return topic.title !== original?.title
+        })
+    }
 
     useEffect(() => {
         const fetchPlan = async () => {
             try {
                 const data = await plansApi.getById(planId)
                 setPlan(data)
-                setTopics(data.topics || [])
+                const planTopics = data.topics || []
+                setTopics(planTopics)
+                setOriginalTopics(planTopics)
             } catch (error) {
                 toast.error('Ошибка при загрузке плана')
                 router.back()
@@ -118,10 +131,23 @@ export function PlanEditor({ planId }: PlanEditorProps) {
 
     const displayName = plan.student?.name || plan.group?.name || 'Ученик'
 
+    const handleBack = () => {
+        if (hasUnsavedChanges()) {
+            setShowUnsavedDialog(true)
+        } else {
+            router.back()
+        }
+    }
+
+    const handleDiscardChanges = () => {
+        setShowUnsavedDialog(false)
+        router.back()
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <button className={styles.backButton} onClick={() => router.back()}>
+                <button className={styles.backButton} onClick={handleBack}>
                     ← Назад
                 </button>
             </div>
@@ -238,6 +264,30 @@ export function PlanEditor({ planId }: PlanEditorProps) {
                     </div>
                 </form>
             </div>
+
+            {/* Модалка подтверждения выхода без сохранения */}
+            {showUnsavedDialog && (
+                <div className={styles.dialogOverlay} onClick={() => setShowUnsavedDialog(false)}>
+                    <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
+                        <h3>Несохраненные изменения</h3>
+                        <p>У вас есть несохраненные изменения. Вы уверены, что хотите выйти без сохранения?</p>
+                        <div className={styles.dialogActions}>
+                            <Button
+                                variant="secondary"
+                                onClick={() => setShowUnsavedDialog(false)}
+                            >
+                                Отмена
+                            </Button>
+                            <Button
+                                variant="danger"
+                                onClick={handleDiscardChanges}
+                            >
+                                Выйти без сохранения
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

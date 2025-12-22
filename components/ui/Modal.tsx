@@ -86,17 +86,17 @@ export const Modal: React.FC<ModalProps> = ({
             >
                 {withHeader && (
 
-                <div className={styles.header}>
-                    {mobileView === 'page' && (
-                        <div className={styles.mobileBackButton} onClick={onClose}>
-                            <ArrowLeft size={20} />
+                    <div className={styles.header}>
+                        {mobileView === 'page' && (
+                            <div className={styles.mobileBackButton} onClick={onClose}>
+                                <ArrowLeft size={20} />
+                            </div>
+                        )}
+                        <h2 className={styles.title}>{title}</h2>
+                        <div className={`${styles.closeButton} ${mobileView === 'modal' ? styles.closeButtonPopup : ''}`} onClick={onClose}>
+                            <XIcon size={24} />
                         </div>
-                    )}
-                    <h2 className={styles.title}>{title}</h2>
-                    <div className={`${styles.closeButton} ${mobileView === 'modal' ? styles.closeButtonPopup : ''}`} onClick={onClose}>
-                        <XIcon size={24} />
                     </div>
-                </div>
                 )}
                 <div style={{ minHeight }} className={styles.content}>{children}</div>
                 {footer && <div className={styles.footer}>{footer}</div>}
@@ -129,13 +129,18 @@ export const ModalFooter: React.FC<ModalFooterProps> = ({
     cancelText = 'Отмена',
     variant = 'primary',
 }) => {
+    // Определяем текст загрузки на основе submitText
+    const loadingText = submitText === 'Удалить' ? 'Удаление...' :
+        submitText === 'Сохранить' ? 'Сохранение...' :
+            `${submitText}...`
+
     return (
         <>
             <Button variant="secondary" onClick={onCancel} disabled={isLoading}>
                 {cancelText}
             </Button>
-            <Button variant={variant} onClick={onSubmit} disabled={isLoading}>
-                {isLoading ? 'Сохранение...' : submitText}
+            <Button variant={variant} onClick={onSubmit} isLoading={isLoading} disabled={isLoading}>
+                {isLoading ? loadingText : submitText}
             </Button>
         </>
     )

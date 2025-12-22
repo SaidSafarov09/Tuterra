@@ -147,6 +147,12 @@
         padding: 16px;
         margin-top: auto;
         background: var(--background);
+        flex-direction: column-reverse;
+        gap: 8px;
+
+        button {
+            width: 100%;
+        }
     }
 }
 
