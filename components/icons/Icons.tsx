@@ -47,7 +47,11 @@ import {
     Receipt,
     CalendarClock,
     MoreVertical,
-    Bell
+    Bell,
+    GripVertical,
+    CheckCircle,
+    Circle,
+    Trash
 } from 'lucide-react'
 
 
@@ -77,6 +81,7 @@ export const LogoutIcon: React.FC<IconProps> = (props) => <LogOut {...props} />
 export const PlusIcon: React.FC<IconProps> = (props) => <Plus {...props} />
 export const EditIcon: React.FC<IconProps> = (props) => <Pencil {...props} />
 export const DeleteIcon: React.FC<IconProps> = (props) => <Trash2 {...props} />
+export const TrashIcon: React.FC<IconProps> = (props) => <Trash {...props} />
 export const UploadIcon: React.FC<IconProps> = (props) => <Upload {...props} />
 export const CloseIcon: React.FC<IconProps> = (props) => <X {...props} />
 export const CheckIcon: React.FC<IconProps> = (props) => <Check {...props} />
@@ -121,3 +126,6 @@ export const WhatsAppIcon: React.FC<IconProps> = (props) => <MessageCircle {...p
 export const RescheduleIcon: React.FC<IconProps> = (props) => <CalendarClock {...props} />
 export const MoreVerticalIcon: React.FC<IconProps> = (props) => <MoreVertical {...props} />
 export const BellIcon: React.FC<IconProps> = (props) => <Bell {...props} />
+export const GripVerticalIcon: React.FC<IconProps> = (props) => <GripVertical {...props} />
+export const CheckCircleIcon: React.FC<IconProps> = (props) => <CheckCircle {...props} />
+export const CircleIcon: React.FC<IconProps> = (props) => <Circle {...props} />

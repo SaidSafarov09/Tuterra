@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { isCuid } from '@/lib/slugUtils'
@@ -28,7 +27,6 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-
         const isId = isCuid(id)
         const whereClause = isId
             ? { id: id, ownerId: user.id }
@@ -51,6 +49,9 @@ export async function GET(
                     orderBy: { date: 'desc' },
                     include: { subject: true },
                 },
+                learningPlan: {
+                    orderBy: { order: 'asc' }
+                },
                 _count: {
                     select: { lessons: true },
                 },
@@ -61,12 +62,15 @@ export async function GET(
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
-
         if (isId && student.slug) {
-            return NextResponse.redirect(
-                new URL(`/students/${student.slug}`, request.url),
-                { status: 301 }
-            )
+            // Check if request is not already using slug to avoid loop
+            const url = new URL(request.url)
+            if (!url.pathname.includes(student.slug)) {
+                // But wait, this is an API route. We should NOT redirect API calls to pretty URLs usually.
+                // Only pages should redirect.
+                // Let's remove redirect for API to be safe and consistent.
+                // return NextResponse.redirect(...) 
+            }
         }
 
         return NextResponse.json(student)

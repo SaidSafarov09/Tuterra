@@ -1,0 +1,105 @@
+.planSection {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+        padding: 16px 20px;
+        margin-bottom: 16px;
+    }
+}
+
+.planHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.planTitle {
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin: 0;
+
+    @media (max-width: 768px) {
+        font-size: 12px;
+    }
+}
+
+.planStats {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.createButton {
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+
+    &:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: rgba(74, 108, 247, 0.05);
+    }
+}
+
+.progressBar {
+    width: 100%;
+    height: 8px;
+    background: var(--border-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.planFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.percentage {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.viewLink {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary);
+    transition: all 0.2s;
+
+    &:hover {
+        transform: translateX(4px);
+    }
+}

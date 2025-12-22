@@ -32,6 +32,7 @@ interface DropdownProps {
     className?: string
     placeholderSearch?: string
     hint?: string
+    createOptionLabel?: (value: string) => React.ReactNode
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -50,7 +51,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
     onOpen,
     className = '',
     placeholderSearch = "Найти/Создать",
-    hint
+    hint,
+    createOptionLabel
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
@@ -188,9 +190,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
                                 return (
                                     <div key={index} className={styles.group}>
                                         <div className={styles.groupLabel}>{option.label}</div>
-                                        {option.options.map(opt => (
+                                        {option.options.map((opt, i) => (
                                             <div
-                                                key={opt.value}
+                                                key={`${opt.value}-${i}`}
                                                 className={`${styles.option} ${opt.value === value ? styles.selected : ''}`}
                                                 onClick={() => handleSelect(opt.value)}
                                             >
@@ -203,7 +205,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                             } else {
                                 return (
                                     <div
-                                        key={option.value}
+                                        key={`${option.value}-${index}`}
                                         className={`${styles.option} ${option.value === value ? styles.selected : ''}`}
                                         onClick={() => handleSelect(option.value)}
                                     >
@@ -217,7 +219,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                         {showCreateOption && (
                             <div className={styles.createOption} onClick={handleCreate}>
                                 <PlusIcon size={14} />
-                                <span>Создать &quot;{searchQuery}&quot;</span>
+                                <span>{createOptionLabel ? createOptionLabel(searchQuery) : `Создать "${searchQuery}"`}</span>
                             </div>
                         )}
 

@@ -24,6 +24,7 @@ interface CreateLessonDTO {
     isPaid: boolean
     notes?: string
     topic?: string
+    planTopicId?: string | null
     isCanceled?: boolean
     paidStudentIds?: string[]
     attendedStudentIds?: string[] // Добавляем список присутствовавших студентов

@@ -232,6 +232,7 @@ export function StudentModals({
                 onCreateSubject={onCreateSubject}
                 handleChange={(name, value) => setLessonFormData((prev: any) => ({ ...prev, [name]: value }))}
                 fixedStudentId={student.id}
+                learningPlanTopics={(student as any).learningPlan || []}
                 customTitle={
                     <>
                         Занятие для ученика {isMobile ? <br /> : ""}
@@ -257,6 +258,7 @@ export function StudentModals({
                 onCreateSubject={onCreateSubject}
                 handleChange={(name, value) => setLessonFormData((prev: any) => ({ ...prev, [name]: value }))}
                 fixedStudentId={student.id}
+                learningPlanTopics={(student as any).learningPlan || []}
             />
         </>
     )

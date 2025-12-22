@@ -34,6 +34,7 @@ export function CalendarLessonForm({ initialDate, onSuccess, onCancel }: Calenda
                 isSubmitting={isSubmitting}
                 showStudentField={true}
                 students={students}
+                learningPlanTopics={students.find(s => s.id === formData.studentId)?.learningPlan || []}
                 onStudentChange={handleStudentChange}
                 onCreateStudent={handleCreateStudent}
             />

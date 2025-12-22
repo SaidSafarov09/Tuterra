@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { isCuid } from '@/lib/slugUtils'
 import { sendTelegramNotification } from '@/lib/telegram'
+import { updateTopicCompletionStatus } from '@/lib/planUtils'
 
 const lessonSchema = z.object({
     studentId: z.string().optional(),
@@ -15,6 +16,7 @@ const lessonSchema = z.object({
     isCanceled: z.boolean().optional(),
     notes: z.string().optional(),
     topic: z.string().optional(),
+    planTopicId: z.string().nullable().optional(),
     duration: z.number().int().positive().optional(),
     paidStudentIds: z.array(z.string()).optional(),
     attendedStudentIds: z.array(z.string()).optional(), // Добавляем валидацию для списка присутствовавших студентов
@@ -138,6 +140,7 @@ export async function PUT(
             where: { id: lessonId },
             include: { student: true, subject: true, group: true }
         })
+        const oldPlanTopicId = currentLessonForNotify?.planTopicId
 
         if (currentLessonForNotify && currentLessonForNotify.date.getTime() !== validatedData.date.getTime()) {
             try {
@@ -304,6 +307,14 @@ export async function PUT(
             }
         }
 
+        // Update plan topic status
+        if (lessonData.planTopicId) {
+            await updateTopicCompletionStatus(lessonData.planTopicId)
+        }
+        if (oldPlanTopicId && oldPlanTopicId !== lessonData.planTopicId) {
+            await updateTopicCompletionStatus(oldPlanTopicId)
+        }
+
         const updatedLesson = await prisma.lesson.findUnique({
             where: { id: lessonId },
             include: {
@@ -376,6 +387,7 @@ export async function PATCH(
         if (body.isCanceled !== undefined) updateData.isCanceled = body.isCanceled
         if (body.notes !== undefined) updateData.notes = body.notes
         if (body.topic !== undefined) updateData.topic = body.topic
+        if (body.planTopicId !== undefined) updateData.planTopicId = body.planTopicId
         if (body.duration !== undefined) updateData.duration = body.duration
 
         // Check for lesson overlap when date or duration changes
@@ -389,6 +401,7 @@ export async function PATCH(
             if (!currentLesson) {
                 return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
             }
+            const oldPlanTopicId = currentLesson.planTopicId
 
             const { checkLessonOverlap, formatConflictMessage } = await import('@/lib/lessonValidation')
             const checkDate = body.date ? new Date(body.date) : new Date(currentLesson.date)
@@ -588,6 +601,10 @@ export async function PATCH(
             },
         })
 
+        if (updatedLesson?.planTopicId) {
+            await updateTopicCompletionStatus(updatedLesson.planTopicId)
+        }
+
         return NextResponse.json(updatedLesson)
     } catch (error) {
         console.error('Patch lesson error:', error)
@@ -646,9 +663,12 @@ export async function DELETE(
             await prisma.lesson.delete({
                 where: {
                     id: lesson.id,
-                },
-                include: { student: true, group: true, subject: true }
+                }
             })
+        }
+
+        if (lesson.planTopicId) {
+            await updateTopicCompletionStatus(lesson.planTopicId)
         }
 
         const subjectName = (lesson as any).subject?.name || 'Занятие'
