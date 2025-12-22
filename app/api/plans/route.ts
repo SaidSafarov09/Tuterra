@@ -11,25 +11,6 @@ const planSchema = z.object({
     subjectId: z.string().optional().nullable(),
 })
 
-const topicInclude = {
-    _count: {
-        select: {
-            lessons: {
-                where: { isCanceled: false }
-            }
-        }
-    },
-    lessons: {
-        where: { isCanceled: false },
-        orderBy: { date: 'desc' } as const,
-        take: 1,
-        include: {
-            student: { select: { name: true } },
-            group: { select: { name: true } },
-            subject: { select: { name: true, color: true } }
-        }
-    }
-}
 
 function enrichPlan(plan: any) {
     if (!plan) return null
@@ -66,7 +47,25 @@ export async function GET(request: NextRequest) {
             include: {
                 topics: {
                     orderBy: { order: 'asc' },
-                    include: topicInclude
+                    include: {
+                        _count: {
+                            select: {
+                                lessons: {
+                                    where: { isCanceled: false }
+                                }
+                            }
+                        },
+                        lessons: {
+                            where: { isCanceled: false },
+                            orderBy: { date: 'desc' },
+                            take: 1,
+                            include: {
+                                student: { select: { name: true } },
+                                group: { select: { name: true } },
+                                subject: { select: { name: true, color: true } }
+                            }
+                        }
+                    }
                 },
                 subject: true,
             }
