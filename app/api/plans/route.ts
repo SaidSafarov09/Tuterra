@@ -95,14 +95,20 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const validatedData = planSchema.parse(body)
 
-        const existingPlan = await prisma.learningPlan.findFirst({
-            where: {
-                ownerId: payload.userId,
-                studentId: validatedData.studentId,
-                subjectId: validatedData.subjectId,
-                groupId: validatedData.groupId,
-            }
-        })
+        let existingPlan = null
+
+        if (validatedData.groupId) {
+            existingPlan = await prisma.learningPlan.findUnique({
+                where: { groupId: validatedData.groupId }
+            })
+        } else if (validatedData.studentId && validatedData.subjectId) {
+            existingPlan = await prisma.learningPlan.findFirst({
+                where: {
+                    studentId: validatedData.studentId,
+                    subjectId: validatedData.subjectId
+                }
+            })
+        }
 
         if (existingPlan) {
             return NextResponse.json(existingPlan)
