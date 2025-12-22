@@ -26,7 +26,7 @@ const topicInclude = {
     },
     lessons: {
         where: { isCanceled: false },
-        orderBy: { date: 'desc' },
+        orderBy: { date: 'desc' } as const,
         take: 1,
         include: {
             student: { select: { name: true } },
