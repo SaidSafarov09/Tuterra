@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node scripts/sync-schema.js && prisma generate --schema=prisma/schema.sqlite.prisma && next dev",
     "dev:fresh": "rm -rf dev.db && node scripts/sync-schema.js && prisma db push --schema=prisma/schema.sqlite.prisma && npm run dev",
-    "build": "prisma generate --schema=prisma/schema.prisma && next build",
+    "build": "prisma generate --schema=prisma/schema.prisma && prisma db push --schema=prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate --schema=prisma/schema.prisma",
