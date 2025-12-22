@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
                 _count: {
                     select: { lessons: true },
                 },
-                learningPlan: { orderBy: { order: 'asc' } },
             } as any,
             orderBy: { createdAt: 'desc' },
         })

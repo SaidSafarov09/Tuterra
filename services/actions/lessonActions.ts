@@ -31,7 +31,6 @@ export async function createLesson(data: {
     price: number | string
     isPaid: boolean
     topic?: string
-    planTopicId?: string | null
     notes?: string
     paidStudentIds?: string[]
 }): Promise<Lesson | null> {
@@ -57,7 +56,6 @@ export async function createLesson(data: {
             price: Number(data.price),
             isPaid: data.isPaid,
             topic: data.topic,
-            planTopicId: data.planTopicId,
             notes: data.notes,
             paidStudentIds: data.paidStudentIds,
         })
@@ -82,7 +80,6 @@ export async function updateLesson(
         isPaid: boolean
         isCanceled: boolean
         topic: string
-        planTopicId: string | null
         notes: string
         paidStudentIds: string[]
         attendedStudentIds: string[]

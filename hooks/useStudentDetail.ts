@@ -60,7 +60,6 @@ export function useStudentDetail(studentId: string) {
         price: '',
         isPaid: false,
         topic: '',
-        planTopicId: null as string | null,
         notes: '',
         recurrence: undefined as any,
         isPaidAll: false,
@@ -235,7 +234,6 @@ export function useStudentDetail(studentId: string) {
             price: lesson.price.toString(),
             isPaid: lesson.isPaid,
             topic: lesson.topic || '',
-            planTopicId: lesson.planTopicId || null,
             notes: lesson.notes || '',
             recurrence: undefined,
             isPaidAll: false,
@@ -340,7 +338,6 @@ export function useStudentDetail(studentId: string) {
             price: lesson.price.toString(),
             isPaid: lesson.isPaid,
             topic: lesson.topic || '',
-            planTopicId: lesson.planTopicId || null,
             notes: lesson.notes || '',
         })
 
@@ -375,7 +372,6 @@ export function useStudentDetail(studentId: string) {
             price: '',
             isPaid: false,
             topic: '',
-            planTopicId: null,
             notes: '',
             recurrence: undefined,
             isPaidAll: false,
@@ -433,7 +429,6 @@ export function useStudentDetail(studentId: string) {
         handleToggleCancelLesson,
         handleRescheduleLesson,
         handleConfirmReschedule,
-        refreshStudent: fetchStudent,
 
 
         openEditModal,

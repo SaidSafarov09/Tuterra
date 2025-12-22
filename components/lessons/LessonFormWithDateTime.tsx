@@ -1,7 +1,6 @@
 'use client'
 
-import { toast } from 'sonner'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -26,7 +25,6 @@ interface LessonFormWithDateTimeProps {
     students?: Array<{ id: string; name: string }>
     onStudentChange?: (studentId: string) => void
     onCreateStudent?: (name: string) => void
-    learningPlanTopics?: Array<{ id: string; title: string; isCompleted: boolean }>
 }
 
 export function LessonFormWithDateTime({
@@ -40,58 +38,11 @@ export function LessonFormWithDateTime({
     students = [],
     onStudentChange,
     onCreateStudent,
-    learningPlanTopics = [],
 }: LessonFormWithDateTimeProps) {
     const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [tempDate, setTempDate] = useState<Date | undefined>(formData.date)
     const [tempRecurrence, setTempRecurrence] = useState<RecurrenceRule | undefined>(formData.recurrence)
-    const [fetchedTopics, setFetchedTopics] = useState<any[]>([])
-
-    useEffect(() => {
-        let isMounted = true
-
-        if (formData.studentId && learningPlanTopics.length === 0) {
-            fetch(`/api/students/${formData.studentId}`)
-                .then(res => {
-                    if (res.ok) return res.json()
-                    return null
-                })
-                .then(data => {
-                    if (isMounted) {
-                        if (data && data.learningPlan) {
-                            setFetchedTopics(data.learningPlan)
-                            if (data.learningPlan.length > 0) {
-                                toast.success(`Загружен учебный план (${data.learningPlan.length} тем)`, {
-                                    id: `plan-fetch-${formData.studentId}`
-                                })
-                            }
-                        } else {
-                            setFetchedTopics([])
-                        }
-                    }
-                })
-                .catch(() => {
-                    if (isMounted) setFetchedTopics([])
-                })
-        } else if (!formData.studentId) {
-            setFetchedTopics([])
-        }
-
-        return () => { isMounted = false }
-    }, [formData.studentId, learningPlanTopics.length])
-
-    const activeTopics = useMemo(() => {
-        if (learningPlanTopics.length > 0) return learningPlanTopics
-
-        // Find student in the props list first
-        const selectedStudent = students.find(s => s.id === formData.studentId)
-        if (selectedStudent && 'learningPlan' in selectedStudent && (selectedStudent as any).learningPlan?.length > 0) {
-            return (selectedStudent as any).learningPlan
-        }
-
-        return fetchedTopics
-    }, [learningPlanTopics, students, formData.studentId, fetchedTopics])
 
     const handleOpenDateModal = () => {
         setTempDate(formData.date)
@@ -198,31 +149,14 @@ export function LessonFormWithDateTime({
                     />
                 )}
 
-                <Dropdown
-                    label="Тема урока"
-                    placeholderSearch="Создать новую тему"
-                    placeholder="Выберите из плана или введите свою"
-                    value={formData.topic || ''}
-                    onChange={(value) => {
-                        handleChange('topic', value)
-                        const selectedTopic = activeTopics.find((t: any) => t.title === value)
-                        handleChange('planTopicId', selectedTopic ? (selectedTopic as any).id : null)
-                    }}
-                    options={activeTopics.map((t: any) => ({
-                        value: t.title,
-                        label: `${t.title}${t.isCompleted ? ' ✓' : ''}`
-                    }))}
-                    searchable
-                    creatable
-                    onCreate={(value) => {
-                        handleChange('topic', value)
-                        handleChange('planTopicId', null)
-                    }}
-                    createOptionLabel={(value) => `Использовать тему: "${value}"`}
-                    hint={activeTopics.length > 0 ? "Найдена учебная программа ученика. Выберите тему из списка или введите свою." : "Выберите тему или введите новую."}
-                    disabled={isSubmitting}
-                    menuPosition="relative"
-                />
+                {!formData.recurrence?.enabled && (
+                    <Input
+                        label="Тема урока"
+                        value={formData.topic || ''}
+                        onChange={(e) => handleChange('topic', e.target.value)}
+                        placeholder={`Например: ${topicPlaceholder}`}
+                        disabled={isSubmitting}
+                    />)}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
                     <Checkbox

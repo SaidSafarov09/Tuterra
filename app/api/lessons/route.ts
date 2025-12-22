@@ -7,7 +7,6 @@ import type { RecurrenceRule } from '@/types/recurring'
 import { generateLessonSlug } from '@/lib/slugUtils'
 import { checkLessonOverlap, checkRecurringConflicts, formatConflictMessage } from '@/lib/lessonValidation'
 import { sendTelegramNotification } from '@/lib/telegram'
-import { updateTopicCompletionStatus } from '@/lib/planUtils'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +31,6 @@ const lessonSchema = z.object({
     isTrial: z.boolean().optional(),
     notes: z.string().optional(),
     topic: z.string().optional(),
-    planTopicId: z.string().nullable().optional(),
     duration: z.number().int().positive().default(60),
     recurrence: recurrenceRuleSchema.optional(),
     isPaidAll: z.boolean().optional(),
@@ -239,7 +237,6 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             isTrial: data.isTrial || false,
             notes: data.notes,
             topic: data.topic,
-            planTopicId: data.planTopicId,
             duration: data.duration,
             ownerId: userId,
             studentId: data.studentId,
@@ -265,10 +262,6 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
 
     if (data.subjectId && data.studentId) {
         await linkSubjectToStudent(data.studentId, data.subjectId)
-    }
-
-    if (data.planTopicId) {
-        await updateTopicCompletionStatus(data.planTopicId)
     }
 
     // Send Telegram Notification
@@ -373,7 +366,6 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         groupName,
         subjectId: data.subjectId,
         seriesId: series.id,
-        planTopicId: data.planTopicId,
     }))
 
     // Batch create lessons
@@ -453,4 +445,3 @@ async function linkSubjectToStudent(studentId: string, subjectId: string) {
         console.log('Subject linking attempt result:', error)
     }
 }
-

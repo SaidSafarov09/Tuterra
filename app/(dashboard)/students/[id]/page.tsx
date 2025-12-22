@@ -9,7 +9,6 @@ import { StudentSubjects } from "@/components/students/StudentSubjects";
 import { StudentGroups } from "@/components/students/StudentGroups";
 import { StudentLessons } from "@/components/students/StudentLessons";
 import { StudentModals } from "@/components/students/StudentModals";
-import { StudentPlanSection } from "@/components/students/StudentPlanSection";
 import { useStudentDetail } from "@/hooks/useStudentDetail";
 import { StudentDetailSkeleton } from "@/components/skeletons";
 import { StudentNote } from "@/components/students/StudentNote";
@@ -124,14 +123,6 @@ export default function StudentDetailPage({
         onCreateLesson={handleCreateLessonMobile}
         onDelete={() => setDeleteStudentConfirm(true)}
       />
-
-      <StudentPlanSection
-        studentId={student.id}
-        studentSlug={student.slug || student.id}
-        studentName={student.name}
-        studentColor={(student as any).bgColor || '#4A6CF7'}
-        learningPlan={(student as any).learningPlan || []}
-      />
       <StudentSubjects
         student={student}
         onAddSubject={() => {
@@ -151,7 +142,6 @@ export default function StudentDetailPage({
 
       <StudentNote student={student} />
 
-
       <StudentLessons
         lessons={[
           ...(student.lessons || []).map((l) => ({
@@ -163,12 +153,20 @@ export default function StudentDetailPage({
             (g.lessons || []).map((l) => {
               const payment = l.lessonPayments?.find(p => p.studentId === student.id)
 
+              // Логика отображения групповых уроков:
+              // 1. Если есть запись об этом студенте (payment) -> ПОКАЗЫВАЕМ (значит, он в списке).
+              // 2. Если записей НЕТ вообще ни для кого (l.lessonPayments пуст) -> ПОКАЗЫВАЕМ (значит, урок только запланирован и состав еще не уточнялся, идут все "по умолчанию").
+              // 3. Если записи ЕСТЬ для других, но НЕТ для этого -> СКРЫВАЕМ (значит, состав определен, и этого студента там нет).
+
               const hasAnyPayments = l.lessonPayments && l.lessonPayments.length > 0;
 
               if (hasAnyPayments && !payment) {
                 return null;
               }
 
+              // Если урок прошел (или идет), не отменен, и ученика не было (нет записи об оплате/посещении),
+              // то не показываем этот урок в его истории.
+              // Для будущих уроков показываем (так как посещаемость еще не отмечена).
               const lessonDate = new Date(l.date);
               const isPast = lessonDate.getTime() < new Date().getTime();
 

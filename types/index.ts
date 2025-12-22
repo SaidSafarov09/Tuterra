@@ -11,17 +11,6 @@ export interface Subject {
     }
 }
 
-export interface LearningPlanTopic {
-    id: string
-    title: string
-    description?: string | null
-    order: number
-    isCompleted: boolean
-    studentId: string
-    createdAt: string
-    updatedAt: string
-}
-
 export interface Student {
     id: string
     slug?: string
@@ -54,7 +43,6 @@ export interface Student {
     _count?: {
         lessons: number
     }
-    learningPlan?: LearningPlanTopic[]
 }
 
 export interface Group {
@@ -93,7 +81,6 @@ export interface Lesson {
     isTrial?: boolean
     notes?: string
     topic?: string
-    planTopicId?: string | null
     duration?: number
     seriesId?: string | null
     subjectName?: string | null
@@ -156,7 +143,6 @@ export interface LessonFormData {
     isTrial?: boolean
     notes: string
     topic: string
-    planTopicId?: string | null
     duration: number
     recurrence?: RecurrenceRule
     seriesPrice?: string

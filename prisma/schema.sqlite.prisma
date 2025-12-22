@@ -80,7 +80,6 @@ model Student {
   owner             User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   groups            Group[]         @relation("GroupToStudent")
   subjects          Subject[]       @relation("StudentToSubject")
-  learningPlan      LearningPlanTopic[]
 
   @@index([ownerId])
 }
@@ -122,7 +121,6 @@ model Lesson {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   topic          String?
-  planTopicId    String?
   duration       Int             @default(60)
   seriesId       String?
   group          Group?          @relation(fields: [groupId], references: [id])
@@ -130,7 +128,6 @@ model Lesson {
   series         LessonSeries?   @relation(fields: [seriesId], references: [id])
   student        Student?        @relation(fields: [studentId], references: [id], onDelete: Cascade)
   subject        Subject?        @relation(fields: [subjectId], references: [id])
-  planTopic      LearningPlanTopic? @relation(fields: [planTopicId], references: [id], name: "LessonTopic")
   lessonPayments LessonPayment[]
 
   @@index([ownerId])
@@ -138,23 +135,6 @@ model Lesson {
   @@index([groupId])
   @@index([subjectId])
   @@index([seriesId])
-  @@index([planTopicId])
-}
-
-model LearningPlanTopic {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  order       Int      @default(0)
-  studentId   String
-  isCompleted Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  lessons     Lesson[] @relation("LessonTopic")
-
-  @@index([studentId])
 }
 
 model LessonSeries {
