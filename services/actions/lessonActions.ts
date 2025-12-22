@@ -33,6 +33,7 @@ export async function createLesson(data: {
     topic?: string
     notes?: string
     paidStudentIds?: string[]
+    planTopicId?: string | null
 }): Promise<Lesson | null> {
     if (!data.price) {
         toast.error(VALIDATION_MESSAGES.ENTER_PRICE)
@@ -58,6 +59,7 @@ export async function createLesson(data: {
             topic: data.topic,
             notes: data.notes,
             paidStudentIds: data.paidStudentIds,
+            planTopicId: data.planTopicId,
         })
         toast.success(LESSON_MESSAGES.CREATED)
         return lesson
@@ -83,6 +85,7 @@ export async function updateLesson(
         notes: string
         paidStudentIds: string[]
         attendedStudentIds: string[]
+        planTopicId: string | null
     }>,
     options?: { showToast?: boolean }
 ): Promise<Lesson | null> {

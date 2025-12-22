@@ -24,6 +24,7 @@ interface CreateLessonDTO {
     isPaid: boolean
     notes?: string
     topic?: string
+    planTopicId?: string | null
     isCanceled?: boolean
     paidStudentIds?: string[]
     attendedStudentIds?: string[] // Добавляем список присутствовавших студентов
@@ -162,6 +163,35 @@ export const groupsApi = {
 
     delete: (id: string) =>
         fetch(`/api/groups/${id}`, {
+            method: 'DELETE',
+        }).then(res => handleResponse<{ success: boolean }>(res)),
+}
+
+export const plansApi = {
+    getAll: (params: { studentId?: string; groupId?: string; subjectId?: string }) => {
+        const query = new URLSearchParams(params as any).toString()
+        return fetch(`/api/plans?${query}`).then(res => handleResponse<import('@/types').LearningPlan[]>(res))
+    },
+
+    getById: (id: string) =>
+        fetch(`/api/plans/${id}`).then(res => handleResponse<import('@/types').LearningPlan>(res)),
+
+    create: (data: { studentId?: string | null; groupId?: string | null; subjectId?: string | null }) =>
+        fetch('/api/plans', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data),
+        }).then(res => handleResponse<import('@/types').LearningPlan>(res)),
+
+    update: (id: string, data: { topics?: Partial<import('@/types').LearningPlanTopic>[] }) =>
+        fetch(`/api/plans/${id}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(data),
+        }).then(res => handleResponse<import('@/types').LearningPlan>(res)),
+
+    delete: (id: string) =>
+        fetch(`/api/plans/${id}`, {
             method: 'DELETE',
         }).then(res => handleResponse<{ success: boolean }>(res)),
 }

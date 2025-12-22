@@ -51,7 +51,8 @@ export function useGroupDetail(groupId: string) {
         recurrence: undefined as any,
         isPaidAll: false,
         seriesPrice: undefined as string | undefined,
-        paidStudentIds: [] as string[]
+        paidStudentIds: [] as string[],
+        planTopicId: undefined as string | undefined,
     })
 
     const [deleteGroupConfirm, setDeleteGroupConfirm] = useState(false)
@@ -116,7 +117,8 @@ export function useGroupDetail(groupId: string) {
             isPaid: lessonFormData.isPaid,
             topic: lessonFormData.topic,
             notes: lessonFormData.notes,
-            paidStudentIds: lessonFormData.paidStudentIds
+            paidStudentIds: lessonFormData.paidStudentIds,
+            planTopicId: lessonFormData.planTopicId,
         })
 
         if (lesson) {
@@ -140,7 +142,8 @@ export function useGroupDetail(groupId: string) {
             recurrence: undefined,
             isPaidAll: false,
             seriesPrice: undefined,
-            paidStudentIds: lesson.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || []
+            paidStudentIds: lesson.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || [],
+            planTopicId: lesson.planTopicId || undefined,
         })
         setEditingLessonId(lesson.id)
         setIsEditLessonModalOpen(true)
@@ -158,7 +161,8 @@ export function useGroupDetail(groupId: string) {
             isPaid: lessonFormData.isPaid,
             topic: lessonFormData.topic,
             notes: lessonFormData.notes,
-            paidStudentIds: lessonFormData.paidStudentIds
+            paidStudentIds: lessonFormData.paidStudentIds,
+            planTopicId: lessonFormData.planTopicId,
         })
 
         if (updated) {
@@ -277,7 +281,8 @@ export function useGroupDetail(groupId: string) {
             recurrence: undefined,
             isPaidAll: false,
             seriesPrice: undefined,
-            paidStudentIds: []
+            paidStudentIds: [],
+            planTopicId: undefined,
         })
         setIsCreateLessonModalOpen(true)
     }

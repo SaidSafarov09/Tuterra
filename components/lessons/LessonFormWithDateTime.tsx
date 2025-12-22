@@ -43,6 +43,48 @@ export function LessonFormWithDateTime({
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [tempDate, setTempDate] = useState<Date | undefined>(formData.date)
     const [tempRecurrence, setTempRecurrence] = useState<RecurrenceRule | undefined>(formData.recurrence)
+    const [planTopics, setPlanTopics] = useState<any[]>([])
+
+    React.useEffect(() => {
+        const fetchPlanTopics = async () => {
+            if (formData.recurrence?.enabled) {
+                setPlanTopics([])
+                return
+            }
+
+            try {
+                if (formData.studentId && formData.subjectId) {
+                    const plans = await (await fetch(`/api/plans?studentId=${formData.studentId}&subjectId=${formData.subjectId}`)).json()
+                    if (plans.length > 0) {
+                        setPlanTopics(plans[0].topics || [])
+                    } else {
+                        setPlanTopics([])
+                    }
+                } else {
+                    setPlanTopics([])
+                }
+            } catch (error) {
+                console.error('Error fetching plan topics:', error)
+                setPlanTopics([])
+            }
+        }
+        fetchPlanTopics()
+    }, [formData.studentId, formData.subjectId, formData.recurrence?.enabled])
+
+    const handlePlanTopicChange = (value: string) => {
+        if (!value) {
+            setFormData(prev => ({ ...prev, planTopicId: null }))
+            return
+        }
+        const topic = planTopics.find(t => t.id === value)
+        if (topic) {
+            setFormData(prev => ({
+                ...prev,
+                planTopicId: topic.id,
+                topic: topic.title
+            }))
+        }
+    }
 
     const handleOpenDateModal = () => {
         setTempDate(formData.date)
@@ -150,13 +192,40 @@ export function LessonFormWithDateTime({
                 )}
 
                 {!formData.recurrence?.enabled && (
-                    <Input
-                        label="Тема урока"
-                        value={formData.topic || ''}
-                        onChange={(e) => handleChange('topic', e.target.value)}
-                        placeholder={`Например: ${topicPlaceholder}`}
-                        disabled={isSubmitting}
-                    />)}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {planTopics.length > 0 && (
+                            <Dropdown
+                                label="Тема из плана"
+                                placeholder="Выберите тему"
+                                value={formData.planTopicId || undefined}
+                                onChange={handlePlanTopicChange}
+                                options={planTopics.map(t => ({
+                                    value: t.id,
+                                    label: `${t.isCompleted ? '✓ ' : ''}${t.title}`,
+                                }))}
+                                menuPosition="relative"
+                                disabled={isSubmitting}
+                            />
+                        )}
+                        <Input
+                            label="Тема урока"
+                            value={formData.topic || ''}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                setFormData(prev => {
+                                    const matchingTopic = planTopics.find(t => t.title.toLowerCase() === val.toLowerCase())
+                                    return {
+                                        ...prev,
+                                        topic: val,
+                                        planTopicId: matchingTopic ? matchingTopic.id : null
+                                    }
+                                })
+                            }}
+                            placeholder={`Например: ${topicPlaceholder}`}
+                            disabled={isSubmitting}
+                        />
+                    </div>
+                )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
                     <Checkbox

@@ -36,6 +36,7 @@ const lessonSchema = z.object({
     isPaidAll: z.boolean().optional(),
     seriesPrice: z.number().optional(),
     paidStudentIds: z.array(z.string()).optional(),
+    planTopicId: z.string().optional().nullable().transform(val => val === '' ? null : val),
 }).refine(data => data.studentId || data.groupId, {
     message: "Необходимо выбрать ученика или группу",
     path: ["studentId"],
@@ -245,6 +246,7 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             subjectId: data.subjectId,
             subjectName,
             subjectColor,
+            planTopicId: data.planTopicId,
             lessonPayments: data.groupId ? {
                 create: groupStudents.map(student => ({
                     studentId: student.id,
@@ -366,6 +368,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         groupName,
         subjectId: data.subjectId,
         seriesId: series.id,
+        planTopicId: data.planTopicId,
     }))
 
     // Batch create lessons

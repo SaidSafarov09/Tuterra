@@ -17,7 +17,8 @@ const lessonSchema = z.object({
     topic: z.string().optional(),
     duration: z.number().int().positive().optional(),
     paidStudentIds: z.array(z.string()).optional(),
-    attendedStudentIds: z.array(z.string()).optional(), // Добавляем валидацию для списка присутствовавших студентов
+    attendedStudentIds: z.array(z.string()).optional(),
+    planTopicId: z.string().optional().nullable().transform(val => val === '' ? null : val),
 })
 
 export async function GET(
@@ -182,7 +183,11 @@ export async function PUT(
             }
         }
 
-        const { paidStudentIds, attendedStudentIds, ...lessonData } = validatedData
+        const { paidStudentIds, attendedStudentIds, planTopicId, ...lessonData } = validatedData
+
+        if (planTopicId !== undefined) {
+            (lessonData as any).planTopicId = planTopicId
+        }
 
         // Update lesson
         const lesson = await prisma.lesson.updateMany({
@@ -377,6 +382,7 @@ export async function PATCH(
         if (body.notes !== undefined) updateData.notes = body.notes
         if (body.topic !== undefined) updateData.topic = body.topic
         if (body.duration !== undefined) updateData.duration = body.duration
+        if (body.planTopicId !== undefined) updateData.planTopicId = body.planTopicId
 
         // Check for lesson overlap when date or duration changes
         if (body.date !== undefined || body.duration !== undefined) {

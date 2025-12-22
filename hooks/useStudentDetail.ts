@@ -64,6 +64,7 @@ export function useStudentDetail(studentId: string) {
         recurrence: undefined as any,
         isPaidAll: false,
         seriesPrice: undefined as string | undefined,
+        planTopicId: undefined as string | undefined,
     })
 
     const [isGroupPaymentModalOpen, setIsGroupPaymentModalOpen] = useState(false)
@@ -200,6 +201,7 @@ export function useStudentDetail(studentId: string) {
             isPaid: lessonFormData.isPaid,
             topic: lessonFormData.topic,
             notes: lessonFormData.notes,
+            planTopicId: lessonFormData.planTopicId,
         })
 
         if (lesson) {
@@ -238,6 +240,7 @@ export function useStudentDetail(studentId: string) {
             recurrence: undefined,
             isPaidAll: false,
             seriesPrice: undefined,
+            planTopicId: lesson.planTopicId || undefined,
         })
         setEditingLessonId(lesson.id)
         setIsEditLessonModalOpen(true)
@@ -255,6 +258,7 @@ export function useStudentDetail(studentId: string) {
             isPaid: lessonFormData.isPaid,
             topic: lessonFormData.topic,
             notes: lessonFormData.notes,
+            planTopicId: lessonFormData.planTopicId,
         })
 
         if (updated) {
@@ -376,6 +380,7 @@ export function useStudentDetail(studentId: string) {
             recurrence: undefined,
             isPaidAll: false,
             seriesPrice: undefined,
+            planTopicId: undefined,
         })
         setIsCreateLessonModalOpen(true)
     }

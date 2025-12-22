@@ -1,0 +1,295 @@
+.container {
+    margin: 0 auto;
+    padding-bottom: 100px;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 0;
+    gap: 16px;
+    color: var(--text-secondary);
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+    color: var(--primary);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+}
+
+.saveBtn {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.editorContent {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-top: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.topicsList {
+    display: flex;
+    flex-direction: column;
+}
+
+.topicRowWrapper {
+    border-bottom: 1px solid var(--border-light);
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.topicRow {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    gap: 16px;
+    transition: background 0.2s ease;
+
+    &:hover {
+        background: var(--background);
+
+        .deleteAction {
+            opacity: 1;
+        }
+    }
+}
+
+.dragHandle {
+    color: var(--text-muted);
+    cursor: grab;
+    display: flex;
+    align-items: center;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.topicIndex {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 24px;
+}
+
+.topicMain {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.topicInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 8px 0;
+    outline: none;
+
+    &::placeholder {
+        color: var(--text-muted);
+    }
+}
+
+.completedIcon {
+    color: var(--success);
+}
+
+.lessonDetails {
+    padding: 0 20px 16px 60px;
+}
+
+.lessonInfoCard {
+    background: var(--background);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.lessonHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lessonTime {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.completedLabel {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--success);
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 8px;
+    border-radius: 100px;
+}
+
+.lessonContent {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.detailItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+
+    svg {
+        color: var(--text-muted);
+    }
+}
+
+.deleteAction {
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    transition: all 0.2s ease;
+
+    &:hover {
+        color: var(--error);
+        background: var(--background);
+    }
+}
+
+.addForm {
+    padding: 20px;
+    background: var(--background);
+    border-top: 1px solid var(--border-light);
+}
+
+.addInputGroup {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--primary);
+}
+
+.addIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.newTopicInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 12px 0;
+    outline: none;
+
+    &::placeholder {
+        color: var(--primary);
+        opacity: 0.6;
+    }
+}
+
+@media (max-width: 768px) {
+    .topicRow {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .lessonDetails {
+        padding: 0 12px 12px 40px;
+    }
+
+    .deleteAction {
+        opacity: 1;
+    }
+}
+
+.submitTopicBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    animation: fadeInScale 0.2s ease-out;
+
+    &:hover {
+        background: var(--primary-dark);
+        opacity: 0.9;
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    svg {
+        stroke-width: 2.5px;
+    }
+
+    @media (max-width: 768px) {
+        span {
+            display: none;
+        }
+
+        padding: 8px;
+        border-radius: 50%;
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateX(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateX(0);
+    }
+}

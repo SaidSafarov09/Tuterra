@@ -12,6 +12,7 @@ import { StudentModals } from "@/components/students/StudentModals";
 import { useStudentDetail } from "@/hooks/useStudentDetail";
 import { StudentDetailSkeleton } from "@/components/skeletons";
 import { StudentNote } from "@/components/students/StudentNote";
+import { StudentPlans } from "@/components/students/StudentPlans";
 import { RescheduleModal } from "@/components/lessons/RescheduleModal";
 import { GroupPaymentModal } from "@/components/lessons/GroupPaymentModal";
 
@@ -141,6 +142,8 @@ export default function StudentDetailPage({
       />
 
       <StudentNote student={student} />
+
+      <StudentPlans student={student} />
 
       <StudentLessons
         lessons={[

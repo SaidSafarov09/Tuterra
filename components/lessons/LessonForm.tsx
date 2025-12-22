@@ -20,6 +20,8 @@ import { ClockIcon } from '@/components/icons/Icons'
 import { Tabs } from '@/components/ui/Tabs'
 import { DatePicker } from '@/components/ui/DatePicker'
 import { TimeSelect } from '@/components/ui/TimeSelect'
+import { plansApi } from '@/services/api'
+import { LearningPlanTopic } from '@/types'
 
 export interface LessonFormProps {
     isEdit: boolean
@@ -70,6 +72,54 @@ export function LessonForm({
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
     const calendarRef = useRef<HTMLDivElement>(null)
+    const [planTopics, setPlanTopics] = useState<LearningPlanTopic[]>([])
+
+    useEffect(() => {
+        const fetchPlanTopics = async () => {
+            if (activeTab === 'recurring') {
+                setPlanTopics([])
+                return
+            }
+
+            try {
+                let plans: any[] = []
+                if (formData.groupId) {
+                    plans = await plansApi.getAll({ groupId: formData.groupId })
+                } else if (formData.studentId && formData.subjectId) {
+                    plans = await plansApi.getAll({
+                        studentId: formData.studentId,
+                        subjectId: formData.subjectId
+                    })
+                }
+
+                if (plans.length > 0) {
+                    setPlanTopics(plans[0].topics || [])
+                } else {
+                    setPlanTopics([])
+                }
+            } catch (error) {
+                console.error('Error fetching plan topics:', error)
+                setPlanTopics([])
+            }
+        }
+
+        fetchPlanTopics()
+    }, [formData.studentId, formData.groupId, formData.subjectId, activeTab])
+
+    const handlePlanTopicChange = (value: string | undefined) => {
+        if (!value) {
+            setFormData(prev => ({ ...prev, planTopicId: null }))
+            return
+        }
+        const topic = planTopics.find(t => t.id === value)
+        if (topic) {
+            setFormData(prev => ({
+                ...prev,
+                planTopicId: topic.id,
+                topic: topic.title
+            }))
+        }
+    }
 
     // Close calendar on click outside
     useEffect(() => {
@@ -365,14 +415,43 @@ export function LessonForm({
                 )}
 
                 {!formData.recurrence?.enabled && (
-                    <Input
-                        label="Тема урока"
-                        name="topic"
-                        value={formData.topic || ''}
-                        onChange={(e) => handleChange('topic', e.target.value)}
-                        placeholder={`Например: ${topicPlaceholder}`}
-                        disabled={isSubmitting}
-                    />)}
+                    <div className={styles.row}>
+                        {planTopics.length > 0 && (
+                            <Dropdown
+                                label="Тема из плана"
+                                placeholder="Выберите тему"
+                                value={formData.planTopicId || undefined}
+                                onChange={handlePlanTopicChange}
+                                options={planTopics.map(t => ({
+                                    value: t.id,
+                                    label: `${t.isCompleted ? '✓ ' : ''}${t.title}`,
+                                }))}
+                                menuPosition="relative"
+                                disabled={isSubmitting}
+                            />
+                        )}
+                        <Input
+                            label="Тема урока"
+                            name="topic"
+                            value={formData.topic || ''}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                setFormData(prev => {
+                                    // Robust linking: if title matches exactly, keep/set planTopicId
+                                    // Otherwise clear it (unless it was already matching)
+                                    const matchingTopic = planTopics.find(t => t.title.toLowerCase() === val.toLowerCase())
+                                    return {
+                                        ...prev,
+                                        topic: val,
+                                        planTopicId: matchingTopic ? matchingTopic.id : null
+                                    }
+                                })
+                            }}
+                            placeholder={`Например: ${topicPlaceholder}`}
+                            disabled={isSubmitting}
+                        />
+                    </div>
+                )}
 
                 {formData.price !== '0' && (
                     <div className={styles.paymentSection}>

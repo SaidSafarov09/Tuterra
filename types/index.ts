@@ -9,6 +9,42 @@ export interface Subject {
         lessons: number
         groups?: number
     }
+    learningPlans?: LearningPlan[]
+}
+
+export interface LearningPlanTopic {
+    id: string
+    planId: string
+    title: string
+    description?: string | null
+    order: number
+    createdAt: string
+    updatedAt: string
+    lessons?: Lesson[]
+    // Computed fields for UI
+    isCompleted?: boolean
+    lastLesson?: {
+        id: string
+        date: string
+        topic: string
+        student?: { name: string } | null
+        group?: { name: string } | null
+        subject?: { name: string; color: string } | null
+    } | null
+}
+
+export interface LearningPlan {
+    id: string
+    studentId?: string | null
+    groupId?: string | null
+    subjectId?: string | null
+    ownerId: string
+    createdAt: string
+    updatedAt: string
+    topics: LearningPlanTopic[]
+    student?: Student
+    group?: Group
+    subject?: Subject
 }
 
 export interface Student {
@@ -43,6 +79,7 @@ export interface Student {
     _count?: {
         lessons: number
     }
+    learningPlans?: LearningPlan[]
 }
 
 export interface Group {
@@ -58,6 +95,7 @@ export interface Group {
         lessons: number
         students: number
     }
+    learningPlan?: LearningPlan
 }
 
 export interface LessonPayment {
@@ -102,6 +140,8 @@ export interface Lesson {
         color: string
     } | null
     lessonPayments?: LessonPayment[]
+    planTopicId?: string | null
+    planTopic?: LearningPlanTopic
 }
 
 export interface DashboardStats {
@@ -147,6 +187,7 @@ export interface LessonFormData {
     recurrence?: RecurrenceRule
     seriesPrice?: string
     paidStudentIds?: string[]
+    planTopicId?: string | null
 }
 
 export type LessonFilter = 'all' | 'upcoming' | 'past' | 'unpaid' | 'canceled'
