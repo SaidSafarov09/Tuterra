@@ -65,8 +65,7 @@ export function GroupPlan({ group }: GroupPlanProps) {
                     <p className={styles.emptyText}>Создайте план для группы, чтобы отслеживать прохождение программы</p>
                     <Button
                         onClick={handleCreatePlan}
-                        className={styles.mainCreateBtn}
-                        style={{ backgroundColor: group.color || '#4A6CF7' }}
+                        variant="primary"
                     >
                         <Plus size={18} />
                         Создать план занятий
@@ -83,9 +82,6 @@ export function GroupPlan({ group }: GroupPlanProps) {
                         completed={completedTopics}
                         color={group.color || '#4A6CF7'}
                     />
-                    <div className={styles.editOverlay}>
-                        <Edit2 size={16} />
-                    </div>
                 </div>
             )}
         </div>

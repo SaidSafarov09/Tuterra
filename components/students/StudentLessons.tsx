@@ -124,7 +124,7 @@ export function StudentLessons({
                                                 >
                                                     <span style={{ color: stringToColor(lesson.group?.name || lesson.groupName || '') }}>
                                                         {lesson.group?.name || lesson.groupName}
-                                                    </span> - группа
+                                                    </span> <br className={styles.textBR} />- группа
                                                 </p>
                                             )}
                                             <h3 className={styles.lessonDate}>

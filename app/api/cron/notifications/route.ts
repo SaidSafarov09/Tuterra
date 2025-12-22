@@ -90,7 +90,7 @@ ${entityLabel} **${entityName}**
                             data: {
                                 userId,
                                 title: 'Скоро занятие',
-                                message: `${subjectName} с ${entityName} в ${timeString}`,
+                                message: `${subjectName} с ${lesson.studentId ? 'учеником' : 'группой'} ${entityName} в ${timeString}`,
                                 type: 'lesson_reminder',
                                 data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
                                 link: `/calendar?date=${lesson.date.toISOString().split('T')[0]}`

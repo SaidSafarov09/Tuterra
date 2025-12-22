@@ -85,8 +85,7 @@ export function StudentPlans({ student }: StudentPlansProps) {
                                     <Button
                                         key={subject.id}
                                         onClick={() => handleCreatePlan(subject.id)}
-                                        className={styles.mainCreateBtn}
-                                        style={{ backgroundColor: subject.color }}
+                                        variant="primary"
                                     >
                                         <Plus size={18} />
                                         Создать план: {subject.name}
@@ -116,9 +115,6 @@ export function StudentPlans({ student }: StudentPlansProps) {
                                     completed={completedTopics}
                                     color={subject?.color}
                                 />
-                                <div className={styles.editOverlay}>
-                                    <Edit2 size={16} />
-                                </div>
                             </div>
                         )
                     })}

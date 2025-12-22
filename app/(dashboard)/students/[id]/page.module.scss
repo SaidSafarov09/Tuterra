@@ -386,6 +386,18 @@
   font-weight: 600;
   margin-left: 0;
   display: block;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+}
+
+.textBR {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
 }
 
 .lessonTopic {
@@ -433,6 +445,10 @@
   font-size: 20px;
   font-weight: 800;
   color: var(--text-primary);
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
 }
 
 .badge {

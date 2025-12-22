@@ -39,6 +39,12 @@
     font-size: 16px;
     margin-bottom: 24px;
     max-width: 400px;
+
+    @media (max-width: 768px) {
+        max-width: none;
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
 }
 
 .createButtons {
@@ -46,22 +52,6 @@
     gap: 16px;
     flex-wrap: wrap;
     justify-content: center;
-}
-
-.mainCreateBtn {
-    height: 54px;
-    padding: 0 24px;
-    font-size: 16px;
-    font-weight: 700;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    color: white;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
-    }
 }
 
 .grid {
@@ -84,34 +74,17 @@
     }
 }
 
-.editOverlay {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 32px;
-    height: 32px;
-    background: var(--surface);
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    box-shadow: var(--shadow-md);
-    color: var(--text-primary);
-}
-
 .emptyHint {
     color: var(--text-muted);
     font-style: italic;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .grid {
         grid-template-columns: 1fr;
     }
 
     .noPlansContainer {
-        padding: 30px 20px;
+        padding: 18px;
     }
 }

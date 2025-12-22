@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { plansApi } from '@/services/api'
 import { LearningPlan, LearningPlanTopic } from '@/types'
 import { Button } from '@/components/ui/Button'
-import { PageHeader } from '@/components/ui/PageHeader'
 import { toast } from 'sonner'
 import { Trash2, GripVertical, Save, Loader2, Plus, CheckCircle2, Calendar, User, BookOpen } from 'lucide-react'
 import { formatSmartDate } from '@/lib/dateUtils'
@@ -99,26 +98,54 @@ export function PlanEditor({ planId }: PlanEditorProps) {
 
     if (!plan) return null
 
-    const title = plan.student
-        ? `План обучения: ${plan.student.name}`
-        : `План обучения: ${plan.group?.name}`
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+    }
 
-    const subtitle = plan.subject?.name || ''
+    const stringToColor = (str: string): string => {
+        let hash = 0
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash)
+        }
+        const hue = Math.abs(hash % 360)
+        return `hsl(${hue}, 65%, 55%)`
+    }
+
+    const displayName = plan.student?.name || plan.group?.name || 'Ученик'
 
     return (
         <div className={styles.container}>
-            <PageHeader
-                title={title}
-                subtitle={subtitle}
-                action={
-                    <div className={styles.actions}>
-                        <Button
-                            variant="secondary"
-                            onClick={() => router.back()}
-                            disabled={isSaving}
+            <div className={styles.header}>
+                <button className={styles.backButton} onClick={() => router.back()}>
+                    ← Назад
+                </button>
+            </div>
+
+            <div className={styles.planHeader}>
+                <div className={styles.headerTop}>
+                    <div className={styles.profile}>
+                        <div
+                            className={styles.avatar}
+                            style={{ backgroundColor: stringToColor(displayName) }}
                         >
-                            Отмена
-                        </Button>
+                            {getInitials(displayName)}
+                        </div>
+                        <div className={styles.info}>
+                            <h1 className={styles.name}>План занятий для {displayName}</h1>
+                            {plan.subject?.name && (
+                                <div className={styles.subjectTag}>
+                                    {plan.subject.name}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className={styles.actions}>
                         <Button
                             onClick={handleSave}
                             disabled={isSaving}
@@ -126,11 +153,11 @@ export function PlanEditor({ planId }: PlanEditorProps) {
                             className={styles.saveBtn}
                         >
                             <Save size={18} />
-                            Готово
+                            Сохранить
                         </Button>
                     </div>
-                }
-            />
+                </div>
+            </div>
 
             <div className={styles.editorContent}>
                 <div className={styles.topicsList}>
