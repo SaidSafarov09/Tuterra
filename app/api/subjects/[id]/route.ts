@@ -230,6 +230,21 @@ export async function DELETE(
             })
         }
 
+        // Preserve subject details in past lessons (unlink them but keep the name)
+        if (pastLessons > 0) {
+            await prisma.lesson.updateMany({
+                where: {
+                    subjectId: id,
+                    ownerId: user.id,
+                    date: { lt: now }
+                },
+                data: {
+                    subjectName: subject.name, // Keep original name
+                    subjectColor: '#94a3b8', // Slate-400 (neutral grey)
+                }
+            })
+        }
+
         await prisma.subject.delete({
             where: {
                 id: id,

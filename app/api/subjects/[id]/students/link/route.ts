@@ -109,6 +109,9 @@ export async function DELETE(
             where: {
                 studentId: studentId,
                 subjectId: subjectId,
+                date: {
+                    gte: new Date()
+                }
             },
         })
 

@@ -101,11 +101,11 @@ export async function POST(request: NextRequest) {
             existingPlan = await prisma.learningPlan.findUnique({
                 where: { groupId: validatedData.groupId }
             })
-        } else if (validatedData.studentId && validatedData.subjectId) {
+        } else if (validatedData.studentId) {
             existingPlan = await prisma.learningPlan.findFirst({
                 where: {
                     studentId: validatedData.studentId,
-                    subjectId: validatedData.subjectId
+                    subjectId: validatedData.subjectId || null
                 }
             })
         }
