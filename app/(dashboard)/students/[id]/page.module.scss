@@ -358,7 +358,7 @@
 }
 
 .lessonDate {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);
   width: max-content;
@@ -371,10 +371,10 @@
 }
 
 .lessonSubject {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
   white-space: nowrap;
   border: 1px solid transparent;
   width: fit-content;
@@ -382,7 +382,7 @@
 
 .lessonGroupText {
   width: max-content;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin-left: 0;
   display: block;
@@ -442,13 +442,9 @@
 }
 
 .lessonPrice {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--text-primary);
-
-  @media (max-width: 768px) {
-    font-size: 18px;
-  }
 }
 
 .badge {

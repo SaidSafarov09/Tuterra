@@ -119,6 +119,14 @@ export async function PUT(
         // Check for lesson overlap - always check since we're updating
         const { checkLessonOverlap, formatConflictMessage } = await import('@/lib/lessonValidation')
         const duration = validatedData.duration || 60
+
+        // Получаем timezone для корректного отображения времени в сообщениях об ошибках
+        const userTz = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { timezone: true }
+        })
+        const timezone = userTz?.timezone || 'Europe/Moscow'
+
         const conflict = await checkLessonOverlap(
             user.id,
             validatedData.date,
@@ -128,7 +136,7 @@ export async function PUT(
 
         if (conflict) {
             return NextResponse.json(
-                { error: formatConflictMessage(conflict, validatedData.studentId) },
+                { error: formatConflictMessage(conflict, validatedData.studentId, timezone) },
                 { status: 400 }
             )
         }
@@ -400,6 +408,13 @@ export async function PATCH(
             const checkDate = body.date ? new Date(body.date) : new Date(currentLesson.date)
             const checkDuration = body.duration !== undefined ? body.duration : currentLesson.duration
 
+            // Получаем timezone для корректного отображения времени в сообщениях об ошибках
+            const userTz = await prisma.user.findUnique({
+                where: { id: user.id },
+                select: { timezone: true }
+            })
+            const timezone = userTz?.timezone || 'Europe/Moscow'
+
             const conflict = await checkLessonOverlap(
                 user.id,
                 checkDate,
@@ -409,7 +424,7 @@ export async function PATCH(
 
             if (conflict) {
                 return NextResponse.json(
-                    { error: formatConflictMessage(conflict, body.studentId || currentLesson.studentId) },
+                    { error: formatConflictMessage(conflict, body.studentId || currentLesson.studentId, timezone) },
                     { status: 400 }
                 )
             }

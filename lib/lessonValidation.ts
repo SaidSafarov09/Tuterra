@@ -35,7 +35,10 @@ export async function checkLessonOverlap(
         const lessonStart = new Date(lesson.date)
         const lessonEnd = addMinutes(lessonStart, lesson.duration)
 
-        return lessonStart < endTime && lessonEnd > startTime
+        // Уроки пересекаются только если есть реальное наложение (не просто касание границ)
+        // Если один урок заканчивается ровно когда другой начинается - это НЕ конфликт
+        return lessonStart < endTime && lessonEnd > startTime &&
+            !(lessonEnd.getTime() === startTime.getTime() || lessonStart.getTime() === endTime.getTime())
     })
 
     return conflict
@@ -73,7 +76,8 @@ export async function checkRecurringConflicts(
         const conflict = existingLessons.find(l => {
             const lStart = new Date(l.date)
             const lEnd = addMinutes(lStart, l.duration)
-            return lStart < newEnd && lEnd > newStart
+            return lStart < newEnd && lEnd > newStart &&
+                !(lEnd.getTime() === newStart.getTime() || lStart.getTime() === newEnd.getTime())
         })
 
         if (conflict) return conflict
@@ -81,7 +85,7 @@ export async function checkRecurringConflicts(
     return null
 }
 
-export function formatConflictMessage(conflict: any, newStudentId?: string) {
+export function formatConflictMessage(conflict: any, newStudentId?: string, timezone: string = 'Europe/Moscow') {
     const startTime = new Date(conflict.date)
     const endTime = addMinutes(startTime, conflict.duration)
     const subjectName = conflict.subject?.name || 'Без предмета'
@@ -90,7 +94,13 @@ export function formatConflictMessage(conflict: any, newStudentId?: string) {
     if (isToday(startTime)) dateStr = 'сегодня'
     if (isTomorrow(startTime)) dateStr = 'завтра'
 
-    const timeRange = `${format(startTime, 'HH:mm')} - ${format(endTime, 'HH:mm')}`
+    // Используем Intl.DateTimeFormat для корректного отображения времени с учетом часового пояса
+    const timeFormatter = new Intl.DateTimeFormat('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: timezone
+    })
+    const timeRange = `${timeFormatter.format(startTime)} - ${timeFormatter.format(endTime)}`
 
     if (newStudentId && conflict.studentId === newStudentId) {
         return `Ученик уже занят ${dateStr} с ${timeRange} (${subjectName})`

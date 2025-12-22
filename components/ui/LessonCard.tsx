@@ -113,7 +113,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                                 setShowTopic(!showTopic)
                             }}
                         >
-                            <span className={styles.topicLabel}>Тема:</span>
+                            <span className={styles.topicLabel}>Тема урока:</span>
                             <NoteIcon size={14} />
 
                             {showTopic && (

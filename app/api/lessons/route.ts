@@ -203,10 +203,17 @@ export async function POST(request: NextRequest) {
     }
 }
 async function createSingleLesson(userId: string, data: z.infer<typeof lessonSchema>) {
+    // Получаем timezone пользователя для корректного отображения времени в сообщениях
+    const userTz = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { timezone: true }
+    })
+    const timezone = userTz?.timezone || 'Europe/Moscow'
+
     const conflict = await checkLessonOverlap(userId, data.date, data.duration)
     if (conflict) {
         return NextResponse.json(
-            { error: formatConflictMessage(conflict, data.studentId) },
+            { error: formatConflictMessage(conflict, data.studentId, timezone) },
             { status: 400 }
         )
     }
@@ -314,17 +321,23 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         endDate: threeMonthsFromNow,
     })
 
-    const [conflict, group] = await Promise.all([
+    const [conflict, group, userTz] = await Promise.all([
         checkRecurringConflicts(userId, dates, data.duration),
         data.groupId ? prisma.group.findUnique({
             where: { id: data.groupId },
             include: { students: { select: { id: true } } }
-        }) : Promise.resolve(null)
+        }) : Promise.resolve(null),
+        prisma.user.findUnique({
+            where: { id: userId },
+            select: { timezone: true }
+        })
     ])
+
+    const timezone = userTz?.timezone || 'Europe/Moscow'
 
     if (conflict) {
         return NextResponse.json(
-            { error: formatConflictMessage(conflict, data.studentId) },
+            { error: formatConflictMessage(conflict, data.studentId, timezone) },
             { status: 400 }
         )
     }
