@@ -10,8 +10,6 @@ export async function GET(request: NextRequest) {
         // Authenticate user (since we trigger this from client)
         const token = request.cookies.get('auth-token')?.value
         if (!token) {
-            // Allow public cron trigger with a secret key if needed in future, 
-            // but for now relying on user session is easier for "active user" checks.
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
@@ -34,27 +32,25 @@ export async function GET(request: NextRequest) {
 
         // 1. Lesson Reminders
         if (settings.lessonReminders) {
-            // Check lessons starting in the next 24 hours (expanded for testing)
-            // But usually 1 hour is enough. Let's use 6 hours to be safe.
-            const searchEnd = new Date(now.getTime() + 6 * 60 * 60 * 1000)
+            // Remind about lessons starting in the next 45 minutes
+            const reminderWindowStart = now
+            const reminderWindowEnd = new Date(now.getTime() + 45 * 60 * 1000)
 
             const upcomingLessons = await prisma.lesson.findMany({
                 where: {
                     ownerId: userId,
                     date: {
-                        gte: now,
-                        lte: searchEnd
+                        gte: reminderWindowStart,
+                        lte: reminderWindowEnd
                     },
                     isCanceled: false
                 },
                 include: { subject: true, student: true, group: true }
             })
 
-            console.log(`CRON: Found ${upcomingLessons.length} upcoming lessons for user ${userId}`)
+            console.log(`CRON: Found ${upcomingLessons.length} upcoming lessons for reminder in next 45m for user ${userId}`)
 
             for (const lesson of upcomingLessons) {
-                // Check if already notified
-                // We use 'data' field to store structured info to avoid duplicates
                 const notificationKey = `reminder_${lesson.id}`
                 const existing = await prisma.notification.findFirst({
                     where: {
@@ -86,18 +82,18 @@ ${entityLabel} ${entityName}
 📝 Тема: ${lesson.topic || 'Не указана'}
 `
 
-                    if (settings.deliveryWeb) {
-                        await prisma.notification.create({
-                            data: {
-                                userId,
-                                title: 'Скоро занятие',
-                                message: `${subjectName} с ${lesson.studentId ? 'учеником' : 'группой'} ${entityName} в ${timeString}`,
-                                type: 'lesson_reminder',
-                                data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
-                                link: `/calendar?date=${lesson.date.toISOString().split('T')[0]}`
-                            }
-                        })
-                    }
+                    // Always create notification record to prevent duplicates
+                    await prisma.notification.create({
+                        data: {
+                            userId,
+                            title: 'Скоро занятие',
+                            message: `${subjectName} с ${lesson.studentId ? 'учеником' : 'группой'} ${entityName} в ${timeString}`,
+                            type: 'lesson_reminder',
+                            data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
+                            link: `/calendar?date=${lesson.date.toISOString().split('T')[0]}`,
+                            isRead: !settings.deliveryWeb
+                        }
+                    })
 
                     console.log(`CRON: Sending reminder for lesson ${lesson.id} to user ${userId}`)
                     const sent = await sendTelegramNotification(userId, message, 'lessonReminders')
@@ -144,41 +140,38 @@ ${entityLabel} ${entityName}
                     const entityLabel = lesson.studentId ? '👤 Ученик:' : '👥 Группа:'
 
                     const msg = `${entityLabel} **${entityName}**\n📚 Предмет: **${subjectName}**\n\nЗанятие завершилось, но не было оплачено. Не забудьте отметить оплату.`
-                    if (settings.deliveryWeb) {
-                        await prisma.notification.create({
-                            data: {
-                                userId,
-                                title: 'Неоплаченное занятие',
-                                message: msg,
-                                type: 'unpaid_lesson',
-                                data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
-                                link: `/lessons?filter=unpaid`
-                            }
-                        })
-                    }
+
+                    // Always record to DB to avoid duplicates
+                    await prisma.notification.create({
+                        data: {
+                            userId,
+                            title: 'Неоплаченное занятие',
+                            message: msg,
+                            type: 'unpaid_lesson',
+                            data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
+                            link: `/lessons?filter=unpaid`,
+                            isRead: !settings.deliveryWeb
+                        }
+                    })
+
                     await sendTelegramNotification(userId, `💰 **Оплата:** ${msg}`, 'unpaidLessons')
                     notificationsCreated.push('unpaid')
                 }
             }
         }
 
-        // 3. Daily Income Report (End of day)
+        // 3. Daily Income Report (End of day handled below in Evening Summary or here for raw stats)
         if (settings.incomeReports) {
-            // Check if it's past 21:00
+            // Check if it's past 21:00 for simple report if summary is disabled
             if (now.getHours() >= 21) {
                 const todayStr = now.toISOString().split('T')[0]
                 const notificationKey = `income_daily_${todayStr}`
 
                 const existing = await prisma.notification.findFirst({
-                    where: {
-                        userId,
-                        type: 'income',
-                        data: { contains: notificationKey }
-                    }
+                    where: { userId, type: 'income', data: { contains: notificationKey } }
                 })
 
                 if (!existing) {
-                    const todayStr = now.toISOString().split('T')[0]
                     const startOfDay = new Date(now)
                     startOfDay.setHours(0, 0, 0, 0)
                     const endOfDay = new Date(now)
@@ -203,25 +196,24 @@ ${entityLabel} ${entityName}
                     }, 0)
                     if (todayLessons.length > 0) {
                         const msg = `Сегодня вы заработали ${income.toLocaleString('ru-RU')} ₽. Всего проведено занятий: ${todayLessons.length}.`
-                        if (settings.deliveryWeb) {
-                            await prisma.notification.create({
-                                data: {
-                                    userId,
-                                    title: 'Итоги дня',
-                                    message: msg,
-                                    type: 'income',
-                                    data: JSON.stringify({ key: notificationKey, date: todayStr }),
-                                    link: '/income'
-                                }
-                            })
-                        }
+                        await prisma.notification.create({
+                            data: {
+                                userId,
+                                title: 'Итоги дня',
+                                message: msg,
+                                type: 'income',
+                                data: JSON.stringify({ key: notificationKey, date: todayStr }),
+                                link: '/income',
+                                isRead: !settings.deliveryWeb
+                            }
+                        })
                         await sendTelegramNotification(userId, `📊 **Итоги дня:**\n${msg}`, 'incomeReports')
                         notificationsCreated.push('daily_income')
                     }
                 }
             }
 
-            // Monthly Report (on 1st day of month)
+            // Monthly Report
             if (now.getDate() === 1 && now.getHours() >= 9 && now.getHours() <= 11) {
                 const monthStr = `${now.getFullYear()}-${now.getMonth() + 1}`
                 const notificationKey = `income_monthly_${monthStr}`
@@ -253,18 +245,17 @@ ${entityLabel} ${entityName}
                     }, 0)
                     if (monthLessons.length > 0) {
                         const msg = `Итоги прошлого месяца: вы заработали ${income.toLocaleString('ru-RU')} ₽. Проведено занятий: ${monthLessons.length}.`
-                        if (settings.deliveryWeb) {
-                            await prisma.notification.create({
-                                data: {
-                                    userId,
-                                    title: 'Итоги месяца',
-                                    message: msg,
-                                    type: 'income',
-                                    data: JSON.stringify({ key: notificationKey }),
-                                    link: '/income'
-                                }
-                            })
-                        }
+                        await prisma.notification.create({
+                            data: {
+                                userId,
+                                title: 'Итоги месяца',
+                                message: msg,
+                                type: 'income',
+                                data: JSON.stringify({ key: notificationKey }),
+                                link: '/income',
+                                isRead: !settings.deliveryWeb
+                            }
+                        })
                         await sendTelegramNotification(userId, `📅 **Итоги месяца:**\n${msg}`, 'incomeReports')
                         notificationsCreated.push('monthly_income')
                     }
@@ -272,149 +263,118 @@ ${entityLabel} ${entityName}
             }
         }
 
-        // 4. Missing Lessons (Morning check)
+        // 4. Missing Lessons (Planning)
         if (settings.missingLessons) {
-            // Check at 9:00 - 11:00
             if (now.getHours() >= 9 && now.getHours() <= 11) {
                 const todayStr = now.toISOString().split('T')[0]
-                const notificationKey = `missing_check_${todayStr}` // Only check once a day globally
+                const globalKey = `missing_check_${todayStr}`
 
-                // This check ensures we don't scan students repeatedly today
                 const checkDone = await prisma.notification.findFirst({
-                    where: {
-                        userId,
-                        type: 'missing_lessons',
-                        data: { contains: notificationKey }
-                    }
+                    where: { userId, type: 'missing_lessons', data: { contains: globalKey } }
                 })
 
-
-                const students = await prisma.student.findMany({
-                    where: { ownerId: userId },
-                    include: {
-                        lessons: {
-                            where: { date: { gte: now } },
-                            take: 1
-                        }
-                    }
-                })
-
-                const studentsWithoutLessons = students.filter(s => s.lessons.length === 0)
-
-                for (const student of studentsWithoutLessons) {
-                    const studentKey = `missing_lesson_student_${student.id}_week_${getWeekNumber(now)}`
-
-                    const existing = await prisma.notification.findFirst({
-                        where: {
-                            userId,
-                            type: 'missing_lessons',
-                            data: { contains: studentKey }
+                if (!checkDone) {
+                    const students = await prisma.student.findMany({
+                        where: { ownerId: userId },
+                        include: {
+                            lessons: { where: { date: { gte: now } }, take: 1 }
                         }
                     })
 
-                    if (!existing) {
-                        const msg = `У ученика ${student.name} нет запланированных занятий. Самое время составить расписание!`
-                        if (settings.deliveryWeb) {
+                    const studentsWithoutLessons = students.filter(s => s.lessons.length === 0)
+
+                    for (const student of studentsWithoutLessons) {
+                        const studentKey = `missing_lesson_student_${student.id}_week_${getWeekNumber(now)}`
+                        const existing = await prisma.notification.findFirst({
+                            where: { userId, type: 'missing_lessons', data: { contains: studentKey } }
+                        })
+
+                        if (!existing) {
+                            const msg = `У ученика ${student.name} нет запланированных занятий. Самое время составить расписание!`
                             await prisma.notification.create({
                                 data: {
                                     userId,
                                     title: 'Планирование занятий',
                                     message: msg,
                                     type: 'missing_lessons',
-                                    data: JSON.stringify({ key: studentKey, studentId: student.id }), // Key by week to remind once a week
-                                    link: `/students/${student.id}`
+                                    data: JSON.stringify({ key: studentKey, studentId: student.id }),
+                                    link: `/students/${student.id}`,
+                                    isRead: !settings.deliveryWeb
                                 }
                             })
-                        }
-                        await sendTelegramNotification(userId, `📅 **Планирование:** ${msg}`, 'missingLessons')
-                        notificationsCreated.push('missing_lesson')
-                    }
-                }
-            }
-        }
-
-        // 5. Student Debts (Once a week check on Mondays)
-        if (settings.studentDebts) {
-            // Only check on Monday (1)
-            if (now.getDay() === 1) {
-                const students = await prisma.student.findMany({
-                    where: { ownerId: userId },
-                    include: {
-                        lessons: {
-                            where: { isPaid: false, isCanceled: false, date: { lt: now } }
-                        },
-                        lessonPayments: {
-                            where: { hasPaid: false, lesson: { isCanceled: false, date: { lt: now } } },
-                            include: { lesson: true }
-                        }
-                    }
-                })
-
-                for (const student of students) {
-                    const individualUnpaid = student.lessons.length
-                    const groupUnpaid = student.lessonPayments.length
-                    const totalUnpaid = individualUnpaid + groupUnpaid
-
-                    if (totalUnpaid >= 2) {
-                        const individualDebt = student.lessons.reduce((sum, l) => sum + l.price, 0)
-                        const groupDebt = student.lessonPayments.reduce((sum, p) => sum + p.lesson.price, 0)
-                        const totalDebtAmount = individualDebt + groupDebt
-
-                        const key = `debt_student_${student.id}_week_${getWeekNumber(now)}`
-                        const existing = await prisma.notification.findFirst({
-                            where: { userId, type: 'debt', data: { contains: key } }
-                        })
-
-                        if (!existing) {
-                            const msg = `👤 Ученик: **${student.name}**\nНакопилось ${totalUnpaid} неоплаченных занятий на сумму ${totalDebtAmount} ₽.`
-                            if (settings.deliveryWeb) {
-                                await prisma.notification.create({
-                                    data: {
-                                        userId,
-                                        title: 'Задолженность у ученика',
-                                        message: `У ученика ${student.name} накоплено долгов на ${totalDebtAmount} ₽`,
-                                        type: 'debt',
-                                        data: JSON.stringify({ key }),
-                                        link: `/students/${student.id}`
-                                    }
-                                })
-                            }
-                            await sendTelegramNotification(userId, `📉 **Долги:**\n\n${msg}`, 'studentDebts')
-                            notificationsCreated.push('student_debt')
+                            await sendTelegramNotification(userId, `📅 **Планирование:** ${msg}`, 'missingLessons')
+                            notificationsCreated.push('missing_lesson')
                         }
                     }
                 }
             }
         }
 
-        // 6. Onboarding (Profile)
-        if (settings.onboardingTips) {
-            // Check if profile is incomplete
-            const isProfileComplete = user.firstName && user.lastName && user.phone
-            if (!isProfileComplete) {
-                const key = 'onboarding_profile'
-                const existing = await prisma.notification.findFirst({
-                    where: {
-                        userId,
-                        type: 'onboarding',
-                        data: { contains: key }
+        // 5. Student Debts
+        if (settings.studentDebts && now.getDay() === 1 && now.getHours() >= 9 && now.getHours() <= 11) {
+            const students = await prisma.student.findMany({
+                where: { ownerId: userId },
+                include: {
+                    lessons: { where: { isPaid: false, isCanceled: false, date: { lt: now } } },
+                    lessonPayments: {
+                        where: { hasPaid: false, lesson: { isCanceled: false, date: { lt: now } } },
+                        include: { lesson: true }
                     }
-                })
+                }
+            })
 
-                if (!existing) {
-                    const msg = 'Расскажите ученикам о себе! Добавьте фото и контактные данные в настройках профиля.'
-                    if (settings.deliveryWeb) {
+            for (const student of students) {
+                const totalUnpaid = student.lessons.length + student.lessonPayments.length
+                if (totalUnpaid >= 2) {
+                    const totalDebtAmount = student.lessons.reduce((sum, l) => sum + l.price, 0) +
+                        student.lessonPayments.reduce((sum, p) => sum + p.lesson.price, 0)
+
+                    const key = `debt_student_${student.id}_week_${getWeekNumber(now)}`
+                    const existing = await prisma.notification.findFirst({
+                        where: { userId, type: 'debt', data: { contains: key } }
+                    })
+
+                    if (!existing) {
+                        const msg = `👤 Ученик: **${student.name}**\nНакопилось ${totalUnpaid} неоплаченных занятий на сумму ${totalDebtAmount} ₽.`
                         await prisma.notification.create({
                             data: {
                                 userId,
-                                title: 'Заполните профиль',
-                                message: msg,
-                                type: 'onboarding',
+                                title: 'Задолженность у ученика',
+                                message: `У ученика ${student.name} накоплено долгов на ${totalDebtAmount} ₽`,
+                                type: 'debt',
                                 data: JSON.stringify({ key }),
-                                link: '/settings'
+                                link: `/students/${student.id}`,
+                                isRead: !settings.deliveryWeb
                             }
                         })
+                        await sendTelegramNotification(userId, `📉 **Долги:**\n\n${msg}`, 'studentDebts')
+                        notificationsCreated.push('student_debt')
                     }
+                }
+            }
+        }
+
+        // 6. Onboarding Tips
+        if (settings.onboardingTips) {
+            const isProfileComplete = !!(user.firstName && user.lastName && user.phone)
+            if (!isProfileComplete) {
+                const key = 'onboarding_profile'
+                const existing = await prisma.notification.findFirst({
+                    where: { userId, type: 'onboarding', data: { contains: key } }
+                })
+                if (!existing) {
+                    const msg = 'Расскажите ученикам о себе! Добавьте фото и контактные данные в настройках профиля.'
+                    await prisma.notification.create({
+                        data: {
+                            userId,
+                            title: 'Заполните профиль',
+                            message: msg,
+                            type: 'onboarding',
+                            data: JSON.stringify({ key }),
+                            link: '/settings',
+                            isRead: !settings.deliveryWeb
+                        }
+                    })
                     await sendTelegramNotification(userId, `👤 **Профиль:** ${msg}`, 'onboardingTips')
                     notificationsCreated.push('onboarding')
                 }
@@ -443,40 +403,36 @@ ${entityLabel} ${entityName}
 
             // Morning Briefing
             if (settings.morningBriefing) {
-                const firstLesson = todayLessons[0]
-                const oneHourBefore = new Date(firstLesson.date.getTime() - 60 * 60 * 1000)
+                const key = `morning_briefing_${todayStr}`
+                const existing = await prisma.notification.findFirst({
+                    where: { userId, type: 'morning_briefing', data: { contains: key } }
+                })
 
-                if (now >= oneHourBefore && now < firstLesson.date) {
-                    const key = `morning_briefing_${todayStr}`
-                    const existing = await prisma.notification.findFirst({
-                        where: { userId, type: 'morning_briefing', data: { contains: key } }
-                    })
+                const firstLessonLimit = new Date(todayLessons[0].date.getTime() - 60 * 60 * 1000)
+                const sevenAM = new Date(now)
+                sevenAM.setHours(7, 0, 0, 0)
+                const triggerTime = firstLessonLimit > sevenAM ? firstLessonLimit : sevenAM
 
-                    if (!existing) {
-                        const lessonsList = todayLessons.map((l, i) => {
-                            const time = new Intl.DateTimeFormat('ru-RU', {
-                                hour: '2-digit', minute: '2-digit', timeZone: userTz
-                            }).format(l.date)
-                            const label = l.studentId ? '👤' : '👥'
-                            const name = l.student?.name || l.group?.name || '---'
-                            return `${i + 1}. **${time}** ${label} ${name} (${l.subject?.name || 'Без предмета'})`
-                        }).join('\n')
+                if (!existing && now >= triggerTime && now.getHours() < 12) {
+                    const lessonsList = todayLessons.map((l, i) => {
+                        const time = new Intl.DateTimeFormat('ru-RU', {
+                            hour: '2-digit', minute: '2-digit', timeZone: userTz
+                        }).format(l.date)
+                        const label = l.studentId ? '👤' : '👥'
+                        const name = l.student?.name || l.group?.name || '---'
+                        return `${i + 1}. **${time}** ${label} ${name} (${l.subject?.name || 'Без предмета'})`
+                    }).join('\n')
 
-                        const msg = `☀️ **Доброе утро!**\n\nСегодня у вас ${todayLessons.length} занятий:\n\n${lessonsList}\n\nЖелаем удачного дня! ✨`
-                        const sent = await sendTelegramNotification(userId, msg, 'morningBriefing')
-                        if (sent) {
-                            await prisma.notification.create({
-                                data: {
-                                    userId,
-                                    title: 'Утренний план',
-                                    message: `У вас ${todayLessons.length} занятий сегодня.`,
-                                    type: 'morning_briefing',
-                                    data: JSON.stringify({ key }),
-                                    isRead: true
-                                }
-                            })
-                            notificationsCreated.push('morning_briefing')
-                        }
+                    const msg = `☀️ **Доброе утро!**\n\nСегодня у вас ${todayLessons.length} занятий:\n\n${lessonsList}\n\nЖелаем удачного дня! ✨`
+                    const sent = await sendTelegramNotification(userId, msg, 'morningBriefing')
+                    if (sent) {
+                        await prisma.notification.create({
+                            data: {
+                                userId, title: 'Утренний план', message: `У вас ${todayLessons.length} занятий сегодня.`,
+                                type: 'morning_briefing', data: JSON.stringify({ key }), isRead: true
+                            }
+                        })
+                        notificationsCreated.push('morning_briefing')
                     }
                 }
             }
@@ -504,17 +460,12 @@ ${entityLabel} ${entityName}
                         }, 0)
                         const msgText = `Сегодня вы заработали ${incomeTotal.toLocaleString('ru-RU')} ₽. Всего проведено занятий: ${todayLessons.length}.`
                         const msg = `🌟 **Отличная работа!**\n\n${msgText}\n\nХорошего отдыха! ✨`
-
                         const sent = await sendTelegramNotification(userId, msg, 'eveningSummary')
                         if (sent) {
                             await prisma.notification.create({
                                 data: {
-                                    userId,
-                                    title: 'Итоги дня',
-                                    message: `Вы провели ${todayLessons.length} занятий и заработали ${incomeTotal} ₽.`,
-                                    type: 'evening_summary',
-                                    data: JSON.stringify({ key }),
-                                    isRead: true
+                                    userId, title: 'Итоги дня', message: `Вы провели ${todayLessons.length} занятий и заработали ${incomeTotal} ₽.`,
+                                    type: 'evening_summary', data: JSON.stringify({ key }), isRead: true
                                 }
                             })
                             notificationsCreated.push('evening_summary')
