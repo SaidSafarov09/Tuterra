@@ -11,6 +11,7 @@ import styles from './DashboardLayout.module.scss'
 import { MobileHeader } from './MobileHeader'
 import { DesktopHeader } from './DesktopHeader'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider'
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -50,6 +51,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         avatar: data.avatar || null,
                         birthDate: data.birthDate || null,
                         region: data.region || null,
+                        onboardingCompleted: data.onboardingCompleted || false,
                     })
 
 
@@ -98,32 +100,33 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         pathname.startsWith('/subjects/')
 
     return (
-        <div className={styles.layout}>
-            <Sidebar
-                isOpen={isMobileMenuOpen}
-                onClose={() => setIsMobileMenuOpen(false)}
-            />
-
-            {isMobileMenuOpen && (
-                <div
-                    className={styles.overlay}
-                    onClick={() => setIsMobileMenuOpen(false)}
+        <OnboardingProvider userOnboardingCompleted={user?.onboardingCompleted}>
+            <div className={styles.layout}>
+                <Sidebar
+                    isOpen={isMobileMenuOpen}
+                    onClose={() => setIsMobileMenuOpen(false)}
                 />
-            )}
 
-            <main className={styles.main}>
-                {!isMobile && <DesktopHeader />}
-                {/* Новый MobileHeader только на мобильном */}
-                {isMobile && !isMobilePage && (
-                    <MobileHeader
-                        title={headerTitle}
-                        onBurgerClick={() => setIsMobileMenuOpen(true)}
+                {isMobileMenuOpen && (
+                    <div
+                        className={styles.overlay}
+                        onClick={() => setIsMobileMenuOpen(false)}
                     />
                 )}
-                <div className={`${styles.content} page-transition`} key={pathname}>
-                    {children}
-                </div>
-            </main>
-        </div>
+
+                <main className={styles.main}>
+                    {!isMobile && <DesktopHeader />}
+                    {isMobile && !isMobilePage && (
+                        <MobileHeader
+                            title={headerTitle}
+                            onBurgerClick={() => setIsMobileMenuOpen(true)}
+                        />
+                    )}
+                    <div className={`${styles.content} page-transition`} key={pathname}>
+                        {children}
+                    </div>
+                </main>
+            </div>
+        </OnboardingProvider>
     )
 }

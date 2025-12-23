@@ -38,6 +38,7 @@ model User {
   notificationSettings NotificationSettings?
   verificationCodes VerificationCode[]
   learningPlans     LearningPlan[]
+  onboardingCompleted Boolean            @default(false)
 }
 
 model Subject {

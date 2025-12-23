@@ -51,7 +51,7 @@ export default function DashboardPage() {
             <PageHeader title="Главная" subtitle="Обзор вашей активности" />
 
             <div className={styles.statsContainer}>
-                <div className={styles.statsGrid}>
+                <div className={styles.statsGrid} data-onboarding="dashboard-stats">
                     {isLoading ? (
                         <>
                             <StatCardSkeleton />

@@ -133,94 +133,96 @@ export default function IncomePage() {
                 </Button>
             </div>
 
-            {isLoading ? (
-                <div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-                        <IncomeCardSkeleton />
-                        <IncomeCardSkeleton />
+            <div data-onboarding="income-stats" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {isLoading ? (
+                    <div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+                            <IncomeCardSkeleton />
+                            <IncomeCardSkeleton />
+                        </div>
+                        <div style={{
+                            background: 'var(--background)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '16px',
+                            padding: '24px',
+                            marginBottom: '24px'
+                        }}>
+                            <Skeleton width="30%" height={24} style={{ marginBottom: '24px' }} />
+                            <Skeleton width="100%" height={300} />
+                        </div>
+                        <div style={{
+                            background: 'var(--background)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '16px',
+                            padding: '24px'
+                        }}>
+                            <Skeleton width="30%" height={24} style={{ marginBottom: '24px' }} />
+                            <Skeleton width="100%" height={300} />
+                        </div>
                     </div>
-                    <div style={{
-                        background: 'var(--background)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '16px',
-                        padding: '24px',
-                        marginBottom: '24px'
-                    }}>
-                        <Skeleton width="30%" height={24} style={{ marginBottom: '24px' }} />
-                        <Skeleton width="100%" height={300} />
-                    </div>
-                    <div style={{
-                        background: 'var(--background)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '16px',
-                        padding: '24px'
-                    }}>
-                        <Skeleton width="30%" height={24} style={{ marginBottom: '24px' }} />
-                        <Skeleton width="100%" height={300} />
-                    </div>
-                </div>
-            ) : showEmptyState ? (
-                !hasAnyIncomeEver ? (
-                    <EmptyState
-                        title={INCOME_MESSAGES.EMPTY_STATE.NO_DATA_TITLE}
-                        description={INCOME_MESSAGES.EMPTY_STATE.NO_DATA_DESCRIPTION}
-                        icon={<WalletIcon size={48} color="#9CA3AF" />}
-                    />
+                ) : showEmptyState ? (
+                    !hasAnyIncomeEver ? (
+                        <EmptyState
+                            title={INCOME_MESSAGES.EMPTY_STATE.NO_DATA_TITLE}
+                            description={INCOME_MESSAGES.EMPTY_STATE.NO_DATA_DESCRIPTION}
+                            icon={<WalletIcon size={48} color="#9CA3AF" />}
+                        />
+                    ) : (
+                        <EmptyState
+                            title={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_TITLE}
+                            description={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_DESCRIPTION(currentDate)}
+                            icon={<WalletIcon size={48} color="#9CA3AF" />}
+                        />
+                    )
                 ) : (
-                    <EmptyState
-                        title={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_TITLE}
-                        description={INCOME_MESSAGES.EMPTY_STATE.NO_INCOME_THIS_MONTH_DESCRIPTION(currentDate)}
-                        icon={<WalletIcon size={48} color="#9CA3AF" />}
-                    />
-                )
-            ) : (
-                <>
-                    <DebtsBlock debts={debts} />
+                    <>
+                        <DebtsBlock debts={debts} />
 
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentDate.toISOString()}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: isSwitching ? 0.5 : 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            <div className={styles.statsGrid}>
-                                <CurrentMonthCard
-                                    date={currentDate}
-                                    income={currentMonthIncome}
-                                    previousIncome={previousMonthIncome}
-                                    duration={currentMonthDuration}
-                                    lessonsCount={currentLessonsCount}
-                                    averageCheck={averageCheck}
-                                    percentageChange={percentageChange}
-                                    isGrowth={isGrowth}
-                                />
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentDate.toISOString()}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: isSwitching ? 0.5 : 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <div className={styles.statsGrid}>
+                                    <CurrentMonthCard
+                                        date={currentDate}
+                                        income={currentMonthIncome}
+                                        previousIncome={previousMonthIncome}
+                                        duration={currentMonthDuration}
+                                        lessonsCount={currentLessonsCount}
+                                        averageCheck={averageCheck}
+                                        percentageChange={percentageChange}
+                                        isGrowth={isGrowth}
+                                    />
 
-                                <PrevMonthCard
-                                    date={currentDate}
-                                    income={previousMonthIncome}
-                                    duration={previousMonthDuration}
-                                    lessonsCount={previousLessonsCount}
-                                    averageCheck={previousAverageCheck}
-                                />
+                                    <PrevMonthCard
+                                        date={currentDate}
+                                        income={previousMonthIncome}
+                                        duration={previousMonthDuration}
+                                        lessonsCount={previousLessonsCount}
+                                        averageCheck={previousAverageCheck}
+                                    />
 
-                                <RecentTransactionsCard
-                                    transactions={recentTransactions}
-                                    onViewAll={() => setIsModalOpen(true)}
-                                />
-                            </div>
+                                    <RecentTransactionsCard
+                                        transactions={recentTransactions}
+                                        onViewAll={() => setIsModalOpen(true)}
+                                    />
+                                </div>
 
-                            <IncomeCharts data={monthlyData} />
-                        </motion.div>
-                    </AnimatePresence>
-                    <TransactionsModal
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        initialMonth={currentDate}
-                    />
-                </>
-            )}
+                                <IncomeCharts data={monthlyData} />
+                            </motion.div>
+                        </AnimatePresence>
+                        <TransactionsModal
+                            isOpen={isModalOpen}
+                            onClose={() => setIsModalOpen(false)}
+                            initialMonth={currentDate}
+                        />
+                    </>
+                )}
+            </div>
         </div>
     )
 }

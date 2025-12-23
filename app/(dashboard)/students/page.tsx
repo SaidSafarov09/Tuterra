@@ -55,7 +55,7 @@ export default function StudentsPage() {
                 </Button>
             </div>
 
-            {!isLoading && (
+            {!isLoading && students.length > 0 && (
                 <StudentFilters
                     subjects={subjects}
                     students={students}
@@ -64,43 +64,45 @@ export default function StudentsPage() {
                 />
             )}
 
-            <AnimatePresence mode="wait">
-                {isLoading ? (
-                    <motion.div
-                        key="skeleton"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className={styles.studentsGrid}
-                    >
-                        <StudentCardSkeleton />
-                        <StudentCardSkeleton />
-                        <StudentCardSkeleton />
-                        <StudentCardSkeleton />
-                        <StudentCardSkeleton />
-                        <StudentCardSkeleton />
-                    </motion.div>
-                ) : students.length === 0 ? (
-                    <motion.div
-                        key="empty"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <EmptyStudentsState onAddStudent={handleOpenModal} />
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        key={selectedSubjectFilter}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <StudentsList students={filteredStudents} />
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <div data-onboarding="students-list" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <AnimatePresence mode="wait">
+                    {isLoading ? (
+                        <motion.div
+                            key="skeleton"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className={styles.studentsGrid}
+                        >
+                            <StudentCardSkeleton />
+                            <StudentCardSkeleton />
+                            <StudentCardSkeleton />
+                            <StudentCardSkeleton />
+                            <StudentCardSkeleton />
+                            <StudentCardSkeleton />
+                        </motion.div>
+                    ) : students.length === 0 ? (
+                        <motion.div
+                            key="empty"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <EmptyStudentsState onAddStudent={handleOpenModal} />
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key={selectedSubjectFilter}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <StudentsList students={filteredStudents} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
 
             <CreateStudentModal
                 isOpen={isOpen}

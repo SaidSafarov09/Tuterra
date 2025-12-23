@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { signToken } from '@/lib/jwt'
 import { cookies } from 'next/headers'
+import { createWelcomeNotifications } from '@/lib/welcomeNotifications'
 
 export async function POST(request: NextRequest) {
     try {
@@ -67,6 +68,8 @@ export async function POST(request: NextRequest) {
                     name: 'Новый Пользователь',
                 },
             })
+            // Создаем приветственные уведомления
+            await createWelcomeNotifications(user.id)
         } else {
             user = await prisma.user.update({
                 where: { id: user.id },

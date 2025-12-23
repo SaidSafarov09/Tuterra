@@ -212,7 +212,7 @@ function LessonsContent() {
                     <h1 className={styles.title}>Занятия</h1>
                     <p className={styles.subtitle}>Управление расписанием</p>
                 </div>
-                <Button onClick={handleOpenModal} className={styles.addButton}>
+                <Button onClick={handleOpenModal} className={styles.addButton} data-onboarding="lessons-create-btn">
                     <PlusIcon size={20} />
                     Добавить занятие
                 </Button>

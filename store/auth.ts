@@ -11,6 +11,7 @@ interface User {
     avatar: string | null
     birthDate: string | null
     region: string | null
+    onboardingCompleted: boolean
 }
 
 interface AuthState {

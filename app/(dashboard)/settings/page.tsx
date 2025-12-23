@@ -69,6 +69,35 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
         fetchSettings()
     }, [searchParams])
 
+    useEffect(() => {
+        const handleScrollToSection = () => {
+            if (typeof window !== 'undefined' && !isLoading && activeTab === 'general') {
+                const hash = window.location.hash
+                if (hash === '#telegram' || hash === '#telegram-section') {
+                    // Увеличиваем задержку, так как AnimatePresence/motion может еще анимироваться
+                    setTimeout(() => {
+                        const el = document.getElementById('telegram-section')
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                            // Подсвечиваем блок
+                            el.style.transition = 'box-shadow 0.3s, border-color 0.3s'
+                            el.style.boxShadow = '0 0 0 2px var(--primary), 0 0 20px rgba(59, 130, 246, 0.3)'
+                            el.style.borderColor = 'var(--primary)'
+                            setTimeout(() => {
+                                el.style.boxShadow = ''
+                                el.style.borderColor = ''
+                            }, 3000)
+                        }
+                    }, 800)
+                }
+            }
+        }
+
+        handleScrollToSection()
+        window.addEventListener('hashchange', handleScrollToSection)
+        return () => window.removeEventListener('hashchange', handleScrollToSection)
+    }, [isLoading, activeTab])
+
     const fetchSettings = async () => {
         try {
             const [data, telegramData] = await Promise.all([
@@ -280,7 +309,7 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                     >
                         {activeTab === 'general' && (
                             <>
-                                <div className={styles.section}>
+                                <div className={styles.section} data-onboarding="profile-settings">
                                     <h2 className={styles.sectionTitle}>Профиль</h2>
                                     <div className={styles.profileGrid}>
                                         <div className={styles.avatarColumn}>
@@ -367,7 +396,7 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                                     </div>
                                 </div>
 
-                                <div className={styles.section}>
+                                <div className={styles.section} id="telegram-section" data-onboarding="telegram-integration">
                                     <h2 className={styles.sectionTitle}>Привязать Telegram</h2>
                                     <div style={{
                                         padding: '24px',

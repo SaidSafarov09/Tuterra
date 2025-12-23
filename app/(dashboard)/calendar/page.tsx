@@ -186,7 +186,7 @@ export default function CalendarPage() {
             {isLoading ? (
                 <CalendarSkeleton />
             ) : (
-                <div className={styles.calendarContainer}>
+                <div className={styles.calendarContainer} data-onboarding="calendar-wrapper">
                     <MonthNavigation
                         currentMonth={currentMonth}
                         onPreviousMonth={handlePreviousMonth}

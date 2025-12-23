@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { signToken } from '@/lib/jwt'
 import { NextResponse } from 'next/server'
+import { createWelcomeNotifications } from '@/lib/welcomeNotifications'
 
 interface CreateUserParams {
     email: string | null
@@ -97,6 +98,9 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
             },
         } as any,
     })
+
+    // Создаем приветственные уведомления для нового пользователя
+    await createWelcomeNotifications(user.id)
 
     return user
 }
