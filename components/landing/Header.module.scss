@@ -1,34 +1,49 @@
 .header {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(1200px, 94%);
+    height: 72px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+
+    &.scrolled {
+        top: 12px;
+        height: 64px;
+        box-shadow: var(--shadow-md);
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    @media (max-width: 768px) {
+        top: 10px;
+        height: 60px;
+        border-radius: var(--radius-md);
+    }
+}
+
+.container {
+    width: 100%;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 24px 12px;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    background-color: transparent;
 
     @media (max-width: 768px) {
-        position: relative;
-    }
-
-    &.scrolled {
-        padding-top: 16px;
-        padding-bottom: 16px;
-        background-color: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 0 16px;
     }
 }
 
 .left {
     display: flex;
     align-items: center;
-    gap: 32px;
+    gap: 40px;
 }
 
 .logo {
@@ -36,111 +51,100 @@
     align-items: center;
     gap: 12px;
     text-decoration: none;
+    transition: transform 0.2s ease;
 
-    .name {
-        font-size: 22px;
-        font-weight: 900;
-        letter-spacing: -0.04em;
-        color: var(--primary);
+    &:hover {
+        transform: scale(1.02);
     }
+}
+
+.name {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
 }
 
 .nav {
     display: flex;
-    gap: 24px;
+    align-items: center;
+    gap: 32px;
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
         display: none;
     }
 }
 
 .navLink {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    transition: all 0.3s ease;
     text-decoration: none;
-    opacity: 0.8;
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 600;
+    transition: color 0.2s ease;
 
     &:hover {
         color: var(--primary);
-        opacity: 1;
     }
 }
 
 .right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
 }
 
 .loginLink {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 15px;
     text-decoration: none;
 
-    span {
-        font-size: 14px;
-        font-weight: 800;
-        color: var(--text-primary);
-        cursor: pointer;
-        padding: 0 12px;
+    @media (max-width: 768px) {
+        display: none;
     }
 
-    @media (max-width: 640px) {
-        display: none;
+    &:hover {
+        opacity: 0.7;
     }
 }
 
 .ctaButton {
-    border-radius: 12px;
-    padding: 12px 24px;
-    font-weight: 800;
-    font-size: 14px;
-
-    &.withShadow {
-        box-shadow: 0 10px 20px rgba(74, 108, 247, 0.15);
-    }
-
-    @media (max-width: 768px) {
-        padding: 6px 12px;
-        font-size: 12px;
-        border-radius: 8px;
-
-        svg {
-            width: 16px;
-            height: 16px;
-        }
-    }
+    border-radius: var(--radius-md) !important;
+    font-weight: 700 !important;
+    padding: 0 24px !important;
+    height: 44px !important;
 }
 
 .menuButton {
+    display: none;
     background: none;
     border: none;
     color: var(--text-primary);
-    display: none;
+    padding: 8px;
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
         display: block;
     }
 }
 
 .mobileMenu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 12px);
     left: 0;
     right: 0;
-    background-color: white;
-    padding: 18px;
-    border-bottom: 1px solid var(--border-light);
+    background: var(--surface);
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    z-index: 49;
+    gap: 16px;
     box-shadow: var(--shadow-lg);
 }
 
 .mobileNavLink {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
     text-decoration: none;
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 700;
 }

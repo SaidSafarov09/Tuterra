@@ -31,11 +31,13 @@ export const Header = () => {
 
     return (
         <header className={`${styles.header} ${isScrolled ? styles.scrolled : ''}`}>
-            <div className={styles.left}>
-                <Link href="/" className={styles.logo}>
-                    <Logo size={36} />
-                    <span className={styles.name}>Tuterra</span>
-                </Link>
+            <div className={styles.container}>
+                <div className={styles.left}>
+                    <Link href="/" className={styles.logo}>
+                        <Logo size={32} />
+                        <span className={styles.name}>Tuterra</span>
+                    </Link>
+                </div>
 
                 <nav className={styles.nav}>
                     {navLinks.map((link) => (
@@ -48,27 +50,27 @@ export const Header = () => {
                         </Link>
                     ))}
                 </nav>
-            </div>
 
-            <div className={styles.right}>
-                <Link href="/auth" className={styles.loginLink}>
-                    <span>Войти</span>
-                </Link>
-                <Link href="/auth" style={{ textDecoration: 'none' }}>
-                    <Button
-                        variant="primary"
-                        className={`${styles.ctaButton} ${isScrolled ? styles.withShadow : ''}`}
+                <div className={styles.right}>
+                    <Link href="/auth" className={styles.loginLink}>
+                        Войти
+                    </Link>
+                    <Link href="/auth">
+                        <Button
+                            variant="primary"
+                            className={styles.ctaButton}
+                        >
+                            {isMobile ? <LogIn size={20} /> : 'Начать бесплатно'}
+                        </Button>
+                    </Link>
+
+                    <button
+                        className={styles.menuButton}
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
-                        {isMobile ? <LogIn /> : 'Начать бесплатно'}
-                    </Button>
-                </Link>
-
-                <button
-                    className={styles.menuButton}
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
             </div>
 
             {/* Mobile Menu */}

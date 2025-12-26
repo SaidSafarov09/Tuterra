@@ -13,9 +13,9 @@ export const Logo: React.FC<LogoProps> = ({ size = 32, className = '' }) => {
             xmlns="http://www.w3.org/2000/svg"
             className={className}
         >
-            <rect x="13" y="10" width="6" height="18" rx="3" fill="#4A6CF7" />
-            <rect x="6" y="4" width="20" height="6" rx="3" fill="#4A6CF7" />
-            <circle cx="24" cy="26" r="3" fill="#4A6CF7" fillOpacity="0.4" />
+            <rect x="13" y="10" width="6" height="18" rx="3" fill="var(--primary)" />
+            <rect x="6" y="4" width="20" height="6" rx="3" fill="var(--primary)" />
+            <circle cx="24" cy="26" r="3" fill="var(--primary)" fillOpacity="0.4" />
         </svg>
     )
 }
