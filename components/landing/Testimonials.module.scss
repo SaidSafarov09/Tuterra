@@ -110,8 +110,9 @@
 }
 
 .mobileSlide {
-    flex: 0 0 85%;
+    flex: 0 0 50%;
     scroll-snap-align: center;
+    display: flex;
 
     &:first-child {
         margin-left: 0;
@@ -119,6 +120,14 @@
 
     &:last-child {
         margin-right: 0;
+    }
+
+    @media (max-width: 768px) {
+        flex: 0 0 80%;
+    }
+
+    @media (max-width: 460px) {
+        flex: 0 0 90%;
     }
 }
 
@@ -151,7 +160,8 @@
     }
 
     @media (max-width: 640px) {
-        padding: 30px 20px;
+        padding: 24px 20px;
+        border-radius: 16px;
     }
 }
 
@@ -168,6 +178,12 @@
     font-weight: 600;
     margin-bottom: 32px;
     flex: 1;
+
+    @media (max-width: 640px) {
+        font-size: 15px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
 }
 
 .author {
@@ -176,6 +192,11 @@
     gap: 16px;
     padding-top: 24px;
     border-top: 1px solid var(--border-light);
+
+    @media (max-width: 640px) {
+        padding-top: 16px;
+        gap: 12px;
+    }
 }
 
 .avatar {
@@ -189,6 +210,12 @@
     font-weight: 900;
     font-size: 16px;
     flex-shrink: 0;
+
+    @media (max-width: 640px) {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
 }
 
 .authorInfo {
@@ -196,12 +223,20 @@
         font-weight: 800;
         font-size: 16px;
         color: var(--text-primary);
+
+        @media (max-width: 640px) {
+            font-size: 14px;
+        }
     }
 
     .role {
         font-size: 13px;
         color: var(--text-secondary);
         font-weight: 600;
+
+        @media (max-width: 640px) {
+            font-size: 12px;
+        }
     }
 }
 

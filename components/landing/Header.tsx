@@ -60,7 +60,7 @@ export const Header = () => {
                             variant="primary"
                             className={styles.ctaButton}
                         >
-                            {isMobile ? <LogIn size={20} /> : 'Начать бесплатно'}
+                            {isMobile ? <LogIn size={16} /> : 'Начать бесплатно'}
                         </Button>
                     </Link>
 
