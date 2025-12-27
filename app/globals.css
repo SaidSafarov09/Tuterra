@@ -151,3 +151,28 @@ select {
     opacity: 1 !important;
   }
 }
+
+/* Landing Page Base Variables & Resets */
+#landing-root {
+  --background: #f8faff;
+  --surface: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --primary: #4a6cf7;
+
+  background-color: var(--background);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+section {
+  position: relative;
+}
+
+.container-padding {
+  padding-left: max(5%, 20px);
+  padding-right: max(5%, 20px);
+}

@@ -43,12 +43,12 @@
     font-size: 48px;
     font-weight: 950;
     margin-bottom: 24px;
-    color: #1a1a1a;
+    color: var(--text-primary);
     line-height: 1.1;
     letter-spacing: -0.03em;
 
     span {
-        color: #9ca3af;
+        color: var(--text-muted);
     }
 
     @media (max-width: 768px) {
@@ -57,7 +57,7 @@
 }
 
 .description {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 20px;
     line-height: 1.6;
     font-weight: 500;
@@ -120,7 +120,7 @@
     font-size: 28px;
     font-weight: 900;
     margin-bottom: 16px;
-    color: #1a1a1a;
+    color: var(--text-primary);
     letter-spacing: -0.02em;
 
     @media (max-width: 768px) {
@@ -129,7 +129,7 @@
 }
 
 .cardDesc {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 18px;
     line-height: 1.6;
     font-weight: 500;

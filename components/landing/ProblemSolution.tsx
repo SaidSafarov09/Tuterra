@@ -65,8 +65,8 @@ export const ProblemSolution = () => {
                                         <X size={16} color="#EF4444" strokeWidth={3} />
                                     </div>
                                     <div>
-                                        <div className={styles.itemTitle} style={{ color: '#1A1A1A' }}>{item.t}</div>
-                                        <div className={styles.itemDesc} style={{ color: '#6B7280' }}>{item.d}</div>
+                                        <div className={styles.itemTitle}>{item.t}</div>
+                                        <div className={styles.itemDesc}>{item.d}</div>
                                     </div>
                                 </div>
                             ))}
@@ -114,7 +114,7 @@ export const ProblemSolution = () => {
                                     </div>
                                     <div>
                                         <div className={styles.itemTitle}>{item.t}</div>
-                                        <div className={styles.itemDesc} style={{ color: 'rgba(255,255,255,0.8)' }}>{item.d}</div>
+                                        <div className={styles.itemDesc}>{item.d}</div>
                                     </div>
                                 </div>
                             ))}

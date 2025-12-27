@@ -1,7 +1,7 @@
 .footer {
     padding: 80px 0 40px;
-    background: #FBFBFC;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    background: var(--background);
+    border-top: 1px solid var(--border-light);
 
     @media (max-width: 768px) {
         padding: 60px 0 30px;
@@ -78,7 +78,7 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 40px;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-top: 1px solid var(--border-light);
     font-size: 13px;
     color: var(--text-muted);
     font-weight: 600;
