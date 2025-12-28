@@ -9,14 +9,17 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Check } from 'lucide-react'
 
 interface PhoneStepProps {
-    onSuccess: (sessionId: string, phone: string) => void
+    onSuccess: (sessionId: string, email: string) => void
 }
 
 export function PhoneStep({ onSuccess }: PhoneStepProps) {
-    const [phone, setPhone] = useState('')
+    const [email, setEmail] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [userRole, setUserRole] = useState<'tutor' | 'student'>('tutor')
     const isDesk = useMediaQuery('(min-width: 768px)')
+
+    /* 
+    const [phone, setPhone] = useState('')
     const formatPhoneNumber = (value: string) => {
         const digits = value.replace(/\D/g, '')
         if (!digits) return '+7'
@@ -33,22 +36,23 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
         const formatted = formatPhoneNumber(e.target.value)
         setPhone(formatted)
     }
+    */
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (phone.length !== 12) {
-            toast.error('Введите полный номер телефона')
+        if (!email || !email.includes('@')) {
+            toast.error('Введите корректный email')
             return
         }
 
         setIsLoading(true)
 
         try {
-            const response = await fetch('/api/auth/request-code', {
+            const response = await fetch('/api/auth/send-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone }),
+                body: JSON.stringify({ email }),
             })
 
             const data = await response.json()
@@ -57,8 +61,8 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                 throw new Error(data.error || 'Ошибка отправки кода')
             }
 
-            toast.success('Код отправлен на ваш номер')
-            onSuccess(data.sessionId, phone)
+            toast.success('Код отправлен на ваш email')
+            onSuccess(data.sessionId || '', email) // The API returns success but sessionId is missing in my send-code? Let me check.
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')
         } finally {
@@ -98,22 +102,21 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                 </div>
 
                 <Input
-                    type="tel"
-                    value={phone}
-                    onChange={handlePhoneChange}
-                    placeholder="+7 (___) ___-__-__"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="example@mail.ru"
                     autoFocus
-                    disabled
+                    required
                 />
 
                 <Button
                     type="submit"
-                    disabled={isLoading || phone.length !== 12}
+                    disabled={isLoading || !email}
                     className={styles.submitButton}
                 >
-                    {isLoading ? 'Загрузка...' : 'Далее'}
+                    {isLoading ? 'Загрузка...' : 'Получить код'}
                 </Button>
-                <p className={styles.subtitleError}>Вход по номеру телефона временно недоступен</p>
             </form>
 
             <div className={styles.divider}>

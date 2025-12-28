@@ -248,6 +248,17 @@ model VerificationSession {
   @@index([phone])
 }
 
+model EmailOTP {
+  id           String   @id @default(uuid())
+  email        String
+  codeHash     String
+  expiresAt    DateTime
+  attemptsLeft Int      @default(5)
+  createdAt    DateTime @default(now())
+
+  @@index([email])
+}
+
 model AuthProvider {
   id         String   @id @default(cuid())
   userId     String

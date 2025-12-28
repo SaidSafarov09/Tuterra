@@ -7,11 +7,11 @@ import styles from './Auth.module.scss'
 
 interface CodeStepProps {
     sessionId: string
-    phone: string
+    email: string
     onBack: () => void
 }
 
-export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
+export function CodeStep({ sessionId, email, onBack }: CodeStepProps) {
     const [code, setCode] = useState(['', '', '', '', '', ''])
     const [isLoading, setIsLoading] = useState(false)
     const [canResend, setCanResend] = useState(false)
@@ -37,7 +37,6 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
     }, [])
 
     const handleChange = (index: number, value: string) => {
-        
         if (value && !/^\d$/.test(value)) return
 
         const newCode = [...code]
@@ -115,10 +114,10 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
         setIsLoading(true)
 
         try {
-            const response = await fetch('/api/auth/request-code', {
+            const response = await fetch('/api/auth/send-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone }),
+                body: JSON.stringify({ email }),
             })
 
             const data = await response.json()
@@ -155,8 +154,8 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
             <div className={styles.header}>
                 <h1 className={styles.title}>Введите код</h1>
                 <p className={styles.subtitle}>
-                    Мы отправили код на номер<br />
-                    <strong>{phone}</strong>
+                    Мы отправили код на email<br />
+                    <strong>{email}</strong>
                 </p>
             </div>
 
@@ -211,7 +210,7 @@ export function CodeStep({ sessionId, phone, onBack }: CodeStepProps) {
                     disabled={isLoading}
                     className={styles.backButton}
                 >
-                    Изменить номер
+                    Изменить email
                 </button>
             </div>
         </div>

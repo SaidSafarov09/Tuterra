@@ -4,30 +4,30 @@ import { CodeStep } from './CodeStep'
 import styles from './Auth.module.scss'
 
 export function AuthContainer() {
-    const [step, setStep] = useState<'phone' | 'code'>('phone')
+    const [step, setStep] = useState<'identifier' | 'code'>('identifier')
     const [sessionId, setSessionId] = useState('')
-    const [phone, setPhone] = useState('')
+    const [email, setEmail] = useState('')
 
-    const handlePhoneSuccess = (newSessionId: string, newPhone: string) => {
+    const handleSuccess = (newSessionId: string, newEmail: string) => {
         setSessionId(newSessionId)
-        setPhone(newPhone)
+        setEmail(newEmail)
         setStep('code')
     }
 
     const handleBack = () => {
-        setStep('phone')
+        setStep('identifier')
         setSessionId('')
     }
 
     return (
         <div className={styles.container}>
             <div className={styles.card}>
-                {step === 'phone' ? (
-                    <PhoneStep onSuccess={handlePhoneSuccess} />
+                {step === 'identifier' ? (
+                    <PhoneStep onSuccess={handleSuccess} />
                 ) : (
                     <CodeStep
                         sessionId={sessionId}
-                        phone={phone}
+                        email={email}
                         onBack={handleBack}
                     />
                 )}
