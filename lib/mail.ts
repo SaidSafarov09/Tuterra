@@ -1,9 +1,11 @@
 import nodemailer from 'nodemailer';
 
+// Попытка использовать альтернативные порты для обхода блокировок хостинга
 const transporter = nodemailer.createTransport({
     host: 'mail.tuterra.online',
-    port: 465,
-    secure: true,
+    // 2525 - часто используется как альтернатива 587 для обхода блокировок провайдеров
+    port: 2525,
+    secure: false, // STARTTLS
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
@@ -16,37 +18,50 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Запасной транспорт для порта 465, если 2525 не сработает
+const fallbackTransporter = nodemailer.createTransport({
+    host: 'mail.tuterra.online',
+    port: 465,
+    secure: true,
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+    },
+    connectionTimeout: 10000,
+    tls: { rejectUnauthorized: false }
+});
+
 export const sendOTP = async (email: string, code: string) => {
     try {
-        console.log(`[Nodemailer] Sending email to ${email}...`);
-
+        console.log(`[Nodemailer] Trying port 2525...`);
         const info = await transporter.sendMail({
             from: `"Tuterra" <${process.env.SMTP_USER}>`,
             to: email,
             subject: 'Ваш код для входа в Tuterra',
             html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #ffffff;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <h1 style="color: #4A6CF7; margin: 0;">Tuterra</h1>
+                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px; border: 1px solid #eee; border-radius: 16px; text-align: center;">
+                    <h1 style="color: #4A6CF7; margin-bottom: 30px;">Tuterra</h1>
+                    <p style="color: #333; font-size: 18px;">Ваш код подтверждения:</p>
+                    <div style="display: inline-block; padding: 15px 30px; background-color: #f4f7ff; color: #1a1a1a; font-size: 32px; font-weight: bold; border-radius: 12px; letter-spacing: 5px; margin: 20px 0;">
+                        ${code}
                     </div>
-                    <div style="padding: 20px; background-color: #f9f9f9; border-radius: 8px; text-align: center;">
-                        <p style="color: #333; font-size: 18px; margin-bottom: 20px;">Ваш код подтверждения для входа:</p>
-                        <div style="display: inline-block; padding: 15px 30px; background-color: #4A6CF7; color: #ffffff; font-size: 32px; font-weight: bold; border-radius: 12px; letter-spacing: 5px;">
-                            ${code}
-                        </div>
-                        <p style="color: #666; font-size: 14px; margin-top: 20px;">Код действителен в течение 10 минут.</p>
-                    </div>
-                    <p style="color: #999; font-size: 12px; margin-top: 30px; text-align: center;">
-                        Если вы не запрашивали этот код, просто проигнорируйте это письмо.
-                    </p>
                 </div>
             `,
         });
-
-        console.log(`[Nodemailer] Message sent: %s`, info.messageId);
         return { success: true, data: info };
-    } catch (error) {
-        console.error('[Nodemailer] CRITICAL ERROR:', error);
-        return { success: false, error };
+    } catch (e) {
+        console.warn(`[Nodemailer] Port 2525 failed, trying 465...`);
+        try {
+            const info = await fallbackTransporter.sendMail({
+                from: `"Tuterra" <${process.env.SMTP_USER}>`,
+                to: email,
+                subject: 'Ваш код для входа в Tuterra',
+                html: `<p>Код: ${code}</p>`,
+            });
+            return { success: true, data: info };
+        } catch (error) {
+            console.error('[Nodemailer] All ports failed:', (error as any).message);
+            return { success: false, error };
+        }
     }
 };
