@@ -21,6 +21,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Ошибка конфигурации базы данных' }, { status: 500 })
         }
 
+        // Деактивируем все старые коды для этого email
+        try {
+            await emailOTPModel.deleteMany({ where: { email } });
+        } catch (e) {
+            console.warn('Failed to cleanup old OTPs:', e);
+        }
+
         const code = generateVerificationCode(6)
         const codeHash = await bcrypt.hash(code, 10)
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000)

@@ -100,7 +100,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                         <span className={styles.roleLabel}>Я ученик</span>
                     </div>
                 </div>
-
+                <p className={styles.label}>Введите ваш email</p>
                 <Input
                     type="email"
                     value={email}
