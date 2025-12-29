@@ -25,6 +25,7 @@ export const studentNavigation = [
     { name: 'Занятия', href: '/student/lessons', icon: LessonsIcon },
     { name: 'Календарь', href: '/calendar', icon: CalendarIcon },
     { name: 'Мои репетиторы', href: '/student/teachers', icon: StudentsIcon },
+    { name: 'Мои предметы', href: '/student/subjects', icon: SubjectsIcon },
     { name: 'Мои группы', href: '/student/groups', icon: UsersGroupIcon, conditional: true },
     { name: 'Настройки', href: '/settings', icon: SettingsIcon },
 ]

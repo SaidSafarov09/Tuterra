@@ -227,12 +227,13 @@ export async function PUT(request: NextRequest) {
         }
 
         const { notificationSettings, ...userData } = validatedData
+        const fullName = userData.firstName ? `${userData.firstName}${userData.lastName ? ' ' + userData.lastName : ''}` : null
 
         const updatedUser = await prisma.user.update({
             where: { id: payload.userId },
             data: {
                 ...userData,
-                name: validatedData.firstName ? `${validatedData.firstName}${validatedData.lastName ? ' ' + validatedData.lastName : ''}` : null,
+                name: fullName,
                 notificationSettings: notificationSettings ? {
                     upsert: {
                         create: notificationSettings,
@@ -242,6 +243,7 @@ export async function PUT(request: NextRequest) {
             },
             select: {
                 id: true,
+                role: true,
                 firstName: true,
                 lastName: true,
                 name: true,
@@ -255,6 +257,14 @@ export async function PUT(request: NextRequest) {
                 notificationSettings: true,
             },
         })
+
+        // Sync name to Student records if user is a student
+        if (updatedUser.role === 'student' && updatedUser.name) {
+            await prisma.student.updateMany({
+                where: { linkedUserId: updatedUser.id },
+                data: { name: updatedUser.name }
+            })
+        }
 
         return NextResponse.json(updatedUser)
     } catch (error) {

@@ -150,6 +150,12 @@ export interface Lesson {
     lessonPayments?: LessonPayment[]
     planTopicId?: string | null
     planTopic?: LearningPlanTopic
+    owner?: {
+        id: string
+        name: string | null
+        firstName: string | null
+        avatar: string | null
+    } | null
 }
 
 export interface DashboardStats {
@@ -163,6 +169,7 @@ export interface DashboardStats {
     totalLessonsCount?: number
     subjectsCount?: number
     monthLessonsCount?: number
+    pendingRequests?: any[]
     createdAt?: string
 }
 

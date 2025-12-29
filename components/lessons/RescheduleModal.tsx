@@ -11,6 +11,7 @@ interface RescheduleModalProps {
     onConfirm: (newDate: Date) => void
     currentDate: Date
     isSubmitting?: boolean
+    isStudentView?: boolean
 }
 
 export const RescheduleModal: React.FC<RescheduleModalProps> = ({
@@ -18,7 +19,8 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
     onClose,
     onConfirm,
     currentDate,
-    isSubmitting = false
+    isSubmitting = false,
+    isStudentView = false
 }) => {
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(currentDate)
 
@@ -38,12 +40,12 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Перенести занятие"
+            title={isStudentView ? "Заявка на перенос" : "Перенести занятие"}
             footer={
                 <ModalFooter
                     onCancel={onClose}
                     onSubmit={handleConfirm}
-                    submitText="Перенести"
+                    submitText={isStudentView ? "Отправить заявку" : "Перенести"}
                     cancelText="Отмена"
                     isLoading={isSubmitting}
                 />

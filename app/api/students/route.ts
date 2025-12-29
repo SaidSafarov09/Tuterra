@@ -75,13 +75,34 @@ export async function GET(request: NextRequest) {
             })
         }
 
-        const students = rawStudents.map((s: any) => {
-            if (s.linkedUser) return s;
-            if (s.contact && usersMap.has(s.contact)) {
-                return { ...s, linkedUser: usersMap.get(s.contact) }
+        const students = await Promise.all(rawStudents.map(async (s: any) => {
+            let linkedUser = s.linkedUser;
+
+            // Try to find linked user via contact if not linked
+            if (!linkedUser && s.contact && usersMap.has(s.contact)) {
+                linkedUser = usersMap.get(s.contact);
             }
-            return s;
-        })
+
+            if (linkedUser && linkedUser.name) {
+                // If the user has a proper name, use it.
+                // Also, if the local student name is still 'test' or different, update it to match the user.
+                if (linkedUser.name && s.name !== linkedUser.name) {
+                    // Fire and forget update to keep DB in sync
+                    try {
+                        await prisma.student.update({
+                            where: { id: s.id },
+                            data: { name: linkedUser.name }
+                        });
+                    } catch (e) {
+                        console.error("Failed to sync student name", e);
+                    }
+                    return { ...s, name: linkedUser.name, linkedUser };
+                }
+                return { ...s, name: linkedUser.name, linkedUser };
+            }
+
+            return { ...s, linkedUser };
+        }))
 
         return NextResponse.json(students)
     } catch (error) {

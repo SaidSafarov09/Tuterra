@@ -34,8 +34,19 @@
     }
 }
 
-.content {
-    
+.viewAllBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 0;
+
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 @media (max-width: 768px) {

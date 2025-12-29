@@ -16,6 +16,24 @@ export function useLessonActions(onUpdate?: () => void, isStudent = false) {
     const [paymentLesson, setPaymentLesson] = useState<Lesson | null>(null)
 
     const togglePaid = async (lesson: Lesson) => {
+        if (isStudent) {
+            setIsLoading(true)
+            try {
+                const response = await fetch(`/api/student/lessons/${lesson.id}/mark-paid`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                if (!response.ok) throw new Error()
+                toast.success('Оплата отмечена. Преподаватель получит уведомление.')
+                onUpdate?.()
+            } catch (error) {
+                toast.error('Не удалось отметить оплату')
+            } finally {
+                setIsLoading(false)
+            }
+            return
+        }
+
         if (lesson.group) {
             setPaymentLesson(lesson)
             setIsGroupPaymentModalOpen(true)
@@ -146,5 +164,9 @@ export function useLessonActions(onUpdate?: () => void, isStudent = false) {
         setIsGroupPaymentModalOpen,
         paymentLesson,
         paymentLessonDate: paymentLesson?.date,
+        // Aliases for compatibility
+        togglePaidStatus: togglePaid,
+        toggleCancelLesson: toggleCancel,
+        rescheduleLesson: handleRescheduleLesson,
     }
 }

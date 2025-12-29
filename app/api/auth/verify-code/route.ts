@@ -65,14 +65,19 @@ export async function POST(request: NextRequest) {
             const isStudent = role === 'student'
 
             if (!user) {
+                const defaultFirstName = isStudent ? 'Новый' : 'Преподаватель'
+                const defaultLastName = isStudent ? 'Ученик' : ''
+                const displayName = emailSession.email.split('@')[0]
+                const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1)
+
                 user = await prisma.user.create({
                     data: {
                         email: emailSession.email,
                         emailVerified: true,
                         role: role || 'teacher',
-                        firstName: 'Новый',
-                        lastName: isStudent ? 'Ученик' : 'Пользователь',
-                        name: emailSession.email.split('@')[0],
+                        firstName: defaultFirstName,
+                        lastName: defaultLastName,
+                        name: capitalizedName,
                     },
                 })
                 await createWelcomeNotifications(user.id)

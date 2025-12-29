@@ -22,14 +22,17 @@ import { statsApi } from '@/services/api'
 import { GENERAL_MESSAGES } from '@/constants/messages'
 import { toast } from 'sonner'
 import { DashboardStats } from '@/types'
+import { useRouter } from 'next/navigation'
 import styles from './page.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { MONTHS_GENITIVE } from '@/constants/messages'
 import { useAuthStore } from '@/store/auth'
 import { CircleCheck } from 'lucide-react'
 import { StudentConnectionModal } from '@/components/students/StudentConnectionModal'
+import { Modal } from '@/components/ui/Modal'
 
 export default function DashboardPage() {
+    const router = useRouter()
     const { user } = useAuthStore()
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
@@ -37,6 +40,28 @@ export default function DashboardPage() {
     const currentMonth = Date.now()
     const isStudent = user?.role === 'student'
     const [isConnectionModalOpen, setIsConnectionModalOpen] = React.useState(false)
+    const [isRequestsModalOpen, setIsRequestsModalOpen] = React.useState(false)
+
+    const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
+        try {
+            const response = await fetch(`/api/student-requests/${requestId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            })
+            if (!response.ok) throw new Error()
+            toast.success(status === 'approved' ? 'Заявка одобрена' : 'Заявка отклонена')
+            // Refresh stats
+            const endpoint = isStudent ? '/api/student/stats' : '/api/stats'
+            const res = await fetch(endpoint)
+            const data = await res.json()
+            if (data.success) setStats(data.stats)
+        } catch (error) {
+            console.error('Failed to fetch stats:', error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     React.useEffect(() => {
         const fetchStats = async () => {
@@ -51,11 +76,12 @@ export default function DashboardPage() {
                     }
                 }
             } catch (error) {
-                toast.error(GENERAL_MESSAGES.FETCH_ERROR || 'Не удалось загрузить статистику')
+                toast.error('Не удалось загрузить статистику')
             } finally {
                 setIsLoading(false)
             }
         }
+
         fetchStats()
     }, [isStudent])
 
@@ -128,6 +154,61 @@ export default function DashboardPage() {
                     )}
                 </div>
 
+                {!isStudent && stats?.pendingRequests && stats.pendingRequests.length > 0 && (
+                    <div style={{ marginBottom: '32px' }}>
+                        <Section
+                            title="Заявки от учеников"
+                            viewAllText={stats.pendingRequests.length > 3 ? "Все заявки →" : undefined}
+                            onViewAllClick={() => setIsRequestsModalOpen(true)}
+                        >
+                            <div className={styles.requestsList}>
+                                {stats.pendingRequests.slice(0, 3).map((req: any) => (
+                                    <div key={req.id} className={styles.requestItem}>
+                                        <div className={styles.requestMain}>
+                                            <div className={`${styles.requestIcon} ${req.type === 'cancel' ? styles.iconCancel : styles.iconReschedule}`}>
+                                                {req.type === 'cancel' ? <AlertIcon size={20} /> : <CalendarIcon size={20} />}
+                                            </div>
+                                            <div className={styles.requestDetails}>
+                                                <div className={styles.requestTitle}>
+                                                    <strong>{req.user.firstName || req.user.name}</strong> • {req.type === 'cancel' ? 'Отмена занятия' : 'Перенос занятия'}
+                                                </div>
+                                                <div className={styles.requestSubtitle}>
+                                                    <span>{req.lesson.subject?.name || 'Без предмета'}</span>
+                                                    <span className={styles.requestDateBadge}>
+                                                        {format(new Date(req.lesson.date), 'd MMM, HH:mm', { locale: ru })}
+                                                    </span>
+                                                    {req.newDate && (
+                                                        <>
+                                                            <span>→</span>
+                                                            <span className={styles.requestDateBadge} style={{ background: 'rgba(59, 91, 217, 0.1)', color: '#3B5BD9' }}>
+                                                                {format(new Date(req.newDate), 'd MMM, HH:mm', { locale: ru })}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className={styles.requestActionsRow}>
+                                            <button
+                                                className={`${styles.actionBtn} ${styles.rejectGhost}`}
+                                                onClick={() => handleRequestAction(req.id, 'rejected')}
+                                            >
+                                                Отклонить
+                                            </button>
+                                            <button
+                                                className={`${styles.actionBtn} ${styles.approveGhost}`}
+                                                onClick={() => handleRequestAction(req.id, 'approved')}
+                                            >
+                                                Подтвердить
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Section>
+                    </div>
+                )}
+
                 <div className={styles.sectionsGrid}>
                     <Section title="Ближайшие занятия" viewAllHref="/lessons" viewAllText="Все занятия →">
                         {isLoading ? (
@@ -139,7 +220,7 @@ export default function DashboardPage() {
                         ) : stats?.upcomingLessons && stats.upcomingLessons.length > 0 ? (
                             <div className={styles.lessonsList}>
                                 {stats.upcomingLessons.map((lesson) => (
-                                    <LessonCard key={lesson.id} lesson={lesson} variant="compact" />
+                                    <LessonCard key={lesson.id} lesson={lesson} variant="compact" isStudentView={isStudent} />
                                 ))}
                             </div>
                         ) : (
@@ -161,7 +242,7 @@ export default function DashboardPage() {
                         ) : stats?.unpaidLessons && stats.unpaidLessons.length > 0 ? (
                             <div className={styles.lessonsList}>
                                 {stats.unpaidLessons.slice(0, 5).map((lesson) => (
-                                    <LessonCard key={lesson.id} lesson={lesson} variant="compact" />
+                                    <LessonCard key={lesson.id} lesson={lesson} variant="compact" isStudentView={isStudent} />
                                 ))}
                             </div>
                         ) : (
@@ -181,6 +262,61 @@ export default function DashboardPage() {
                     window.location.reload()
                 }}
             />
+
+            <Modal
+                isOpen={isRequestsModalOpen}
+                onClose={() => setIsRequestsModalOpen(false)}
+                title="Все заявки"
+                maxWidth="600px"
+            >
+                <div className={styles.requestsList} style={{ marginTop: 0 }}>
+                    {stats?.pendingRequests?.map((req: any) => (
+                        <div key={req.id} className={styles.requestItem}>
+                            <div className={styles.requestMain}>
+                                <div className={`${styles.requestIcon} ${req.type === 'cancel' ? styles.iconCancel : styles.iconReschedule}`}>
+                                    {req.type === 'cancel' ? <AlertIcon size={20} /> : <CalendarIcon size={20} />}
+                                </div>
+                                <div className={styles.requestDetails}>
+                                    <div className={styles.requestTitle}>
+                                        <strong>{req.user.firstName || req.user.name}</strong> • {req.type === 'cancel' ? 'Отмена занятия' : 'Перенос занятия'}
+                                    </div>
+                                    <div className={styles.requestSubtitle}>
+                                        <span>{req.lesson.subject?.name || 'Без предмета'}</span>
+                                        <span className={styles.requestDateBadge}>
+                                            {format(new Date(req.lesson.date), 'd MMM, HH:mm', { locale: ru })}
+                                        </span>
+                                        {req.newDate && (
+                                            <>
+                                                <span>→</span>
+                                                <span className={styles.requestDateBadge} style={{ background: 'rgba(59, 91, 217, 0.1)', color: '#3B5BD9' }}>
+                                                    {format(new Date(req.newDate), 'd MMM, HH:mm', { locale: ru })}
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={styles.requestActionsRow}>
+                                <button
+                                    className={`${styles.actionBtn} ${styles.rejectGhost}`}
+                                    onClick={() => handleRequestAction(req.id, 'rejected')}
+                                >
+                                    Отклонить
+                                </button>
+                                <button
+                                    className={`${styles.actionBtn} ${styles.approveGhost}`}
+                                    onClick={() => handleRequestAction(req.id, 'approved')}
+                                >
+                                    Подтвердить
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                    {(!stats?.pendingRequests || stats.pendingRequests.length === 0) && (
+                        <p className={styles.loading}>Нет активных заявок</p>
+                    )}
+                </div>
+            </Modal>
         </div>
     )
 }

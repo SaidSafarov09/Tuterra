@@ -42,6 +42,13 @@ export function LessonActions({
     const isLastItem = totalItems > 0 && index === totalItems - 1
     const dropdownPosition = isLastItem ? 'top' : 'bottom'
 
+    // Student specific payment status
+    const studentHasPaid = isStudentView
+        ? (lesson.group
+            ? !!lesson.lessonPayments?.find(p => p.hasPaid)
+            : lesson.isPaid)
+        : lesson.isPaid
+
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.matchMedia('(max-width: 768px)').matches)
@@ -93,6 +100,17 @@ export function LessonActions({
                     </button>
                 )}
 
+                {!isTrialLesson && isStudentView && (
+                    <button
+                        className={`${styles.actionButton} ${styles.paidButton} ${studentHasPaid ? styles.isPaid : styles.isUnpaid}`}
+                        onClick={() => onTogglePaid(lesson)}
+                        disabled={lesson.isCanceled || studentHasPaid}
+                    >
+                        <CheckIcon size={16} />
+                        Я оплатил
+                    </button>
+                )}
+
                 {lesson.isCanceled && showCancelButton && !isLessonEnded && onToggleCancel && (
                     <button
                         className={`${styles.actionButton} ${styles.restoreButton}`}
@@ -134,7 +152,7 @@ export function LessonActions({
                                 </button>
                             )}
 
-                            {onEdit && (
+                            {onEdit && !isStudentView && (
                                 <button
                                     className={styles.dropdownItem}
                                     onClick={() => handleAction(() => onEdit(lesson))}
@@ -145,7 +163,7 @@ export function LessonActions({
                                 </button>
                             )}
 
-                            {onDelete && (
+                            {onDelete && !isStudentView && (
                                 <button
                                     className={`${styles.dropdownItem} ${styles.deleteItem}`}
                                     onClick={() => handleAction(() => onDelete(lesson.id))}
@@ -163,7 +181,7 @@ export function LessonActions({
 
     return (
         <div className={styles.lessonActions}>
-            {!isTrialLesson && (
+            {!isTrialLesson && !isStudentView && (
                 <button
                     className={`${styles.actionButton} ${styles.paidButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
                     onClick={() => onTogglePaid(lesson)}
@@ -171,6 +189,17 @@ export function LessonActions({
                 >
                     {isGroupLesson(lesson) ? (isFullyPaidLesson(lesson) ? <CheckIcon size={16} /> : null) : <CheckIcon size={16} />}
                     {isGroupLesson(lesson) ? (isFullyPaidLesson(lesson) ? 'Оплачено' : 'Управлять') : (lesson.isPaid ? 'Оплачено' : 'Оплатить')}
+                </button>
+            )}
+
+            {!isTrialLesson && isStudentView && (
+                <button
+                    className={`${styles.actionButton} ${styles.paidButton} ${studentHasPaid ? styles.isPaid : styles.isUnpaid}`}
+                    onClick={() => onTogglePaid(lesson)}
+                    disabled={lesson.isCanceled || studentHasPaid}
+                >
+                    <CheckIcon size={16} />
+                    Я оплатил
                 </button>
             )}
 
@@ -203,7 +232,7 @@ export function LessonActions({
                 </button>
             )}
 
-            {onEdit && (
+            {onEdit && !isStudentView && (
                 <button
                     className={`${styles.actionButton} ${styles.editButton}`}
                     onClick={() => onEdit(lesson)}
@@ -213,7 +242,7 @@ export function LessonActions({
                     Изменить
                 </button>
             )}
-            {onDelete && (
+            {onDelete && !isStudentView && (
                 <button
                     className={`${styles.actionButton} ${styles.deleteButton}`}
                     onClick={() => onDelete(lesson.id)}

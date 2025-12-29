@@ -45,3 +45,143 @@
         margin: 24px 0;
     }
 }
+
+/* REQUESTS LIST - REFINED STYLES */
+.requestsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 16px;
+}
+
+.requestItem {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    gap: 12px;
+    transition: all 0.2s;
+
+    &:hover {
+        background: var(--hover-bg);
+        border-color: var(--border);
+    }
+}
+
+.requestMain {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    width: 100%;
+}
+
+.requestActionsRow {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+}
+
+.requestIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &.iconReschedule {
+        background: rgba(245, 158, 11, 0.1);
+        color: #F59E0B;
+    }
+
+    &.iconCancel {
+        background: rgba(239, 68, 68, 0.1);
+        color: #EF4444;
+    }
+}
+
+.requestDetails {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.requestTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+
+    strong {
+        font-weight: 700;
+    }
+}
+
+.requestSubtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.requestDateBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    background: var(--background);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.actionBtn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+
+    &.approveGhost {
+        color: var(--success);
+
+        &:hover {
+            background: rgba(16, 185, 129, 0.1);
+        }
+    }
+
+    &.rejectGhost {
+        color: var(--error);
+
+        &:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+.viewAllBtn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}

@@ -41,9 +41,13 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     const [showTopic, setShowTopic] = useState(false)
 
     // Определяем, полностью ли оплачен урок
-    const isFullyPaid = lesson.group
-        ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
-        : lesson.isPaid
+    const isFullyPaid = isStudentView
+        ? (lesson.group
+            ? !!lesson.lessonPayments?.find(p => p.hasPaid)
+            : lesson.isPaid)
+        : (lesson.group
+            ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
+            : lesson.isPaid)
 
     const recurrenceText = lesson.series ? getRecurrenceDescription(
         {
@@ -65,11 +69,13 @@ export const LessonCard: React.FC<LessonCardProps> = ({
             <div className={styles.header}>
                 <div className={styles.info}>
                     <h4 className={styles.studentName}>
-                        {lesson.student?.name || (lesson.group ? (
-                            <><span style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</span> — группа</>
-                        ) : lesson.groupName ? (
-                            <><span style={{ color: stringToColor(lesson.groupName) }}>{lesson.groupName}</span> — группа</>
-                        ) : null)}
+                        {isStudentView
+                            ? (lesson.owner?.name || lesson.owner?.firstName || 'Преподаватель')
+                            : (lesson.student?.name || (lesson.group ? (
+                                <><span style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</span> — группа</>
+                            ) : lesson.groupName ? (
+                                <><span style={{ color: stringToColor(lesson.groupName) }}>{lesson.groupName}</span> — группа</>
+                            ) : null))}
                     </h4>
                     {(lesson.subject || (lesson.subjectName && lesson.subjectColor)) && (
                         <span
@@ -143,6 +149,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                         isGroupLesson={!!lesson.group}
                         totalStudents={lesson.group?.students?.length || 0}
                         lessonPayments={lesson.lessonPayments}
+                        isStudentView={isStudentView}
                     />
                 </div>
             </div>

@@ -105,16 +105,23 @@ export function StudentsList({ students }: StudentsListProps) {
                     </div>
 
                     <div className={styles.cardBody}>
-                        {student.contact && (
+                        {(student.linkedUser?.phone || student.contact || student.linkedUser?.email) && (
                             <div className={styles.infoRow} onClick={(e) => e.stopPropagation()}>
                                 <div
                                     className={styles.infoRowText}
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'inherit', textDecoration: 'none', width: '100%' }}
                                 >
                                     <div className={styles.iconWrapper}>
-                                        {getContactIcon(student.contactType || 'phone')}
+                                        {/* Use linked user phone if available, then fallback to contact phone/email */}
+                                        {getContactIcon(
+                                            student.linkedUser?.phone
+                                                ? 'phone'
+                                                : (student.contactType || (student.linkedUser?.email ? 'email' : 'phone'))
+                                        )}
                                     </div>
-                                    <span className={styles.infoText}>{student.contact}</span>
+                                    <span className={styles.infoText}>
+                                        {student.linkedUser?.phone || student.contact || student.linkedUser?.email}
+                                    </span>
                                 </div>
                             </div>
                         )}

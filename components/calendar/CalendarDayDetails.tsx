@@ -118,6 +118,11 @@ export function CalendarDayDetails({
                         <div className={styles.lessonsScroll}>
                             {dayData.lessons.map(lesson => {
                                 const isFullyPaid = isFullyPaidLesson(lesson)
+                                const userHasPaid = isStudentView
+                                    ? (lesson.group
+                                        ? !!lesson.lessonPayments?.find(p => p.hasPaid)
+                                        : lesson.isPaid)
+                                    : lesson.isPaid
 
                                 return (
                                     <div
@@ -127,12 +132,18 @@ export function CalendarDayDetails({
                                         <div className={styles.lessonMain}>
                                             <div className={styles.lessonInfo}>
                                                 <div className={styles.lessonStudent}>
-                                                    {lesson.group ? (
-                                                        <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</p>&nbsp;-&nbsp;группа</>
-                                                    ) : lesson.groupName ? (
-                                                        <><p style={{ color: stringToColor(lesson.groupName) }}>{lesson.groupName}</p>&nbsp;-&nbsp;группа</>
+                                                    {isStudentView ? (
+                                                        // Student sees teacher name
+                                                        <>{lesson.owner?.name || lesson.owner?.firstName || 'Преподаватель'}</>
                                                     ) : (
-                                                        <>{lesson.student?.name}</>
+                                                        // Teacher sees student/group name
+                                                        lesson.group ? (
+                                                            <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</p>&nbsp;-&nbsp;группа</>
+                                                        ) : lesson.groupName ? (
+                                                            <><p style={{ color: stringToColor(lesson.groupName) }}>{lesson.groupName}</p>&nbsp;-&nbsp;группа</>
+                                                        ) : (
+                                                            <>{lesson.student?.name}</>
+                                                        )
                                                     )}
                                                     {lesson.isCanceled && (
                                                         <span className={styles.canceledBadge}>Отменено</span>
@@ -184,11 +195,12 @@ export function CalendarDayDetails({
                                                     isGroupLesson={!!lesson.group}
                                                     totalStudents={lesson.group?.students?.length || 0}
                                                     lessonPayments={lesson.lessonPayments}
+                                                    isStudentView={isStudentView}
                                                 />
                                             </div>
                                         </div>
                                         <div className={styles.lessonActions}>
-                                            {!lesson.isCanceled && !isTrial(lesson.price) && (
+                                            {!lesson.isCanceled && !isTrial(lesson.price) && !isStudentView && (
                                                 <button
                                                     className={`${styles.actionButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
                                                     onClick={() => onTogglePaid(lesson)}
@@ -199,7 +211,18 @@ export function CalendarDayDetails({
                                                 </button>
                                             )}
 
-                                            {!isLessonPast(lesson.date, lesson.duration || 60) && (
+                                            {!lesson.isCanceled && !isTrial(lesson.price) && isStudentView && (
+                                                <button
+                                                    className={`${styles.actionButton} ${styles.paidButton} ${userHasPaid ? styles.isPaid : styles.isUnpaid}`}
+                                                    onClick={() => onTogglePaid(lesson)}
+                                                    disabled={lesson.isCanceled || userHasPaid}
+                                                >
+                                                    <CheckIcon size={16} />
+                                                    Я оплатил
+                                                </button>
+                                            )}
+
+                                            {!isLessonPast(lesson.date, lesson.duration || 60) && !isStudentView && (
                                                 <button
                                                     className={styles.actionButton}
                                                     onClick={() => onReschedule(lesson)}
@@ -209,7 +232,7 @@ export function CalendarDayDetails({
                                                 </button>
                                             )}
 
-                                            {!isLessonPast(lesson.date, lesson.duration || 60) && (
+                                            {!isLessonPast(lesson.date, lesson.duration || 60) && !isStudentView && (
                                                 <button
                                                     className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
                                                     onClick={() => onToggleCancel(lesson)}

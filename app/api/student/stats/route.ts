@@ -47,31 +47,66 @@ export async function GET(request: NextRequest) {
             include: {
                 student: true,
                 group: true,
-                subject: true
+                subject: true,
+                owner: {
+                    select: {
+                        id: true,
+                        name: true,
+                        firstName: true,
+                        avatar: true
+                    }
+                }
             },
             orderBy: { date: 'asc' },
             take: 5
         })
 
         // Get unpaid lessons
-        const unpaidLessons = await prisma.lesson.findMany({
+        const rawUnpaidLessons = await prisma.lesson.findMany({
             where: {
                 OR: [
                     { studentId: { in: studentIds } },
                     { group: { students: { some: { id: { in: studentIds } } } } }
                 ],
-                date: { lt: new Date() },
                 isPaid: false,
-                isCanceled: false
+                isCanceled: false,
+                price: { gt: 0 }
             },
             include: {
                 student: true,
                 group: true,
-                subject: true
+                subject: true,
+                lessonPayments: {
+                    where: {
+                        studentId: { in: studentIds }
+                    }
+                },
+                owner: {
+                    select: {
+                        id: true,
+                        name: true,
+                        firstName: true,
+                        avatar: true
+                    }
+                }
             },
             orderBy: { date: 'desc' },
-            take: 5
+            take: 20
         })
+
+        // Filter unpaid lessons correctly for the specific student
+        const unpaidLessons = rawUnpaidLessons.filter(lesson => {
+            // For individual lessons
+            if (lesson.studentId) {
+                return !lesson.isPaid
+            }
+            // For group lessons, check if THIS student paid
+            if (lesson.groupId) {
+                const myPayment = lesson.lessonPayments?.[0]
+                return myPayment ? !myPayment.hasPaid : true
+            }
+            return false
+        }).slice(0, 5)
 
         // Get monthly lesson count
         const startOfMonth = new Date()

@@ -36,7 +36,14 @@ export async function GET(request: NextRequest) {
                         date: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
                         isCanceled: false,
                     },
-                    include: { student: true, subject: true, group: true, owner: true },
+                    include: {
+                        student: true,
+                        subject: true,
+                        group: true,
+                        owner: {
+                            select: { id: true, name: true, firstName: true, avatar: true }
+                        }
+                    },
                     orderBy: { date: 'asc' },
                     take: 10,
                 }),
@@ -46,11 +53,25 @@ export async function GET(request: NextRequest) {
                             { studentId: { in: studentIds } },
                             { group: { students: { some: { id: { in: studentIds } } } } }
                         ],
-                        isPaid: false,
                         isCanceled: false,
                         price: { gt: 0 },
+                        isPaid: false,
                     },
-                    include: { student: true, subject: true, group: true, owner: true },
+                    include: {
+                        student: true,
+                        subject: true,
+                        group: {
+                            include: { students: true }
+                        },
+                        lessonPayments: {
+                            where: {
+                                studentId: { in: studentIds }
+                            }
+                        },
+                        owner: {
+                            select: { id: true, name: true, firstName: true, avatar: true }
+                        }
+                    },
                     orderBy: { date: 'desc' },
                     take: 20,
                 }),
@@ -81,6 +102,20 @@ export async function GET(request: NextRequest) {
                 .filter(lesson => !isLessonPast(lesson.date, lesson.duration || 60))
                 .slice(0, 5)
 
+            // Filter unpaid lessons correctly for student
+            const unpaidForStudent = rawUnpaidLessons.filter(lesson => {
+                // If it's a direct lesson
+                if (lesson.studentId) {
+                    return !lesson.isPaid
+                }
+                // If it's a group lesson, check if this specific student paid
+                if (lesson.groupId) {
+                    const myPayment = lesson.lessonPayments?.[0]
+                    return myPayment ? !myPayment.hasPaid : true
+                }
+                return false
+            })
+
             return NextResponse.json({
                 success: true, // For compatibility
                 stats: { // For compatibility with my DashboardPage edit
@@ -88,7 +123,7 @@ export async function GET(request: NextRequest) {
                     totalLessonsCount: totalLessons,
                     monthLessonsCount,
                     upcomingLessons: filteredUpcomingLessons,
-                    unpaidLessons: rawUnpaidLessons,
+                    unpaidLessons: unpaidForStudent,
                     studentsCount: 0,
                     groupsCount: 0,
                     subjectsCount: 0
@@ -96,7 +131,7 @@ export async function GET(request: NextRequest) {
                 // Raw top-level for backwards compatibility if needed
                 teachersCount: teacherIds.length,
                 upcomingLessons: filteredUpcomingLessons,
-                unpaidLessons: rawUnpaidLessons,
+                unpaidLessons: unpaidForStudent,
                 monthLessonsCount,
                 totalLessonsCount: totalLessons,
                 isStudent: true
@@ -104,13 +139,13 @@ export async function GET(request: NextRequest) {
         }
 
         // Teacher logic (existing)
-        const [studentsCount, upcomingLessons, rawUnpaidLessons, monthlyIncome, totalLessons, subjectsCount, userProfile, groupsCount, monthLessonsCount] = await Promise.all([
+        const results = await Promise.all([
             prisma.student.count({
-                where: { ownerId: payload.userId },
+                where: { ownerId: userId },
             }),
             prisma.lesson.findMany({
                 where: {
-                    ownerId: payload.userId,
+                    ownerId: userId,
                     date: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
                     isCanceled: false,
                 } as any,
@@ -127,7 +162,7 @@ export async function GET(request: NextRequest) {
             }),
             prisma.lesson.findMany({
                 where: {
-                    ownerId: payload.userId,
+                    ownerId: userId,
                     isPaid: false,
                     isCanceled: false,
                     price: { gt: 0 },
@@ -145,7 +180,7 @@ export async function GET(request: NextRequest) {
             }),
             prisma.lesson.findMany({
                 where: {
-                    ownerId: payload.userId,
+                    ownerId: userId,
                     date: { gte: monthStart, lte: monthEnd },
                     OR: [
                         { isPaid: true },
@@ -159,76 +194,106 @@ export async function GET(request: NextRequest) {
             }),
             prisma.lesson.count({
                 where: {
-                    ownerId: payload.userId,
+                    ownerId: userId,
                     date: { lte: now },
                     isCanceled: false,
                 } as any,
             }),
             prisma.subject.count({
-                where: { userId: payload.userId },
+                where: { userId: userId },
             }),
             prisma.user.findUnique({
-                where: { id: payload.userId },
+                where: { id: userId },
                 select: { createdAt: true },
             }),
             prisma.group.count({
-                where: { ownerId: payload.userId },
+                where: { ownerId: userId },
             }),
             prisma.lesson.count({
                 where: {
-                    ownerId: payload.userId,
+                    ownerId: userId,
                     date: { gte: monthStart, lte: monthEnd },
                     isCanceled: false,
                 } as any,
             }),
+            (prisma as any).lessonRequest.findMany({
+                where: {
+                    lesson: { ownerId: userId },
+                    status: 'pending'
+                },
+                include: {
+                    lesson: {
+                        include: { student: true, subject: true, group: true }
+                    },
+                    user: {
+                        select: { name: true, firstName: true, email: true }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            })
         ])
 
-        const unpaidLessons = rawUnpaidLessons.filter(lesson => {
+        const [
+            countStudents,
+            tUpcomingLessons,
+            tRawUnpaidLessons,
+            mIncomeData,
+            totalTLessons,
+            countSubjects,
+            uProfile,
+            countGroups,
+            mLessonsCount,
+            pRequests
+        ] = results as any[]
+
+        const unpaidLessons = tRawUnpaidLessons.filter((lesson: any) => {
             if (!lesson.group) return true
             const totalStudents = lesson.group.students?.length || 0
             if (totalStudents === 0) return true
-            const paidCount = lesson.lessonPayments?.filter(p => p.hasPaid).length || 0
+            const paidCount = lesson.lessonPayments?.filter((p: any) => p.hasPaid).length || 0
             return paidCount < totalStudents
         })
 
         const { isLessonPast } = await import('@/lib/lessonTimeUtils')
-        const filteredUpcomingLessons = upcomingLessons
-            .filter(lesson => !isLessonPast(lesson.date, lesson.duration || 60))
+        const filteredUpcomingLessons = tUpcomingLessons
+            .filter((lesson: any) => !isLessonPast(lesson.date, lesson.duration || 60))
             .slice(0, 5)
 
         return NextResponse.json({
             success: true,
             stats: {
-                studentsCount,
-                groupsCount,
+                studentsCount: countStudents,
+                groupsCount: countGroups,
                 upcomingLessons: filteredUpcomingLessons,
                 unpaidLessons,
-                monthlyIncome: (monthlyIncome as any[]).reduce((total, lesson) => {
+                monthlyIncome: (mIncomeData as any[]).reduce((total, lesson) => {
                     if (lesson.group && lesson.lessonPayments?.length > 0) {
                         return total + (lesson.lessonPayments.filter((p: any) => p.hasPaid).length * lesson.price)
                     }
                     return total + lesson.price
                 }, 0),
-                totalLessons,
-                subjectsCount,
-                monthLessonsCount,
-                createdAt: userProfile?.createdAt,
+                totalLessons: totalTLessons,
+                subjectsCount: countSubjects,
+                monthLessonsCount: mLessonsCount,
+                pendingRequests: pRequests,
+                createdAt: uProfile?.createdAt,
             },
             // Flat props for backwards compatibility
-            studentsCount,
-            groupsCount,
+            studentsCount: countStudents,
+            groupsCount: countGroups,
             upcomingLessons: filteredUpcomingLessons,
             unpaidLessons,
-            monthlyIncome: (monthlyIncome as any[]).reduce((total, lesson) => {
+            pendingRequests: pRequests,
+            monthlyIncome: (mIncomeData as any[]).reduce((total, lesson) => {
                 if (lesson.group && lesson.lessonPayments?.length > 0) {
                     return total + (lesson.lessonPayments.filter((p: any) => p.hasPaid).length * lesson.price)
                 }
                 return total + lesson.price
             }, 0),
-            totalLessons,
-            subjectsCount,
-            monthLessonsCount,
-            createdAt: userProfile?.createdAt,
+            totalLessons: totalTLessons,
+            subjectsCount: countSubjects,
+            monthLessonsCount: mLessonsCount,
+            createdAt: uProfile?.createdAt,
         })
     } catch (error) {
         console.error('Get stats error:', error)

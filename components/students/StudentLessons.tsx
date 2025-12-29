@@ -193,6 +193,7 @@ export function StudentLessons({
                                             isGroupLesson={!!lesson.group}
                                             totalStudents={lesson.group?.students?.length || 0}
                                             lessonPayments={lesson.lessonPayments}
+                                            isStudentView={isStudentView}
                                         />
                                     </div>
                                 </div>

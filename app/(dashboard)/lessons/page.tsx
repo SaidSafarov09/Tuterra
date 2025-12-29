@@ -351,6 +351,7 @@ function LessonsContent() {
                 onConfirm={handleConfirmReschedule}
                 currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
                 isSubmitting={isLoading}
+                isStudentView={isStudent}
             />
 
             <GroupPaymentModal

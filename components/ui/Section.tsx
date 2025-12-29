@@ -6,6 +6,7 @@ interface SectionProps {
     title: string
     viewAllHref?: string
     viewAllText?: string
+    onViewAllClick?: () => void
     children: React.ReactNode
 }
 
@@ -13,17 +14,22 @@ export const Section: React.FC<SectionProps> = ({
     title,
     viewAllHref,
     viewAllText = 'Смотреть все →',
+    onViewAllClick,
     children,
 }) => {
     return (
         <div className={styles.section}>
             <div className={styles.header}>
                 <h3 className={styles.title}>{title}</h3>
-                {viewAllHref && (
+                {viewAllHref ? (
                     <Link href={viewAllHref} className={styles.viewAll}>
                         {viewAllText}
                     </Link>
-                )}
+                ) : onViewAllClick ? (
+                    <button onClick={onViewAllClick} className={styles.viewAllBtn}>
+                        {viewAllText}
+                    </button>
+                ) : null}
             </div>
             <div className={styles.content}>{children}</div>
         </div>
