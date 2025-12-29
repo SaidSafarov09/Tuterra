@@ -40,6 +40,7 @@ export default function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [lessons, setLessons] = useState<Lesson[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const isStudent = user?.role === 'student'
 
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -62,7 +63,7 @@ export default function CalendarPage() {
     const fetchLessons = async () => {
         setIsLoading(true)
         try {
-            const data = await lessonsApi.getAll()
+            const data = isStudent ? await lessonsApi.getStudentLessons() : await lessonsApi.getAll()
             setLessons(data)
         } catch (error) {
             console.error('Failed to fetch lessons:', error)
@@ -106,10 +107,12 @@ export default function CalendarPage() {
 
     useEffect(() => {
         fetchLessons()
-        fetchStudents()
-        fetchSubjects()
-        fetchGroups()
-    }, [])
+        if (!isStudent) {
+            fetchStudents()
+            fetchSubjects()
+            fetchGroups()
+        }
+    }, [isStudent])
 
 
 
@@ -179,7 +182,7 @@ export default function CalendarPage() {
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <h1 className={styles.title}>Календарь</h1>
-                    <p className={styles.subtitle}>Планирование занятий</p>
+                    <p className={styles.subtitle}>{isStudent ? 'Ваше расписание' : 'Планирование занятий'}</p>
                 </div>
             </div>
 
@@ -224,12 +227,13 @@ export default function CalendarPage() {
                     date={selectedDate}
                     dayData={selectedDayData}
                     isLoading={isLoading}
-                    onAddLesson={handleOpenCreateModal}
+                    onAddLesson={isStudent ? undefined : handleOpenCreateModal}
                     onTogglePaid={togglePaid}
                     onToggleCancel={toggleCancel}
                     onReschedule={handleRescheduleLesson}
                     userBirthDate={userBirthDate}
                     region={userRegion}
+                    isStudentView={isStudent}
                 />
             </Modal>
 

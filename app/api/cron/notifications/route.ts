@@ -29,6 +29,17 @@ export async function GET(request: NextRequest) {
         const settings = user.notificationSettings
         const now = new Date()
         const notificationsCreated = []
+        const isStudent = user.role === 'student'
+
+        // For student, we need to find all their student records across different teachers
+        let studentIds: string[] = []
+        if (isStudent) {
+            const records = await prisma.student.findMany({
+                where: { linkedUserId: userId },
+                select: { id: true }
+            })
+            studentIds = records.map(r => r.id)
+        }
 
         // 1. Lesson Reminders
         if (settings.lessonReminders) {
@@ -38,17 +49,24 @@ export async function GET(request: NextRequest) {
 
             const upcomingLessons = await prisma.lesson.findMany({
                 where: {
-                    ownerId: userId,
+                    ...(isStudent ? {
+                        OR: [
+                            { studentId: { in: studentIds } },
+                            { group: { students: { some: { id: { in: studentIds } } } } }
+                        ]
+                    } : {
+                        ownerId: userId
+                    }),
                     date: {
                         gte: reminderWindowStart,
                         lte: reminderWindowEnd
                     },
                     isCanceled: false
                 },
-                include: { subject: true, student: true, group: true }
+                include: { subject: true, student: true, group: true, owner: true }
             })
 
-            console.log(`CRON: Found ${upcomingLessons.length} upcoming lessons for reminder in next 45m for user ${userId}`)
+            console.log(`CRON: Found ${upcomingLessons.length} upcoming lessons for reminder for user ${userId} (${user.role})`)
 
             for (const lesson of upcomingLessons) {
                 const notificationKey = `reminder_${lesson.id}`
@@ -62,94 +80,80 @@ export async function GET(request: NextRequest) {
 
                 if (!existing) {
                     const subjectName = lesson.subject?.name || 'Занятие'
-                    const entityName = lesson.student?.name || lesson.group?.name || 'Ученик'
-                    const entityLabel = lesson.studentId ? '👤 Ученик:' : '👥 Группа:'
+                    const teacherName = lesson.owner?.firstName || lesson.owner?.name || 'Преподаватель'
+                    const entityName = isStudent ? teacherName : (lesson.student?.name || lesson.group?.name || 'Ученик')
+                    const entityLabel = isStudent ? '👨‍🏫 Преподаватель:' : (lesson.studentId ? '👤 Ученик:' : '👥 Группа:')
 
-                    // Format time in user's timezone
                     const timeString = new Intl.DateTimeFormat('ru-RU', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        timeZone: user.timezone || 'Europe/Moscow'
+                        hour: '2-digit', minute: '2-digit', timeZone: user.timezone || 'Europe/Moscow'
                     }).format(lesson.date)
 
-                    const message = `🔔 **Скоро занятие**
-                    
-${entityLabel} ${entityName}
-📚 Предмет: ${subjectName}
-🕒 Время: ${timeString}
-⏳ Длительность: ${lesson.duration} мин
-💰 Стоимость: ${lesson.price} ₽
-📝 Тема: ${lesson.topic || 'Не указана'}
-`
+                    const message = isStudent
+                        ? `🔔 **Напоминание о занятии**\n\n${entityLabel} ${entityName}\n📚 Предмет: ${subjectName}\n🕒 Время: ${timeString}`
+                        : `🔔 **Скоро занятие**\n\n${entityLabel} ${entityName}\n📚 Предмет: ${subjectName}\n🕒 Время: ${timeString}\n⏳ Длительность: ${lesson.duration} мин`
 
-                    // Always create notification record to prevent duplicates
                     await prisma.notification.create({
                         data: {
                             userId,
                             title: 'Скоро занятие',
-                            message: `${subjectName} с ${lesson.studentId ? 'учеником' : 'группой'} ${entityName} в ${timeString}`,
+                            message: isStudent ? `${subjectName} с ${teacherName} в ${timeString}` : `${subjectName} с ${entityName} в ${timeString}`,
                             type: 'lesson_reminder',
                             data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
-                            link: `/calendar?date=${lesson.date.toISOString().split('T')[0]}`,
+                            link: isStudent ? '/student/lessons' : `/calendar?date=${lesson.date.toISOString().split('T')[0]}`,
                             isRead: !settings.deliveryWeb
                         }
                     })
 
-                    console.log(`CRON: Sending reminder for lesson ${lesson.id} to user ${userId}`)
-                    const sent = await sendTelegramNotification(userId, message, 'lessonReminders')
-                    console.log(`CRON: Telegram send result: ${sent}`)
+                    await sendTelegramNotification(userId, message, 'lessonReminders')
                     notificationsCreated.push('reminder')
                 }
             }
         }
 
-        // 2. Unpaid Lessons (Finished but not paid)
+        // 2. Unpaid Lessons (Finished but not paid - Student view: "Don't forget to pay")
         if (settings.unpaidLessons) {
-            // Check lessons ended in the last 7 days but at least 1 hour ago
-            const daysLookup = 7
-            const lookbackDate = new Date(now.getTime() - daysLookup * 24 * 60 * 60 * 1000)
+            const lookbackDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
             const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
 
             const unpaidLessons = await prisma.lesson.findMany({
                 where: {
-                    ownerId: userId,
-                    date: {
-                        gte: lookbackDate,
-                        lte: oneHourAgo
-                    },
+                    ...(isStudent ? {
+                        OR: [
+                            { studentId: { in: studentIds } },
+                            { group: { students: { some: { id: { in: studentIds } } } } }
+                        ]
+                    } : {
+                        ownerId: userId
+                    }),
+                    date: { gte: lookbackDate, lte: oneHourAgo },
                     isPaid: false,
                     isCanceled: false,
                     price: { gt: 0 }
                 },
-                include: { subject: true, student: true, group: true }
+                include: { subject: true, owner: true }
             })
 
             for (const lesson of unpaidLessons) {
                 const notificationKey = `unpaid_${lesson.id}`
                 const existing = await prisma.notification.findFirst({
-                    where: {
-                        userId,
-                        type: 'unpaid_lesson',
-                        data: { contains: notificationKey }
-                    }
+                    where: { userId, type: 'unpaid_lesson', data: { contains: notificationKey } }
                 })
 
                 if (!existing) {
-                    const subjectName = lesson.subject?.name || 'Занятие'
-                    const entityName = lesson.student?.name || lesson.group?.name || '---'
-                    const entityLabel = lesson.studentId ? '👤 Ученик:' : '👥 Группа:'
+                    const teacherName = lesson.owner?.firstName || 'Преподаватель'
+                    const title = isStudent ? 'Ожидается оплата' : 'Неоплаченное занятие'
+                    const msg = isStudent
+                        ? `У вас есть неоплаченное занятие по предмету ${lesson.subject?.name || '---'} у преподавателя ${teacherName}.`
+                        : `Занятие завершилось, но не было оплачено. Не забудьте отметить оплату.`
 
-                    const msg = `${entityLabel} **${entityName}**\n📚 Предмет: **${subjectName}**\n\nЗанятие завершилось, но не было оплачено. Не забудьте отметить оплату.`
-
-                    // Always record to DB to avoid duplicates
                     await prisma.notification.create({
                         data: {
                             userId,
-                            title: 'Неоплаченное занятие',
+                            title,
                             message: msg,
                             type: 'unpaid_lesson',
                             data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
-                            link: `/lessons?filter=unpaid`,
+                            link: isStudent ? '/student/lessons' : `/lessons?filter=unpaid`,
                             isRead: !settings.deliveryWeb
                         }
                     })
@@ -160,8 +164,8 @@ ${entityLabel} ${entityName}
             }
         }
 
-        // 3. Daily Income Report (End of day handled below in Evening Summary or here for raw stats)
-        if (settings.incomeReports) {
+        // 3. Income Report - SKIP for students
+        if (settings.incomeReports && !isStudent) {
             // Check if it's past 21:00 for simple report if summary is disabled
             if (now.getHours() >= 21) {
                 const todayStr = now.toISOString().split('T')[0]
@@ -264,7 +268,7 @@ ${entityLabel} ${entityName}
         }
 
         // 4. Missing Lessons (Planning)
-        if (settings.missingLessons) {
+        if (settings.missingLessons && !isStudent) {
             if (now.getHours() >= 9 && now.getHours() <= 11) {
                 const todayStr = now.toISOString().split('T')[0]
                 const globalKey = `missing_check_${todayStr}`
@@ -311,7 +315,7 @@ ${entityLabel} ${entityName}
         }
 
         // 5. Student Debts
-        if (settings.studentDebts && now.getDay() === 1 && now.getHours() >= 9 && now.getHours() <= 11) {
+        if (settings.studentDebts && !isStudent && now.getDay() === 1 && now.getHours() >= 9 && now.getHours() <= 11) {
             const students = await prisma.student.findMany({
                 where: { ownerId: userId },
                 include: {
@@ -402,7 +406,7 @@ ${entityLabel} ${entityName}
             const todayStr = now.toISOString().split('T')[0]
 
             // Morning Briefing
-            if (settings.morningBriefing) {
+            if (settings.morningBriefing && !isStudent) {
                 const key = `morning_briefing_${todayStr}`
                 const existing = await prisma.notification.findFirst({
                     where: { userId, type: 'morning_briefing', data: { contains: key } }
@@ -438,7 +442,7 @@ ${entityLabel} ${entityName}
             }
 
             // Evening Summary
-            if (settings.eveningSummary) {
+            if (settings.eveningSummary && !isStudent) {
                 const lastLesson = todayLessons[todayLessons.length - 1]
                 const lastLessonEnd = new Date(lastLesson.date.getTime() + (lastLesson.duration || 60) * 60 * 1000)
                 const summaryTime = new Date(lastLessonEnd.getTime() + 15 * 60 * 1000)

@@ -11,11 +11,99 @@ export async function GET(request: NextRequest) {
         const payload = await verifyToken(token)
         if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
+        const userId = payload.userId
+        const isStudent = payload.role === 'student'
         const now = new Date()
         const monthStart = startOfMonth(now)
         const monthEnd = endOfMonth(now)
 
+        if (isStudent) {
+            // Student specific stats
+            const studentRecords = await prisma.student.findMany({
+                where: { linkedUserId: userId },
+                select: { id: true, ownerId: true }
+            })
+            const studentIds = studentRecords.map(s => s.id)
+            const teacherIds = Array.from(new Set(studentRecords.map(s => s.ownerId)))
 
+            const [upcomingLessons, rawUnpaidLessons, totalLessons, monthLessonsCount] = await Promise.all([
+                prisma.lesson.findMany({
+                    where: {
+                        OR: [
+                            { studentId: { in: studentIds } },
+                            { group: { students: { some: { id: { in: studentIds } } } } }
+                        ],
+                        date: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+                        isCanceled: false,
+                    },
+                    include: { student: true, subject: true, group: true, owner: true },
+                    orderBy: { date: 'asc' },
+                    take: 10,
+                }),
+                prisma.lesson.findMany({
+                    where: {
+                        OR: [
+                            { studentId: { in: studentIds } },
+                            { group: { students: { some: { id: { in: studentIds } } } } }
+                        ],
+                        isPaid: false,
+                        isCanceled: false,
+                        price: { gt: 0 },
+                    },
+                    include: { student: true, subject: true, group: true, owner: true },
+                    orderBy: { date: 'desc' },
+                    take: 20,
+                }),
+                prisma.lesson.count({
+                    where: {
+                        OR: [
+                            { studentId: { in: studentIds } },
+                            { group: { students: { some: { id: { in: studentIds } } } } }
+                        ],
+                        date: { lte: now },
+                        isCanceled: false,
+                    }
+                }),
+                prisma.lesson.count({
+                    where: {
+                        OR: [
+                            { studentId: { in: studentIds } },
+                            { group: { students: { some: { id: { in: studentIds } } } } }
+                        ],
+                        date: { gte: monthStart, lte: monthEnd },
+                        isCanceled: false,
+                    }
+                })
+            ])
+
+            const { isLessonPast } = await import('@/lib/lessonTimeUtils')
+            const filteredUpcomingLessons = upcomingLessons
+                .filter(lesson => !isLessonPast(lesson.date, lesson.duration || 60))
+                .slice(0, 5)
+
+            return NextResponse.json({
+                success: true, // For compatibility
+                stats: { // For compatibility with my DashboardPage edit
+                    teachersCount: teacherIds.length,
+                    totalLessonsCount: totalLessons,
+                    monthLessonsCount,
+                    upcomingLessons: filteredUpcomingLessons,
+                    unpaidLessons: rawUnpaidLessons,
+                    studentsCount: 0,
+                    groupsCount: 0,
+                    subjectsCount: 0
+                },
+                // Raw top-level for backwards compatibility if needed
+                teachersCount: teacherIds.length,
+                upcomingLessons: filteredUpcomingLessons,
+                unpaidLessons: rawUnpaidLessons,
+                monthLessonsCount,
+                totalLessonsCount: totalLessons,
+                isStudent: true
+            })
+        }
+
+        // Teacher logic (existing)
         const [studentsCount, upcomingLessons, rawUnpaidLessons, monthlyIncome, totalLessons, subjectsCount, userProfile, groupsCount, monthLessonsCount] = await Promise.all([
             prisma.student.count({
                 where: { ownerId: payload.userId },
@@ -30,9 +118,7 @@ export async function GET(request: NextRequest) {
                     student: true,
                     subject: true,
                     group: {
-                        include: {
-                            students: true
-                        }
+                        include: { students: true }
                     },
                     lessonPayments: true,
                 },
@@ -50,9 +136,7 @@ export async function GET(request: NextRequest) {
                     student: true,
                     subject: true,
                     group: {
-                        include: {
-                            students: true
-                        }
+                        include: { students: true }
                     },
                     lessonPayments: true,
                 },
@@ -62,10 +146,7 @@ export async function GET(request: NextRequest) {
             prisma.lesson.findMany({
                 where: {
                     ownerId: payload.userId,
-                    date: {
-                        gte: monthStart,
-                        lte: monthEnd,
-                    },
+                    date: { gte: monthStart, lte: monthEnd },
                     OR: [
                         { isPaid: true },
                         { lessonPayments: { some: { hasPaid: true } } }
@@ -73,9 +154,7 @@ export async function GET(request: NextRequest) {
                 } as any,
                 include: {
                     lessonPayments: true,
-                    group: {
-                        include: { students: true }
-                    }
+                    group: { include: { students: true } }
                 }
             }),
             prisma.lesson.count({
@@ -98,10 +177,7 @@ export async function GET(request: NextRequest) {
             prisma.lesson.count({
                 where: {
                     ownerId: payload.userId,
-                    date: {
-                        gte: monthStart,
-                        lte: monthEnd,
-                    },
+                    date: { gte: monthStart, lte: monthEnd },
                     isCanceled: false,
                 } as any,
             }),
@@ -121,6 +197,24 @@ export async function GET(request: NextRequest) {
             .slice(0, 5)
 
         return NextResponse.json({
+            success: true,
+            stats: {
+                studentsCount,
+                groupsCount,
+                upcomingLessons: filteredUpcomingLessons,
+                unpaidLessons,
+                monthlyIncome: (monthlyIncome as any[]).reduce((total, lesson) => {
+                    if (lesson.group && lesson.lessonPayments?.length > 0) {
+                        return total + (lesson.lessonPayments.filter((p: any) => p.hasPaid).length * lesson.price)
+                    }
+                    return total + lesson.price
+                }, 0),
+                totalLessons,
+                subjectsCount,
+                monthLessonsCount,
+                createdAt: userProfile?.createdAt,
+            },
+            // Flat props for backwards compatibility
             studentsCount,
             groupsCount,
             upcomingLessons: filteredUpcomingLessons,

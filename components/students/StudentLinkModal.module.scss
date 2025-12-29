@@ -144,14 +144,22 @@
     }
 }
 
+.benefitTextSmall {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 1.2;
+
+    @media (max-width: 768px) {
+        text-align: left;
+    }
+}
+
 .methods {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
-
-    @media (max-width: 640px) {
-        grid-template-columns: 1fr;
-    }
 }
 
 .methodCard {
@@ -218,6 +226,31 @@
     @media (max-width: 768px) {
         font-size: 24px;
     }
+}
+
+.codeField {
+    input {
+        text-transform: uppercase;
+        font-weight: 800 !important;
+        letter-spacing: 0.2em !important;
+        font-size: 20px !important;
+        background: var(--background) !important;
+        border: 2px solid var(--border-light) !important;
+        text-align: center !important;
+
+        &:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.1) !important;
+        }
+    }
+}
+
+.inputHint {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-align: center;
 }
 
 .tipBox {

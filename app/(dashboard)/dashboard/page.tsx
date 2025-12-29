@@ -27,6 +27,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { MONTHS_GENITIVE } from '@/constants/messages'
 import { useAuthStore } from '@/store/auth'
 import { CircleCheck } from 'lucide-react'
+import { StudentConnectionModal } from '@/components/students/StudentConnectionModal'
 
 export default function DashboardPage() {
     const { user } = useAuthStore()
@@ -35,6 +36,7 @@ export default function DashboardPage() {
     const isMobile = useMediaQuery('(max-width: 768px)')
     const currentMonth = Date.now()
     const isStudent = user?.role === 'student'
+    const [isConnectionModalOpen, setIsConnectionModalOpen] = React.useState(false)
 
     React.useEffect(() => {
         const fetchStats = async () => {
@@ -44,6 +46,9 @@ export default function DashboardPage() {
                 const data = await response.json()
                 if (data.success) {
                     setStats(data.stats)
+                    if (isStudent && data.stats.teachersCount === 0) {
+                        setIsConnectionModalOpen(true)
+                    }
                 }
             } catch (error) {
                 toast.error(GENERAL_MESSAGES.FETCH_ERROR || 'Не удалось загрузить статистику')
@@ -167,6 +172,15 @@ export default function DashboardPage() {
                     </Section>
                 </div>
             </div>
+
+            <StudentConnectionModal
+                isOpen={isConnectionModalOpen}
+                onClose={() => setIsConnectionModalOpen(false)}
+                onSuccess={() => {
+                    // Refetch stats or refresh page
+                    window.location.reload()
+                }}
+            />
         </div>
     )
 }

@@ -15,12 +15,13 @@ interface CalendarDayDetailsProps {
     date: Date | null
     dayData: DayData | null
     isLoading: boolean
-    onAddLesson: () => void
+    onAddLesson?: () => void
     onTogglePaid: (lesson: Lesson) => void
     onToggleCancel: (lesson: Lesson) => void
     onReschedule: (lesson: Lesson) => void
     userBirthDate?: string | null
     region?: string | null
+    isStudentView?: boolean
 }
 
 export function CalendarDayDetails({
@@ -32,7 +33,8 @@ export function CalendarDayDetails({
     onToggleCancel,
     onReschedule,
     userBirthDate,
-    region
+    region,
+    isStudentView
 }: CalendarDayDetailsProps) {
     if (isLoading) {
         return <div className={styles.modalLoading}>Загрузка...</div>
@@ -62,49 +64,55 @@ export function CalendarDayDetails({
             )}
 
             {isEmpty && (
-                <div className={styles.emptyDay} style={{ marginTop: (holidayGreeting || birthdayGreeting) ? '0' : '40px' }}>
+                <div className={styles.emptyDay}>
                     <ClockIcon size={48} color="var(--text-secondary)" />
                     <p>Нет занятий на этот день</p>
-                    <div style={{ marginTop: '16px' }}>
-                        <Button onClick={onAddLesson} variant="secondary" size="small">
-                            <PlusIcon size={16} />
-                            Добавить занятие
-                        </Button>
-                    </div>
+                    {!isStudentView && onAddLesson && (
+                        <div style={{ marginTop: '16px' }}>
+                            <Button onClick={onAddLesson} variant="secondary" size="small">
+                                <PlusIcon size={16} />
+                                Добавить занятие
+                            </Button>
+                        </div>
+                    )}
                 </div>
             )}
 
             {!isEmpty && (
                 <>
-                    <div className={styles.dayStats}>
-                        {date && isPast(date) ? (
-                            <div className={styles.statCard}>
-                                <MoneyIcon size={24} color="#10B981" />
-                                <div>
-                                    <div className={styles.statLabel}>Заработано</div>
-                                    <div className={styles.statValue}>{dayData.totalEarned} ₽</div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className={styles.statCard}>
-                                <MoneyIcon size={24} color="#6366f1" />
-                                <div>
-                                    <div className={styles.statLabel}>Возможный заработок</div>
-                                    <div className={styles.statValue}>
-                                        {dayData.totalEarned + dayData.potentialEarnings} ₽
+                    {!isStudentView && (
+                        <div className={styles.dayStats}>
+                            {date && isPast(date) ? (
+                                <div className={styles.statCard}>
+                                    <MoneyIcon size={24} color="#10B981" />
+                                    <div>
+                                        <div className={styles.statLabel}>Заработано</div>
+                                        <div className={styles.statValue}>{dayData.totalEarned} ₽</div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            ) : (
+                                <div className={styles.statCard}>
+                                    <MoneyIcon size={24} color="#6366f1" />
+                                    <div>
+                                        <div className={styles.statLabel}>Возможный заработок</div>
+                                        <div className={styles.statValue}>
+                                            {dayData.totalEarned + dayData.potentialEarnings} ₽
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className={styles.lessonsContainer}>
                         <div className={styles.lessonsHeader}>
                             <h3 className={styles.lessonsTitle}>Занятия {dayData.lessons.length}</h3>
-                            <Button onClick={onAddLesson} size="small" variant="ghost" className={styles.addLessonButtonSmall}>
-                                <PlusIcon size={16} />
-                                Добавить
-                            </Button>
+                            {!isStudentView && onAddLesson && (
+                                <Button onClick={onAddLesson} size="small" variant="ghost" className={styles.addLessonButtonSmall}>
+                                    <PlusIcon size={16} />
+                                    Добавить
+                                </Button>
+                            )}
                         </div>
 
                         <div className={styles.lessonsScroll}>

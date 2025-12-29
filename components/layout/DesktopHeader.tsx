@@ -23,7 +23,9 @@ export const DesktopHeader: React.FC = () => {
                 <div className={styles.user}>
                     <div className={styles.userInfo}>
                         <span className={styles.userName}>{user?.firstName || 'Пользователь'}</span>
-                        <span className={styles.userRole}>Преподаватель</span>
+                        <span className={styles.userRole}>
+                            {user?.role === 'student' ? 'Ученик' : 'Преподаватель'}
+                        </span>
                     </div>
                     <Avatar.Root className={styles.avatar}>
                         <Avatar.Image
