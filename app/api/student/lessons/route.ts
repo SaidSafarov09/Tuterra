@@ -61,7 +61,29 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        return NextResponse.json(lessons)
+        // Filter out "ghost" group lessons (past lessons where student has no payment record)
+        const filteredLessons = lessons.filter(lesson => {
+            // Direct lesson
+            if (lesson.studentId) return true
+
+            // Group lesson
+            if (lesson.groupId) {
+                // Check if any of the student's IDs have a payment record for this lesson
+                const hasPayment = lesson.lessonPayments.some(p => studentIds.includes(p.studentId))
+
+                if (hasPayment) return true
+
+                // If no payment, only show if it's in the future
+                const isPast = new Date(lesson.date) < new Date()
+                if (!isPast) return true
+
+                return false // Past and no visible record -> Hide
+            }
+
+            return true
+        })
+
+        return NextResponse.json(filteredLessons)
     } catch (error) {
         console.error('Get student lessons error:', error)
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })

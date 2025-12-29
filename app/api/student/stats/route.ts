@@ -100,40 +100,76 @@ export async function GET(request: NextRequest) {
             if (lesson.studentId) {
                 return !lesson.isPaid
             }
-            // For group lessons, check if THIS student paid
+            // For group lessons
             if (lesson.groupId) {
                 const myPayment = lesson.lessonPayments?.[0]
-                return myPayment ? !myPayment.hasPaid : true
+
+                // If payment record exists, check status
+                if (myPayment) {
+                    return !myPayment.hasPaid
+                }
+
+                // If NO payment record exists:
+                // 1. If lesson is in the future, consider it Unpaid (upcoming).
+                // 2. If lesson is in the past (ghost lesson, wasn't there), hide it.
+                const isPast = new Date(lesson.date) < new Date()
+                if (isPast) return false
+
+                return true
             }
             return false
         }).slice(0, 5)
 
-        // Get monthly lesson count
+        // Fetch ALL potential lessons for detailed counting/filtering
+        const allPotentialLessons = await prisma.lesson.findMany({
+            where: {
+                OR: [
+                    { studentId: { in: studentIds } },
+                    { group: { students: { some: { id: { in: studentIds } } } } }
+                ],
+                isCanceled: false
+            },
+            select: {
+                id: true,
+                date: true,
+                studentId: true,
+                groupId: true,
+                duration: true, // needed if we want strict time checks, but date check is usually enough
+                lessonPayments: {
+                    where: { studentId: { in: studentIds } },
+                    select: { hasPaid: true }
+                }
+            }
+        })
+
+        const now = new Date()
         const startOfMonth = new Date()
         startOfMonth.setDate(1)
         startOfMonth.setHours(0, 0, 0, 0)
 
-        const monthLessonsCount = await prisma.lesson.count({
-            where: {
-                OR: [
-                    { studentId: { in: studentIds } },
-                    { group: { students: { some: { id: { in: studentIds } } } } }
-                ],
-                date: { gte: startOfMonth },
-                isCanceled: false
+        // Filter lessons (exclude ghost group lessons)
+        const validLessons = allPotentialLessons.filter(lesson => {
+            // Direct lesson -> Keep
+            if (lesson.studentId) return true
+
+            // Group lesson -> Check ghost status
+            if (lesson.groupId) {
+                const hasPayment = lesson.lessonPayments && lesson.lessonPayments.length > 0
+                if (hasPayment) return true
+
+                // No payment: Show only if future
+                const isPast = new Date(lesson.date) < now
+                if (isPast) return false // Ghost (Past & No Record)
+
+                return true // Future (Upcoming)
             }
+            return true
         })
 
-        // Total lessons
-        const totalLessonsCount = await prisma.lesson.count({
-            where: {
-                OR: [
-                    { studentId: { in: studentIds } },
-                    { group: { students: { some: { id: { in: studentIds } } } } }
-                ],
-                isCanceled: false
-            }
-        })
+        // Calculate counts based on VALID lessons
+        const totalLessonsCount = validLessons.length
+
+        const monthLessonsCount = validLessons.filter(l => new Date(l.date) >= startOfMonth).length
 
         const teachersCount = new Set(ownerIds).size
 

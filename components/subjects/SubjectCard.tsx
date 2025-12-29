@@ -77,7 +77,7 @@ export function SubjectCard({ subject, onEdit, onDelete, onClick, isStudentView 
                     )}
                     <div className={styles.stat}>
                         <BookIcon size={16} />
-                        <span className={styles.statValue}>{subject._count?.lessons || 0}</span>
+                        <span className={styles.statValue}>{(subject as any).lessonsCount ?? subject._count?.lessons ?? 0}</span>
                         <span className={styles.statLabel}>занятий</span>
                     </div>
                 </div>

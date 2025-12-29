@@ -248,9 +248,21 @@ export async function GET(request: NextRequest) {
 
         const unpaidLessons = tRawUnpaidLessons.filter((lesson: any) => {
             if (!lesson.group) return true
-            const totalStudents = lesson.group.students?.length || 0
-            if (totalStudents === 0) return true
+
+            // Fix for "New Student in Group causing old lessons to appear as unpaid"
+            // If the lesson has payment records (meaning attendance was likely processed),
+            // we should only compare against the number of generated payment records (attendees),
+            // rather than the current total number of students in the group (which might include new members).
+            const hasPayments = lesson.lessonPayments && lesson.lessonPayments.length > 0
+
+            const totalStudents = hasPayments
+                ? lesson.lessonPayments.length
+                : (lesson.group.students?.length || 0)
+
+            if (totalStudents === 0) return false // Empty group or no attendees -> Not "Unpaid"
+
             const paidCount = lesson.lessonPayments?.filter((p: any) => p.hasPaid).length || 0
+
             return paidCount < totalStudents
         })
 

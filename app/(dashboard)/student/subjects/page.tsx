@@ -9,9 +9,7 @@ import { SubjectsIcon } from '@/components/icons/Icons'
 import { SubjectCardSkeleton } from '@/components/skeletons'
 import { toast } from 'sonner'
 import styles from './page.module.scss'
-import { Modal } from '@/components/ui/Modal'
-import { StudentLessons } from '@/components/students/StudentLessons'
-import { useLessonActions } from '@/hooks/useLessonActions'
+import { SubjectDetailsModal } from '@/components/subjects/SubjectDetailsModal'
 
 export default function StudentSubjectsPage() {
     const [subjects, setSubjects] = useState<any[]>([])
@@ -66,7 +64,6 @@ export default function StudentSubjectsPage() {
         }
     }
 
-    const { togglePaidStatus, toggleCancelLesson, rescheduleLesson } = useLessonActions(undefined, true) // Pass isStudent=true
 
     return (
         <div className={styles.container}>
@@ -109,34 +106,15 @@ export default function StudentSubjectsPage() {
                 </div>
             )}
 
-            <Modal
+            <SubjectDetailsModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={selectedSubject ? `Занятия: ${selectedSubject.name}` : 'Занятия'}
-                size="large"
-            >
-                {isLessonsLoading ? (
-                    <div style={{ padding: '40px', textAlign: 'center' }}>Загрузка занятий...</div>
-                ) : (
-                    <StudentLessons
-                        lessons={subjectLessons}
-                        student={{ id: 'me', name: 'Я', subjects: [] } as any} // Mock student object since we are the student
-                        onTogglePaidStatus={(lessonId) => {
-                            const l = subjectLessons.find(x => x.id === lessonId)
-                            if (l) togglePaidStatus(l)
-                        }}
-                        onToggleCancelLesson={(lessonId) => {
-                            const l = subjectLessons.find(x => x.id === lessonId)
-                            if (l) toggleCancelLesson(l)
-                        }}
-                        onRescheduleLesson={(lessonId) => {
-                            const l = subjectLessons.find(x => x.id === lessonId)
-                            if (l) rescheduleLesson(l)
-                        }}
-                        isStudentView={true}
-                    />
-                )}
-            </Modal>
+                subject={selectedSubject}
+                students={selectedSubject?.relatedStudent ? [selectedSubject.relatedStudent] : []}
+                groups={selectedSubject?.relatedGroup ? [selectedSubject.relatedGroup] : []}
+                isLoading={false}
+                isStudentView={true}
+            />
         </div>
     )
 }

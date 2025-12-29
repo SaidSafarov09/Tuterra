@@ -11,12 +11,12 @@ import { formatSmartDate } from '@/lib/dateUtils'
 // Вспомогательная функция для получения ближайшего будущего занятия
 const getNextLesson = (lessons: Lesson[] | undefined) => {
     if (!lessons || lessons.length === 0) return null;
-    
+
     const now = new Date();
     const futureLessons = lessons.filter(lesson => new Date(lesson.date) >= now);
-    
+
     if (futureLessons.length === 0) return null;
-    
+
     return futureLessons
         .slice()
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
@@ -29,8 +29,9 @@ interface SubjectDetailsModalProps {
     students: Student[]
     groups: Group[]
     isLoading: boolean
-    onAddStudent: () => void
-    onCreateLesson: () => void
+    onAddStudent?: () => void
+    onCreateLesson?: () => void
+    isStudentView?: boolean
 }
 
 export function SubjectDetailsModal({
@@ -41,23 +42,27 @@ export function SubjectDetailsModal({
     groups,
     isLoading,
     onAddStudent,
-    onCreateLesson
+    onCreateLesson,
+    isStudentView = false
 }: SubjectDetailsModalProps) {
     const router = useRouter()
+
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
             title={subject?.name || 'Предмет'}
             footer={
-                <div className={styles.detailsFooter}>
-                    <Button variant="secondary" onClick={onAddStudent}>
-                        Добавить ученика
-                    </Button>
-                    <Button onClick={onCreateLesson}>
-                        Создать занятие
-                    </Button>
-                </div>
+                !isStudentView ? (
+                    <div className={styles.detailsFooter}>
+                        <Button variant="secondary" onClick={onAddStudent}>
+                            Добавить ученика
+                        </Button>
+                        <Button onClick={onCreateLesson}>
+                            Создать занятие
+                        </Button>
+                    </div>
+                ) : undefined
             }
         >
             <div className={styles.detailsContent}>
@@ -73,7 +78,7 @@ export function SubjectDetailsModal({
                                         <div
                                             key={group.id}
                                             className={styles.studentItem}
-                                            onClick={() => router.push(`/groups/${group.id}`)}
+                                            onClick={() => isStudentView ? router.push(`/student/groups/${group.id}`) : router.push(`/groups/${group.id}`)}
                                         >
                                             <div className={styles.studentInfo}>
                                                 <div
@@ -122,7 +127,7 @@ export function SubjectDetailsModal({
                                         <div
                                             key={student.id}
                                             className={styles.studentItem}
-                                            onClick={() => router.push(`/students/${student.slug || student.id}`)}
+                                            onClick={() => isStudentView ? router.push(`/student/lessons`) : router.push(`/students/${student.slug || student.id}`)}
                                         >
                                             <div className={styles.studentInfo}>
                                                 <div
