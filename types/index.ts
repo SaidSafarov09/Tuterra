@@ -80,6 +80,14 @@ export interface Student {
         lessons: number
     }
     learningPlans?: LearningPlan[]
+    linkedUser?: {
+        id: string
+        name: string | null
+        email: string | null
+        phone: string | null
+        avatar: string | null
+    } | null
+    linkedUserId?: string | null
 }
 
 export interface Group {

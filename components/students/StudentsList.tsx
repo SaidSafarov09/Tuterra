@@ -1,6 +1,6 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { PhoneIcon, NoteIcon, TelegramIcon, WhatsAppIcon } from '@/components/icons/Icons'
+import { PhoneIcon, NoteIcon, TelegramIcon, WhatsAppIcon, LinkIcon } from '@/components/icons/Icons'
 import { Student } from '@/types'
 import styles from '../../app/(dashboard)/students/page.module.scss'
 import { ContactType, getContactLink } from '@/lib/contactUtils'
@@ -44,9 +44,15 @@ export function StudentsList({ students }: StudentsListProps) {
             {students.map((student) => (
                 <div
                     key={student.id}
-                    className={styles.studentCard}
+                    className={`${styles.studentCard} ${student.linkedUser ? styles.linkedCard : ''}`}
                     onClick={() => router.push(`/students/${student.slug || student.id}`)}
+                    style={{ position: 'relative' }}
                 >
+                    {student.linkedUser && (
+                        <div className={styles.linkedBadge}>
+                            Подключён к платформе
+                        </div>
+                    )}
                     <div className={styles.cardHeader}>
                         <div
                             className={styles.studentAvatarFallback}
@@ -103,12 +109,28 @@ export function StudentsList({ students }: StudentsListProps) {
                                 <p className={styles.noteText}>{student.note}</p>
                             </div>
                         )}
+
                     </div>
 
                     <div className={styles.cardFooter}>
                         <div className={styles.statItem}>
-                            <span className={styles.statLabel}>Занятий</span>
-                            <span className={styles.statValue}>{student._count?.lessons || 0}</span>
+                            <div className={styles.statInfo}>
+                                <span className={styles.statLabel}>Занятий</span>
+                                <span className={styles.statValue}>{student._count?.lessons || 0}</span>
+                            </div>
+
+                            {!student.linkedUser && (
+                                <button
+                                    className={styles.miniLinkButton}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push(`/students/${student.slug || student.id}`)
+                                    }}
+                                    title="Привязать к платформе"
+                                >
+                                    <LinkIcon size={16} />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

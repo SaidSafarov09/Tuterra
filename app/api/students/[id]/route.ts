@@ -38,6 +38,15 @@ export async function GET(
             where: whereClause,
             include: {
                 subjects: true,
+                linkedUser: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                        avatar: true,
+                    }
+                },
                 groups: {
                     include: {
                         students: true,
@@ -61,6 +70,21 @@ export async function GET(
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
+        let studentWithLink = student as any;
+        if (!student.linkedUser && student.contact) {
+            const linkedUser = await prisma.user.findFirst({
+                where: {
+                    OR: [
+                        { email: student.contact },
+                        { phone: student.contact }
+                    ]
+                },
+                select: { id: true, name: true, email: true, phone: true, avatar: true }
+            });
+            if (linkedUser) {
+                studentWithLink = { ...student, linkedUser };
+            }
+        }
 
         if (isId && student.slug) {
             return NextResponse.redirect(
@@ -69,7 +93,7 @@ export async function GET(
             )
         }
 
-        return NextResponse.json(student)
+        return NextResponse.json(studentWithLink)
     } catch (error) {
         console.error('Get student error:', error)
         return NextResponse.json(

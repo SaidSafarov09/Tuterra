@@ -594,3 +594,14 @@
   color: var(--text-secondary);
   min-width: 70px;
 }
+
+.linkedBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}

@@ -1,9 +1,10 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { EditIcon, PlusIcon, DeleteIcon, PhoneIcon, TelegramIcon, WhatsAppIcon } from '@/components/icons/Icons'
+import { EditIcon, PlusIcon, DeleteIcon, PhoneIcon, TelegramIcon, WhatsAppIcon, LinkIcon } from '@/components/icons/Icons'
 import { Student } from '@/types'
 import { ContactType, getContactLink } from '@/lib/contactUtils'
+import { toast } from 'sonner'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
 
 interface StudentHeaderProps {
@@ -89,6 +90,20 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                     </div>
 
                     <div className={styles.headerActions}>
+                        {!student.linkedUser && (
+                            <Button
+                                variant="primary"
+                                size="small"
+                                onClick={() => {
+                                    toast.info('Введите корректный телефон или email ученика в карточке, чтобы привязать его к аккаунту')
+                                    onEdit()
+                                }}
+                                title="Привязать к платформе"
+                            >
+                                <LinkIcon size={16} />
+                                Привязать
+                            </Button>
+                        )}
                         <Button variant="secondary" size="small" onClick={onEdit}>
                             <EditIcon size={16} />
                             Редактировать
@@ -140,6 +155,14 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                         Группы: <strong>{student.groups && student.groups.length > 0 ? student.groups.map(g => g.name).join(', ') : '0'}</strong>
                     </div>
                 </div>
+
+                {student.linkedUser && (
+                    <div style={{ marginTop: 16 }}>
+                        <div className={styles.linkedBadge} style={{ position: 'relative', top: 'auto', right: 'auto', display: 'inline-block' }}>
+                            Подключён к платформе
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )

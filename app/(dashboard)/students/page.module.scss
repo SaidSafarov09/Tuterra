@@ -235,6 +235,13 @@
     align-items: center;
     justify-content: space-between;
     font-size: 13px;
+    width: 100%;
+}
+
+.statInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .statLabel {
@@ -312,5 +319,47 @@
 
     .title {
         font-size: 24px;
+    }
+}
+
+.linkedCard {
+    border-color: #F59E0B;
+    box-shadow: 0 0 0 1px #F59E0B, 0 2px 12px rgba(245, 158, 11, 0.15);
+}
+
+.linkedBadge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+}
+
+.miniLinkButton {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+
+    &:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
     }
 }

@@ -27,10 +27,19 @@ export async function GET(request: NextRequest) {
         const payload = await verifyToken(token)
         if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        const students = await prisma.student.findMany({
+        const rawStudents = await prisma.student.findMany({
             where: { ownerId: payload.userId },
             include: {
                 subjects: true,
+                linkedUser: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                        avatar: true,
+                    }
+                },
                 lessons: {
                     orderBy: { date: 'desc' },
                     take: 1,
@@ -40,6 +49,38 @@ export async function GET(request: NextRequest) {
                 },
             } as any,
             orderBy: { createdAt: 'desc' },
+        })
+
+        // Infer connection from contact if not explicitly linked
+        const contacts = rawStudents
+            .filter(s => !s.linkedUser && s.contact)
+            .map(s => s.contact!)
+
+        let usersMap = new Map<string, any>();
+
+        if (contacts.length > 0) {
+            const potentialUsers = await prisma.user.findMany({
+                where: {
+                    OR: [
+                        { email: { in: contacts } },
+                        { phone: { in: contacts } }
+                    ]
+                },
+                select: { id: true, name: true, email: true, phone: true, avatar: true }
+            })
+
+            potentialUsers.forEach(u => {
+                if (u.email) usersMap.set(u.email, u);
+                if (u.phone) usersMap.set(u.phone, u);
+            })
+        }
+
+        const students = rawStudents.map((s: any) => {
+            if (s.linkedUser) return s;
+            if (s.contact && usersMap.has(s.contact)) {
+                return { ...s, linkedUser: usersMap.get(s.contact) }
+            }
+            return s;
         })
 
         return NextResponse.json(students)
