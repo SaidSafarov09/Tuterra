@@ -6,6 +6,8 @@ import { Student } from '@/types'
 import { ContactType, getContactLink } from '@/lib/contactUtils'
 import { toast } from 'sonner'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
+import { StudentLinkModal } from './StudentLinkModal'
+import { settingsApi } from '@/services/api'
 
 interface StudentHeaderProps {
     student: Student
@@ -16,6 +18,14 @@ interface StudentHeaderProps {
 
 export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: StudentHeaderProps) {
     const router = useRouter()
+    const [isLinkModalOpen, setIsLinkModalOpen] = React.useState(false)
+    const [referralCode, setReferralCode] = React.useState('')
+
+    React.useEffect(() => {
+        settingsApi.get().then(data => {
+            if (data.referralCode) setReferralCode(data.referralCode)
+        })
+    }, [])
 
     const getInitials = (name: string) => {
         return name
@@ -94,10 +104,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                             <Button
                                 variant="primary"
                                 size="small"
-                                onClick={() => {
-                                    toast.info('Введите корректный телефон или email ученика в карточке, чтобы привязать его к аккаунту')
-                                    onEdit()
-                                }}
+                                onClick={() => setIsLinkModalOpen(true)}
                                 title="Привязать к платформе"
                             >
                                 <LinkIcon size={16} />
@@ -164,6 +171,12 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                     </div>
                 )}
             </div>
+
+            <StudentLinkModal
+                isOpen={isLinkModalOpen}
+                onClose={() => setIsLinkModalOpen(false)}
+                referralCode={referralCode}
+            />
         </div>
     )
 }

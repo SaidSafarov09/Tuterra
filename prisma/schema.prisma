@@ -39,6 +39,7 @@ model User {
   verificationCodes VerificationCode[]
   learningPlans     LearningPlan[]
   onboardingCompleted Boolean            @default(false)
+  referralCode      String?            @unique
   
   studentRecords    Student[]          @relation("LinkedStudent")
 }

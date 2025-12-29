@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
                 { status: 401 }
             )
         }
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
             where: { id: payload.userId },
             select: {
                 id: true,
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
                 timezone: true,
                 birthDate: true,
                 region: true,
+                referralCode: true,
             },
         })
 
@@ -44,6 +45,29 @@ export async function GET(request: NextRequest) {
                 { success: false, error: 'Пользователь не найден' },
                 { status: 404 }
             )
+        }
+
+        // Generate referral code if missing
+        if (!user.referralCode) {
+            const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: { referralCode: code },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    name: true,
+                    phone: true,
+                    email: true,
+                    avatar: true,
+                    currency: true,
+                    timezone: true,
+                    birthDate: true,
+                    region: true,
+                    referralCode: true,
+                },
+            }) as any
         }
 
         return NextResponse.json({

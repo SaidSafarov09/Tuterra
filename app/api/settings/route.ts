@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
         if (!payload) {
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
-        const currentUser = await prisma.user.findUnique({
+        let currentUser = await prisma.user.findUnique({
             where: { id: payload.userId },
             select: {
                 id: true,
@@ -90,6 +90,7 @@ export async function GET(request: NextRequest) {
                 notificationSettings: true,
                 telegramId: true,
                 onboardingCompleted: true,
+                referralCode: true,
                 authProviders: {
                     select: {
                         provider: true,
@@ -101,6 +102,39 @@ export async function GET(request: NextRequest) {
         if (!currentUser) {
             return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
         }
+
+        // Generate referral code if missing
+        if (!currentUser.referralCode) {
+            const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+            currentUser = await prisma.user.update({
+                where: { id: currentUser.id },
+                data: { referralCode: code },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    name: true,
+                    email: true,
+                    phone: true,
+                    avatar: true,
+                    birthDate: true,
+                    currency: true,
+                    timezone: true,
+                    region: true,
+                    theme: true,
+                    notificationSettings: true,
+                    telegramId: true,
+                    onboardingCompleted: true,
+                    referralCode: true,
+                    authProviders: {
+                        select: {
+                            provider: true,
+                        },
+                    },
+                },
+            })
+        }
+
         console.log('API user:', currentUser.id, 'TelegramID:', currentUser.telegramId)
 
 

@@ -4,6 +4,8 @@ import { PhoneIcon, NoteIcon, TelegramIcon, WhatsAppIcon, LinkIcon } from '@/com
 import { Student } from '@/types'
 import styles from '../../app/(dashboard)/students/page.module.scss'
 import { ContactType, getContactLink } from '@/lib/contactUtils'
+import { StudentLinkModal } from './StudentLinkModal'
+import { settingsApi } from '@/services/api'
 
 interface StudentsListProps {
     students: Student[]
@@ -11,6 +13,22 @@ interface StudentsListProps {
 
 export function StudentsList({ students }: StudentsListProps) {
     const router = useRouter()
+    const [isLinkModalOpen, setIsLinkModalOpen] = React.useState(false)
+    const [referralCode, setReferralCode] = React.useState('')
+
+    React.useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const data = await settingsApi.get()
+                if (data.referralCode) {
+                    setReferralCode(data.referralCode)
+                }
+            } catch (err) {
+                console.error('Failed to fetch user for referral code', err)
+            }
+        }
+        fetchUser()
+    }, [])
 
     const getInitials = (name: string) => {
         return name
@@ -124,7 +142,7 @@ export function StudentsList({ students }: StudentsListProps) {
                                     className={styles.miniLinkButton}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        router.push(`/students/${student.slug || student.id}`)
+                                        setIsLinkModalOpen(true)
                                     }}
                                     title="Привязать к платформе"
                                 >
@@ -135,6 +153,12 @@ export function StudentsList({ students }: StudentsListProps) {
                     </div>
                 </div>
             ))}
+
+            <StudentLinkModal
+                isOpen={isLinkModalOpen}
+                onClose={() => setIsLinkModalOpen(false)}
+                referralCode={referralCode}
+            />
         </div>
     )
 }

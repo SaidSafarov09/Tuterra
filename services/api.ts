@@ -234,6 +234,7 @@ interface UserSettings {
     theme?: string
     notificationSettings?: NotificationSettingsDTO
     telegramId?: string | null
+    referralCode?: string | null
     onboardingCompleted?: boolean
 }
 

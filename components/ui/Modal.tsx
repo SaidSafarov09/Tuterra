@@ -16,6 +16,7 @@ interface ModalProps {
     minHeight?: string
     mobileView?: 'page' | 'modal'
     withHeader?: boolean
+    padding?: string
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -29,6 +30,7 @@ export const Modal: React.FC<ModalProps> = ({
     minHeight = "auto",
     mobileView = 'page',
     withHeader = true,
+    padding,
 }) => {
     const modalRef = useRef<HTMLDivElement>(null)
 
@@ -98,7 +100,7 @@ export const Modal: React.FC<ModalProps> = ({
                         </div>
                     </div>
                 )}
-                <div style={{ minHeight }} className={styles.content}>{children}</div>
+                <div style={{ minHeight, padding }} className={styles.content}>{children}</div>
                 {footer && <div className={styles.footer}>{footer}</div>}
             </div>
         </div>
