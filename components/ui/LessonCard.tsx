@@ -22,6 +22,7 @@ interface LessonCardProps {
     onDelete?: (lessonId: string) => void
     index?: number
     totalItems?: number
+    isStudentView?: boolean
 }
 
 export const LessonCard: React.FC<LessonCardProps> = ({
@@ -35,6 +36,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     onDelete,
     index,
     totalItems,
+    isStudentView = false,
 }) => {
     const [showTopic, setShowTopic] = useState(false)
 
@@ -150,10 +152,10 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     if (showActions) {
         return (
             <div className={styles.cardWrapper}>
-                <Link href={`/lessons/${lesson.slug || lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                <Link href={`${isStudentView ? '/student' : ''}/lessons/${lesson.slug || lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
                     {CardContent}
                 </Link>
-                {onTogglePaid && onEdit && onDelete && (
+                {onTogglePaid && (
                     <div className={styles.actionsFooter} onClick={(e) => e.stopPropagation()}>
                         <LessonActions
                             lesson={lesson}
@@ -164,6 +166,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                             onDelete={onDelete}
                             index={index}
                             totalItems={totalItems}
+                            isStudentView={isStudentView}
                         />
                     </div>
                 )}
@@ -172,7 +175,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     }
 
     return (
-        <Link href={`/lessons/${lesson.slug || lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+        <Link href={`${isStudentView ? '/student' : ''}/lessons/${lesson.slug || lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
             {CardContent}
         </Link>
     )

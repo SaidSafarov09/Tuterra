@@ -6,12 +6,14 @@ interface EmptyStateProps {
     title: string
     description?: React.ReactNode
     icon?: React.ReactNode
+    action?: React.ReactNode
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
     title,
     description,
-    icon
+    icon,
+    action
 }) => {
     return (
         <div className={styles.container}>
@@ -31,6 +33,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                         : description
                     }
                 </p>
+            )}
+            {action && (
+                <div className={styles.action}>
+                    {action}
+                </div>
             )}
         </div>
     )

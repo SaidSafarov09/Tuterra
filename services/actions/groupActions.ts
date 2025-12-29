@@ -11,6 +11,17 @@ export async function fetchGroups(): Promise<Group[]> {
     }
 }
 
+export async function fetchStudentGroups(): Promise<Group[]> {
+    try {
+        const response = await fetch('/api/student/groups')
+        const data = await response.json()
+        return data.success ? data.groups : []
+    } catch (error) {
+        toast.error('Не удалось загрузить ваши группы')
+        return []
+    }
+}
+
 export async function createGroup(data: {
     name: string
     subjectId: string

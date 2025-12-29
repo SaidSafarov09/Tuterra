@@ -14,6 +14,7 @@ interface LessonsListProps {
     onReschedule?: (lesson: Lesson) => void
     onEdit: (lesson: Lesson) => void
     onDelete: (lessonId: string) => void
+    isStudentView?: boolean
 }
 
 export function LessonsList({
@@ -24,7 +25,8 @@ export function LessonsList({
     onToggleCancel,
     onReschedule,
     onEdit,
-    onDelete
+    onDelete,
+    isStudentView = false
 }: LessonsListProps) {
     if (isLoading) {
         return (
@@ -61,6 +63,7 @@ export function LessonsList({
                     onDelete={onDelete}
                     index={index}
                     totalItems={lessons.length}
+                    isStudentView={isStudentView}
                 />
             ))}
         </div>

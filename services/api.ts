@@ -67,6 +67,9 @@ export const lessonsApi = {
         fetch(`/api/lessons/${id}`, {
             method: 'DELETE',
         }).then(res => handleResponse<{ success: boolean }>(res)),
+
+    getStudentLessons: (filter?: string) =>
+        fetch(`/api/student/lessons${filter ? `?filter=${filter}` : ''}`).then(res => handleResponse<Lesson[]>(res)),
 }
 
 export const studentsApi = {
@@ -235,6 +238,7 @@ interface UserSettings {
     notificationSettings?: NotificationSettingsDTO
     telegramId?: string | null
     referralCode?: string | null
+    role: 'teacher' | 'student'
     onboardingCompleted?: boolean
 }
 

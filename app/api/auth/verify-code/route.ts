@@ -8,7 +8,7 @@ import bcrypt from 'bcrypt'
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { sessionId, code } = body
+        const { sessionId, code, role, referralCode: refCode } = body
 
         if (!sessionId || !code) {
             return NextResponse.json(
@@ -62,17 +62,39 @@ export async function POST(request: NextRequest) {
                 where: { email: emailSession.email },
             })
 
+            const isStudent = role === 'student'
+
             if (!user) {
                 user = await prisma.user.create({
                     data: {
                         email: emailSession.email,
                         emailVerified: true,
+                        role: role || 'teacher',
                         firstName: 'Новый',
-                        lastName: 'Пользователь',
+                        lastName: isStudent ? 'Ученик' : 'Пользователь',
                         name: emailSession.email.split('@')[0],
                     },
                 })
                 await createWelcomeNotifications(user.id)
+
+                // Referral linking
+                if (isStudent && refCode) {
+                    const teacher = await prisma.user.findUnique({
+                        where: { referralCode: refCode }
+                    })
+
+                    if (teacher) {
+                        await prisma.student.create({
+                            data: {
+                                name: user.name || 'Новый ученик',
+                                ownerId: teacher.id,
+                                linkedUserId: user.id,
+                                contact: user.email,
+                                contactType: 'email'
+                            }
+                        })
+                    }
+                }
             } else {
                 user = await prisma.user.update({
                     where: { id: user.id },
@@ -84,7 +106,8 @@ export async function POST(request: NextRequest) {
 
             const token = await signToken({
                 userId: user.id,
-                phone: user.phone || '', // Keep compatibility with existing JWT payload interface
+                phone: user.phone || '',
+                role: user.role,
             })
 
             const isLocalhost = request.url.includes('localhost')
@@ -108,6 +131,7 @@ export async function POST(request: NextRequest) {
                     email: user.email,
                     phone: user.phone,
                     avatar: user.avatar,
+                    role: user.role,
                     birthDate: user.birthDate,
                     region: user.region,
                 },
@@ -166,12 +190,32 @@ export async function POST(request: NextRequest) {
                 data: {
                     phone: phoneSession.phone,
                     phoneVerified: true,
+                    role: role || 'teacher',
                     firstName: 'Новый',
-                    lastName: 'Пользователь',
+                    lastName: role === 'student' ? 'Ученик' : 'Пользователь',
                     name: 'Новый Пользователь',
                 },
             })
             await createWelcomeNotifications(user.id)
+
+            // Referral linking for phone auth
+            if (role === 'student' && refCode) {
+                const teacher = await prisma.user.findUnique({
+                    where: { referralCode: refCode }
+                })
+
+                if (teacher) {
+                    await prisma.student.create({
+                        data: {
+                            name: user.name || 'Новый ученик',
+                            ownerId: teacher.id,
+                            linkedUserId: user.id,
+                            contact: user.phone,
+                            contactType: 'phone'
+                        }
+                    })
+                }
+            }
         } else {
             user = await prisma.user.update({
                 where: { id: user.id },
@@ -184,6 +228,7 @@ export async function POST(request: NextRequest) {
         const token = await signToken({
             userId: user.id,
             phone: user.phone!,
+            role: user.role,
         })
 
         const isLocalhost = request.url.includes('localhost')
@@ -206,6 +251,7 @@ export async function POST(request: NextRequest) {
                 name: user.name,
                 phone: user.phone,
                 avatar: user.avatar,
+                role: user.role,
                 birthDate: user.birthDate,
                 region: user.region,
             },

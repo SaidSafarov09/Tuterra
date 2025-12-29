@@ -9,13 +9,14 @@ interface LessonActionsProps {
     lesson: Lesson
     onTogglePaid: (lesson: Lesson) => void
     onToggleCancel?: (lesson: Lesson) => void
-    onEdit: (lesson: Lesson) => void
-    onDelete: (lessonId: string) => void
+    onEdit?: (lesson: Lesson) => void
+    onDelete?: (lessonId: string) => void
     onReschedule?: (lesson: Lesson) => void
     showCancelButton?: boolean
     disableMobileDropdown?: boolean
     index?: number
     totalItems?: number
+    isStudentView?: boolean
 }
 
 export function LessonActions({
@@ -28,7 +29,8 @@ export function LessonActions({
     showCancelButton = true,
     disableMobileDropdown = false,
     index = 0,
-    totalItems = 0
+    totalItems = 0,
+    isStudentView = false,
 }: LessonActionsProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
@@ -80,7 +82,7 @@ export function LessonActions({
     if (showMobileDropdown) {
         return (
             <div className={styles.lessonActions} onClick={(e) => isDropdownOpen && e.stopPropagation()}>
-                {!isTrialLesson && (
+                {!isTrialLesson && !isStudentView && (
                     <button
                         className={`${styles.actionButton} ${styles.paidButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
                         onClick={() => onTogglePaid(lesson)}
@@ -132,22 +134,26 @@ export function LessonActions({
                                 </button>
                             )}
 
-                            <button
-                                className={styles.dropdownItem}
-                                onClick={() => handleAction(() => onEdit(lesson))}
-                                disabled={isLessonEnded}
-                            >
-                                <EditIcon size={16} />
-                                Изменить
-                            </button>
+                            {onEdit && (
+                                <button
+                                    className={styles.dropdownItem}
+                                    onClick={() => handleAction(() => onEdit(lesson))}
+                                    disabled={isLessonEnded}
+                                >
+                                    <EditIcon size={16} />
+                                    Изменить
+                                </button>
+                            )}
 
-                            <button
-                                className={`${styles.dropdownItem} ${styles.deleteItem}`}
-                                onClick={() => handleAction(() => onDelete(lesson.id))}
-                            >
-                                <DeleteIcon size={16} />
-                                Удалить
-                            </button>
+                            {onDelete && (
+                                <button
+                                    className={`${styles.dropdownItem} ${styles.deleteItem}`}
+                                    onClick={() => handleAction(() => onDelete(lesson.id))}
+                                >
+                                    <DeleteIcon size={16} />
+                                    Удалить
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -197,21 +203,25 @@ export function LessonActions({
                 </button>
             )}
 
-            <button
-                className={`${styles.actionButton} ${styles.editButton}`}
-                onClick={() => onEdit(lesson)}
-                disabled={isLessonEnded}
-            >
-                <EditIcon size={16} />
-                Изменить
-            </button>
-            <button
-                className={`${styles.actionButton} ${styles.deleteButton}`}
-                onClick={() => onDelete(lesson.id)}
-            >
-                <DeleteIcon size={16} />
-                Удалить
-            </button>
+            {onEdit && (
+                <button
+                    className={`${styles.actionButton} ${styles.editButton}`}
+                    onClick={() => onEdit(lesson)}
+                    disabled={isLessonEnded}
+                >
+                    <EditIcon size={16} />
+                    Изменить
+                </button>
+            )}
+            {onDelete && (
+                <button
+                    className={`${styles.actionButton} ${styles.deleteButton}`}
+                    onClick={() => onDelete(lesson.id)}
+                >
+                    <DeleteIcon size={16} />
+                    Удалить
+                </button>
+            )}
         </div>
     )
 }

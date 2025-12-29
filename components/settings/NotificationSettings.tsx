@@ -9,9 +9,10 @@ import { NotificationSettingsDTO } from '@/services/api'
 interface NotificationSettingsProps {
     settings: NotificationSettingsDTO
     onChange: (settings: Partial<NotificationSettingsDTO>) => void
+    isStudentView?: boolean
 }
 
-export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ settings, onChange }) => {
+export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ settings, onChange, isStudentView = false }) => {
     return (
         <div className={styles.container}>
             <section className={styles.section}>
@@ -32,21 +33,25 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ sett
                         checked={settings.statusChanges}
                         onChange={(val) => onChange({ statusChanges: val })}
                     />
-                    <Switch
-                        label="Отчеты о доходе (день/месяц)"
-                        checked={settings.incomeReports}
-                        onChange={(val) => onChange({ incomeReports: val })}
-                    />
-                    <Switch
-                        label="Долги учеников"
-                        checked={settings.studentDebts}
-                        onChange={(val) => onChange({ studentDebts: val })}
-                    />
-                    <Switch
-                        label="Отсутствие занятий у ученика"
-                        checked={settings.missingLessons}
-                        onChange={(val) => onChange({ missingLessons: val })}
-                    />
+                    {!isStudentView && (
+                        <>
+                            <Switch
+                                label="Отчеты о доходе (день/месяц)"
+                                checked={settings.incomeReports}
+                                onChange={(val) => onChange({ incomeReports: val })}
+                            />
+                            <Switch
+                                label="Долги учеников"
+                                checked={settings.studentDebts}
+                                onChange={(val) => onChange({ studentDebts: val })}
+                            />
+                            <Switch
+                                label="Отсутствие занятий у ученика"
+                                checked={settings.missingLessons}
+                                onChange={(val) => onChange({ missingLessons: val })}
+                            />
+                        </>
+                    )}
                     <Switch
                         label="Подсказки по профилю"
                         checked={settings.onboardingTips}

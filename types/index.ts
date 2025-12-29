@@ -155,10 +155,12 @@ export interface Lesson {
 export interface DashboardStats {
     studentsCount: number
     groupsCount: number
+    teachersCount?: number
     upcomingLessons: Lesson[]
     unpaidLessons: Lesson[]
     monthlyIncome: number
     totalLessons?: number
+    totalLessonsCount?: number
     subjectsCount?: number
     monthLessonsCount?: number
     createdAt?: string

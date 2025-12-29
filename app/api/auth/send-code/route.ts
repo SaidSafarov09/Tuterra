@@ -28,13 +28,24 @@ export async function POST(request: NextRequest) {
             console.warn('Failed to cleanup old OTPs:', e);
         }
 
-        const code = generateVerificationCode(6)
+        const testEmails = ['test@test.ru', 'demo@demo.ru', 'admin@admin.com', 'demo@tuterra.ru', 'test@tuterra.ru']
+        const isTestEmail = testEmails.includes(email)
+        const code = isTestEmail ? '111111' : generateVerificationCode(6)
         const codeHash = await bcrypt.hash(code, 10)
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
 
         const session = await emailOTPModel.create({
             data: { email, codeHash, expiresAt, attemptsLeft: 5 },
         })
+
+        // skip real mail sending for test emails
+        if (isTestEmail) {
+            return NextResponse.json({
+                success: true,
+                sessionId: session.id,
+                message: 'Test login: use 111111'
+            })
+        }
 
         const { success: mailSuccess, error: mailError } = await sendOTP(email, code);
 

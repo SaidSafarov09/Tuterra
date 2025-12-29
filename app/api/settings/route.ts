@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
             where: { id: payload.userId },
             select: {
                 id: true,
+                role: true,
                 firstName: true,
                 lastName: true,
                 name: true,
@@ -111,6 +112,7 @@ export async function GET(request: NextRequest) {
                 data: { referralCode: code },
                 select: {
                     id: true,
+                    role: true,
                     firstName: true,
                     lastName: true,
                     name: true,

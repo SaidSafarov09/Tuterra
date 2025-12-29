@@ -3,13 +3,14 @@ import { useModalStore } from '@/store/useModalStore'
 import { Group, Subject, Student } from '@/types'
 import {
     fetchGroups as loadGroups,
+    fetchStudentGroups as loadStudentGroups,
     fetchSubjects as loadSubjects,
     fetchStudents as loadStudents,
     createGroup as createNewGroup,
     createSubjectWithRandomColor,
 } from '@/services/actions'
 
-export function useGroups(onSuccess?: () => void) {
+export function useGroups(onSuccess?: () => void, isStudent = false) {
     const [groups, setGroups] = useState<Group[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
     const [students, setStudents] = useState<Student[]>([])
@@ -29,16 +30,18 @@ export function useGroups(onSuccess?: () => void) {
     const { isOpen, openModal, closeModal } = useModalStore()
 
     const fetchGroups = async () => {
-        const data = await loadGroups()
+        const data = isStudent ? await loadStudentGroups() : await loadGroups()
         setGroups(data)
     }
 
     const fetchSubjects = async () => {
+        if (isStudent) return
         const data = await loadSubjects()
         setSubjects(data)
     }
 
     const fetchStudents = async () => {
+        if (isStudent) return
         const data = await loadStudents()
         setStudents(data)
     }

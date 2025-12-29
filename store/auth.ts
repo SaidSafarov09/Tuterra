@@ -12,6 +12,7 @@ interface User {
     birthDate: string | null
     region: string | null
     onboardingCompleted: boolean
+    role: 'teacher' | 'student'
 }
 
 interface AuthState {

@@ -32,8 +32,24 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/auth', request.url))
     }
 
-    if (isPublicPath && isAuthenticated) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (isAuthenticated) {
+        const targetDashboard = payload?.role === 'student' ? '/student/dashboard' : '/dashboard'
+
+        // Redirect from public paths to specific dashboard
+        if (isPublicPath || pathname === '/') {
+            return NextResponse.redirect(new URL(targetDashboard, request.url))
+        }
+
+        // Cross-role protection
+        const isStudentPath = pathname.startsWith('/student/') || pathname === '/student'
+        const isTeacherPath = pathname.startsWith('/dashboard') || pathname === '/dashboard'
+
+        if (payload?.role === 'student' && isTeacherPath) {
+            return NextResponse.redirect(new URL('/student/dashboard', request.url))
+        }
+        if (payload?.role === 'teacher' && isStudentPath) {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
     }
 
     return NextResponse.next()

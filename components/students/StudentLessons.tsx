@@ -14,13 +14,14 @@ import styles from "../../app/(dashboard)/students/[id]/page.module.scss";
 interface StudentLessonsProps {
     lessons: Lesson[];
     student: Student;
-    onCreateLesson: () => void;
-    onEditLesson: (lesson: Lesson) => void;
-    onDeleteLesson: (lessonId: string) => void;
-    onTogglePaidStatus: (lessonId: string, isPaid: boolean) => void;
+    onCreateLesson?: () => void;
+    onEditLesson?: (lesson: Lesson) => void;
+    onDeleteLesson?: (lessonId: string) => void;
+    onTogglePaidStatus?: (lessonId: string, isPaid: boolean) => void;
     onToggleCancelLesson: (lessonId: string, isCanceled: boolean) => void;
     onRescheduleLesson: (lessonId: string) => void;
     onOpenGroupPayment?: (lesson: Lesson) => void;
+    isStudentView?: boolean;
 }
 
 export function StudentLessons({
@@ -33,6 +34,7 @@ export function StudentLessons({
     onToggleCancelLesson,
     onRescheduleLesson,
     onOpenGroupPayment,
+    isStudentView = false,
 }: StudentLessonsProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
@@ -82,10 +84,12 @@ export function StudentLessons({
         <div className={styles.section}>
             <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>История занятий</h2>
-                <Button variant="secondary" size="small" onClick={onCreateLesson}>
-                    <PlusIcon size={16} />
-                    Добавить
-                </Button>
+                {!isStudentView && onCreateLesson && (
+                    <Button variant="secondary" size="small" onClick={onCreateLesson}>
+                        <PlusIcon size={16} />
+                        Добавить
+                    </Button>
+                )}
             </div>
 
             <TabNav
@@ -97,7 +101,9 @@ export function StudentLessons({
             {lessons.length === 0 ? (
                 <div className={styles.emptyState}>
                     <p className={styles.emptyText}>У этого ученика пока нет занятий</p>
-                    <Button onClick={onCreateLesson}>Создать первое занятие</Button>
+                    {!isStudentView && onCreateLesson && (
+                        <Button onClick={onCreateLesson}>Создать первое занятие</Button>
+                    )}
                 </div>
             ) : filteredLessons.length === 0 ? (
                 <div className={styles.emptyState}>
@@ -197,7 +203,7 @@ export function StudentLessons({
                                         onTogglePaid={(l) => {
                                             if (l.group && onOpenGroupPayment) {
                                                 onOpenGroupPayment(l)
-                                            } else {
+                                            } else if (onTogglePaidStatus) {
                                                 onTogglePaidStatus(l.id, !l.isPaid)
                                             }
                                         }}
@@ -209,6 +215,7 @@ export function StudentLessons({
                                         onDelete={onDeleteLesson}
                                         index={index}
                                         totalItems={filteredLessons.length}
+                                        isStudentView={isStudentView}
                                     />
                                 </div>
                             </div>

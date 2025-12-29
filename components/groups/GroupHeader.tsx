@@ -7,9 +7,9 @@ import styles from '../../app/(dashboard)/groups/page.module.scss'
 
 interface GroupHeaderProps {
     group: Group
-    onEdit: () => void
-    onCreateLesson: () => void
-    onDelete: () => void
+    onEdit?: () => void
+    onCreateLesson?: () => void
+    onDelete?: () => void
 }
 
 export function GroupHeader({ group, onEdit, onCreateLesson, onDelete }: GroupHeaderProps) {
@@ -62,17 +62,23 @@ export function GroupHeader({ group, onEdit, onCreateLesson, onDelete }: GroupHe
                     </div>
 
                     <div className={styles.headerActions}>
-                        <Button variant="secondary" size="small" onClick={onEdit}>
-                            <EditIcon size={16} />
-                            Редактировать
-                        </Button>
-                        <Button size="small" onClick={onCreateLesson}>
-                            <PlusIcon size={16} />
-                            Занятие
-                        </Button>
-                        <Button variant="danger" size="small" onClick={onDelete}>
-                            <DeleteIcon size={16} />
-                        </Button>
+                        {onEdit && (
+                            <Button variant="secondary" size="small" onClick={onEdit}>
+                                <EditIcon size={16} />
+                                Редактировать
+                            </Button>
+                        )}
+                        {onCreateLesson && (
+                            <Button size="small" onClick={onCreateLesson}>
+                                <PlusIcon size={16} />
+                                Занятие
+                            </Button>
+                        )}
+                        {onDelete && (
+                            <Button variant="danger" size="small" onClick={onDelete}>
+                                <DeleteIcon size={16} />
+                            </Button>
+                        )}
                     </div>
                 </div>
 

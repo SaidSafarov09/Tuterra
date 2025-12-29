@@ -6,10 +6,16 @@ import { NoteIcon } from '../icons/Icons'
 
 interface GroupsListProps {
     groups: Group[]
+    isStudentView?: boolean
 }
 
-export function GroupsList({ groups }: GroupsListProps) {
+export function GroupsList({ groups, isStudentView = false }: GroupsListProps) {
     const router = useRouter()
+
+    const handleGroupClick = (groupId: string) => {
+        const basePath = isStudentView ? '/student/groups' : '/groups'
+        router.push(`${basePath}/${groupId}`)
+    }
 
     const getInitials = (name: string) => {
         return name
@@ -35,7 +41,7 @@ export function GroupsList({ groups }: GroupsListProps) {
                 <div
                     key={group.id}
                     className={styles.groupCard}
-                    onClick={() => router.push(`/groups/${group.id}`)}
+                    onClick={() => handleGroupClick(group.id)}
                 >
                     <div className={styles.cardHeader}>
                         <div

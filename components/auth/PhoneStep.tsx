@@ -8,35 +8,26 @@ import styles from './Auth.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Check } from 'lucide-react'
 
+import { useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
+
 interface PhoneStepProps {
-    onSuccess: (sessionId: string, email: string) => void
+    onSuccess: (sessionId: string, email: string, role: 'teacher' | 'student', referralCode?: string | null) => void
 }
 
 export function PhoneStep({ onSuccess }: PhoneStepProps) {
+    const searchParams = useSearchParams()
     const [email, setEmail] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-    const [userRole, setUserRole] = useState<'tutor' | 'student'>('tutor')
+    const [userRole, setUserRole] = useState<'teacher' | 'student'>('teacher')
     const isDesk = useMediaQuery('(min-width: 768px)')
 
-    /* 
-    const [phone, setPhone] = useState('')
-    const formatPhoneNumber = (value: string) => {
-        const digits = value.replace(/\D/g, '')
-        if (!digits) return '+7'
-        if (digits[0] === '7') {
-            return '+7' + digits.slice(1, 11)
+    useEffect(() => {
+        const ref = searchParams.get('ref')
+        if (ref) {
+            setUserRole('student')
         }
-        if (digits[0] === '8') {
-            return '+7' + digits.slice(1, 11)
-        }
-        return '+7' + digits.slice(0, 10)
-    }
-
-    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const formatted = formatPhoneNumber(e.target.value)
-        setPhone(formatted)
-    }
-    */
+    }, [searchParams])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -62,7 +53,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
             }
 
             toast.success('Код отправлен на ваш email')
-            onSuccess(data.sessionId || '', email) // The API returns success but sessionId is missing in my send-code? Let me check.
+            onSuccess(data.sessionId || '', email, userRole, searchParams.get('ref'))
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')
         } finally {
@@ -82,11 +73,11 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
             <form onSubmit={handleSubmit} className={styles.form}>
                 <div className={styles.roleSelection}>
                     <div
-                        className={`${styles.roleOption} ${userRole === 'tutor' ? styles.selected : ''}`}
-                        onClick={() => setUserRole('tutor')}
+                        className={`${styles.roleOption} ${userRole === 'teacher' ? styles.selected : ''}`}
+                        onClick={() => setUserRole('teacher')}
                     >
-                        <div className={`${styles.checkbox} ${userRole === 'tutor' ? styles.checked : ''}`}>
-                            {userRole === 'tutor' && <Check size={12} strokeWidth={4} />}
+                        <div className={`${styles.checkbox} ${userRole === 'teacher' ? styles.checked : ''}`}>
+                            {userRole === 'teacher' && <Check size={12} strokeWidth={4} />}
                         </div>
                         <span className={styles.roleLabel}>Я репетитор</span>
                     </div>

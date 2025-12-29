@@ -25,18 +25,26 @@ import { DashboardStats } from '@/types'
 import styles from './page.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { MONTHS_GENITIVE } from '@/constants/messages'
+import { useAuthStore } from '@/store/auth'
 import { CircleCheck } from 'lucide-react'
 
 export default function DashboardPage() {
+    const { user } = useAuthStore()
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
     const isMobile = useMediaQuery('(max-width: 768px)')
     const currentMonth = Date.now()
+    const isStudent = user?.role === 'student'
+
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
-                const data = await statsApi.get()
-                setStats(data)
+                const endpoint = isStudent ? '/api/student/stats' : '/api/stats'
+                const response = await fetch(endpoint)
+                const data = await response.json()
+                if (data.success) {
+                    setStats(data.stats)
+                }
             } catch (error) {
                 toast.error(GENERAL_MESSAGES.FETCH_ERROR || 'Не удалось загрузить статистику')
             } finally {
@@ -44,11 +52,14 @@ export default function DashboardPage() {
             }
         }
         fetchStats()
-    }, [])
+    }, [isStudent])
 
     return (
         <div>
-            <PageHeader title="Главная" subtitle="Обзор вашей активности" />
+            <PageHeader
+                title="Главная"
+                subtitle={isStudent ? "Ваш учебный процесс" : "Обзор вашей активности"}
+            />
 
             <div className={styles.statsContainer}>
                 <div className={styles.statsGrid} data-onboarding="dashboard-stats">
@@ -56,35 +67,58 @@ export default function DashboardPage() {
                         <>
                             <StatCardSkeleton />
                             <StatCardSkeleton />
-                            <StatCardSkeleton />
-                            <StatCardSkeleton />
+                            {!isStudent && <StatCardSkeleton />}
+                            {!isStudent && <StatCardSkeleton />}
                         </>
                     ) : (
                         <>
+                            {isStudent ? (
+                                <>
+                                    <StatCard
+                                        icon={<UsersGroupIcon size={32} color="#3B82F6" />}
+                                        label="Репетиторы"
+                                        value={stats?.teachersCount || 0}
+                                        href="/student/teachers"
+                                    />
+                                    <StatCard
+                                        icon={<CalendarIcon size={32} color="#3B5BD9" />}
+                                        label="Мои занятия"
+                                        value={stats?.totalLessonsCount || 0}
+                                        href="/student/lessons"
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <StatCard
+                                        icon={<StudentsIcon size={32} color="#3B82F6" />}
+                                        label="Ученики"
+                                        value={stats?.studentsCount || 0}
+                                        href="/students"
+                                    />
+                                    <StatCard
+                                        icon={<UsersGroupIcon size={32} color="#F59E0B" />}
+                                        label="Группы"
+                                        value={stats?.groupsCount || 0}
+                                        href="/groups"
+                                    />
+                                </>
+                            )}
+
                             <StatCard
-                                icon={<StudentsIcon size={32} color="#3B82F6" />}
-                                label="Ученики"
-                                value={stats?.studentsCount || 0}
-                                href="/students"
-                            />
-                            <StatCard
-                                icon={<UsersGroupIcon size={32} color="#F59E0B" />}
-                                label="Группы"
-                                value={stats?.groupsCount || 0}
-                                href="/groups"
-                            />
-                            <StatCard
-                                icon={<CalendarIcon size={32} color="#3B5BD9" />}
+                                icon={<CalendarIcon size={32} color={isStudent ? "#F59E0B" : "#3B5BD9"} />}
                                 label={<>Занятий в{isMobile ? <br /> : ''} {MONTHS_GENITIVE[format(currentMonth, 'LLLL', { locale: ru }).toLowerCase()]}</>}
                                 value={stats?.monthLessonsCount || 0}
-                                href={`/lessons?month=${format(currentMonth, 'yyyy-MM')}`}
+                                href={isStudent ? "/student/lessons" : `/lessons?month=${format(currentMonth, 'yyyy-MM')}`}
                             />
-                            <StatCard
-                                icon={<MoneyIcon size={32} color="#14B8A6" />}
-                                label={<>Доход{isMobile ? <br /> : ''} за месяц</>}
-                                value={`${stats?.monthlyIncome || 0} ₽`}
-                                href="/income"
-                            />
+
+                            {!isStudent && (
+                                <StatCard
+                                    icon={<MoneyIcon size={32} color="#14B8A6" />}
+                                    label={<>Доход{isMobile ? <br /> : ''} за месяц</>}
+                                    value={`${stats?.monthlyIncome || 0} ₽`}
+                                    href="/income"
+                                />
+                            )}
                         </>
                     )}
                 </div>
@@ -109,7 +143,7 @@ export default function DashboardPage() {
                     </Section>
 
                     <Section
-                        title="Неоплаченные занятия"
+                        title={isStudent ? "Ожидают оплаты" : "Неоплаченные занятия"}
                         viewAllHref="/lessons?tab=unpaid"
                         viewAllText="Все неоплаченные →"
                     >

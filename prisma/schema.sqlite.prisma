@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id                String             @id @default(cuid())
+  role              String             @default("teacher") // teacher | student
   name              String?
   email             String?            @unique
   hashedPassword    String?
@@ -42,6 +43,7 @@ model User {
   referralCode      String?            @unique
   
   studentRecords    Student[]          @relation("LinkedStudent")
+  lessonRequests    LessonRequest[]    @relation("UserRequests")
 }
 
 model Subject {
@@ -159,6 +161,7 @@ model Lesson {
   isPaid         Boolean         @default(false)
   isCanceled     Boolean         @default(false)
   isTrial        Boolean         @default(false)
+  status         String          @default("confirmed") // confirmed | pending_cancel | pending_reschedule
   notes          String?
   ownerId        String
   studentId      String?
@@ -180,6 +183,7 @@ model Lesson {
   subject        Subject?        @relation(fields: [subjectId], references: [id])
   planTopic      LearningPlanTopic? @relation(fields: [planTopicId], references: [id])
   lessonPayments LessonPayment[]
+  lessonRequests LessonRequest[]
 
   @@index([ownerId])
   @@index([studentId])
@@ -187,6 +191,26 @@ model Lesson {
   @@index([subjectId])
   @@index([seriesId])
   @@index([planTopicId])
+  @@index([status])
+}
+
+model LessonRequest {
+  id          String   @id @default(cuid())
+  lessonId    String
+  userId      String   // Student who made the request
+  type        String   // reschedule | cancel
+  newDate     DateTime?
+  reason      String?
+  status      String   @default("pending") // pending | approved | rejected
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user        User     @relation("UserRequests", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@index([userId])
+  @@index([status])
 }
 
 model LessonSeries {

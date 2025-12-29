@@ -8,10 +8,12 @@ import styles from './Auth.module.scss'
 interface CodeStepProps {
     sessionId: string
     email: string
+    role: 'teacher' | 'student'
+    referralCode?: string | null
     onBack: () => void
 }
 
-export function CodeStep({ sessionId, email, onBack }: CodeStepProps) {
+export function CodeStep({ sessionId, email, role, referralCode, onBack }: CodeStepProps) {
     const [code, setCode] = useState(['', '', '', '', '', ''])
     const [isLoading, setIsLoading] = useState(false)
     const [canResend, setCanResend] = useState(false)
@@ -89,7 +91,12 @@ export function CodeStep({ sessionId, email, onBack }: CodeStepProps) {
             const response = await fetch('/api/auth/verify-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessionId, code: finalCode }),
+                body: JSON.stringify({
+                    sessionId,
+                    code: finalCode,
+                    role,
+                    referralCode
+                }),
             })
 
             const data = await response.json()
@@ -100,7 +107,13 @@ export function CodeStep({ sessionId, email, onBack }: CodeStepProps) {
 
             login(data.token, data.user)
             toast.success('Вход выполнен успешно!')
-            window.location.href = '/dashboard'
+
+            // Redirect based on role
+            if (data.user.role === 'student') {
+                window.location.href = '/student/dashboard'
+            } else {
+                window.location.href = '/dashboard'
+            }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')
             setCode(['', '', '', '', '', ''])

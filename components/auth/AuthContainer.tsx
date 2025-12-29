@@ -7,10 +7,14 @@ export function AuthContainer() {
     const [step, setStep] = useState<'identifier' | 'code'>('identifier')
     const [sessionId, setSessionId] = useState('')
     const [email, setEmail] = useState('')
+    const [role, setRole] = useState<'teacher' | 'student'>('teacher')
+    const [referralCode, setReferralCode] = useState<string | null>(null)
 
-    const handleSuccess = (newSessionId: string, newEmail: string) => {
+    const handleSuccess = (newSessionId: string, newEmail: string, newRole: 'teacher' | 'student', newRef?: string | null) => {
         setSessionId(newSessionId)
         setEmail(newEmail)
+        setRole(newRole)
+        setReferralCode(newRef || null)
         setStep('code')
     }
 
@@ -28,6 +32,8 @@ export function AuthContainer() {
                     <CodeStep
                         sessionId={sessionId}
                         email={email}
+                        role={role}
+                        referralCode={referralCode}
                         onBack={handleBack}
                     />
                 )}

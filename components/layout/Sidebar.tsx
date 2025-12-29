@@ -13,7 +13,7 @@ import {
     LogoutIcon,
     CloseIcon,
 } from '@/components/icons/Icons'
-import { navigation } from '@/constants/links'
+import { teacherNavigation, studentNavigation } from '@/constants/links'
 import { getInitials, stringToColor } from '@/constants'
 import { SidebarUserSkeleton } from '@/components/skeletons'
 
@@ -28,6 +28,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     const [isUserModalOpen, setIsUserModalOpen] = useState(false)
 
     const avatarBgColor = user?.name ? stringToColor(user.name) : 'var(--primary)'
+
+    const navItems = user?.role === 'student' ? studentNavigation : teacherNavigation
+
+    // Filter out conditional items if they don't apply
+    // For now, students: groups are only shown if they are in at least one group
+    // We'll need to fetch groups for this, but for now let's assume if user.groups?.length > 0
+    const filteredNavItems = navItems.filter(item => {
+        if (user?.role === 'student' && (item as any).conditional) {
+            // Ideally check user.groups, but user object in store might be simplified
+            // We can check if onboarding is completed or something similar, 
+            // but for now let's show it if we have group info or just hide by default
+            return (user as any).groupsCount > 0
+        }
+        return true
+    })
 
     return (
         <>
@@ -47,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                 </div>
 
                 <nav className={styles.nav}>
-                    {navigation.map((item) => {
+                    {filteredNavItems.map((item) => {
                         const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
                         const Icon = item.icon
                         return (

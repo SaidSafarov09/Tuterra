@@ -464,6 +464,7 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                                         ...prev,
                                         notificationSettings: { ...prev.notificationSettings, ...newSettings }
                                     }))}
+                                    isStudentView={user?.role === 'student'}
                                 />
                             </div>
                         )}

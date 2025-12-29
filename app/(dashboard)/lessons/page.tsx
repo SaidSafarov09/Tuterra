@@ -29,11 +29,14 @@ import { EmptyLessonsState } from '@/components/lessons/EmptyLessonsState'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { lessonsApi } from '@/services/api'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/store/auth'
 
 
 function LessonsContent() {
+    const { user } = useAuthStore()
     const router = useRouter()
     const searchParams = useSearchParams()
+    const isStudent = user?.role === 'student'
 
     const [activeTab, setActiveTab] = useState<LessonFilter>('upcoming')
     const [selectedMonth, setSelectedMonth] = useState<string>('all')
@@ -51,22 +54,22 @@ function LessonsContent() {
         isLoading: isLessonsLoading,
         isRefreshing: isLessonsRefreshing,
         refetch: refetchLessons
-    } = useLessonsByTab(activeTab)
+    } = useLessonsByTab(activeTab, isStudent)
 
     const {
         data: students = [],
         refetch: refetchStudents
-    } = useFetch<Student[]>('/api/students')
+    } = useFetch<Student[]>(isStudent ? null : '/api/students')
 
     const {
         data: groups = [],
         refetch: refetchGroups
-    } = useFetch<Group[]>('/api/groups')
+    } = useFetch<Group[]>(isStudent ? null : '/api/groups')
 
     const {
         data: subjects = [],
         refetch: refetchSubjects
-    } = useFetch<Subject[]>('/api/subjects')
+    } = useFetch<Subject[]>(isStudent ? null : '/api/subjects')
 
     const {
         togglePaid,
@@ -81,7 +84,18 @@ function LessonsContent() {
         isGroupPaymentModalOpen,
         setIsGroupPaymentModalOpen,
         paymentLesson,
-    } = useLessonActions(refetchLessons)
+    } = useLessonActions(refetchLessons, isStudent)
+
+    // UI Logic for Student Request flow
+    const handleStudentRequestCancel = async (lesson: Lesson) => {
+        toast.info('Ваш запрос на отмену отправлен преподавателю')
+        // In real app, call API to create request
+    }
+
+    const handleStudentRequestReschedule = (lesson: Lesson) => {
+        setIsRescheduleModalOpen(true)
+        // Set context or state to indicate it's a REQUEST
+    }
 
     const {
         formData,
@@ -159,7 +173,8 @@ function LessonsContent() {
         setActiveTab(id as LessonFilter)
         const params = new URLSearchParams(searchParams.toString())
         params.set('tab', id)
-        router.push(`/lessons?${params.toString()}`)
+        const basePath = isStudent ? '/student/lessons' : '/lessons'
+        router.push(`${basePath}?${params.toString()}`)
     }
 
     const handleMonthChange = (month: string) => {
@@ -170,24 +185,28 @@ function LessonsContent() {
         } else {
             params.set('month', month)
         }
-        router.push(`/lessons?${params.toString()}`)
+        const basePath = isStudent ? '/student/lessons' : '/lessons'
+        router.push(`${basePath}?${params.toString()}`)
     }
 
     const isMobile = useMediaQuery('(max-width: 768px)')
 
     const handleOpenModal = () => {
+        if (isStudent) return
         setEditingLesson(null)
         resetForm()
         setIsOpen(true)
     }
 
     const handleEditLesson = (lesson: Lesson) => {
+        if (isStudent) return
         setEditingLesson(lesson)
         loadLesson(lesson)
         setIsOpen(true)
     }
 
     const handleDeleteClick = (lessonId: string) => {
+        if (isStudent) return
         const lesson = lessons.find(l => l.id === lessonId)
         if (lesson) {
             setDeleteConfirm({ isOpen: true, lesson })
@@ -210,12 +229,14 @@ function LessonsContent() {
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <h1 className={styles.title}>Занятия</h1>
-                    <p className={styles.subtitle}>Управление расписанием</p>
+                    <p className={styles.subtitle}>{isStudent ? "Ваше расписание" : "Управление расписанием"}</p>
                 </div>
-                <Button onClick={handleOpenModal} className={styles.addButton} data-onboarding="lessons-create-btn">
-                    <PlusIcon size={20} />
-                    Добавить занятие
-                </Button>
+                {!isStudent && (
+                    <Button onClick={handleOpenModal} className={styles.addButton} data-onboarding="lessons-create-btn">
+                        <PlusIcon size={20} />
+                        Добавить занятие
+                    </Button>
+                )}
             </div>
 
             <div className={styles.filterSection}>
@@ -292,6 +313,7 @@ function LessonsContent() {
                             onReschedule={handleRescheduleClick}
                             onEdit={handleEditLesson}
                             onDelete={handleDeleteClick}
+                            isStudentView={isStudent}
                         />
                     </motion.div>
                 )}

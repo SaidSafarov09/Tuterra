@@ -51,6 +51,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         avatar: data.avatar || null,
                         birthDate: data.birthDate || null,
                         region: data.region || null,
+                        role: data.role,
                         onboardingCompleted: data.onboardingCompleted || false,
                     })
 

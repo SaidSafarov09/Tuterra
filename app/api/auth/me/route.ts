@@ -4,7 +4,6 @@ import { verifyToken } from '@/lib/jwt'
 
 export async function GET(request: NextRequest) {
     try {
-
         const token = request.cookies.get('auth-token')?.value
 
         if (!token) {
@@ -22,10 +21,12 @@ export async function GET(request: NextRequest) {
                 { status: 401 }
             )
         }
-        let user = await prisma.user.findUnique({
+
+        let userResult = await prisma.user.findUnique({
             where: { id: payload.userId },
             select: {
                 id: true,
+                role: true,
                 firstName: true,
                 lastName: true,
                 name: true,
@@ -37,10 +38,16 @@ export async function GET(request: NextRequest) {
                 birthDate: true,
                 region: true,
                 referralCode: true,
+                onboardingCompleted: true,
+                _count: {
+                    select: {
+                        groups: true,
+                    },
+                },
             },
         })
 
-        if (!user) {
+        if (!userResult) {
             return NextResponse.json(
                 { success: false, error: 'Пользователь не найден' },
                 { status: 404 }
@@ -48,13 +55,14 @@ export async function GET(request: NextRequest) {
         }
 
         // Generate referral code if missing
-        if (!user.referralCode) {
+        if (!userResult.referralCode) {
             const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-            user = await prisma.user.update({
-                where: { id: user.id },
+            userResult = await prisma.user.update({
+                where: { id: userResult.id },
                 data: { referralCode: code },
                 select: {
                     id: true,
+                    role: true,
                     firstName: true,
                     lastName: true,
                     name: true,
@@ -66,13 +74,59 @@ export async function GET(request: NextRequest) {
                     birthDate: true,
                     region: true,
                     referralCode: true,
+                    onboardingCompleted: true,
+                    _count: {
+                        select: { groups: true }
+                    }
                 },
             }) as any
         }
 
+        if (!userResult) {
+            return NextResponse.json(
+                { success: false, error: 'Пользователь не найден' },
+                { status: 404 }
+            )
+        }
+
+        if (userResult.role === 'student') {
+            const studentRecords = await prisma.student.findMany({
+                where: { linkedUserId: userResult.id },
+                include: {
+                    _count: {
+                        select: { groups: true }
+                    }
+                }
+            })
+            const studentGroupsCount = await prisma.group.count({
+                where: {
+                    students: {
+                        some: {
+                            linkedUserId: userResult.id
+                        }
+                    }
+                }
+            })
+
+            const finalUser = {
+                ...userResult,
+                groupsCount: studentGroupsCount
+            }
+
+            return NextResponse.json({
+                success: true,
+                user: finalUser,
+            })
+        }
+
+        const finalUser = userResult ? {
+            ...userResult,
+            groupsCount: (userResult as any)._count?.groups || 0
+        } : null;
+
         return NextResponse.json({
             success: true,
-            user,
+            user: finalUser,
         })
     } catch (error) {
         console.error('Get user error:', error)

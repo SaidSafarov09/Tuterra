@@ -6,6 +6,7 @@ const JWT_EXPIRES_IN = '30d'
 export interface JWTPayload {
     userId: string
     phone: string
+    role: string
 }
 
 
@@ -27,11 +28,12 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
         const secret = getSecretKey()
         const { payload } = await jwtVerify(token, secret)
 
-        
-        if (payload && typeof payload === 'object' && 'userId' in payload && 'phone' in payload) {
+
+        if (payload && typeof payload === 'object' && 'userId' in payload) {
             return {
                 userId: payload.userId as string,
-                phone: payload.phone as string,
+                phone: (payload.phone as string) || '',
+                role: (payload.role as string) || 'teacher',
             }
         }
 

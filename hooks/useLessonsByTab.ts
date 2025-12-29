@@ -4,7 +4,7 @@ import { Lesson, LessonFilter } from '@/types'
 import { lessonsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 
-export function useLessonsByTab(activeTab: LessonFilter) {
+export function useLessonsByTab(activeTab: LessonFilter, isStudent = false) {
     const [lessonsCache, setLessonsCache] = useState<Record<LessonFilter, Lesson[]>>({
         all: [],
         upcoming: [],
@@ -29,7 +29,10 @@ export function useLessonsByTab(activeTab: LessonFilter) {
         setError(null)
 
         try {
-            const result = await lessonsApi.getAll(tab)
+            const result = isStudent
+                ? await lessonsApi.getStudentLessons(tab)
+                : await lessonsApi.getAll(tab)
+
             setLessonsCache(prev => ({
                 ...prev,
                 [tab]: result

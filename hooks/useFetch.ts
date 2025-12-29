@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
-export function useFetch<T>(url: string, dependencies: any[] = []) {
+export function useFetch<T>(url: string | null, dependencies: any[] = []) {
     const [data, setData] = useState<T | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(!!url)
     const [error, setError] = useState<string | null>(null)
     const [isRefreshing, setIsRefreshing] = useState(false)
     const isFirstLoad = useRef(true)
 
     const fetchData = async () => {
-        
+        if (!url) return
+
         if (isFirstLoad.current) {
             setIsLoading(true)
         } else {

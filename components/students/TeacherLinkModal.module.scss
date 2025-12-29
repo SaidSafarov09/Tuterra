@@ -1,0 +1,107 @@
+.container {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.header {
+    margin-bottom: 32px;
+}
+
+.iconWrapper {
+    width: 80px;
+    height: 80px;
+    background: var(--primary-light);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+.form {
+    width: 100%;
+}
+
+.inputGroup {
+    margin-bottom: 24px;
+}
+
+.codeInput {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    height: 64px;
+    border-radius: 16px;
+    background: var(--background-secondary);
+    border: 2px solid var(--border);
+    transition: all 0.2s ease;
+
+    &:focus {
+        border-color: var(--primary);
+        background: var(--surface);
+    }
+}
+
+.submitButton {
+    height: 56px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    gap: 8px;
+}
+
+.successState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0;
+    animation: scaleIn 0.3s ease-out;
+}
+
+.successIcon {
+    width: 80px;
+    height: 80px;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.successText {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--success);
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

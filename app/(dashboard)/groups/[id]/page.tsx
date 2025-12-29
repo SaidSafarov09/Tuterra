@@ -14,14 +14,18 @@ import { StudentDetailSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 
+import { useAuthStore } from '@/store/auth'
+
 export default function GroupDetailPage({
     params,
 }: {
     params: Promise<{ id: string }>
 }) {
     const { id } = usePromise(params)
+    const { user } = useAuthStore()
     const router = useRouter()
     const isMobile = useMediaQuery('(max-width: 768px)')
+    const isStudent = user?.role === 'student'
 
     const {
         group,
@@ -74,9 +78,9 @@ export default function GroupDetailPage({
         <div>
             <GroupHeader
                 group={group}
-                onEdit={openEditModal}
-                onCreateLesson={openCreateLessonModal}
-                onDelete={() => setDeleteGroupConfirm(true)}
+                onEdit={isStudent ? undefined : openEditModal}
+                onCreateLesson={isStudent ? undefined : openCreateLessonModal}
+                onDelete={isStudent ? undefined : () => setDeleteGroupConfirm(true)}
             />
 
             <GroupNote group={group} />
@@ -90,12 +94,13 @@ export default function GroupDetailPage({
                     subject: group.subject || null,
                 }))}
                 student={{ id: group.id, name: group.name } as any}
-                onCreateLesson={openCreateLessonModal}
-                onEditLesson={handleEditLesson}
-                onDeleteLesson={handleDeleteLesson}
-                onTogglePaidStatus={handleTogglePaidStatus}
+                onCreateLesson={isStudent ? undefined : openCreateLessonModal}
+                onEditLesson={isStudent ? undefined : handleEditLesson}
+                onDeleteLesson={isStudent ? undefined : handleDeleteLesson}
+                onTogglePaidStatus={isStudent ? undefined : handleTogglePaidStatus}
                 onToggleCancelLesson={handleToggleCancelLesson}
                 onRescheduleLesson={handleRescheduleLesson}
+                isStudentView={isStudent}
             />
 
             <GroupModals
