@@ -84,21 +84,24 @@ export async function GET(request: NextRequest) {
             }
 
             if (linkedUser && linkedUser.name) {
-                // If the user has a proper name, use it.
-                // Also, if the local student name is still 'test' or different, update it to match the user.
-                if (linkedUser.name && s.name !== linkedUser.name) {
-                    // Fire and forget update to keep DB in sync
+                const isGenericName = (name: string) => {
+                    const low = name.toLowerCase();
+                    return low === 'новый ученик' || low === 'ученик' || low === 'test' || !name.trim();
+                };
+
+                // Only sync name if the current student name is generic OR empty
+                if (isGenericName(s.name) && !isGenericName(linkedUser.name)) {
                     try {
                         await prisma.student.update({
                             where: { id: s.id },
                             data: { name: linkedUser.name }
                         });
+                        return { ...s, name: linkedUser.name, linkedUser };
                     } catch (e) {
                         console.error("Failed to sync student name", e);
                     }
-                    return { ...s, name: linkedUser.name, linkedUser };
                 }
-                return { ...s, name: linkedUser.name, linkedUser };
+                return { ...s, linkedUser };
             }
 
             return { ...s, linkedUser };

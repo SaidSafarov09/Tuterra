@@ -84,9 +84,17 @@ export async function linkStudentToTutor(userId: string, refCode: string) {
             data: {
                 linkedUserId: user.id,
                 // Only update name if it was generic
-                name: (studentRecord.name === 'Новый ученик' || studentRecord.name === 'test' || !studentRecord.name)
-                    ? (user.name || studentRecord.name)
-                    : studentRecord.name
+                name: (() => {
+                    const lowName = studentRecord.name.toLowerCase();
+                    const isGeneric = lowName === 'новый ученик' || lowName === 'ученик' || lowName === 'test' || !studentRecord.name.trim();
+
+                    if (isGeneric && user.name) {
+                        const lowUser = user.name.toLowerCase();
+                        const isUserGeneric = lowUser === 'новый ученик' || lowUser === 'ученик' || lowUser === 'test';
+                        if (!isUserGeneric) return user.name;
+                    }
+                    return studentRecord.name;
+                })()
             }
         });
     } else {
