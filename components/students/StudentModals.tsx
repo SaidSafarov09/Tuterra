@@ -116,7 +116,11 @@ export function StudentModals({
                             className={styles.studentAvatar}
                             style={{ backgroundColor: stringToColor(student.name) }}
                         >
-                            {getInitials(editFormData.name)}
+                            {student.linkedUser?.avatar ? (
+                                <img src={student.linkedUser.avatar} alt="Avatar" className={styles.studentAvatarImage} />
+                            ) : (
+                                getInitials(editFormData.name)
+                            )}
                         </div>
                         <Input
                             label="Имя"
