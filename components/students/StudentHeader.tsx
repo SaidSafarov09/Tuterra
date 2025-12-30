@@ -1,7 +1,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { EditIcon, PlusIcon, DeleteIcon, PhoneIcon, TelegramIcon, WhatsAppIcon, LinkIcon } from '@/components/icons/Icons'
+import { EditIcon, PlusIcon, DeleteIcon, PhoneIcon, TelegramIcon, WhatsAppIcon, LinkIcon, UnlinkIcon } from '@/components/icons/Icons'
 import { Student } from '@/types'
 import { ContactType, getContactLink } from '@/lib/contactUtils'
 import { toast } from 'sonner'
@@ -89,6 +89,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
             <div className={styles.studentHeader}>
                 <div className={styles.headerTop}>
                     <div className={styles.studentProfile}>
+
                         {student.linkedUser?.avatar ? (
                             <img
                                 src={student.linkedUser.avatar}
@@ -104,6 +105,9 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
                             </div>
                         )}
                         <div className={styles.studentInfo}>
+                            <div className={styles.linkedBadge}>
+                                Подключён к платформе
+                            </div>
                             <h1 className={styles.studentName}>{student.name}</h1>
                         </div>
                     </div>
@@ -128,6 +132,23 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
                             <PlusIcon size={16} />
                             Занятие
                         </Button>
+                        {student.linkedUser && (
+                            <div>
+
+                                <Button
+                                    variant="warning"
+                                    size="small"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        onUnlink?.();
+                                    }}
+                                    title="Отвязать ученика от платформы"
+                                >
+                                    <UnlinkIcon size={16} />
+                                    Отвязать
+                                </Button>
+                            </div>
+                        )}
                         <Button variant="danger" size="small" onClick={onDelete}>
                             <DeleteIcon size={16} />
                         </Button>
@@ -172,23 +193,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
                     </div>
                 </div>
 
-                {student.linkedUser && (
-                    <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div className={styles.linkedBadge} style={{ position: 'relative', top: 'auto', right: 'auto', display: 'inline-block' }}>
-                            Подключён к платформе
-                        </div>
-                        <button
-                            className={styles.unlinkButton}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                onUnlink?.();
-                            }}
-                            title="Отвязать ученика от платформы"
-                        >
-                            Отвязать
-                        </button>
-                    </div>
-                )}
+
             </div>
 
             <StudentLinkModal

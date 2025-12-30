@@ -92,11 +92,11 @@ export const StudentLinkModal: React.FC<StudentLinkModalProps> = ({
                         <GraduationCap size={32} />
                     </div>
                     <h2 className={styles.title}>
-                        {studentName ? `Подключите ${studentName}` : 'Подключите ученика'}
+                        {studentName ? `Подключите ученика ${studentName}` : 'Подключите ученика'}
                     </h2>
                     <p className={styles.subtitle}>
                         {studentName
-                            ? `Это позволит ${studentName} видеть расписание, получать уведомления и подтверждать оплаты`
+                            ? `Это позволит ученику ${studentName} видеть расписание, получать уведомления и подтверждать оплаты`
                             : 'Это позволит ученику видеть расписание, получать уведомления и подтверждать оплаты'
                         }
                     </p>

@@ -212,7 +212,7 @@ export default function DashboardPage() {
                 )}
 
                 <div className={styles.sectionsGrid}>
-                    <Section title="Ближайшие занятия" viewAllHref="/lessons" viewAllText="Все занятия →">
+                    <Section title="Ближайшие занятия" viewAllHref={isStudent ? "/student/lessons" : "/lessons"} viewAllText="Все занятия →">
                         {isLoading ? (
                             <div className={styles.lessonsList}>
                                 <LessonCardSkeleton variant="compact" />
@@ -232,7 +232,7 @@ export default function DashboardPage() {
 
                     <Section
                         title={isStudent ? "Ожидают оплаты" : "Неоплаченные занятия"}
-                        viewAllHref="/lessons?tab=unpaid"
+                        viewAllHref={isStudent ? "/student/lessons?tab=unpaid" : "/lessons?tab=unpaid"}
                         viewAllText="Все неоплаченные →"
                     >
                         {isLoading ? (

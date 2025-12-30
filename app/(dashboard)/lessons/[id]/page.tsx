@@ -214,7 +214,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                             }}>
                                 <h1 className={styles.studentName}>
                                     {isStudent
-                                        ? (lesson?.owner?.name || lesson?.owner?.firstName || 'Преподаватель')
+                                        ? (lesson.group ? lesson.group.name : (lesson?.owner?.name || lesson?.owner?.firstName || 'Преподаватель'))
                                         : (lesson?.student?.name || (lesson?.group ? `${lesson.group.name} - группа` : lesson?.groupName ? `${lesson.groupName} - группа` : 'Неизвестно'))
                                     }
                                 </h1>
@@ -262,9 +262,11 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                             className={styles.lessonPrice}
                             style={{ color: isFullyPaid ? 'var(--success)' : 'var(--text-primary)' }}
                         >
-                            {lesson.group
-                                ? `${(lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price} ₽`
-                                : `${lesson.price} ₽`}
+                            {isStudent
+                                ? `${lesson.price} ₽`
+                                : (lesson.group
+                                    ? `${(lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price} ₽`
+                                    : `${lesson.price} ₽`)}
                         </div>
                         <LessonBadges
                             price={lesson.price}

@@ -50,7 +50,8 @@ import {
     Bell,
     Link,
     CircleX,
-    Ban
+    Ban,
+    Unlink
 } from 'lucide-react'
 
 
@@ -89,7 +90,7 @@ export const SearchIcon: React.FC<IconProps> = (props) => <Search {...props} />
 export const XCircleIcon: React.FC<IconProps> = (props) => <XCircle {...props} />
 export const CircleXIcon: React.FC<IconProps> = (props) => <CircleX {...props} />
 export const BanIcon: React.FC<IconProps> = (props) => <Ban {...props} />
-
+export const UnlinkIcon: React.FC<IconProps> = (props) => <Unlink {...props} />
 
 export const ArrowLeftIcon: React.FC<IconProps> = (props) => <ArrowLeft {...props} />
 export const ArrowRightIcon: React.FC<IconProps> = (props) => <ArrowRight {...props} />

@@ -76,7 +76,13 @@ export function LessonActions({
         }
     }, [isDropdownOpen])
 
-    const showMobileDropdown = isMobile && !disableMobileDropdown
+    const canCancel = !lesson.isCanceled && showCancelButton && !isLessonEnded && onToggleCancel && (!isStudentView || !isGroupLesson(lesson))
+    const canReschedule = !isLessonEnded && onReschedule && (!isStudentView || !isGroupLesson(lesson))
+    const canEdit = onEdit && !isStudentView
+    const canDelete = onDelete && !isStudentView
+
+    const hasAvailableActions = canCancel || canReschedule || canEdit || canDelete
+    const showMobileDropdown = isMobile && !disableMobileDropdown && hasAvailableActions
 
     const handleAction = (action: () => void) => {
         action()
@@ -134,7 +140,7 @@ export function LessonActions({
 
                     {isDropdownOpen && (
                         <div className={`${styles.dropdownMenu} ${dropdownPosition === 'top' ? styles.dropdownTop : ''}`}>
-                            {!lesson.isCanceled && showCancelButton && !isLessonEnded && onToggleCancel && (!isStudentView || !isGroupLesson(lesson)) && (
+                            {canCancel && (
                                 <button
                                     className={styles.dropdownItem}
                                     onClick={() => handleAction(() => onToggleCancel!(lesson))}
@@ -144,7 +150,7 @@ export function LessonActions({
                                 </button>
                             )}
 
-                            {!isLessonEnded && onReschedule && (!isStudentView || !isGroupLesson(lesson)) && (
+                            {canReschedule && (
                                 <button
                                     className={styles.dropdownItem}
                                     onClick={() => handleAction(() => onReschedule(lesson))}
@@ -154,7 +160,7 @@ export function LessonActions({
                                 </button>
                             )}
 
-                            {onEdit && !isStudentView && (
+                            {canEdit && (
                                 <button
                                     className={styles.dropdownItem}
                                     onClick={() => handleAction(() => onEdit(lesson))}
@@ -165,7 +171,7 @@ export function LessonActions({
                                 </button>
                             )}
 
-                            {onDelete && !isStudentView && (
+                            {canDelete && (
                                 <button
                                     className={`${styles.dropdownItem} ${styles.deleteItem}`}
                                     onClick={() => handleAction(() => onDelete(lesson.id))}

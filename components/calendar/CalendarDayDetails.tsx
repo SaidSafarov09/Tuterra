@@ -137,16 +137,16 @@ export function CalendarDayDetails({
                                                     {isStudentView ? (
                                                         // Student sees group name if group lesson, else teacher name
                                                         lesson.group ? (
-                                                            <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</p>&nbsp;-&nbsp;группа</>
+                                                            <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}&nbsp;<span style={{ color: 'var(--text-primary)' }}>- группа</span></p></>
                                                         ) : (
                                                             <>{lesson.owner?.name || lesson.owner?.firstName || 'Преподаватель'}</>
                                                         )
                                                     ) : (
                                                         // Teacher sees student/group name
                                                         lesson.group ? (
-                                                            <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</p>&nbsp;-&nbsp;группа</>
+                                                            <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}&nbsp;<span style={{ color: 'var(--text-primary)' }}>- группа</span></p></>
                                                         ) : lesson.groupName ? (
-                                                            <><p style={{ color: stringToColor(lesson.groupName) }}>{lesson.groupName}</p>&nbsp;-&nbsp;группа</>
+                                                            <><p style={{ color: stringToColor(lesson.groupName) }}>{lesson.groupName}&nbsp;<span style={{ color: 'var(--text-primary)' }}>- группа</span></p></>
                                                         ) : (
                                                             <>{lesson.student?.name}</>
                                                         )

@@ -60,7 +60,7 @@
 }
 
 .studentName {
-    font-size: 24px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
@@ -69,10 +69,6 @@
     &:hover {
         color: var(--primary);
         transition: all 0.2s ease;
-    }
-
-    @media (max-width: 768px) {
-        font-size: 20px;
     }
 }
 
@@ -110,7 +106,7 @@
 }
 
 .lessonPrice {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 8px;
