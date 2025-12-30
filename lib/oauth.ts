@@ -107,11 +107,12 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
 
 import { cookies } from 'next/headers'
 
-export async function createAuthSession(userId: string, phone: string, requestUrl: string) {
+export async function createAuthSession(userId: string, phone: string, requestUrl: string, role: string = 'teacher') {
     try {
         const token = await signToken({
             userId,
             phone: phone || '',
+            role,
         })
 
         if (!token) {

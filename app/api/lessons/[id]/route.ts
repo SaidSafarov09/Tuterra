@@ -36,15 +36,39 @@ export async function GET(
 
 
         const isId = isCuid(id)
-        const whereClause = isId
-            ? { id: id, ownerId: user.id }
-            : { slug: id, ownerId: user.id }
+        const isStudent = user.role === 'student'
+
+        let whereClause: any
+        if (isStudent) {
+            const studentRecords = await prisma.student.findMany({
+                where: { linkedUserId: user.id },
+                select: { id: true }
+            })
+            const studentIds = studentRecords.map(s => s.id)
+
+            whereClause = {
+                AND: [
+                    isId ? { id: id } : { slug: id },
+                    {
+                        OR: [
+                            { studentId: { in: studentIds } },
+                            { group: { students: { some: { id: { in: studentIds } } } } }
+                        ]
+                    }
+                ]
+            }
+        } else {
+            whereClause = isId
+                ? { id: id, ownerId: user.id }
+                : { slug: id, ownerId: user.id }
+        }
 
         const lesson = await prisma.lesson.findFirst({
             where: whereClause,
             include: {
                 student: true,
                 subject: true,
+                owner: true,
                 group: {
                     include: {
                         students: true
@@ -52,7 +76,7 @@ export async function GET(
                 },
                 lessonPayments: {
                     include: {
-                        student: true // Добавляем информацию о студенте для отображения
+                        student: true
                     }
                 },
             },

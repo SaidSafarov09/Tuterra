@@ -24,7 +24,11 @@ import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 
 
+import { useAuthStore } from '@/store/auth'
+
 export default function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { user: currentUser } = useAuthStore()
+    const isStudent = currentUser?.role === 'student'
     const router = useRouter()
     const { id } = usePromise(params)
 
@@ -180,12 +184,12 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const isFullyPaid = lesson.group
         ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
         : lesson.isPaid
-        
+
     const isPartiallyPaid = lesson.group
         ? (lesson.lessonPayments && lesson.group.students &&
-           lesson.lessonPayments.filter(p => p.hasPaid).length > 0 &&
-           lesson.lessonPayments.filter(p => p.hasPaid).length < lesson.group.students.length &&
-           lesson.group.students.length > 0)
+            lesson.lessonPayments.filter(p => p.hasPaid).length > 0 &&
+            lesson.lessonPayments.filter(p => p.hasPaid).length < lesson.group.students.length &&
+            lesson.group.students.length > 0)
         : false
 
     return (
@@ -200,9 +204,15 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 <div className={styles.lessonHeader}>
                     <div>
                         <div className={styles.studentNameRow}>
-                            <div onClick={() => lesson?.student ? router.push(`/students/${lesson.student.slug || lesson.student.id}`) : lesson?.group ? router.push(`/groups/${lesson.group.id}`) : null}>
+                            <div onClick={() => {
+                                if (isStudent) return
+                                lesson?.student ? router.push(`/students/${lesson.student.slug || lesson.student.id}`) : lesson?.group ? router.push(`/groups/${lesson.group.id}`) : null
+                            }}>
                                 <h1 className={styles.studentName}>
-                                    {lesson?.student?.name || (lesson?.group ? `${lesson.group.name} - группа` : lesson?.groupName ? `${lesson.groupName} - группа` : 'Неизвестно')}
+                                    {isStudent
+                                        ? (lesson?.owner?.name || lesson?.owner?.firstName || 'Преподаватель')
+                                        : (lesson?.student?.name || (lesson?.group ? `${lesson.group.name} - группа` : lesson?.groupName ? `${lesson.groupName} - группа` : 'Неизвестно'))
+                                    }
                                 </h1>
                             </div>
                             {lesson.subject && (
@@ -259,6 +269,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                             isGroupLesson={!!lesson.group}
                             totalStudents={lesson.group?.students?.length || 0}
                             lessonPayments={lesson.lessonPayments}
+                            isStudentView={isStudent}
                         />
                     </div>
                 </div>
@@ -285,6 +296,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         onReschedule={() => lesson && handleRescheduleLesson(lesson)}
                         onEdit={handleEditClick}
                         onDelete={() => setDeleteConfirm(true)}
+                        isStudentView={isStudent}
                     />
                 </div>
             </div>

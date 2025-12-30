@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
             provider: 'google',
             providerId: googleUser.sub,
         })
-        return createAuthSession(user.id, user.phone || '', req.url)
+        return createAuthSession(user.id, user.phone || '', req.url, user.role)
 
     } catch (error) {
         console.error('Google auth error:', error)

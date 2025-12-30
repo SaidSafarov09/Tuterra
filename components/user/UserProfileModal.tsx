@@ -60,7 +60,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Профиль преподавателя"
+            title={user?.role === 'student' ? "Мой профиль" : "Профиль преподавателя"}
         >
             <div className={styles.container}>
                 <div className={styles.header}>
@@ -97,39 +97,69 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                     </div>
                     <div className={styles.memberBadge}>
                         <span className={styles.activeDot}></span>
-                        {memberSince}
+                        {stats?.createdAt
+                            ? `${user?.role === 'student' ? 'С нами' : 'Репетитор'} с ${memberSinceText}`
+                            : <Skeleton width={120} height={16} />}
                     </div>
                 </div>
 
                 <div className={styles.statsGrid}>
-                    <StatItem
-                        label={stats ? declension(stats.studentsCount, ['Ученик', 'Ученика', 'Учеников']) : 'Ученики'}
-                        value={stats ? stats.studentsCount : <Skeleton width={40} height={24} />}
-                        icon={StudentsIcon}
-                        href="/students"
-                        onClick={handleNavigate}
-                    />
-                    <StatItem
-                        label={stats ? declension(stats.totalLessons || 0, ['Занятие', 'Занятия', 'Занятий']) : 'Занятия'}
-                        value={stats ? stats.totalLessons || 0 : <Skeleton width={40} height={24} />}
-                        icon={LessonsIcon}
-                        href="/lessons"
-                        onClick={handleNavigate}
-                    />
-                    <StatItem
-                        label="Этот месяц"
-                        value={stats ? `${stats.monthlyIncome?.toLocaleString() || 0} ₽` : <Skeleton width={80} height={24} />}
-                        icon={PaymentsIcon}
-                        href="/income"
-                        onClick={handleNavigate}
-                    />
-                    <StatItem
-                        label={stats ? declension(stats.subjectsCount || 0, ['Предмет', 'Предмета', 'Предметов']) : 'Предметы'}
-                        value={stats ? stats.subjectsCount || 0 : <Skeleton width={40} height={24} />}
-                        icon={SubjectsIcon}
-                        href="/subjects"
-                        onClick={handleNavigate}
-                    />
+                    {user?.role === 'student' ? (
+                        <>
+                            <StatItem
+                                label={stats ? declension(stats.teachersCount || 0, ['Репетитор', 'Репетитора', 'Репетиторов']) : 'Репетиторы'}
+                                value={stats ? stats.teachersCount || 0 : <Skeleton width={40} height={24} />}
+                                icon={StudentsIcon}
+                                href="/student/teachers"
+                                onClick={handleNavigate}
+                            />
+                            <StatItem
+                                label={stats ? declension(stats.totalLessonsCount || 0, ['Занятие', 'Занятия', 'Занятий']) : 'Занятия'}
+                                value={stats ? stats.totalLessonsCount || 0 : <Skeleton width={40} height={24} />}
+                                icon={LessonsIcon}
+                                href="/student/lessons"
+                                onClick={handleNavigate}
+                            />
+                            <StatItem
+                                label="В этом месяце"
+                                value={stats ? stats.monthLessonsCount || 0 : <Skeleton width={40} height={24} />}
+                                icon={SubjectsIcon}
+                                href="/student/lessons"
+                                onClick={handleNavigate}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <StatItem
+                                label={stats ? declension(stats.studentsCount, ['Ученик', 'Ученика', 'Учеников']) : 'Ученики'}
+                                value={stats ? stats.studentsCount : <Skeleton width={40} height={24} />}
+                                icon={StudentsIcon}
+                                href="/students"
+                                onClick={handleNavigate}
+                            />
+                            <StatItem
+                                label={stats ? declension(stats.totalLessons || 0, ['Занятие', 'Занятия', 'Занятий']) : 'Занятия'}
+                                value={stats ? stats.totalLessons || 0 : <Skeleton width={40} height={24} />}
+                                icon={LessonsIcon}
+                                href="/lessons"
+                                onClick={handleNavigate}
+                            />
+                            <StatItem
+                                label="Этот месяц"
+                                value={stats ? `${stats.monthlyIncome?.toLocaleString() || 0} ₽` : <Skeleton width={80} height={24} />}
+                                icon={PaymentsIcon}
+                                href="/income"
+                                onClick={handleNavigate}
+                            />
+                            <StatItem
+                                label={stats ? declension(stats.subjectsCount || 0, ['Предмет', 'Предмета', 'Предметов']) : 'Предметы'}
+                                value={stats ? stats.subjectsCount || 0 : <Skeleton width={40} height={24} />}
+                                icon={SubjectsIcon}
+                                href="/subjects"
+                                onClick={handleNavigate}
+                            />
+                        </>
+                    )}
                 </div>
 
                 <div className={styles.footer}>

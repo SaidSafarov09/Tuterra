@@ -66,18 +66,22 @@ export function StudentsList({ students }: StudentsListProps) {
                     onClick={() => router.push(`/students/${student.slug || student.id}`)}
                     style={{ position: 'relative' }}
                 >
-                    {student.linkedUser && (
-                        <div className={styles.linkedBadge}>
-                            Подключён к платформе
-                        </div>
-                    )}
+
                     <div className={styles.cardHeader}>
-                        <div
-                            className={styles.studentAvatarFallback}
-                            style={{ backgroundColor: stringToColor(student.name) }}
-                        >
-                            {getInitials(student.name)}
-                        </div>
+                        {student.linkedUser?.avatar ? (
+                            <img
+                                src={student.linkedUser.avatar}
+                                alt={student.name}
+                                className={styles.studentAvatarImage}
+                            />
+                        ) : (
+                            <div
+                                className={styles.studentAvatarFallback}
+                                style={{ backgroundColor: stringToColor(student.name) }}
+                            >
+                                {getInitials(student.name)}
+                            </div>
+                        )}
                         <div className={styles.headerInfo}>
                             <h3 className={styles.studentName}>{student.name}</h3>
                             <div className={styles.subjectsList}>
@@ -155,6 +159,11 @@ export function StudentsList({ students }: StudentsListProps) {
                                 >
                                     <LinkIcon size={16} />
                                 </button>
+                            )}
+                            {student.linkedUser && (
+                                <div className={styles.linkedBadge}>
+                                    Подключён к платформе
+                                </div>
                             )}
                         </div>
                     </div>

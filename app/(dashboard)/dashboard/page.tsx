@@ -162,7 +162,11 @@ export default function DashboardPage() {
                                     <div key={req.id} className={styles.requestItem}>
                                         <div className={styles.requestMain}>
                                             <div className={`${styles.requestIcon} ${req.type === 'cancel' ? styles.iconCancel : styles.iconReschedule}`}>
-                                                {req.type === 'cancel' ? <BanIcon size={20} /> : <CalendarIcon size={20} />}
+                                                {req.user.avatar ? (
+                                                    <img src={req.user.avatar} alt="" className={styles.requestAvatar} />
+                                                ) : (
+                                                    req.user.firstName?.[0] || req.user.name?.[0] || '?'
+                                                )}
                                             </div>
                                             <div className={styles.requestDetails}>
                                                 <div className={styles.requestTitle}>
@@ -272,7 +276,11 @@ export default function DashboardPage() {
                         <div key={req.id} className={styles.requestItem}>
                             <div className={styles.requestMain}>
                                 <div className={`${styles.requestIcon} ${req.type === 'cancel' ? styles.iconCancel : styles.iconReschedule}`}>
-                                    {req.type === 'cancel' ? <BanIcon size={20} /> : <CalendarIcon size={20} />}
+                                    {req.user.avatar ? (
+                                        <img src={req.user.avatar} alt="" className={styles.requestAvatar} />
+                                    ) : (
+                                        req.user.firstName?.[0] || req.user.name?.[0] || '?'
+                                    )}
                                 </div>
                                 <div className={styles.requestDetails}>
                                     <div className={styles.requestTitle}>

@@ -88,12 +88,20 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
             <div className={styles.studentHeader}>
                 <div className={styles.headerTop}>
                     <div className={styles.studentProfile}>
-                        <div
-                            className={styles.studentAvatar}
-                            style={{ backgroundColor: stringToColor(student.name) }}
-                        >
-                            {getInitials(student.name)}
-                        </div>
+                        {student.linkedUser?.avatar ? (
+                            <img
+                                src={student.linkedUser.avatar}
+                                alt={student.name}
+                                className={styles.studentAvatarImage}
+                            />
+                        ) : (
+                            <div
+                                className={styles.studentAvatar}
+                                style={{ backgroundColor: stringToColor(student.name) }}
+                            >
+                                {getInitials(student.name)}
+                            </div>
+                        )}
                         <div className={styles.studentInfo}>
                             <h1 className={styles.studentName}>{student.name}</h1>
                         </div>

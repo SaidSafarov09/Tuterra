@@ -138,6 +138,15 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.studentAvatarImage {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .headerInfo {
     flex: 1;
     min-width: 0;
@@ -328,9 +337,6 @@
 }
 
 .linkedBadge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
     font-size: 10px;
     font-weight: 600;
     color: #F59E0B;

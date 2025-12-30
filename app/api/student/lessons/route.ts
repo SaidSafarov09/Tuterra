@@ -54,7 +54,8 @@ export async function GET(request: NextRequest) {
                     }
                 },
                 subject: true,
-                lessonPayments: true
+                lessonPayments: true,
+                owner: true,
             },
             orderBy: {
                 date: filter === 'upcoming' ? 'asc' : 'desc'

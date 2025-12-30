@@ -226,7 +226,7 @@ export async function GET(request: NextRequest) {
                         include: { student: true, subject: true, group: true }
                     },
                     user: {
-                        select: { name: true, firstName: true, email: true }
+                        select: { name: true, firstName: true, email: true, avatar: true }
                     }
                 },
                 orderBy: { createdAt: 'desc' }

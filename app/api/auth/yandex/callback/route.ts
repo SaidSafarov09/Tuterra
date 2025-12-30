@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
       providerId: yandexUser.id,
     });
 
-    return createAuthSession(user.id, user.phone || "", req.url);
+    return createAuthSession(user.id, user.phone || "", req.url, user.role);
   } catch (error) {
     console.error("Yandex auth error:", error);
     return NextResponse.redirect(new URL("/auth?error=auth_failed", req.url));

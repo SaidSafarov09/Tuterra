@@ -89,15 +89,22 @@ export const UserAvatarUpload: React.FC<UserAvatarUploadProps> = ({
         }
     }
 
-    const handleCropComplete = async (croppedImage: string) => {
+    const handleCropComplete = (croppedImage: string) => {
         setPreview(croppedImage)
         setSelectedImage(null)
 
-        
-        const res = await fetch(croppedImage)
-        const blob = await res.blob()
-        const file = new File([blob], "avatar.jpg", { type: "image/jpeg" })
+        // Преобразование Data URL в File вручную, чтобы избежать ошибки "Failed to fetch"
+        const arr = croppedImage.split(',')
+        const mime = arr[0].match(/:(.*?);/)?.[1]
+        const bstr = atob(arr[1])
+        let n = bstr.length
+        const u8arr = new Uint8Array(n)
 
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n)
+        }
+
+        const file = new File([u8arr], "avatar.jpg", { type: mime || "image/jpeg" })
         onAvatarChange?.(file)
     }
 
@@ -118,7 +125,7 @@ export const UserAvatarUpload: React.FC<UserAvatarUploadProps> = ({
         setIsDeleteModalOpen(false)
     }
 
-    
+
     const stringToColor = (str: string): string => {
         let hash = 0
         for (let i = 0; i < str.length; i++) {
