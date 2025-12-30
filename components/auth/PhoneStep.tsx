@@ -118,7 +118,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                 <button
                     type="button"
                     className={styles.socialYandex}
-                    onClick={() => window.location.href = '/api/auth/yandex/login'}
+                    onClick={() => window.location.href = `/api/auth/yandex/login${searchParams.get('ref') ? `?ref=${searchParams.get('ref')}` : ''}`}
                 >
                     <div className={styles.yandex}>
                         <YandexLogo />
@@ -128,7 +128,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                 <button
                     type="button"
                     className={styles.socialGoogle}
-                    onClick={() => window.location.href = '/api/auth/google/login'}
+                    onClick={() => window.location.href = `/api/auth/google/login${searchParams.get('ref') ? `?ref=${searchParams.get('ref')}` : ''}`}
                 >
                     <div className={styles.google}>
                         <GoogleLogo />

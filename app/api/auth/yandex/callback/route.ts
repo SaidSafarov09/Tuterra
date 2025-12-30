@@ -65,6 +65,18 @@ export async function GET(req: NextRequest) {
       providerId: yandexUser.id,
     });
 
+    // Handle referral linking
+    const { cookies } = await import('next/headers')
+    const cookieStore = await cookies()
+    const refCode = cookieStore.get('referral-code')?.value
+
+    if (refCode) {
+      const { linkStudentToTutor } = await import('@/lib/studentConnection')
+      await linkStudentToTutor(user.id, refCode)
+      // Clear the referral cookie
+      cookieStore.delete('referral-code')
+    }
+
     return createAuthSession(user.id, user.phone || "", req.url, user.role);
   } catch (error) {
     console.error("Yandex auth error:", error);

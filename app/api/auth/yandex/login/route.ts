@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url)
+    const ref = searchParams.get('ref')
     const clientId = process.env.YANDEX_CLIENT_ID
     const appUrl = process.env.NEXT_PUBLIC_APP_URL
 
@@ -20,5 +22,9 @@ export async function GET() {
             scope,
         }).toString()
 
-    return NextResponse.redirect(yandexAuthUrl)
+    const response = NextResponse.redirect(yandexAuthUrl)
+    if (ref) {
+        response.cookies.set('referral-code', ref, { maxAge: 3600, path: '/' })
+    }
+    return response
 }

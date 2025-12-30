@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/jwt'
+import { linkStudentToTutor } from '@/lib/studentConnection'
 
 export async function POST(request: NextRequest) {
     try {
@@ -19,66 +19,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Код не указан' }, { status: 400 })
         }
 
-        // Find teacher by referral code
-        const teacher = await prisma.user.findUnique({
-            where: { referralCode: referralCode.toUpperCase() }
-        })
+        const student = await linkStudentToTutor(payload.userId, referralCode)
 
-        if (!teacher) {
-            return NextResponse.json({ success: false, error: 'Преподаватель с таким кодом не найден' }, { status: 404 })
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { id: payload.userId }
-        })
-
-        if (!user) {
-            return NextResponse.json({ success: false, error: 'Пользователь не найден' }, { status: 404 })
-        }
-
-        // Check if already connected
-        const existingConnection = await prisma.student.findFirst({
-            where: {
-                ownerId: teacher.id,
-                linkedUserId: user.id
-            }
-        })
-
-        if (existingConnection) {
-            return NextResponse.json({ success: false, error: 'Вы уже подключены к этому преподавателю' }, { status: 400 })
-        }
-
-        // Check if there is a student record for this user under this teacher with the same email/phone
-        let studentRecord = await prisma.student.findFirst({
-            where: {
-                ownerId: teacher.id,
-                OR: [
-                    user.email ? { contact: user.email } : {},
-                    user.phone ? { contact: user.phone } : {}
-                ].filter(obj => Object.keys(obj).length > 0)
-            }
-        })
-
-        if (studentRecord) {
-            // Update existing record
-            await prisma.student.update({
-                where: { id: studentRecord.id },
-                data: {
-                    linkedUserId: user.id,
-                    name: studentRecord.name || user.name || 'Ученик'
-                }
-            })
-        } else {
-            // Create new record
-            await prisma.student.create({
-                data: {
-                    name: user.name || user.email?.split('@')[0] || 'Ученик',
-                    ownerId: teacher.id,
-                    linkedUserId: user.id,
-                    contact: user.email || user.phone || '',
-                    contactType: user.email ? 'email' : 'phone'
-                }
-            })
+        if (!student) {
+            return NextResponse.json({ success: false, error: 'Не удалось подключиться. Проверьте код.' }, { status: 400 })
         }
 
         return NextResponse.json({ success: true })
@@ -87,3 +31,5 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Внутренняя ошибка сервера' }, { status: 500 })
     }
 }
+
+

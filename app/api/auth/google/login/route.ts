@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url)
+    const ref = searchParams.get('ref')
     const clientId = process.env.GOOGLE_CLIENT_ID
 
     if (!clientId) {
@@ -19,5 +21,9 @@ export async function GET() {
 
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope.replace(/ /g, '%20')}&access_type=offline&prompt=consent`
 
-    return NextResponse.redirect(googleAuthUrl)
+    const response = NextResponse.redirect(googleAuthUrl)
+    if (ref) {
+        response.cookies.set('referral-code', ref, { maxAge: 3600, path: '/' })
+    }
+    return response
 }

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { signToken } from '@/lib/jwt'
 import { cookies } from 'next/headers'
 import { createWelcomeNotifications } from '@/lib/welcomeNotifications'
+import { linkStudentToTutor } from '@/lib/studentConnection'
 import bcrypt from 'bcrypt'
 
 export async function POST(request: NextRequest) {
@@ -84,23 +85,13 @@ export async function POST(request: NextRequest) {
 
                 // Referral linking
                 if (isStudent && refCode) {
-                    const teacher = await prisma.user.findUnique({
-                        where: { referralCode: refCode }
-                    })
-
-                    if (teacher) {
-                        await prisma.student.create({
-                            data: {
-                                name: user.name || 'Новый ученик',
-                                ownerId: teacher.id,
-                                linkedUserId: user.id,
-                                contact: user.email,
-                                contactType: 'email'
-                            }
-                        })
-                    }
+                    await linkStudentToTutor(user.id, refCode)
                 }
             } else {
+                // If user exists, but we have a refCode, we should still try to link
+                if (role === 'student' && refCode) {
+                    await linkStudentToTutor(user.id, refCode)
+                }
                 user = await prisma.user.update({
                     where: { id: user.id },
                     data: { emailVerified: true },
@@ -205,23 +196,13 @@ export async function POST(request: NextRequest) {
 
             // Referral linking for phone auth
             if (role === 'student' && refCode) {
-                const teacher = await prisma.user.findUnique({
-                    where: { referralCode: refCode }
-                })
-
-                if (teacher) {
-                    await prisma.student.create({
-                        data: {
-                            name: user.name || 'Новый ученик',
-                            ownerId: teacher.id,
-                            linkedUserId: user.id,
-                            contact: user.phone,
-                            contactType: 'phone'
-                        }
-                    })
-                }
+                await linkStudentToTutor(user.id, refCode)
             }
         } else {
+            // If user exists, but we have a refCode, we should still try to link
+            if (role === 'student' && refCode) {
+                await linkStudentToTutor(user.id, refCode)
+            }
             user = await prisma.user.update({
                 where: { id: user.id },
                 data: { phoneVerified: true },
