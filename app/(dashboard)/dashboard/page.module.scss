@@ -46,11 +46,24 @@
     }
 }
 
-/* REQUESTS LIST - REFINED STYLES */
+.requests {
+    margin-bottom: 32px;
+
+    @media (max-width: 768px) {
+        margin-bottom: 24px;
+        order: 1;
+    }
+}
+
 .requestsList {
+    width: 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(386px, 1fr));
     gap: 16px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
 }
 
 .requestItem {
@@ -60,8 +73,9 @@
     background: var(--surface);
     border: 1px solid var(--border-light);
     border-radius: 12px;
-    gap: 12px;
+    gap: 16px;
     transition: all 0.2s;
+    justify-content: space-between;
 
     &:hover {
         background: var(--hover-bg);
@@ -156,6 +170,7 @@
 
     &.approveGhost {
         color: var(--success);
+        border: 1px solid var(--success);
 
         &:hover {
             background: rgba(16, 185, 129, 0.1);
@@ -164,6 +179,7 @@
 
     &.rejectGhost {
         color: var(--error);
+        border: 1px solid var(--error);
 
         &:hover {
             background: rgba(239, 68, 68, 0.1);

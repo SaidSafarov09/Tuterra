@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { TabNav } from '@/components/ui/TabNav'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
@@ -8,19 +9,20 @@ import { getInitials, stringToColor } from '@/lib/utils'
 import styles from '../../app/(dashboard)/subjects/page.module.scss'
 import { formatSmartDate } from '@/lib/dateUtils'
 
-// Вспомогательная функция для получения ближайшего будущего занятия
-const getNextLesson = (lessons: Lesson[] | undefined) => {
+// Helper to get the relevant lesson based on tab
+const getRelevantLesson = (lessons: Lesson[] | undefined, tab: 'upcoming' | 'past') => {
     if (!lessons || lessons.length === 0) return null;
 
     const now = new Date();
-    const futureLessons = lessons.filter(lesson => new Date(lesson.date) >= now);
 
-    if (futureLessons.length === 0) return null;
-
-    return futureLessons
-        .slice()
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-};
+    if (tab === 'upcoming') {
+        const future = lessons.filter(l => new Date(l.date) >= now);
+        return future.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+    } else {
+        const past = lessons.filter(l => new Date(l.date) < now);
+        return past.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+    }
+}
 
 interface SubjectDetailsModalProps {
     isOpen: boolean
@@ -46,6 +48,34 @@ export function SubjectDetailsModal({
     isStudentView = false
 }: SubjectDetailsModalProps) {
     const router = useRouter()
+    const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming')
+
+    const tabs = [
+        { id: 'upcoming', label: 'Предстоящие' },
+        { id: 'past', label: 'Прошедшие' }
+    ]
+
+    // Filter logic
+    const displayedGroups = isStudentView
+        ? groups.filter(g => !!getRelevantLesson(g.lessons, activeTab))
+        : groups
+
+    const displayedStudents = isStudentView
+        ? students.filter(s => !!getRelevantLesson(s.lessons, activeTab))
+        : students
+
+    // Helper to render lesson time
+    const renderLessonTime = (lessons: Lesson[] | undefined) => {
+        const lesson = isStudentView ? getRelevantLesson(lessons, activeTab) : getRelevantLesson(lessons, 'upcoming')
+        if (!lesson) return <span className={styles.noLesson}>{isStudentView ? 'Нет занятий' : 'Нет занятий'}</span>
+
+        return (
+            <div className={styles.nextLesson}>
+                <ClockIcon size={14} className={styles.clockIcon} />
+                <span>{formatSmartDate(new Date(lesson.date))}</span>
+            </div>
+        )
+    }
 
     return (
         <Modal
@@ -66,15 +96,24 @@ export function SubjectDetailsModal({
             }
         >
             <div className={styles.detailsContent}>
+                {isStudentView && (
+                    <div style={{ marginBottom: '20px' }}>
+                        <TabNav
+                            tabs={tabs}
+                            activeTab={activeTab}
+                            onTabChange={(id) => setActiveTab(id as any)}
+                        />
+                    </div>
+                )}
+
                 {isLoading ? (
                     <div className={styles.loading}>Загрузка данных...</div>
                 ) : (
                     <>
-                        {groups && groups.length > 0 && (
+                        {displayedGroups.length > 0 && (
                             <div className={styles.section} style={{ marginBottom: '20px' }}>
-                                <h3 className={styles.sectionTitle} style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: 600 }}>Группы</h3>
                                 <div className={styles.studentsList}>
-                                    {groups.map((group) => (
+                                    {displayedGroups.map((group) => (
                                         <div
                                             key={group.id}
                                             className={styles.studentItem}
@@ -90,24 +129,12 @@ export function SubjectDetailsModal({
                                                 <div className={styles.groupInfo}>
                                                     <span className={styles.studentName}>{group.name}</span>
                                                     <span className={styles.groupStudentsCount}>
-                                                        {group.students?.length || 0} {group.students?.length === 1 ? 'ученик' : group.students?.length > 1 && group.students?.length < 5 ? 'ученика' : 'учеников'}
+                                                        Группа из {group.students?.length || 0} человек
                                                     </span>
                                                 </div>
                                             </div>
                                             <div className={styles.lessonInfo}>
-                                                {getNextLesson(group.lessons) ? (
-                                                    <div className={styles.nextLesson}>
-                                                        <ClockIcon size={14} className={styles.clockIcon} />
-                                                        <span>
-                                                            {(() => {
-                                                                const nextLesson = getNextLesson(group.lessons);
-                                                                return nextLesson ? formatSmartDate(new Date(nextLesson.date)) : null;
-                                                            })()}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <span className={styles.noLesson}>Нет занятий</span>
-                                                )}
+                                                {renderLessonTime(group.lessons)}
                                             </div>
                                         </div>
                                     ))}
@@ -116,14 +143,9 @@ export function SubjectDetailsModal({
                         )}
 
                         <div className={styles.section}>
-                            <h3 className={styles.sectionTitle} style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: 600 }}>Ученики</h3>
-                            {students.length === 0 ? (
-                                <div className={styles.emptyDetails}>
-                                    <p>В этом предмете пока нет учеников</p>
-                                </div>
-                            ) : (
+                            {displayedStudents.length > 0 && (
                                 <div className={styles.studentsList}>
-                                    {students.map((student) => (
+                                    {displayedStudents.map((student) => (
                                         <div
                                             key={student.id}
                                             className={styles.studentItem}
@@ -139,22 +161,16 @@ export function SubjectDetailsModal({
                                                 <span className={styles.studentName}>{student.name}</span>
                                             </div>
                                             <div className={styles.lessonInfo}>
-                                                {getNextLesson(student.lessons) ? (
-                                                    <div className={styles.nextLesson}>
-                                                        <ClockIcon size={14} className={styles.clockIcon} />
-                                                        <span>
-                                                            {(() => {
-                                                                const nextLesson = getNextLesson(student.lessons);
-                                                                return nextLesson ? formatSmartDate(new Date(nextLesson.date)) : null;
-                                                            })()}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <span className={styles.noLesson}>Нет занятий</span>
-                                                )}
+                                                {renderLessonTime(student.lessons)}
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            )}
+
+                            {isStudentView && displayedGroups.length === 0 && displayedStudents.length === 0 && (
+                                <div className={styles.emptyDetails}>
+                                    <p>Нет {activeTab === 'upcoming' ? 'предстоящих' : 'прошедших'} занятий</p>
                                 </div>
                             )}
                         </div>

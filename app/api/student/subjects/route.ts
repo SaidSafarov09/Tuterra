@@ -21,9 +21,14 @@ export async function GET(request: NextRequest) {
                 groups: {
                     include: {
                         lessons: {
-                            where: { isCanceled: false },
+                            include: {
+                                lessonPayments: true
+                            },
                             orderBy: { date: 'asc' },
-                            take: 10 // Enough for "Next Lesson"
+                            take: 50
+                        },
+                        _count: {
+                            select: { students: true }
                         }
                     }
                 },
@@ -53,6 +58,18 @@ export async function GET(request: NextRequest) {
                     // Determine if student is in a group for this subject
                     const relatedGroup = student.groups.find(g => g.subjectId === subject.id);
 
+                    let filteredGroupLessons: any[] = []
+                    if (relatedGroup) {
+                        const now = new Date()
+                        filteredGroupLessons = relatedGroup.lessons.filter(l => {
+                            // Future -> Show
+                            if (new Date(l.date) >= now) return true
+                            // Past -> Show only if paid/attended (payment record exists for this student)
+                            const hasPayment = l.lessonPayments.some((p: any) => p.studentId === student.id)
+                            return hasPayment
+                        })
+                    }
+
                     // Filter lessons for this subject (for private "student" entity)
                     const relatedStudentLessons = student.lessons.filter(l => l.subjectId === subject.id);
 
@@ -63,12 +80,12 @@ export async function GET(request: NextRequest) {
                         relatedGroup: relatedGroup ? {
                             id: relatedGroup.id,
                             name: relatedGroup.name,
-                            students: [student], // Fake current student as member for count/display
-                            lessons: relatedGroup.lessons
+                            students: Array(relatedGroup._count.students).fill({ id: 'dummy' }), // Fake students array for count display
+                            lessons: filteredGroupLessons
                         } : null,
                         relatedStudent: !relatedGroup ? {
                             id: student.id,
-                            name: "Индивидуальные занятия", // Or student.name, but user wants to differentiate context
+                            name: student.name, // Or student.name, but user wants to differentiate context
                             slug: student.id, // for link
                             lessons: relatedStudentLessons
                         } : null

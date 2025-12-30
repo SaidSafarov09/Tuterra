@@ -48,7 +48,9 @@ import {
     CalendarClock,
     MoreVertical,
     Bell,
-    Link
+    Link,
+    CircleX,
+    Ban
 } from 'lucide-react'
 
 
@@ -85,6 +87,8 @@ export const MenuIcon: React.FC<IconProps> = (props) => <Menu {...props} />
 export const FilterIcon: React.FC<IconProps> = (props) => <Filter {...props} />
 export const SearchIcon: React.FC<IconProps> = (props) => <Search {...props} />
 export const XCircleIcon: React.FC<IconProps> = (props) => <XCircle {...props} />
+export const CircleXIcon: React.FC<IconProps> = (props) => <CircleX {...props} />
+export const BanIcon: React.FC<IconProps> = (props) => <Ban {...props} />
 
 
 export const ArrowLeftIcon: React.FC<IconProps> = (props) => <ArrowLeft {...props} />

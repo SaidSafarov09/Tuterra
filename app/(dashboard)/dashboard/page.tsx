@@ -5,12 +5,12 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import {
     UsersGroupIcon,
-    BookIcon,
-    AlertIcon,
     MoneyIcon,
-    CelebrationIcon,
     CalendarIcon,
     StudentsIcon,
+    CheckIcon,
+    CircleXIcon,
+    BanIcon
 } from '@/components/icons/Icons'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatCard } from '@/components/ui/StatCard'
@@ -18,11 +18,8 @@ import { Section } from '@/components/ui/Section'
 import { LessonCard } from '@/components/ui/LessonCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { StatCardSkeleton, LessonCardSkeleton } from '@/components/skeletons'
-import { statsApi } from '@/services/api'
-import { GENERAL_MESSAGES } from '@/constants/messages'
 import { toast } from 'sonner'
 import { DashboardStats } from '@/types'
-import { useRouter } from 'next/navigation'
 import styles from './page.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { MONTHS_GENITIVE } from '@/constants/messages'
@@ -32,7 +29,6 @@ import { StudentConnectionModal } from '@/components/students/StudentConnectionM
 import { Modal } from '@/components/ui/Modal'
 
 export default function DashboardPage() {
-    const router = useRouter()
     const { user } = useAuthStore()
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
@@ -155,7 +151,7 @@ export default function DashboardPage() {
                 </div>
 
                 {!isStudent && stats?.pendingRequests && stats.pendingRequests.length > 0 && (
-                    <div style={{ marginBottom: '32px' }}>
+                    <div className={styles.requests}>
                         <Section
                             title="Заявки от учеников"
                             viewAllText={stats.pendingRequests.length > 3 ? "Все заявки →" : undefined}
@@ -166,7 +162,7 @@ export default function DashboardPage() {
                                     <div key={req.id} className={styles.requestItem}>
                                         <div className={styles.requestMain}>
                                             <div className={`${styles.requestIcon} ${req.type === 'cancel' ? styles.iconCancel : styles.iconReschedule}`}>
-                                                {req.type === 'cancel' ? <AlertIcon size={20} /> : <CalendarIcon size={20} />}
+                                                {req.type === 'cancel' ? <BanIcon size={20} /> : <CalendarIcon size={20} />}
                                             </div>
                                             <div className={styles.requestDetails}>
                                                 <div className={styles.requestTitle}>
@@ -193,12 +189,14 @@ export default function DashboardPage() {
                                                 className={`${styles.actionBtn} ${styles.rejectGhost}`}
                                                 onClick={() => handleRequestAction(req.id, 'rejected')}
                                             >
+                                                <CircleXIcon size={16} />
                                                 Отклонить
                                             </button>
                                             <button
                                                 className={`${styles.actionBtn} ${styles.approveGhost}`}
                                                 onClick={() => handleRequestAction(req.id, 'approved')}
                                             >
+                                                <CheckIcon size={16} />
                                                 Подтвердить
                                             </button>
                                         </div>
@@ -274,7 +272,7 @@ export default function DashboardPage() {
                         <div key={req.id} className={styles.requestItem}>
                             <div className={styles.requestMain}>
                                 <div className={`${styles.requestIcon} ${req.type === 'cancel' ? styles.iconCancel : styles.iconReschedule}`}>
-                                    {req.type === 'cancel' ? <AlertIcon size={20} /> : <CalendarIcon size={20} />}
+                                    {req.type === 'cancel' ? <BanIcon size={20} /> : <CalendarIcon size={20} />}
                                 </div>
                                 <div className={styles.requestDetails}>
                                     <div className={styles.requestTitle}>
