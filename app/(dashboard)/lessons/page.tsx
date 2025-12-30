@@ -314,6 +314,7 @@ function LessonsContent() {
                             onEdit={handleEditLesson}
                             onDelete={handleDeleteClick}
                             isStudentView={isStudent}
+                            isActionLoading={isLoading}
                         />
                     </motion.div>
                 )}

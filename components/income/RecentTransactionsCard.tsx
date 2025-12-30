@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { HistoryIcon, UserIcon, ArrowRightIcon } from '@/components/icons/Icons'
+import { HistoryIcon, UserIcon, ArrowRightIcon, UsersGroupIcon } from '@/components/icons/Icons'
 import styles from '../../app/(dashboard)/income/page.module.scss'
 
 interface Transaction {
@@ -11,7 +11,12 @@ interface Transaction {
     price: number
     group?: { name: string }
     groupName?: string
-    student?: { name: string }
+    student?: {
+        name: string
+        linkedUser?: {
+            avatar?: string | null
+        } | null
+    }
     subject?: { name: string }
     subjectName?: string
 }
@@ -49,7 +54,13 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                         >
                             <div className={styles.transactionInfo}>
                                 <div className={styles.transactionIcon}>
-                                    <UserIcon size={20} />
+                                    {tx.group ? (
+                                        <UsersGroupIcon size={20} />
+                                    ) : tx.student?.linkedUser?.avatar ? (
+                                        <img src={tx.student.linkedUser.avatar} alt="" className={styles.transactionAvatar} />
+                                    ) : (
+                                        <UserIcon size={20} />
+                                    )}
                                 </div>
                                 <div className={styles.transactionDetails}>
                                     <span className={styles.transactionStudent}>

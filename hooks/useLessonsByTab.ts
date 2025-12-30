@@ -48,7 +48,7 @@ export function useLessonsByTab(activeTab: LessonFilter, isStudent = false) {
                 setIsRefreshing(false)
             }
         }
-    }, [])
+    }, [isStudent, lessonsApi]) // Aded isStudent and lessonsApi to deps
 
     const refetch = useCallback(() => {
         fetchLessons(activeTab, true)
@@ -56,8 +56,10 @@ export function useLessonsByTab(activeTab: LessonFilter, isStudent = false) {
 
 
     useEffect(() => {
-        fetchLessons(activeTab)
-    }, [activeTab, fetchLessons])
+        // Reset loaded tabs if isStudent changes to ensure re-fetch
+        loadedTabs.current.clear()
+        fetchLessons(activeTab, true)
+    }, [activeTab, fetchLessons, isStudent]) // Added isStudent to deps
 
 
     // Preload other tabs only after the active tab is loaded and with a delay

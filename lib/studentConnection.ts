@@ -73,16 +73,7 @@ export async function linkStudentToTutor(userId: string, code: string) {
         return await prisma.student.update({
             where: { id: studentByCode.id },
             data: {
-                linkedUserId: user.id,
-                name: (() => {
-                    const lowName = studentByCode!.name.toLowerCase();
-                    const isGeneric = lowName === 'новый ученик' || lowName === 'ученик' || lowName === 'test' || !studentByCode!.name.trim();
-                    if (isGeneric && user.name) {
-                        const lowUser = user.name.toLowerCase();
-                        if (lowUser !== 'новый ученик' && lowUser !== 'ученик' && lowUser !== 'test') return user.name;
-                    }
-                    return studentByCode!.name;
-                })()
+                linkedUserId: user.id
             }
         });
     }
@@ -127,16 +118,7 @@ export async function linkStudentToTutor(userId: string, code: string) {
         return await prisma.student.update({
             where: { id: studentRecord.id },
             data: {
-                linkedUserId: user.id,
-                name: (() => {
-                    const lowName = studentRecord!.name.toLowerCase();
-                    const isGeneric = lowName === 'новый ученик' || lowName === 'ученик' || lowName === 'test' || !studentRecord!.name.trim();
-                    if (isGeneric && user.name) {
-                        const lowUser = user.name.toLowerCase();
-                        if (lowUser !== 'новый ученик' && lowUser !== 'ученик' && lowUser !== 'test') return user.name;
-                    }
-                    return studentRecord!.name;
-                })()
+                linkedUserId: user.id
             }
         });
     } else {

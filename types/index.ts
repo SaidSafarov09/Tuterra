@@ -148,6 +148,7 @@ export interface Lesson {
         color: string
     } | null
     lessonPayments?: LessonPayment[]
+    userHasPaid?: boolean
     planTopicId?: string | null
     planTopic?: LearningPlanTopic
     owner?: {

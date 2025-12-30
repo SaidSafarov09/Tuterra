@@ -94,27 +94,6 @@ export async function GET(request: NextRequest) {
                 linkedUser = usersMap.get(s.contact);
             }
 
-            if (linkedUser && linkedUser.name) {
-                const isGenericName = (name: string) => {
-                    const low = name.toLowerCase();
-                    return low === 'новый ученик' || low === 'ученик' || low === 'test' || !name.trim();
-                };
-
-                // Only sync name if the current student name is generic OR empty
-                if (isGenericName(s.name) && !isGenericName(linkedUser.name)) {
-                    try {
-                        await prisma.student.update({
-                            where: { id: s.id },
-                            data: { name: linkedUser.name }
-                        });
-                        return { ...s, name: linkedUser.name, linkedUser };
-                    } catch (e) {
-                        console.error("Failed to sync student name", e);
-                    }
-                }
-                return { ...s, linkedUser };
-            }
-
             return { ...s, linkedUser };
         }))
 

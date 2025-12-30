@@ -22,6 +22,7 @@ interface CalendarDayDetailsProps {
     userBirthDate?: string | null
     region?: string | null
     isStudentView?: boolean
+    isLoadingAction?: boolean
 }
 
 export function CalendarDayDetails({
@@ -34,7 +35,8 @@ export function CalendarDayDetails({
     onReschedule,
     userBirthDate,
     region,
-    isStudentView
+    isStudentView,
+    isLoadingAction = false
 }: CalendarDayDetailsProps) {
     if (isLoading) {
         return <div className={styles.modalLoading}>Загрузка...</div>
@@ -119,9 +121,9 @@ export function CalendarDayDetails({
                             {dayData.lessons.map(lesson => {
                                 const isFullyPaid = isFullyPaidLesson(lesson)
                                 const userHasPaid = isStudentView
-                                    ? (lesson.group
+                                    ? (lesson.userHasPaid ?? (lesson.group
                                         ? !!lesson.lessonPayments?.find(p => p.hasPaid)
-                                        : lesson.isPaid)
+                                        : lesson.isPaid))
                                     : lesson.isPaid
 
                                 return (
@@ -133,8 +135,12 @@ export function CalendarDayDetails({
                                             <div className={styles.lessonInfo}>
                                                 <div className={styles.lessonStudent}>
                                                     {isStudentView ? (
-                                                        // Student sees teacher name
-                                                        <>{lesson.owner?.name || lesson.owner?.firstName || 'Преподаватель'}</>
+                                                        // Student sees group name if group lesson, else teacher name
+                                                        lesson.group ? (
+                                                            <><p style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</p>&nbsp;-&nbsp;группа</>
+                                                        ) : (
+                                                            <>{lesson.owner?.name || lesson.owner?.firstName || 'Преподаватель'}</>
+                                                        )
                                                     ) : (
                                                         // Teacher sees student/group name
                                                         lesson.group ? (
@@ -151,9 +157,11 @@ export function CalendarDayDetails({
                                                 </div>
                                                 <div className={styles.lessonMeta}>
                                                     <span className={`${styles.metaPrice} ${isFullyPaid ? styles.pricePaid : styles.priceUnpaid}`}>
-                                                        {lesson.group && lesson.lessonPayments
-                                                            ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
-                                                            : lesson.price} ₽
+                                                        {isStudentView
+                                                            ? lesson.price
+                                                            : (lesson.group && lesson.lessonPayments
+                                                                ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
+                                                                : lesson.price)} ₽
                                                     </span>
                                                     {lesson.subject && (
                                                         <span
@@ -190,7 +198,7 @@ export function CalendarDayDetails({
                                                 </div>
                                                 <LessonBadges
                                                     price={lesson.price}
-                                                    isPaid={lesson.isPaid}
+                                                    isPaid={userHasPaid}
                                                     isTrial={lesson.isTrial}
                                                     isGroupLesson={!!lesson.group}
                                                     totalStudents={lesson.group?.students?.length || 0}
@@ -215,24 +223,24 @@ export function CalendarDayDetails({
                                                 <button
                                                     className={`${styles.actionButton} ${styles.paidButton} ${userHasPaid ? styles.isPaid : styles.isUnpaid}`}
                                                     onClick={() => onTogglePaid(lesson)}
-                                                    disabled={lesson.isCanceled || userHasPaid}
+                                                    disabled={lesson.isCanceled || userHasPaid || isLoadingAction}
                                                 >
                                                     <CheckIcon size={16} />
-                                                    Я оплатил
+                                                    {userHasPaid ? 'Оплачено' : 'Я оплатил'}
                                                 </button>
                                             )}
 
-                                            {!isLessonPast(lesson.date, lesson.duration || 60) && !isStudentView && (
+                                            {!isLessonPast(lesson.date, lesson.duration || 60) && (!isStudentView || !isGroupLesson(lesson)) && (
                                                 <button
                                                     className={styles.actionButton}
                                                     onClick={() => onReschedule(lesson)}
                                                 >
                                                     <RescheduleIcon size={16} />
-                                                    Перенести
+                                                    {isStudentView ? 'Запрос на перенос' : 'Перенести'}
                                                 </button>
                                             )}
 
-                                            {!isLessonPast(lesson.date, lesson.duration || 60) && !isStudentView && (
+                                            {!isLessonPast(lesson.date, lesson.duration || 60) && (!isStudentView || !isGroupLesson(lesson)) && (
                                                 <button
                                                     className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
                                                     onClick={() => onToggleCancel(lesson)}
@@ -245,7 +253,7 @@ export function CalendarDayDetails({
                                                     ) : (
                                                         <>
                                                             <XCircleIcon size={16} />
-                                                            Отменить
+                                                            {isStudentView ? 'Запрос на отмену' : 'Отменить'}
                                                         </>
                                                     )}
                                                 </button>

@@ -65,6 +65,11 @@
         border-color: var(--success);
         color: var(--success);
     }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
 }
 
 .restoreButton {

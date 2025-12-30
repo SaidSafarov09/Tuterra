@@ -103,7 +103,7 @@ export default function CalendarPage() {
         isGroupPaymentModalOpen,
         setIsGroupPaymentModalOpen,
         paymentLesson,
-    } = useLessonActions(fetchLessons)
+    } = useLessonActions(fetchLessons, isStudent)
 
     useEffect(() => {
         fetchLessons()
@@ -234,6 +234,7 @@ export default function CalendarPage() {
                     userBirthDate={userBirthDate}
                     region={userRegion}
                     isStudentView={isStudent}
+                    isLoadingAction={isActionsLoading}
                 />
             </Modal>
 
@@ -262,6 +263,7 @@ export default function CalendarPage() {
                 onConfirm={handleConfirmReschedule}
                 currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
                 isSubmitting={isActionsLoading}
+                isStudentView={isStudent}
             />
 
             <GroupPaymentModal

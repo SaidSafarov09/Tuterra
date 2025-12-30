@@ -17,6 +17,7 @@ interface LessonActionsProps {
     index?: number
     totalItems?: number
     isStudentView?: boolean
+    isLoading?: boolean
 }
 
 export function LessonActions({
@@ -31,6 +32,7 @@ export function LessonActions({
     index = 0,
     totalItems = 0,
     isStudentView = false,
+    isLoading = false,
 }: LessonActionsProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
@@ -44,9 +46,9 @@ export function LessonActions({
 
     // Student specific payment status
     const studentHasPaid = isStudentView
-        ? (lesson.group
+        ? (lesson.userHasPaid ?? (lesson.group
             ? !!lesson.lessonPayments?.find(p => p.hasPaid)
-            : lesson.isPaid)
+            : lesson.isPaid))
         : lesson.isPaid
 
     useEffect(() => {
@@ -104,10 +106,10 @@ export function LessonActions({
                     <button
                         className={`${styles.actionButton} ${styles.paidButton} ${studentHasPaid ? styles.isPaid : styles.isUnpaid}`}
                         onClick={() => onTogglePaid(lesson)}
-                        disabled={lesson.isCanceled || studentHasPaid}
+                        disabled={lesson.isCanceled || studentHasPaid || isLoading}
                     >
                         <CheckIcon size={16} />
-                        Я оплатил
+                        {studentHasPaid ? 'Оплачено' : 'Я оплатил'}
                     </button>
                 )}
 
@@ -132,17 +134,17 @@ export function LessonActions({
 
                     {isDropdownOpen && (
                         <div className={`${styles.dropdownMenu} ${dropdownPosition === 'top' ? styles.dropdownTop : ''}`}>
-                            {!lesson.isCanceled && showCancelButton && !isLessonEnded && onToggleCancel && (
+                            {!lesson.isCanceled && showCancelButton && !isLessonEnded && onToggleCancel && (!isStudentView || !isGroupLesson(lesson)) && (
                                 <button
                                     className={styles.dropdownItem}
-                                    onClick={() => handleAction(() => onToggleCancel(lesson))}
+                                    onClick={() => handleAction(() => onToggleCancel!(lesson))}
                                 >
                                     <XCircleIcon size={16} />
                                     Отменить
                                 </button>
                             )}
 
-                            {!isLessonEnded && onReschedule && (
+                            {!isLessonEnded && onReschedule && (!isStudentView || !isGroupLesson(lesson)) && (
                                 <button
                                     className={styles.dropdownItem}
                                     onClick={() => handleAction(() => onReschedule(lesson))}
@@ -196,14 +198,14 @@ export function LessonActions({
                 <button
                     className={`${styles.actionButton} ${styles.paidButton} ${studentHasPaid ? styles.isPaid : styles.isUnpaid}`}
                     onClick={() => onTogglePaid(lesson)}
-                    disabled={lesson.isCanceled || studentHasPaid}
+                    disabled={lesson.isCanceled || studentHasPaid || isLoading}
                 >
                     <CheckIcon size={16} />
-                    Я оплатил
+                    {studentHasPaid ? 'Оплачено' : 'Я оплатил'}
                 </button>
             )}
 
-            {showCancelButton && !isLessonEnded && onToggleCancel && (
+            {showCancelButton && !isLessonEnded && onToggleCancel && (!isStudentView || !isGroupLesson(lesson)) && (
                 <button
                     className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.cancelButton}`}
                     onClick={() => onToggleCancel(lesson)}
@@ -222,7 +224,7 @@ export function LessonActions({
                 </button>
             )}
 
-            {!isLessonEnded && onReschedule && (
+            {!isLessonEnded && onReschedule && (!isStudentView || !isGroupLesson(lesson)) && (
                 <button
                     className={`${styles.actionButton} ${styles.rescheduleButton}`}
                     onClick={() => onReschedule(lesson)}

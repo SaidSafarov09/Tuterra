@@ -156,7 +156,16 @@ export async function GET(request: NextRequest) {
                 orderBy: { updatedAt: 'desc' },
                 take: 3,
                 include: {
-                    student: { select: { name: true } },
+                    student: {
+                        select: {
+                            name: true,
+                            linkedUser: {
+                                select: {
+                                    avatar: true
+                                }
+                            }
+                        }
+                    },
                     subject: { select: { name: true, color: true, icon: true } },
                     group: { select: { name: true } },
                     lessonPayments: true,

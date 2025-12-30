@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
                 student: true,
                 group: true,
                 subject: true,
+                lessonPayments: true,
                 owner: {
                     select: {
                         id: true,
@@ -179,8 +180,18 @@ export async function GET(request: NextRequest) {
                 teachersCount,
                 totalLessonsCount,
                 monthLessonsCount,
-                upcomingLessons,
-                unpaidLessons
+                upcomingLessons: upcomingLessons.map(lesson => ({
+                    ...lesson,
+                    userHasPaid: lesson.studentId
+                        ? lesson.isPaid
+                        : lesson.lessonPayments?.some(p => studentIds.includes(p.studentId) && p.hasPaid)
+                })),
+                unpaidLessons: unpaidLessons.map(lesson => ({
+                    ...lesson,
+                    userHasPaid: lesson.studentId
+                        ? lesson.isPaid
+                        : lesson.lessonPayments?.some(p => studentIds.includes(p.studentId) && p.hasPaid)
+                }))
             }
         })
 

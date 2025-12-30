@@ -54,7 +54,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         isGroupPaymentModalOpen,
         setIsGroupPaymentModalOpen,
         paymentLesson,
-    } = useLessonActions(fetchLesson)
+    } = useLessonActions(fetchLesson, isStudent)
 
     const fetchStudents = async () => {
         try {
@@ -180,12 +180,16 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const lessonIsPast = isLessonPast(lesson.date, lesson.duration || 60)
     const lessonIsOngoing = isLessonOngoing(lesson.date, lesson.duration || 60)
 
-    // Определяем статус оплаты для группового занятия
-    const isFullyPaid = lesson.group
-        ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
-        : lesson.isPaid
+    // Определяем статус оплаты
+    const isFullyPaid = isStudent
+        ? (lesson.userHasPaid ?? (lesson.group
+            ? !!lesson.lessonPayments?.find(p => p.hasPaid)
+            : lesson.isPaid))
+        : (lesson.group
+            ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
+            : lesson.isPaid)
 
-    const isPartiallyPaid = lesson.group
+    const isPartiallyPaid = !isStudent && lesson.group
         ? (lesson.lessonPayments && lesson.group.students &&
             lesson.lessonPayments.filter(p => p.hasPaid).length > 0 &&
             lesson.lessonPayments.filter(p => p.hasPaid).length < lesson.group.students.length &&
@@ -264,7 +268,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         </div>
                         <LessonBadges
                             price={lesson.price}
-                            isPaid={lesson.isPaid}
+                            isPaid={isFullyPaid}
                             isTrial={lesson.isTrial}
                             isGroupLesson={!!lesson.group}
                             totalStudents={lesson.group?.students?.length || 0}
@@ -297,6 +301,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         onEdit={handleEditClick}
                         onDelete={() => setDeleteConfirm(true)}
                         isStudentView={isStudent}
+                        isLoading={isActionLoading}
                     />
                 </div>
             </div>
@@ -350,6 +355,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 onConfirm={handleConfirmReschedule}
                 currentDate={reschedulingLesson ? new Date(reschedulingLesson.date) : new Date()}
                 isSubmitting={isActionLoading}
+                isStudentView={isStudent}
             />
 
             <GroupPaymentModal

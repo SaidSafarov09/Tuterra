@@ -62,6 +62,8 @@ export async function GET(request: NextRequest) {
             }
         })
 
+        console.log(`[STUDENT_API] Found ${lessons.length} lessons for user ${userId}, studentIds: ${studentIds.join(', ')}`)
+
         // Filter out "ghost" group lessons (past lessons where student has no payment record)
         const filteredLessons = lessons.filter(lesson => {
             // Direct lesson
@@ -84,7 +86,21 @@ export async function GET(request: NextRequest) {
             return true
         })
 
-        return NextResponse.json(filteredLessons)
+        // Map lessons to include student-specific status
+        const lessonsWithStatus = filteredLessons.map(lesson => {
+            let userHasPaid = false;
+            if (lesson.studentId) {
+                userHasPaid = lesson.isPaid;
+            } else if (lesson.groupId) {
+                userHasPaid = lesson.lessonPayments.some(p => studentIds.includes(p.studentId) && p.hasPaid);
+            }
+            return {
+                ...lesson,
+                userHasPaid
+            };
+        });
+
+        return NextResponse.json(lessonsWithStatus)
     } catch (error) {
         console.error('Get student lessons error:', error)
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })

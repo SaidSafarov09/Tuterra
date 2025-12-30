@@ -23,6 +23,7 @@ interface LessonCardProps {
     index?: number
     totalItems?: number
     isStudentView?: boolean
+    isActionLoading?: boolean
 }
 
 export const LessonCard: React.FC<LessonCardProps> = ({
@@ -37,14 +38,15 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     index,
     totalItems,
     isStudentView = false,
+    isActionLoading = false,
 }) => {
     const [showTopic, setShowTopic] = useState(false)
 
     // Определяем, полностью ли оплачен урок
     const isFullyPaid = isStudentView
-        ? (lesson.group
+        ? (lesson.userHasPaid ?? (lesson.group
             ? !!lesson.lessonPayments?.find(p => p.hasPaid)
-            : lesson.isPaid)
+            : lesson.isPaid))
         : (lesson.group
             ? (lesson.lessonPayments?.filter(p => p.hasPaid).length === lesson.group.students?.length && (lesson.group.students?.length || 0) > 0)
             : lesson.isPaid)
@@ -70,7 +72,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                 <div className={styles.info}>
                     <h4 className={styles.studentName}>
                         {isStudentView
-                            ? (lesson.owner?.name || lesson.owner?.firstName || 'Преподаватель')
+                            ? (lesson.group ? lesson.group.name : (lesson.owner?.name || lesson.owner?.firstName || 'Преподаватель'))
                             : (lesson.student?.name || (lesson.group ? (
                                 <><span style={{ color: stringToColor(lesson.group.name) }}>{lesson.group.name}</span> — группа</>
                             ) : lesson.groupName ? (
@@ -146,7 +148,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                     </div>
                     <LessonBadges
                         price={lesson.price}
-                        isPaid={lesson.isPaid}
+                        isPaid={isFullyPaid}
                         isTrial={lesson.isTrial}
                         isGroupLesson={!!lesson.group}
                         totalStudents={lesson.group?.students?.length || 0}
@@ -176,6 +178,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                             index={index}
                             totalItems={totalItems}
                             isStudentView={isStudentView}
+                            isLoading={isActionLoading}
                         />
                     </div>
                 )}

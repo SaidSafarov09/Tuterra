@@ -35,12 +35,30 @@ export async function GET(request: NextRequest) {
             where: whereClause,
             orderBy: { date: 'desc' },
             include: {
-                student: { select: { name: true } },
+                student: {
+                    select: {
+                        name: true,
+                        linkedUser: {
+                            select: {
+                                avatar: true
+                            }
+                        }
+                    }
+                },
                 subject: { select: { name: true, color: true, icon: true } },
                 group: { select: { name: true } },
                 lessonPayments: {
                     include: {
-                        student: { select: { name: true } }
+                        student: {
+                            select: {
+                                name: true,
+                                linkedUser: {
+                                    select: {
+                                        avatar: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
             },

@@ -5,7 +5,7 @@ import { format, subMonths } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { ru } from 'date-fns/locale'
 import { Modal } from '@/components/ui/Modal'
-import { UserIcon } from '@/components/icons/Icons'
+import { UserIcon, UsersGroupIcon } from '@/components/icons/Icons'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { incomeApi } from '@/services/api'
 import { toast } from 'sonner'
@@ -39,7 +39,13 @@ const TransactionItem = ({ tx, onClose, router }: { tx: any, onClose: () => void
             <div className={styles.mainRow}>
                 <div className={styles.transactionInfo}>
                     <div className={styles.transactionIcon}>
-                        <UserIcon size={20} />
+                        {tx.group ? (
+                            <UsersGroupIcon size={20} />
+                        ) : tx.student?.linkedUser?.avatar ? (
+                            <img src={tx.student.linkedUser.avatar} alt="" className={styles.transactionAvatar} />
+                        ) : (
+                            <UserIcon size={20} />
+                        )}
                     </div>
                     <div className={styles.transactionDetails}>
                         <span className={styles.transactionStudent}>

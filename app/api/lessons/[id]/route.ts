@@ -86,6 +86,23 @@ export async function GET(
             return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
         }
 
+        // Add student-specific fields if requested by a student
+        if (isStudent) {
+            const studentRecords = await prisma.student.findMany({
+                where: { linkedUserId: user.id },
+                select: { id: true }
+            })
+            const studentIds = studentRecords.map(s => s.id)
+
+            const userHasPaid = lesson.studentId
+                ? lesson.isPaid
+                : lesson.lessonPayments.some(p => studentIds.includes(p.studentId) && p.hasPaid)
+
+            return NextResponse.json({
+                ...lesson,
+                userHasPaid
+            })
+        }
 
         // Just return the lesson directly, no need for redirect in API
         return NextResponse.json(lesson)
