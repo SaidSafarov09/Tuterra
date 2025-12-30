@@ -1,6 +1,7 @@
 'use client'
 
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
+import { Suspense } from 'react'
 
 export default function AuthLayout({
     children,
@@ -10,7 +11,9 @@ export default function AuthLayout({
     return (
         <ThemeProvider attribute="data-theme">
             <div data-theme="light">
-                {children}
+                <Suspense fallback={null}>
+                    {children}
+                </Suspense>
             </div>
         </ThemeProvider>
     )

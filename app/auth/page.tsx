@@ -10,7 +10,7 @@ export default function AuthPage() {
     const router = useRouter()
 
     useEffect(() => {
-        
+
         if (isAuthenticated) {
             router.push('/dashboard')
         }
