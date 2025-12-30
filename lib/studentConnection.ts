@@ -1,5 +1,4 @@
 import { prisma } from './prisma';
-import { formatPhoneNumber } from './validation';
 
 /**
  * Normalizes a contact string (email or phone) for comparison.
@@ -29,25 +28,73 @@ export function normalizeContact(contact: string | null | undefined): string | n
 }
 
 /**
- * Links a User (student) to a Student record owned by a teacher (referral code).
- * If a Student record with matching contact already exists, it links it.
- * Otherwise, it creates a new Student record.
+ * Links a User (student) to a Student record.
+ * Prioritizes linking by specific student invitationCode.
+ * Fallbacks to linking by teacher referralCode (using contact matching).
  */
-export async function linkStudentToTutor(userId: string, refCode: string) {
+export async function linkStudentToTutor(userId: string, code: string) {
     const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { authProviders: true }
+        where: { id: userId }
     });
 
     if (!user) return null;
 
+    const normalizedCode = code.trim().toUpperCase();
+
+    // 1. Try to find a Student record with this invitationCode
+    let studentByCode = await prisma.student.findUnique({
+        where: { invitationCode: normalizedCode }
+    });
+
+    if (studentByCode) {
+        // If already linked, check if it's the same user
+        if (studentByCode.linkedUserId) {
+            if (studentByCode.linkedUserId === userId) return studentByCode;
+            return null;
+        }
+
+        // IMPORTANT BUG FIX: Check if this user is ALREADY connected to THIS teacher via another record
+        const existingConnectionUnderSameTeacher = await prisma.student.findFirst({
+            where: {
+                ownerId: studentByCode.ownerId,
+                linkedUserId: userId
+            }
+        });
+
+        if (existingConnectionUnderSameTeacher) {
+            // If the user is already connected to this teacher via this exact record, it's fine (no-op)
+            if (existingConnectionUnderSameTeacher.id === studentByCode.id) return existingConnectionUnderSameTeacher;
+
+            // Otherwise, they are already connected via a DIFFERENT record. Prevent taking another one.
+            throw new Error('Вы уже подключены к этому преподавателю');
+        }
+
+        // Link it!
+        return await prisma.student.update({
+            where: { id: studentByCode.id },
+            data: {
+                linkedUserId: user.id,
+                name: (() => {
+                    const lowName = studentByCode!.name.toLowerCase();
+                    const isGeneric = lowName === 'новый ученик' || lowName === 'ученик' || lowName === 'test' || !studentByCode!.name.trim();
+                    if (isGeneric && user.name) {
+                        const lowUser = user.name.toLowerCase();
+                        if (lowUser !== 'новый ученик' && lowUser !== 'ученик' && lowUser !== 'test') return user.name;
+                    }
+                    return studentByCode!.name;
+                })()
+            }
+        });
+    }
+
+    // 2. Fallback: try to find a Teacher by referralCode
     const teacher = await prisma.user.findUnique({
-        where: { referralCode: refCode.toUpperCase() }
+        where: { referralCode: normalizedCode }
     });
 
     if (!teacher) return null;
 
-    // Don't link if already connected to THIS teacher
+    // Check if already connected to THIS teacher
     const existingConnection = await prisma.student.findFirst({
         where: {
             ownerId: teacher.id,
@@ -55,50 +102,45 @@ export async function linkStudentToTutor(userId: string, refCode: string) {
         }
     });
 
-    if (existingConnection) return existingConnection;
+    if (existingConnection) {
+        throw new Error('Вы уже подключены к этому преподавателю');
+    }
 
-    // Normalize user's contacts
     const normalizedEmail = normalizeContact(user.email);
     const normalizedPhone = normalizeContact(user.phone);
 
-    // We need to find if there's an existing Student record under this teacher that matches the user
-    // We search all students of this teacher and manually check normalized contacts
+    // Find matching orphaned record
     const teacherStudents = await prisma.student.findMany({
         where: {
             ownerId: teacher.id,
-            linkedUserId: null // only orphaned records
+            linkedUserId: null
         }
     });
 
     let studentRecord = teacherStudents.find(s => {
         const normalizedSContact = normalizeContact(s.contact);
         if (!normalizedSContact) return false;
-
         return normalizedSContact === normalizedEmail || normalizedSContact === normalizedPhone;
     });
 
     if (studentRecord) {
-        // Link existing record
         return await prisma.student.update({
             where: { id: studentRecord.id },
             data: {
                 linkedUserId: user.id,
-                // Only update name if it was generic
                 name: (() => {
-                    const lowName = studentRecord.name.toLowerCase();
-                    const isGeneric = lowName === 'новый ученик' || lowName === 'ученик' || lowName === 'test' || !studentRecord.name.trim();
-
+                    const lowName = studentRecord!.name.toLowerCase();
+                    const isGeneric = lowName === 'новый ученик' || lowName === 'ученик' || lowName === 'test' || !studentRecord!.name.trim();
                     if (isGeneric && user.name) {
                         const lowUser = user.name.toLowerCase();
-                        const isUserGeneric = lowUser === 'новый ученик' || lowUser === 'ученик' || lowUser === 'test';
-                        if (!isUserGeneric) return user.name;
+                        if (lowUser !== 'новый ученик' && lowUser !== 'ученик' && lowUser !== 'test') return user.name;
                     }
-                    return studentRecord.name;
+                    return studentRecord!.name;
                 })()
             }
         });
     } else {
-        // Create new record
+        // Create new record for this teacher
         return await prisma.student.create({
             data: {
                 name: user.name || user.email?.split('@')[0] || 'Новый ученик',

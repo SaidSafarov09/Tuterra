@@ -11,12 +11,14 @@ interface StudentLinkModalProps {
     isOpen: boolean
     onClose: () => void
     referralCode: string
+    studentName?: string
 }
 
 export const StudentLinkModal: React.FC<StudentLinkModalProps> = ({
     isOpen,
     onClose,
-    referralCode
+    referralCode,
+    studentName
 }) => {
     const [copiedType, setCopiedType] = useState<'link' | 'code' | null>(null)
 
@@ -89,9 +91,14 @@ export const StudentLinkModal: React.FC<StudentLinkModalProps> = ({
                     <div className={styles.headerIcon}>
                         <GraduationCap size={32} />
                     </div>
-                    <h2 className={styles.title}>Подключите ученика к Tuterra</h2>
+                    <h2 className={styles.title}>
+                        {studentName ? `Подключите ${studentName}` : 'Подключите ученика'}
+                    </h2>
                     <p className={styles.subtitle}>
-                        Это позволит ученику видеть расписание, получать уведомления и подтверждать оплаты
+                        {studentName
+                            ? `Это позволит ${studentName} видеть расписание, получать уведомления и подтверждать оплаты`
+                            : 'Это позволит ученику видеть расписание, получать уведомления и подтверждать оплаты'
+                        }
                     </p>
                 </div>
 

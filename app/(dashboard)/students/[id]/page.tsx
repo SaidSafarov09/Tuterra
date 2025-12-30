@@ -84,6 +84,9 @@ export default function StudentDetailPage({
     setIsEditLessonModalOpen,
     deleteLessonConfirm,
     setDeleteLessonConfirm,
+    unlinkStudentConfirm,
+    setUnlinkStudentConfirm,
+    handleUnlinkStudent,
     handleUpdateLesson,
     confirmDeleteLesson,
     isGroupPaymentModalOpen,
@@ -123,6 +126,7 @@ export default function StudentDetailPage({
         onEdit={openEditModal}
         onCreateLesson={handleCreateLessonMobile}
         onDelete={() => setDeleteStudentConfirm(true)}
+        onUnlink={() => setUnlinkStudentConfirm(true)}
       />
       <StudentSubjects
         student={student}
@@ -273,6 +277,17 @@ export default function StudentDetailPage({
         title="Удалить занятие?"
         message="Вы уверены, что хотите удалить это занятие?"
         confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={unlinkStudentConfirm}
+        onClose={() => setUnlinkStudentConfirm(false)}
+        onConfirm={handleUnlinkStudent}
+        title="Отвязать ученика?"
+        message="Ученик больше не сможет заходить в личный кабинет для просмотра занятий этого преподавателя. Все данные ученика у преподавателя сохранятся."
+        confirmText="Отвязать"
         cancelText="Отмена"
         variant="danger"
       />

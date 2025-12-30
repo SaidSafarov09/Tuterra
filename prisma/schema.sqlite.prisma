@@ -92,6 +92,7 @@ model Student {
 
   linkedUserId      String?
   linkedUser        User?           @relation("LinkedStudent", fields: [linkedUserId], references: [id])
+  invitationCode    String?         @unique
 
   @@index([ownerId])
   @@index([linkedUserId])

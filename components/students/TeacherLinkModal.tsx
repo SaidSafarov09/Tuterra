@@ -25,10 +25,10 @@ export const TeacherLinkModal: React.FC<TeacherLinkModalProps> = ({ isOpen, onCl
 
         setIsSubmitting(true)
         try {
-            const response = await fetch('/api/student/link-teacher', {
+            const response = await fetch('/api/student/connect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code.toUpperCase() })
+                body: JSON.stringify({ referralCode: code.toUpperCase() })
             })
 
             const data = await response.json()
@@ -82,9 +82,9 @@ export const TeacherLinkModal: React.FC<TeacherLinkModalProps> = ({ isOpen, onCl
                             <Input
                                 value={code}
                                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                                placeholder="Например: ABC123"
+                                placeholder="Например: ABC1DE2F"
                                 className={styles.codeInput}
-                                maxLength={6}
+                                maxLength={8}
                                 autoFocus
                             />
                         </div>
@@ -92,7 +92,7 @@ export const TeacherLinkModal: React.FC<TeacherLinkModalProps> = ({ isOpen, onCl
                             type="submit"
                             fullWidth
                             isLoading={isSubmitting}
-                            disabled={code.length < 4}
+                            disabled={code.length < 6}
                             className={styles.submitButton}
                         >
                             Подключиться

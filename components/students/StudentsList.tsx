@@ -13,7 +13,7 @@ interface StudentsListProps {
 
 export function StudentsList({ students }: StudentsListProps) {
     const router = useRouter()
-    const [isLinkModalOpen, setIsLinkModalOpen] = React.useState(false)
+    const [selectedStudent, setSelectedStudent] = React.useState<Student | null>(null)
     const [referralCode, setReferralCode] = React.useState('')
 
     React.useEffect(() => {
@@ -153,7 +153,7 @@ export function StudentsList({ students }: StudentsListProps) {
                                     className={styles.miniLinkButton}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setIsLinkModalOpen(true)
+                                        setSelectedStudent(student);
                                     }}
                                     title="Привязать к платформе"
                                 >
@@ -171,9 +171,10 @@ export function StudentsList({ students }: StudentsListProps) {
             ))}
 
             <StudentLinkModal
-                isOpen={isLinkModalOpen}
-                onClose={() => setIsLinkModalOpen(false)}
-                referralCode={referralCode}
+                isOpen={!!selectedStudent}
+                onClose={() => setSelectedStudent(null)}
+                referralCode={(selectedStudent as any)?.invitationCode || referralCode}
+                studentName={selectedStudent?.name}
             />
         </div>
     )

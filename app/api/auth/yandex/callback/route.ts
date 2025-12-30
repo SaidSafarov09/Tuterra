@@ -71,8 +71,12 @@ export async function GET(req: NextRequest) {
     const refCode = cookieStore.get('referral-code')?.value
 
     if (refCode) {
-      const { linkStudentToTutor } = await import('@/lib/studentConnection')
-      await linkStudentToTutor(user.id, refCode)
+      try {
+        const { linkStudentToTutor } = await import('@/lib/studentConnection')
+        await linkStudentToTutor(user.id, refCode)
+      } catch (e) {
+        console.error('Referral linking error during Yandex auth:', e)
+      }
       // Clear the referral cookie
       cookieStore.delete('referral-code')
     }

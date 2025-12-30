@@ -75,6 +75,7 @@ export function useStudentDetail(studentId: string) {
     const [deleteSubjectConfirm, setDeleteSubjectConfirm] = useState<string | null>(null)
     const [deleteGroupConfirm, setDeleteGroupConfirm] = useState<string | null>(null)
     const [deleteLessonConfirm, setDeleteLessonConfirm] = useState<string | null>(null)
+    const [unlinkStudentConfirm, setUnlinkStudentConfirm] = useState(false)
 
     const fetchStudent = async () => {
         try {
@@ -85,6 +86,23 @@ export function useStudentDetail(studentId: string) {
             router.push('/students')
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    const handleUnlinkStudent = async () => {
+        setIsSubmitting(true)
+        try {
+            const response = await fetch(`/api/students/${studentId}/unlink`, {
+                method: 'POST'
+            })
+            if (!response.ok) throw new Error()
+            toast.success('Ученик успешно отвязан от платформы')
+            await fetchStudent()
+        } catch (error) {
+            toast.error('Не удалось отвязать ученика')
+        } finally {
+            setIsSubmitting(false)
+            setUnlinkStudentConfirm(false)
         }
     }
 
@@ -416,9 +434,11 @@ export function useStudentDetail(studentId: string) {
         deleteSubjectConfirm, setDeleteSubjectConfirm,
         deleteGroupConfirm, setDeleteGroupConfirm,
         deleteLessonConfirm, setDeleteLessonConfirm,
+        unlinkStudentConfirm, setUnlinkStudentConfirm,
 
 
         handleDeleteStudent,
+        handleUnlinkStudent,
         handleDeleteSubject,
         handleDeleteGroup,
         handleUpdateStudent,

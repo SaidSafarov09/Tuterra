@@ -132,21 +132,21 @@ export const StudentConnectionModal: React.FC<StudentConnectionModalProps> = ({
                             <span className={styles.methodLabel}>Код приглашения</span>
                             <div style={{ marginTop: '12px' }}>
                                 <Input
-                                    placeholder="AAAAAA"
+                                    placeholder="AAAAAAAA"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value.toUpperCase())}
                                     className={styles.codeField}
                                     style={{ textAlign: 'center', fontSize: '20px', letterSpacing: '4px', fontWeight: 'bold' }}
-                                    maxLength={6}
+                                    maxLength={8}
                                 />
                                 <span className={styles.inputHint}>
-                                    Введите 6-значный код, полученный от преподавателя
+                                    Введите 8-значный код, полученный от преподавателя
                                 </span>
                             </div>
                             <Button
                                 type="submit"
                                 fullWidth
-                                disabled={isLoading || code.length !== 6}
+                                disabled={isLoading || code.length < 6}
                                 style={{ marginTop: '20px' }}
                             >
                                 {isLoading ? 'Подключение...' : 'Подключиться'}
@@ -156,7 +156,7 @@ export const StudentConnectionModal: React.FC<StudentConnectionModalProps> = ({
 
                     <div className={styles.tipBox}>
                         <Info size={18} />
-                        <span>Код можно получить у вашего преподавателя. Обычно это 6 символов.</span>
+                        <span>Код можно получить у вашего преподавателя. Обычно это 8 символов.</span>
                     </div>
                 </div>
             </div>

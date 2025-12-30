@@ -27,6 +27,9 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true })
     } catch (error) {
+        if (error instanceof Error && error.message === 'Вы уже подключены к этому преподавателю') {
+            return NextResponse.json({ success: false, error: error.message }, { status: 400 })
+        }
         console.error('Student connect error:', error)
         return NextResponse.json({ success: false, error: 'Внутренняя ошибка сервера' }, { status: 500 })
     }

@@ -85,12 +85,20 @@ export async function POST(request: NextRequest) {
 
                 // Referral linking
                 if (isStudent && refCode) {
-                    await linkStudentToTutor(user.id, refCode)
+                    try {
+                        await linkStudentToTutor(user.id, refCode)
+                    } catch (e) {
+                        console.error('Referral linking error during signup:', e)
+                    }
                 }
             } else {
                 // If user exists, but we have a refCode, we should still try to link
                 if (role === 'student' && refCode) {
-                    await linkStudentToTutor(user.id, refCode)
+                    try {
+                        await linkStudentToTutor(user.id, refCode)
+                    } catch (e) {
+                        console.error('Referral linking error during login:', e)
+                    }
                 }
                 user = await prisma.user.update({
                     where: { id: user.id },
@@ -196,12 +204,20 @@ export async function POST(request: NextRequest) {
 
             // Referral linking for phone auth
             if (role === 'student' && refCode) {
-                await linkStudentToTutor(user.id, refCode)
+                try {
+                    await linkStudentToTutor(user.id, refCode)
+                } catch (e) {
+                    console.error('Phone referral linking error during signup:', e)
+                }
             }
         } else {
             // If user exists, but we have a refCode, we should still try to link
             if (role === 'student' && refCode) {
-                await linkStudentToTutor(user.id, refCode)
+                try {
+                    await linkStudentToTutor(user.id, refCode)
+                } catch (e) {
+                    console.error('Phone referral linking error during login:', e)
+                }
             }
             user = await prisma.user.update({
                 where: { id: user.id },

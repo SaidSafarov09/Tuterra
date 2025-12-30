@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateStudentSlug } from '@/lib/slugUtils'
 import { sendTelegramNotification } from '@/lib/telegram'
+import { generateInvitationCode } from '@/lib/invitationUtils'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,6 +77,16 @@ export async function GET(request: NextRequest) {
         }
 
         const students = await Promise.all(rawStudents.map(async (s: any) => {
+            // Self-healing: generate invitationCode if missing
+            if (!s.invitationCode) {
+                const code = await generateInvitationCode();
+                await prisma.student.update({
+                    where: { id: s.id },
+                    data: { invitationCode: code }
+                });
+                s.invitationCode = code;
+            }
+
             let linkedUser = s.linkedUser;
 
             // Try to find linked user via contact if not linked
@@ -176,6 +187,7 @@ export async function POST(request: NextRequest) {
                 groups: validatedData.groupId ? {
                     connect: { id: validatedData.groupId }
                 } : undefined,
+                invitationCode: await generateInvitationCode(),
             } as any,
         })
 

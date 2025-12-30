@@ -14,9 +14,10 @@ interface StudentHeaderProps {
     onEdit: () => void
     onCreateLesson: () => void
     onDelete: () => void
+    onUnlink?: () => void
 }
 
-export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: StudentHeaderProps) {
+export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnlink }: StudentHeaderProps) {
     const router = useRouter()
     const [isLinkModalOpen, setIsLinkModalOpen] = React.useState(false)
     const [referralCode, setReferralCode] = React.useState('')
@@ -172,10 +173,20 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
                 </div>
 
                 {student.linkedUser && (
-                    <div style={{ marginTop: 16 }}>
+                    <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div className={styles.linkedBadge} style={{ position: 'relative', top: 'auto', right: 'auto', display: 'inline-block' }}>
                             Подключён к платформе
                         </div>
+                        <button
+                            className={styles.unlinkButton}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onUnlink?.();
+                            }}
+                            title="Отвязать ученика от платформы"
+                        >
+                            Отвязать
+                        </button>
                     </div>
                 )}
             </div>
@@ -183,7 +194,8 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete }: Stu
             <StudentLinkModal
                 isOpen={isLinkModalOpen}
                 onClose={() => setIsLinkModalOpen(false)}
-                referralCode={referralCode}
+                referralCode={(student as any).invitationCode || referralCode}
+                studentName={student.name}
             />
         </div>
     )
