@@ -16,6 +16,7 @@ import {
 import { teacherNavigation, studentNavigation } from '@/constants/links'
 import { getInitials, stringToColor } from '@/constants'
 import { SidebarUserSkeleton } from '@/components/skeletons'
+import ProLogo from '../icons/ProLogo'
 
 interface SidebarProps {
     isOpen?: boolean
@@ -31,14 +32,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
     const navItems = user?.role === 'student' ? studentNavigation : teacherNavigation
 
-    // Filter out conditional items if they don't apply
-    // For now, students: groups are only shown if they are in at least one group
-    // We'll need to fetch groups for this, but for now let's assume if user.groups?.length > 0
     const filteredNavItems = navItems.filter(item => {
         if (user?.role === 'student' && (item as any).conditional) {
-            // Ideally check user.groups, but user object in store might be simplified
-            // We can check if onboarding is completed or something similar, 
-            // but for now let's show it if we have group info or just hide by default
             return (user as any).groupsCount > 0
         }
         return true

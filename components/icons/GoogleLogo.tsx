@@ -1,9 +1,4 @@
-type Props = {
-    width?: number | string;
-    height?: number | string;
-};
-
-export const GoogleLogo: React.FC<Props> = ({ width = 32, height = 32 }) => {
+export const GoogleLogo = () => {
     return (
         <div
             style={{
