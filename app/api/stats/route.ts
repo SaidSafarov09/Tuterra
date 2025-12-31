@@ -279,10 +279,14 @@ export async function GET(request: NextRequest) {
                 upcomingLessons: filteredUpcomingLessons,
                 unpaidLessons,
                 monthlyIncome: (mIncomeData as any[]).reduce((total, lesson) => {
-                    if (lesson.group && lesson.lessonPayments?.length > 0) {
-                        return total + (lesson.lessonPayments.filter((p: any) => p.hasPaid).length * lesson.price)
+                    if (lesson.group) {
+                        if (lesson.lessonPayments?.length > 0) {
+                            return total + (lesson.lessonPayments.filter((p: any) => p.hasPaid).length * lesson.price)
+                        }
+                        return total
                     }
-                    return total + lesson.price
+                    // For individual lessons, only count if explicitly marked as paid
+                    return lesson.isPaid ? total + lesson.price : total
                 }, 0),
                 totalLessons: totalTLessons,
                 subjectsCount: countSubjects,
@@ -297,10 +301,13 @@ export async function GET(request: NextRequest) {
             unpaidLessons,
             pendingRequests: pRequests,
             monthlyIncome: (mIncomeData as any[]).reduce((total, lesson) => {
-                if (lesson.group && lesson.lessonPayments?.length > 0) {
-                    return total + (lesson.lessonPayments.filter((p: any) => p.hasPaid).length * lesson.price)
+                if (lesson.group) {
+                    if (lesson.lessonPayments?.length > 0) {
+                        return total + (lesson.lessonPayments.filter((p: any) => p.hasPaid).length * lesson.price)
+                    }
+                    return total
                 }
-                return total + lesson.price
+                return lesson.isPaid ? total + lesson.price : total
             }, 0),
             totalLessons: totalTLessons,
             subjectsCount: countSubjects,
