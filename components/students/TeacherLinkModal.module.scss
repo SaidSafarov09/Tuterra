@@ -8,6 +8,10 @@
 
 .header {
     margin-bottom: 32px;
+
+    @media (max-width: 768px) {
+        margin-bottom: 18px;
+    }
 }
 
 .iconWrapper {
@@ -19,6 +23,11 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
+
+    @media (max-width: 768px) {
+        width: 60px;
+        height: 60px;
+    }
 }
 
 .title {
@@ -26,6 +35,10 @@
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 12px;
+
+    @media (max-width: 768px) {
+        font-size: 20px;
+    }
 }
 
 .subtitle {
@@ -34,6 +47,10 @@
     line-height: 1.5;
     max-width: 320px;
     margin: 0 auto;
+
+    @media (max-width: 768px) {
+        font-size: 12px;
+    }
 }
 
 .form {
@@ -42,6 +59,10 @@
 
 .inputGroup {
     margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+        margin-bottom: 18px;
+    }
 }
 
 .codeInput {
@@ -50,7 +71,7 @@
     font-weight: 700;
     letter-spacing: 4px;
     height: 64px;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     background: var(--background-secondary);
     border: 2px solid var(--border);
     transition: all 0.2s ease;
@@ -59,14 +80,24 @@
         border-color: var(--primary);
         background: var(--surface);
     }
+
+    @media (max-width: 768px) {
+        height: 48px;
+        border-radius: var(--radius-md);
+    }
 }
 
 .submitButton {
     height: 56px;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     font-size: 16px;
     font-weight: 600;
     gap: 8px;
+
+    @media (max-width: 768px) {
+        height: 48px;
+        border-radius: var(--radius-md);
+    }
 }
 
 .successState {
@@ -86,12 +117,21 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
+
+    @media (max-width: 768px) {
+        width: 60px;
+        height: 60px;
+    }
 }
 
 .successText {
     font-size: 18px;
     font-weight: 600;
     color: var(--success);
+
+    @media (max-width: 768px) {
+        font-size: 16px;
+    }
 }
 
 @keyframes scaleIn {

@@ -1,11 +1,9 @@
 .trialBadge {
     display: inline-block;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
     font-weight: 600;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: #00d2ff;
+    background-color: #00d2ff1a;
 }

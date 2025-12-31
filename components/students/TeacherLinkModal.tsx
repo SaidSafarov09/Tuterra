@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { GraduationCap, ArrowRight, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import styles from './TeacherLinkModal.module.scss'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface TeacherLinkModalProps {
     isOpen: boolean
@@ -18,6 +19,7 @@ export const TeacherLinkModal: React.FC<TeacherLinkModalProps> = ({ isOpen, onCl
     const [code, setCode] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
+    const isMobile = useMediaQuery('(max-width: 768px)')
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -61,7 +63,7 @@ export const TeacherLinkModal: React.FC<TeacherLinkModalProps> = ({ isOpen, onCl
             <div className={styles.container}>
                 <div className={styles.header}>
                     <div className={styles.iconWrapper}>
-                        <GraduationCap size={40} color="var(--primary)" />
+                        <GraduationCap size={isMobile ? 32 : 40} color="var(--primary)" />
                     </div>
                     <h2 className={styles.title}>Введите код преподавателя</h2>
                     <p className={styles.subtitle}>
@@ -72,7 +74,7 @@ export const TeacherLinkModal: React.FC<TeacherLinkModalProps> = ({ isOpen, onCl
                 {isSuccess ? (
                     <div className={styles.successState}>
                         <div className={styles.successIcon}>
-                            <Check size={48} color="var(--success)" />
+                            <Check size={isMobile ? 32 : 48} color="var(--success)" />
                         </div>
                         <p className={styles.successText}>Вы успешно подключены!</p>
                     </div>

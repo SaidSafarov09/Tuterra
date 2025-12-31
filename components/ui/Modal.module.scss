@@ -11,8 +11,8 @@
     z-index: 1000;
     padding: 16px;
     backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
     overflow: hidden;
-    touch-action: none;
 
     @media (max-width: 768px) {
         padding: 0;
@@ -39,6 +39,8 @@
         display: flex;
         flex-direction: column;
         background: var(--background);
+        overflow: hidden;
+        /* Fix scroll of container */
     }
 }
 
@@ -76,11 +78,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
 
     @media (max-width: 768px) {
         padding: 16px;
-        position: sticky;
-        top: 0;
         background: var(--background);
         z-index: 10;
     }
@@ -107,7 +108,7 @@
 
     @media (max-width: 768px) {
         display: flex;
-        position: absolute;
+        /* Removed absolute positioning for better flex flow */
         font-size: 14px;
         gap: 4px;
     }
@@ -133,6 +134,9 @@
     @media (max-width: 768px) {
         padding: 16px;
         flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
     }
 }
 
@@ -142,10 +146,11 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+    flex-shrink: 0;
 
     @media (max-width: 768px) {
         padding: 16px;
-        margin-top: auto;
+        /* margin-top: auto; Not needed with flex */
         background: var(--background);
         flex-direction: column-reverse;
         gap: 8px;
