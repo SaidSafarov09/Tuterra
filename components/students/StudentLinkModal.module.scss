@@ -6,8 +6,8 @@
 
     @media (max-width: 768px) {
         border-radius: 0;
-        height: 100vh;
-        overflow: auto;
+        height: auto;
+        overflow: visible;
     }
 }
 
