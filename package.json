@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/sync-schema.js && prisma generate --schema=prisma/schema.sqlite.prisma && next dev",
+    "dev": "node scripts/sync-schema.js && prisma generate --schema=prisma/schema.sqlite.prisma && cp prisma/schema.prisma prisma/schema.admin.prisma && sed -i '' 's/generator client {/generator client {\\n  output   = \"..\\/node_modules\\/@prisma\\/client-postgres\"/' prisma/schema.admin.prisma && prisma generate --schema=prisma/schema.admin.prisma && rm prisma/schema.admin.prisma && next dev",
     "dev:fresh": "rm -rf dev.db && node scripts/sync-schema.js && prisma db push --schema=prisma/schema.sqlite.prisma && npm run dev",
     "build": "prisma generate --schema=prisma/schema.prisma && prisma db push --schema=prisma/schema.prisma --accept-data-loss && next build",
     "start": "next start",
