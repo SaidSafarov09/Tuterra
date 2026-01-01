@@ -1,21 +1,32 @@
 import { prisma as sitePrisma } from './prisma';
-// @ts-ignore
-import { PrismaClient as PostgresClient } from '@prisma/client-postgres';
-
-let postgresClient: any = null;
 
 export function getPrismaClient(dbType: 'sqlite' | 'postgres') {
+    // In production, everything uses the main Postgres client
+    if (process.env.NODE_ENV === 'production') {
+        return sitePrisma;
+    }
+
     if (dbType === 'sqlite') {
         return sitePrisma;
     } else {
-        if (!postgresClient) {
-            if (!process.env.DATABASE_URL) {
-                throw new Error('DATABASE_URL is not defined');
+        // In development, handle Postgres separately for the admin panel
+        try {
+            // We use a dynamic require here to avoid build-time errors when the module doesn't exist
+            // This is only for the local admin panel dev experience
+            const { PrismaClient: PostgresClient } = require('@prisma/client-postgres');
+
+            // @ts-ignore
+            if (!global.adminPostgresClient) {
+                // @ts-ignore
+                global.adminPostgresClient = new PostgresClient({
+                    datasources: { db: { url: process.env.DATABASE_URL } },
+                });
             }
-            postgresClient = new PostgresClient({
-                datasources: { db: { url: process.env.DATABASE_URL } },
-            });
+            // @ts-ignore
+            return global.adminPostgresClient;
+        } catch (e) {
+            console.error('Postgres client not found, make sure to run: prisma generate --schema=prisma/schema.admin.prisma');
+            return sitePrisma;
         }
-        return postgresClient;
     }
 }
