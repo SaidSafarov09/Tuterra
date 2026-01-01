@@ -14,7 +14,7 @@ const studentSchema = z.object({
     parentContact: z.string().optional(),
     parentContactType: z.string().optional(),
     note: z.string().optional(),
-}).passthrough()
+})
 
 export async function GET(
     request: NextRequest,

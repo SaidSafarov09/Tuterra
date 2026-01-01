@@ -4,7 +4,7 @@ import { verifyToken } from './lib/jwt'
 
 export const runtime = 'nodejs'
 
-const publicPaths = ['/auth', '/debug-auth']
+const publicPaths = ['/auth', '/debug-auth', '/admin']
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl

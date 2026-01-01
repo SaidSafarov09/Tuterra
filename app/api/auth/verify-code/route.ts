@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
                         firstName: defaultFirstName,
                         lastName: defaultLastName,
                         name: capitalizedName,
+                        plan: ((role || 'teacher') === 'student' ? null : 'free') as any,
                     },
                 })
                 await createWelcomeNotifications(user.id)
@@ -138,6 +139,7 @@ export async function POST(request: NextRequest) {
                     role: user.role,
                     birthDate: user.birthDate,
                     region: user.region,
+                    plan: (user as any).plan,
                 },
             })
         }
@@ -198,6 +200,7 @@ export async function POST(request: NextRequest) {
                     firstName: 'Новый',
                     lastName: role === 'student' ? 'Ученик' : 'Пользователь',
                     name: 'Новый Пользователь',
+                    plan: (role === 'student' ? null : 'free') as any,
                 },
             })
             await createWelcomeNotifications(user.id)

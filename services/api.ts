@@ -240,6 +240,7 @@ interface UserSettings {
     referralCode?: string | null
     role: 'teacher' | 'student'
     onboardingCompleted?: boolean
+    plan?: 'free' | 'pro'
 }
 
 export interface NotificationSettingsDTO {

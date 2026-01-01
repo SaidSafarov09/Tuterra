@@ -38,35 +38,34 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
     useEffect(() => {
         const fetchUserData = async () => {
-            if (!user) {
-                try {
-                    const data = await settingsApi.get()
-                    setUser({
-                        id: data.id,
-                        firstName: data.firstName || null,
-                        lastName: data.lastName || null,
-                        name: data.name || `${data.firstName} ${data.lastName}`.trim() || null,
-                        email: data.email || null,
-                        phone: data.phone || null,
-                        avatar: data.avatar || null,
-                        birthDate: data.birthDate || null,
-                        region: data.region || null,
-                        role: data.role,
-                        onboardingCompleted: data.onboardingCompleted || false,
-                    })
+            try {
+                const data = await settingsApi.get()
+                setUser({
+                    id: data.id,
+                    firstName: data.firstName || null,
+                    lastName: data.lastName || null,
+                    name: data.name || `${data.firstName} ${data.lastName}`.trim() || null,
+                    email: data.email || null,
+                    phone: data.phone || null,
+                    avatar: data.avatar || null,
+                    birthDate: data.birthDate || null,
+                    region: data.region || null,
+                    role: data.role,
+                    onboardingCompleted: data.onboardingCompleted || false,
+                    plan: data.plan as any,
+                })
 
 
-                    if (data.theme) {
-                        setTheme(data.theme)
-                    }
-                } catch (error) {
-                    console.error('Failed to fetch user data:', error)
+                if (data.theme) {
+                    setTheme(data.theme)
                 }
+            } catch (error) {
+                console.error('Failed to sync user data:', error)
             }
         }
 
         fetchUserData()
-    }, [user, setUser, setTheme])
+    }, [setUser, setTheme])
     useEffect(() => {
         const handleCloseSidebar = () => {
             setIsMobileMenuOpen(false)

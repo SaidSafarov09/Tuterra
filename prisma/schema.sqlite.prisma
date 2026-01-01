@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  
 }
 
 datasource db {
@@ -10,7 +11,7 @@ datasource db {
 model User {
   id                String             @id @default(cuid())
   role              String             @default("teacher") // teacher | student
-  plan              String             @default("free") // free | pro
+  plan              String?            @default("free") // free | pro
   name              String?
   email             String?            @unique
   hashedPassword    String?
@@ -75,12 +76,6 @@ model Student {
   parentContactType String?         @default("phone")
   note              String?
   ownerId           String
-  skinColor         String?         @default("#F4C2A6")
-  hairStyle         String?         @default("short")
-  hairColor         String?         @default("#2C1B18")
-  eyeStyle          String?         @default("default")
-  accessory         String?         @default("none")
-  bgColor           String?         @default("#E3F2FD")
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   lessons           Lesson[]

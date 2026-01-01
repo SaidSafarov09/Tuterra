@@ -75,7 +75,6 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 <div className={styles.actions}>
                     <Button
                         onClick={() => {
-                            // TODO: Integrate payment/upgrade flow
                             alert('Переход на страницу оплаты (в разработке)')
                             onClose()
                         }}
