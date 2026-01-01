@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Student, LearningPlan } from '@/types'
-import { plansApi } from '@/services/api'
+import { plansApi, statsApi } from '@/services/api'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PlanProgressBar } from '@/components/plans/PlanProgressBar'
 import { Plus, Edit2, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import styles from './StudentPlans.module.scss'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 
 interface StudentPlansProps {
     student: Student
@@ -19,6 +20,7 @@ export function StudentPlans({ student }: StudentPlansProps) {
     const router = useRouter()
     const [plans, setPlans] = useState<LearningPlan[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const { checkLimit, UpgradeModal } = useCheckLimit()
 
     const fetchPlans = async () => {
         try {
@@ -37,6 +39,11 @@ export function StudentPlans({ student }: StudentPlansProps) {
 
     const handleCreatePlan = async (subjectId: string) => {
         try {
+            const stats = await statsApi.get()
+            const plansCount = (stats as any).countStudentPlans || 0
+
+            if (!checkLimit('studentPlans', plansCount)) return
+
             const newPlan = await plansApi.create({
                 studentId: student.id,
                 subjectId
@@ -120,6 +127,7 @@ export function StudentPlans({ student }: StudentPlansProps) {
                     })}
                 </div>
             )}
+            {UpgradeModal}
         </div>
     )
 }

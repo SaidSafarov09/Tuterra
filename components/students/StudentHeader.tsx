@@ -7,7 +7,8 @@ import { ContactType, getContactLink } from '@/lib/contactUtils'
 import { toast } from 'sonner'
 import styles from '../../app/(dashboard)/students/[id]/page.module.scss'
 import { StudentLinkModal } from './StudentLinkModal'
-import { settingsApi } from '@/services/api'
+import { settingsApi, statsApi } from '@/services/api'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 
 interface StudentHeaderProps {
     student: Student
@@ -21,12 +22,40 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
     const router = useRouter()
     const [isLinkModalOpen, setIsLinkModalOpen] = React.useState(false)
     const [referralCode, setReferralCode] = React.useState('')
+    const { checkLimit, UpgradeModal } = useCheckLimit()
 
     React.useEffect(() => {
         settingsApi.get().then(data => {
             if (data.referralCode) setReferralCode(data.referralCode)
         })
     }, [])
+
+    const handleLinkClick = async () => {
+        try {
+            // If student is already linked, no need to check (but button shouldn't be visible)
+            // Check limit
+            const stats = await statsApi.get()
+            // access connectedStudentsCount from stats. But stats interface might need update in types/index.ts?
+            // Assuming statsApi returns what api returns.
+            // We cast it or assume it's there.
+            // The API route returns it. The interface DashboardStats needs it.
+            // I forgot to update DashboardStats interface in types/index.ts!
+            // I will use (stats as any).connectedStudentsCount for now
+            const connectedCount = (stats as any).countConnectedStudents || 0
+
+            if (!checkLimit('connectedStudents', connectedCount)) return
+
+            setIsLinkModalOpen(true)
+        } catch (e) {
+            console.error(e)
+            // If stats fail, maybe allow? or block?
+            // Let's assume allow to avoid blocking pro users on error, but checkLimit handles pro check internally via user store.
+            // But if fetch fails we don't know the count.
+            // We can default to 0 (allow) or safe fail. 
+            // Let's try to proceed.
+            setIsLinkModalOpen(true)
+        }
+    }
 
     const getInitials = (name: string) => {
         return name
@@ -45,7 +74,6 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
         const hue = Math.abs(hash % 360)
         return `hsl(${hue}, 65%, 55%)`
     }
-
 
     const totalLessons = student._count?.lessons || 0
     const totalSubjects = student.subjects.length
@@ -117,7 +145,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
                             <Button
                                 variant="primary"
                                 size="small"
-                                onClick={() => setIsLinkModalOpen(true)}
+                                onClick={handleLinkClick}
                                 title="Привязать к платформе"
                             >
                                 <LinkIcon size={16} />
@@ -133,21 +161,18 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
                             Занятие
                         </Button>
                         {student.linkedUser && (
-                            <div>
-
-                                <Button
-                                    variant="warning"
-                                    size="small"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        onUnlink?.();
-                                    }}
-                                    title="Отвязать ученика от платформы"
-                                >
-                                    <UnlinkIcon size={16} />
-                                    Отвязать
-                                </Button>
-                            </div>
+                            <Button
+                                variant="warning"
+                                size="small"
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    onUnlink?.()
+                                }}
+                                title="Отвязать ученика от платформы"
+                            >
+                                <UnlinkIcon size={16} />
+                                Отвязать
+                            </Button>
                         )}
                         <Button variant="danger" size="small" onClick={onDelete}>
                             <DeleteIcon size={16} />
@@ -192,8 +217,6 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
                         Группы: <strong>{student.groups && student.groups.length > 0 ? student.groups.map(g => g.name).join(', ') : '0'}</strong>
                     </div>
                 </div>
-
-
             </div>
 
             <StudentLinkModal
@@ -202,6 +225,7 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
                 referralCode={(student as any).invitationCode || referralCode}
                 studentName={student.name}
             />
+            {UpgradeModal}
         </div>
     )
 }

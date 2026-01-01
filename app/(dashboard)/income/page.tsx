@@ -21,9 +21,13 @@ import { CurrentMonthCard } from '@/components/income/CurrentMonthCard'
 import { PrevMonthCard } from '@/components/income/PrevMonthCard'
 import { RecentTransactionsCard } from '@/components/income/RecentTransactionsCard'
 import { IncomeCharts } from '@/components/income/IncomeCharts'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
+import { useAuthStore } from '@/store/auth'
 
 export default function IncomePage() {
     const router = useRouter()
+    const { user } = useAuthStore()
+    const { checkLimit, UpgradeModal } = useCheckLimit()
     const [currentDate, setCurrentDate] = useState(new Date())
     const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([])
     const [currentMonthIncome, setCurrentMonthIncome] = useState(0)
@@ -196,6 +200,8 @@ export default function IncomePage() {
                                         averageCheck={averageCheck}
                                         percentageChange={percentageChange}
                                         isGrowth={isGrowth}
+                                        isPro={user?.plan === 'pro'}
+                                        onUnlock={() => checkLimit('income', 1)}
                                     />
 
                                     <PrevMonthCard
@@ -204,11 +210,18 @@ export default function IncomePage() {
                                         duration={previousMonthDuration}
                                         lessonsCount={previousLessonsCount}
                                         averageCheck={previousAverageCheck}
+                                        isPro={user?.plan === 'pro'}
+                                        onUnlock={() => checkLimit('income', 1)}
                                     />
 
                                     <RecentTransactionsCard
                                         transactions={recentTransactions}
-                                        onViewAll={() => setIsModalOpen(true)}
+                                        onViewAll={() => {
+                                            if (checkLimit('income', 1)) {
+                                                setIsModalOpen(true)
+                                            }
+                                        }}
+                                        isLocked={user?.plan !== 'pro'}
                                     />
                                 </div>
 
@@ -220,6 +233,7 @@ export default function IncomePage() {
                             onClose={() => setIsModalOpen(false)}
                             initialMonth={currentDate}
                         />
+                        {UpgradeModal}
                     </>
                 )}
             </div>

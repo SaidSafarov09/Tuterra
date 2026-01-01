@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { FREE_LIMITS } from './limits';
 
 /**
  * Normalizes a contact string (email or phone) for comparison.
@@ -27,6 +28,33 @@ export function normalizeContact(contact: string | null | undefined): string | n
     return digits;
 }
 
+async function checkLimits(teacherId: string, isCreatingNew: boolean) {
+    const teacher = await prisma.user.findUnique({
+        where: { id: teacherId },
+        select: { plan: true }
+    })
+
+    if (teacher && teacher.plan !== 'pro') {
+        const connectedCount = await prisma.student.count({
+            where: { ownerId: teacherId, linkedUserId: { not: null } }
+        })
+
+        if (connectedCount >= FREE_LIMITS.connectedStudents) {
+            throw new Error('У преподавателя достигнут лимит подключенных учеников (Free: 1)')
+        }
+
+        if (isCreatingNew) {
+            const studentCount = await prisma.student.count({
+                where: { ownerId: teacherId }
+            })
+
+            if (studentCount >= FREE_LIMITS.students) {
+                throw new Error('У преподавателя достигнут лимит учеников (Free: 5)')
+            }
+        }
+    }
+}
+
 /**
  * Links a User (student) to a Student record.
  * Prioritizes linking by specific student invitationCode.
@@ -53,7 +81,7 @@ export async function linkStudentToTutor(userId: string, code: string) {
             return null;
         }
 
-        // IMPORTANT BUG FIX: Check if this user is ALREADY connected to THIS teacher via another record
+        // Check if this user is ALREADY connected to THIS teacher via another record
         const existingConnectionUnderSameTeacher = await prisma.student.findFirst({
             where: {
                 ownerId: studentByCode.ownerId,
@@ -68,6 +96,9 @@ export async function linkStudentToTutor(userId: string, code: string) {
             // Otherwise, they are already connected via a DIFFERENT record. Prevent taking another one.
             throw new Error('Вы уже подключены к этому преподавателю');
         }
+
+        // Check Limits (linking existing)
+        await checkLimits(studentByCode.ownerId, false)
 
         // Link it!
         return await prisma.student.update({
@@ -115,6 +146,9 @@ export async function linkStudentToTutor(userId: string, code: string) {
     });
 
     if (studentRecord) {
+        // Check Limits (linking existing)
+        await checkLimits(teacher.id, false)
+
         return await prisma.student.update({
             where: { id: studentRecord.id },
             data: {
@@ -123,6 +157,9 @@ export async function linkStudentToTutor(userId: string, code: string) {
         });
     } else {
         // Create new record for this teacher
+        // Check Limits (creating new + linking)
+        await checkLimits(teacher.id, true)
+
         return await prisma.student.create({
             data: {
                 name: user.name || user.email?.split('@')[0] || 'Новый ученик',

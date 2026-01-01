@@ -77,6 +77,7 @@ export async function GET(request: NextRequest) {
             select: {
                 id: true,
                 role: true,
+                plan: true,
                 firstName: true,
                 lastName: true,
                 name: true,
@@ -113,6 +114,7 @@ export async function GET(request: NextRequest) {
                 select: {
                     id: true,
                     role: true,
+                    plan: true,
                     firstName: true,
                     lastName: true,
                     name: true,
@@ -244,6 +246,7 @@ export async function PUT(request: NextRequest) {
             select: {
                 id: true,
                 role: true,
+                plan: true,
                 firstName: true,
                 lastName: true,
                 name: true,

@@ -419,3 +419,40 @@
         opacity: 0.8;
     }
 }
+
+.lockedStats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: auto;
+    padding: 16px;
+    background: var(--background);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px dashed var(--border);
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    svg {
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+    }
+
+    &:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: rgba(74, 108, 247, 0.03);
+
+        svg {
+            color: var(--primary);
+        }
+    }
+
+    @media (max-width: 768px) {
+        font-size: 12px;
+        padding: 12px;
+    }
+}

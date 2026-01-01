@@ -51,8 +51,13 @@ import {
     Link,
     CircleX,
     Ban,
-    Unlink
+    Unlink,
+    Lock
 } from 'lucide-react'
+
+// ... (existing exports)
+
+export const LockIcon: React.FC<IconProps> = (props) => <Lock {...props} />
 
 
 

@@ -17,6 +17,7 @@ import { useSubjects } from '@/hooks/useSubjects'
 import { useSubjectDetail } from '@/hooks/useSubjectDetail'
 import { useFetch } from '@/hooks/useFetch'
 import { useLessonForm } from '@/hooks/useLessonForm'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import { Subject, Student } from '@/types'
 import styles from './page.module.scss'
 
@@ -27,6 +28,7 @@ export default function SubjectsPage() {
     const { data: studentsData, refetch: refetchStudents } = useFetch<Student[]>('/api/students')
     const allStudents = studentsData || []
     const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
+    const { checkLimit, UpgradeModal } = useCheckLimit()
 
     const {
         students: subjectStudents,
@@ -47,6 +49,11 @@ export default function SubjectsPage() {
         subject: null,
     })
     const [editSubjectData, setEditSubjectData] = useState({ id: '', name: '', color: '#4A6CF7' })
+
+    const handleCreateClick = () => {
+        if (!checkLimit('subjects', subjects.length)) return
+        setIsCreateModalOpen(true)
+    }
 
     const {
         formData: lessonFormData,
@@ -152,7 +159,7 @@ export default function SubjectsPage() {
                     <h1 className={styles.title}>Предметы</h1>
                     <p className={styles.subtitle}>Ваши учебные дисциплины</p>
                 </div>
-                <Button onClick={() => setIsCreateModalOpen(true)}>
+                <Button onClick={handleCreateClick}>
                     <PlusIcon size={20} />
                     Добавить предмет
                 </Button>
@@ -176,7 +183,7 @@ export default function SubjectsPage() {
                     <p className={styles.emptyStateText}>
                         Добавьте первый предмет, чтобы начать работу
                     </p>
-                    <Button onClick={() => setIsCreateModalOpen(true)}>Добавить предмет</Button>
+                    <Button onClick={handleCreateClick}>Добавить предмет</Button>
                 </div>
             ) : (
                 <div className={styles.subjectsGrid}>
@@ -258,6 +265,7 @@ export default function SubjectsPage() {
                 cancelText="Отмена"
                 variant="danger"
             />
+            {UpgradeModal}
         </div>
     )
 }

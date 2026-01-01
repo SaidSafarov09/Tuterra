@@ -230,6 +230,24 @@ export async function GET(request: NextRequest) {
                     }
                 },
                 orderBy: { createdAt: 'desc' }
+            }),
+            prisma.student.count({
+                where: {
+                    ownerId: userId,
+                    linkedUserId: { not: null }
+                }
+            }),
+            prisma.learningPlan.count({
+                where: {
+                    ownerId: userId,
+                    studentId: { not: null }
+                }
+            }),
+            prisma.learningPlan.count({
+                where: {
+                    ownerId: userId,
+                    groupId: { not: null }
+                }
             })
         ])
 
@@ -243,7 +261,10 @@ export async function GET(request: NextRequest) {
             uProfile,
             countGroups,
             mLessonsCount,
-            pRequests
+            pRequests,
+            countConnectedStudents,
+            countStudentPlans,
+            countGroupPlans
         ] = results as any[]
 
         const unpaidLessons = tRawUnpaidLessons.filter((lesson: any) => {
@@ -293,6 +314,9 @@ export async function GET(request: NextRequest) {
                 monthLessonsCount: mLessonsCount,
                 pendingRequests: pRequests,
                 createdAt: uProfile?.createdAt,
+                countConnectedStudents,
+                countStudentPlans,
+                countGroupPlans
             },
             // Flat props for backwards compatibility
             studentsCount: countStudents,
@@ -313,6 +337,9 @@ export async function GET(request: NextRequest) {
             subjectsCount: countSubjects,
             monthLessonsCount: mLessonsCount,
             createdAt: uProfile?.createdAt,
+            countConnectedStudents,
+            countStudentPlans,
+            countGroupPlans
         })
     } catch (error) {
         console.error('Get stats error:', error)

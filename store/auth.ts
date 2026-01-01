@@ -13,6 +13,7 @@ interface User {
     region: string | null
     onboardingCompleted: boolean
     role: 'teacher' | 'student'
+    plan?: 'free' | 'pro'
 }
 
 interface AuthState {

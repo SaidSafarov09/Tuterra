@@ -10,6 +10,7 @@ datasource db {
 model User {
   id                String             @id @default(cuid())
   role              String             @default("teacher") // teacher | student
+  plan              String             @default("free") // free | pro
   name              String?
   email             String?            @unique
   hashedPassword    String?

@@ -9,6 +9,7 @@ import { CreateGroupModal } from '@/components/groups/CreateGroupModal'
 import { EmptyGroupsState } from '@/components/groups/EmptyGroupsState'
 import { StudentCardSkeleton } from '@/components/skeletons'
 import { useGroups } from '@/hooks/useGroups'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import styles from './page.module.scss'
 import { GroupFilters } from '@/components/groups/GroupFilters'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -36,8 +37,10 @@ export default function GroupsPage() {
     } = useGroups()
 
     const isMobile = useMediaQuery('(max-width: 768px)')
+    const { checkLimit, UpgradeModal } = useCheckLimit()
 
     const handleAddClick = () => {
+        if (!checkLimit('groups', groups.length)) return
         handleOpenModal()
     }
 
@@ -114,6 +117,7 @@ export default function GroupsPage() {
                 students={students}
                 onCreateSubject={handleCreateSubject}
             />
+            {UpgradeModal}
         </div>
     )
 }

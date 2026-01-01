@@ -47,6 +47,8 @@ export async function GET(request: NextRequest) {
     }
 }
 
+import { FREE_LIMITS } from '@/lib/limits'
+
 export async function POST(request: NextRequest) {
     try {
         const token = request.cookies.get('auth-token')?.value
@@ -54,6 +56,24 @@ export async function POST(request: NextRequest) {
 
         const payload = await verifyToken(token)
         if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+
+        const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
+            select: { plan: true }
+        })
+
+        if (!user || user.plan !== 'pro') {
+            const count = await prisma.group.count({
+                where: { ownerId: payload.userId }
+            })
+
+            if (count >= FREE_LIMITS.groups) {
+                return NextResponse.json(
+                    { error: 'Достигнут лимит групп на бесплатном тарифе. Обновитесь до Pro.' },
+                    { status: 403 }
+                )
+            }
+        }
 
         const body = await request.json()
         const validatedData = groupSchema.parse(body)

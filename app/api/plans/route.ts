@@ -83,6 +83,8 @@ export async function GET(request: NextRequest) {
     }
 }
 
+import { FREE_LIMITS } from '@/lib/limits'
+
 export async function POST(request: NextRequest) {
     try {
         const token = request.cookies.get('auth-token')?.value
@@ -93,6 +95,44 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json()
         const validatedData = planSchema.parse(body)
+
+        // Check limits
+        const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
+            select: { plan: true }
+        })
+
+        if (!user || user.plan !== 'pro') {
+            if (validatedData.groupId) {
+                if (FREE_LIMITS.groupPlans === 0) {
+                    return NextResponse.json(
+                        { error: 'Планы обучения для групп доступны на тарифе Pro' },
+                        { status: 403 }
+                    )
+                } else {
+                    const count = await prisma.learningPlan.count({
+                        where: { ownerId: payload.userId, groupId: { not: null } }
+                    })
+                    if (count >= FREE_LIMITS.groupPlans) {
+                        return NextResponse.json(
+                            { error: 'Достигнут лимит планов для групп' },
+                            { status: 403 }
+                        )
+                    }
+                }
+            } else if (validatedData.studentId) {
+                const count = await prisma.learningPlan.count({
+                    where: { ownerId: payload.userId, studentId: { not: null } }
+                })
+
+                if (count >= FREE_LIMITS.studentPlans) {
+                    return NextResponse.json(
+                        { error: 'Достигнут лимит планов для учеников на бесплатном тарифе' },
+                        { status: 403 }
+                    )
+                }
+            }
+        }
 
         let existingPlan = null
 

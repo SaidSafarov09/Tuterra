@@ -5,7 +5,8 @@ import { Student } from '@/types'
 import styles from '../../app/(dashboard)/students/page.module.scss'
 import { ContactType, getContactLink } from '@/lib/contactUtils'
 import { StudentLinkModal } from './StudentLinkModal'
-import { settingsApi } from '@/services/api'
+import { settingsApi, statsApi } from '@/services/api'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 
 interface StudentsListProps {
     students: Student[]
@@ -15,6 +16,7 @@ export function StudentsList({ students }: StudentsListProps) {
     const router = useRouter()
     const [selectedStudent, setSelectedStudent] = React.useState<Student | null>(null)
     const [referralCode, setReferralCode] = React.useState('')
+    const { checkLimit, UpgradeModal } = useCheckLimit()
 
     React.useEffect(() => {
         const fetchUser = async () => {
@@ -54,6 +56,25 @@ export function StudentsList({ students }: StudentsListProps) {
             case 'telegram': return <TelegramIcon size={14} />
             case 'whatsapp': return <WhatsAppIcon size={14} />
             default: return <PhoneIcon size={14} />
+        }
+    }
+
+    const handleLinkClick = async (e: React.MouseEvent, student: Student) => {
+        e.stopPropagation()
+
+        try {
+            const stats = await statsApi.get()
+            const connectedCount = (stats as any).countConnectedStudents || 0
+
+            if (!checkLimit('connectedStudents', connectedCount)) {
+                return
+            }
+
+            setSelectedStudent(student)
+        } catch (error) {
+            console.error('Error checking limits:', error)
+            // В случае ошибки API всё равно разрешаем открыть модалку
+            setSelectedStudent(student)
         }
     }
 
@@ -151,10 +172,7 @@ export function StudentsList({ students }: StudentsListProps) {
                             {!student.linkedUser && (
                                 <button
                                     className={styles.miniLinkButton}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedStudent(student);
-                                    }}
+                                    onClick={(e) => handleLinkClick(e, student)}
                                     title="Привязать к платформе"
                                 >
                                     <LinkIcon size={16} />
@@ -176,6 +194,7 @@ export function StudentsList({ students }: StudentsListProps) {
                 referralCode={(selectedStudent as any)?.invitationCode || referralCode}
                 studentName={selectedStudent?.name}
             />
+            {UpgradeModal}
         </div>
     )
 }

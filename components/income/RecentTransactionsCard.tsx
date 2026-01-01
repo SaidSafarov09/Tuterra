@@ -24,16 +24,18 @@ interface Transaction {
 interface RecentTransactionsCardProps {
     transactions: Transaction[]
     onViewAll: () => void
+    isLocked?: boolean
 }
 
 export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
     transactions,
-    onViewAll
+    onViewAll,
+    isLocked
 }) => {
     const router = useRouter()
 
     return (
-        <div className={styles.statCard}>
+        <div className={styles.statCard} style={isLocked ? { opacity: 0.7 } : {}}>
             <div className={styles.statHeader}>
                 <h3 className={styles.statTitle}>Последние операции</h3>
                 <HistoryIcon size={20} color="var(--text-secondary)" />
@@ -49,7 +51,13 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                         <div
                             key={tx.id || i}
                             className={styles.transactionItem}
-                            onClick={() => router.push(`/lessons/${tx.slug || tx.id}`)}
+                            onClick={() => {
+                                if (isLocked) {
+                                    onViewAll()
+                                    return
+                                }
+                                router.push(`/lessons/${tx.slug || tx.id}`)
+                            }}
                             style={{ cursor: 'pointer' }}
                         >
                             <div className={styles.transactionInfo}>

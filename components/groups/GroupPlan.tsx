@@ -10,6 +10,7 @@ import { PlanProgressBar } from '@/components/plans/PlanProgressBar'
 import { Plus, Edit2 } from 'lucide-react'
 import { toast } from 'sonner'
 import styles from './GroupPlan.module.scss'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 
 interface GroupPlanProps {
     group: Group
@@ -19,6 +20,7 @@ export function GroupPlan({ group }: GroupPlanProps) {
     const router = useRouter()
     const [plan, setPlan] = useState<LearningPlan | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const { checkFeature, UpgradeModal } = useCheckLimit()
 
     const fetchPlan = async () => {
         try {
@@ -38,6 +40,7 @@ export function GroupPlan({ group }: GroupPlanProps) {
     }, [group.id])
 
     const handleCreatePlan = async () => {
+        if (!checkFeature('groupPlans')) return
         try {
             const newPlan = await plansApi.create({
                 groupId: group.id
@@ -84,6 +87,7 @@ export function GroupPlan({ group }: GroupPlanProps) {
                     />
                 </div>
             )}
+            {UpgradeModal}
         </div>
     )
 }

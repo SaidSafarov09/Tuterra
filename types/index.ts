@@ -172,6 +172,9 @@ export interface DashboardStats {
     monthLessonsCount?: number
     pendingRequests?: any[]
     createdAt?: string
+    countConnectedStudents?: number
+    countStudentPlans?: number
+    countGroupPlans?: number
 }
 
 export interface DayData {

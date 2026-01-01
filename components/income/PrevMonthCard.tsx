@@ -7,12 +7,16 @@ import { ClockIcon } from '@/components/icons/Icons'
 import { formatDuration } from '@/lib/dateUtils'
 import styles from '../../app/(dashboard)/income/page.module.scss'
 
+import { LockIcon } from '@/components/icons/Icons'
+
 interface PrevMonthCardProps {
     date: Date
     income: number
     duration: number
     lessonsCount: number
     averageCheck: number
+    isPro: boolean
+    onUnlock: () => void
 }
 
 export const PrevMonthCard: React.FC<PrevMonthCardProps> = ({
@@ -20,7 +24,9 @@ export const PrevMonthCard: React.FC<PrevMonthCardProps> = ({
     income,
     duration,
     lessonsCount,
-    averageCheck
+    averageCheck,
+    isPro,
+    onUnlock
 }) => {
     return (
         <div className={styles.statCard}>
@@ -40,18 +46,25 @@ export const PrevMonthCard: React.FC<PrevMonthCardProps> = ({
                 </div>
             </div>
 
-            <div className={styles.statDetails}>
-                <div className={styles.statDetailItem}>
-                    <span className={styles.statDetailLabel}>Оплаченных занятий:</span>
-                    <span className={styles.statDetailValue}>{lessonsCount}</span>
+            {isPro ? (
+                <div className={styles.statDetails}>
+                    <div className={styles.statDetailItem}>
+                        <span className={styles.statDetailLabel}>Оплаченных занятий:</span>
+                        <span className={styles.statDetailValue}>{lessonsCount}</span>
+                    </div>
+                    <div className={styles.statDetailItem}>
+                        <span className={styles.statDetailLabel}>Средний чек:</span>
+                        <span className={styles.statDetailValue}>
+                            {averageCheck > 0 ? `${averageCheck.toLocaleString()} ₽` : '—'}
+                        </span>
+                    </div>
                 </div>
-                <div className={styles.statDetailItem}>
-                    <span className={styles.statDetailLabel}>Средний чек:</span>
-                    <span className={styles.statDetailValue}>
-                        {averageCheck > 0 ? `${averageCheck.toLocaleString()} ₽` : '—'}
-                    </span>
+            ) : (
+                <div className={styles.lockedStats} onClick={onUnlock}>
+                    <LockIcon size={16} />
+                    <span>Детальная статистика доступна в Pro</span>
                 </div>
-            </div>
+            )}
         </div>
     )
 }

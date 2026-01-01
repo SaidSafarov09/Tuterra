@@ -7,6 +7,8 @@ import { ClockIcon } from '@/components/icons/Icons'
 import { formatDuration } from '@/lib/dateUtils'
 import styles from '../../app/(dashboard)/income/page.module.scss'
 
+import { LockIcon } from '@/components/icons/Icons'
+
 interface CurrentMonthCardProps {
     date: Date
     income: number
@@ -16,6 +18,8 @@ interface CurrentMonthCardProps {
     averageCheck: number
     percentageChange: number
     isGrowth: boolean
+    isPro: boolean
+    onUnlock: () => void
 }
 
 export const CurrentMonthCard: React.FC<CurrentMonthCardProps> = ({
@@ -26,13 +30,15 @@ export const CurrentMonthCard: React.FC<CurrentMonthCardProps> = ({
     lessonsCount,
     averageCheck,
     percentageChange,
-    isGrowth
+    isGrowth,
+    isPro,
+    onUnlock
 }) => {
     return (
         <div className={styles.statCard}>
             <div className={styles.statHeader}>
                 <h3 className={styles.statTitle}>Доход за месяц</h3>
-                {previousIncome > 0 && (
+                {isPro && previousIncome > 0 && (
                     <div className={`${styles.badge} ${isGrowth ? styles.badgeSuccess : styles.badgeDanger}`}>
                         {isGrowth ? '↑' : '↓'} {Math.abs(percentageChange).toFixed(1)}%
                     </div>
@@ -51,28 +57,35 @@ export const CurrentMonthCard: React.FC<CurrentMonthCardProps> = ({
                 </div>
             </div>
 
-            <div className={styles.statDetails}>
-                <div className={styles.statDetailItem}>
-                    <span className={styles.statDetailLabel}>Оплаченных занятий:</span>
-                    <span className={styles.statDetailValue}>{lessonsCount}</span>
-                </div>
-                <div className={styles.statDetailItem}>
-                    <span className={styles.statDetailLabel}>Средний чек:</span>
-                    <span className={styles.statDetailValue}>
-                        {averageCheck > 0 ? `${averageCheck.toLocaleString()} ₽` : '—'}
-                    </span>
-                </div>
-                {previousIncome > 0 && (
+            {isPro ? (
+                <div className={styles.statDetails}>
                     <div className={styles.statDetailItem}>
-                        <span className={styles.statDetailLabel}>
-                            {isGrowth ? 'Рост' : 'Снижение'}:
-                        </span>
-                        <span className={`${styles.statDetailValue} ${isGrowth ? styles.growthValue : styles.declineValue}`}>
-                            {isGrowth ? '+' : '-'}{Math.abs(income - previousIncome).toLocaleString()} ₽
+                        <span className={styles.statDetailLabel}>Оплаченных занятий:</span>
+                        <span className={styles.statDetailValue}>{lessonsCount}</span>
+                    </div>
+                    <div className={styles.statDetailItem}>
+                        <span className={styles.statDetailLabel}>Средний чек:</span>
+                        <span className={styles.statDetailValue}>
+                            {averageCheck > 0 ? `${averageCheck.toLocaleString()} ₽` : '—'}
                         </span>
                     </div>
-                )}
-            </div>
+                    {previousIncome > 0 && (
+                        <div className={styles.statDetailItem}>
+                            <span className={styles.statDetailLabel}>
+                                {isGrowth ? 'Рост' : 'Снижение'}:
+                            </span>
+                            <span className={`${styles.statDetailValue} ${isGrowth ? styles.growthValue : styles.declineValue}`}>
+                                {isGrowth ? '+' : '-'}{Math.abs(income - previousIncome).toLocaleString()} ₽
+                            </span>
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className={styles.lockedStats} onClick={onUnlock}>
+                    <LockIcon size={16} />
+                    <span>Детальная статистика доступна в Pro</span>
+                </div>
+            )}
         </div>
     )
 }

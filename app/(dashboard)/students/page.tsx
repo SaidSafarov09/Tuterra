@@ -11,6 +11,7 @@ import { CreateStudentModal } from '@/components/students/CreateStudentModal'
 import { EmptyStudentsState } from '@/components/students/EmptyStudentsState'
 import { StudentCardSkeleton } from '@/components/skeletons'
 import { useStudents } from '@/hooks/useStudents'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import styles from './page.module.scss'
 import { AnimatePresence, motion } from 'framer-motion'
 
@@ -37,8 +38,10 @@ export default function StudentsPage() {
 
     const router = useRouter()
     const isMobile = useMediaQuery('(max-width: 768px)')
+    const { checkLimit, UpgradeModal } = useCheckLimit()
 
     const handleAddClick = () => {
+        if (!checkLimit('students', students.length)) return
         handleOpenModal()
     }
 
@@ -117,6 +120,7 @@ export default function StudentsPage() {
                 groups={groups}
                 onCreateSubject={handleCreateSubject}
             />
+            {UpgradeModal}
         </div>
     )
 }
