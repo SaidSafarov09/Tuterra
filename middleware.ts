@@ -35,8 +35,8 @@ export async function middleware(request: NextRequest) {
     if (isAuthenticated) {
         const targetDashboard = payload?.role === 'student' ? '/student/dashboard' : '/dashboard'
 
-        // Redirect from public paths to specific dashboard
-        if (isPublicPath || pathname === '/') {
+        // Redirect from public paths to specific dashboard, except for /admin which has its own auth
+        if ((isPublicPath || pathname === '/') && !pathname.startsWith('/admin')) {
             return NextResponse.redirect(new URL(targetDashboard, request.url))
         }
 

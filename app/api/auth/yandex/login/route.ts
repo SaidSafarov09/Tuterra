@@ -25,6 +25,8 @@ export async function GET(req: NextRequest) {
     const response = NextResponse.redirect(yandexAuthUrl)
     if (ref) {
         response.cookies.set('referral-code', ref, { maxAge: 3600, path: '/' })
+    } else {
+        response.cookies.delete('referral-code')
     }
     return response
 }

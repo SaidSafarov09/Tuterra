@@ -98,7 +98,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                     <div className={styles.memberBadge}>
                         <span className={styles.activeDot}></span>
                         {stats?.createdAt
-                            ? `${user?.role === 'student' ? 'С нами' : 'Репетитор'} с ${memberSinceText}`
+                            ? `${user?.role === 'student' ? 'Подключен' : 'Репетитор'} с ${memberSinceText}`
                             : <Skeleton width={120} height={16} />}
                     </div>
                 </div>

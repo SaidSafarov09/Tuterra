@@ -24,6 +24,9 @@ export async function GET(req: NextRequest) {
     const response = NextResponse.redirect(googleAuthUrl)
     if (ref) {
         response.cookies.set('referral-code', ref, { maxAge: 3600, path: '/' })
+    } else {
+        // Clear the cookie if no ref is provided (user chose "Teacher" or came directly)
+        response.cookies.delete('referral-code')
     }
     return response
 }

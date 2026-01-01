@@ -67,6 +67,20 @@ export async function linkStudentToTutor(userId: string, code: string) {
 
     if (!user) return null;
 
+    // If user is a teacher, check if they have any actual teaching data
+    if (user.role === 'teacher') {
+        const [studentCount, groupCount, subjectCount] = await Promise.all([
+            prisma.student.count({ where: { ownerId: userId } }),
+            prisma.group.count({ where: { ownerId: userId } }),
+            prisma.subject.count({ where: { userId: userId } }),
+        ]);
+
+        // If they have any data, they are an active teacher and cannot become a student
+        if (studentCount > 0 || groupCount > 0 || subjectCount > 0) {
+            throw new Error('ACCOUNT_IS_TEACHER');
+        }
+    }
+
     const normalizedCode = code.trim().toUpperCase();
 
     // 1. Try to find a Student record with this invitationCode
@@ -100,13 +114,23 @@ export async function linkStudentToTutor(userId: string, code: string) {
         // Check Limits (linking existing)
         await checkLimits(studentByCode.ownerId, false)
 
-        // Link it!
-        return await prisma.student.update({
+        // Link it and update User role/plan
+        const updatedStudent = await prisma.student.update({
             where: { id: studentByCode.id },
             data: {
                 linkedUserId: user.id
             }
         });
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                role: 'student',
+                plan: null
+            }
+        });
+
+        return updatedStudent;
     }
 
     // 2. Fallback: try to find a Teacher by referralCode
@@ -149,18 +173,29 @@ export async function linkStudentToTutor(userId: string, code: string) {
         // Check Limits (linking existing)
         await checkLimits(teacher.id, false)
 
-        return await prisma.student.update({
+        // Match found, update Student and User role/plan
+        const updatedStudent = await prisma.student.update({
             where: { id: studentRecord.id },
             data: {
                 linkedUserId: user.id
             }
         });
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                role: 'student',
+                plan: null
+            }
+        });
+
+        return updatedStudent;
     } else {
         // Create new record for this teacher
         // Check Limits (creating new + linking)
         await checkLimits(teacher.id, true)
 
-        return await prisma.student.create({
+        const newStudent = await prisma.student.create({
             data: {
                 name: user.name || user.email?.split('@')[0] || 'Новый ученик',
                 ownerId: teacher.id,
@@ -169,5 +204,15 @@ export async function linkStudentToTutor(userId: string, code: string) {
                 contactType: user.email ? 'email' : 'phone'
             }
         });
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                role: 'student',
+                plan: null
+            }
+        });
+
+        return newStudent;
     }
 }

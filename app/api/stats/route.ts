@@ -116,6 +116,11 @@ export async function GET(request: NextRequest) {
                 return false
             })
 
+            const userProfile = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { createdAt: true }
+            })
+
             return NextResponse.json({
                 success: true, // For compatibility
                 stats: { // For compatibility with my DashboardPage edit
@@ -126,7 +131,8 @@ export async function GET(request: NextRequest) {
                     unpaidLessons: unpaidForStudent,
                     studentsCount: 0,
                     groupsCount: 0,
-                    subjectsCount: 0
+                    subjectsCount: 0,
+                    createdAt: userProfile?.createdAt
                 },
                 // Raw top-level for backwards compatibility if needed
                 teachersCount: teacherIds.length,
@@ -134,6 +140,7 @@ export async function GET(request: NextRequest) {
                 unpaidLessons: unpaidForStudent,
                 monthLessonsCount,
                 totalLessonsCount: totalLessons,
+                createdAt: userProfile?.createdAt,
                 isStudent: true
             })
         }

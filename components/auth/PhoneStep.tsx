@@ -27,6 +27,23 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
         if (ref) {
             setUserRole('student')
         }
+
+        // Check for error in cookies (for OAuth redirects)
+        const checkAuthError = () => {
+            const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+                const [key, value] = cookie.trim().split('=')
+                acc[key] = value
+                return acc
+            }, {} as Record<string, string>)
+
+            if (cookies['auth_error'] === 'account_is_teacher') {
+                toast.error('Этот аккаунт уже зарегистрирован как преподаватель и не может быть учеником')
+                // Clear the cookie so it doesn't show again
+                document.cookie = 'auth_error=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+            }
+        }
+
+        checkAuthError()
     }, [searchParams])
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -53,12 +70,19 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
             }
 
             toast.success('Код отправлен на ваш email')
-            onSuccess(data.sessionId || '', email, userRole, searchParams.get('ref'))
+            onSuccess(data.sessionId || '', email, userRole, userRole === 'student' ? searchParams.get('ref') : null)
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')
         } finally {
             setIsLoading(false)
         }
+    }
+
+    const handleSocialLogin = (provider: 'google' | 'yandex') => {
+        const ref = userRole === 'student' ? searchParams.get('ref') : null
+        const baseUrl = `/api/auth/${provider}/login`
+        const url = ref ? `${baseUrl}?ref=${ref}` : baseUrl
+        window.location.href = url
     }
 
     return (
@@ -118,7 +142,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                 <button
                     type="button"
                     className={styles.socialYandex}
-                    onClick={() => window.location.href = `/api/auth/yandex/login${searchParams.get('ref') ? `?ref=${searchParams.get('ref')}` : ''}`}
+                    onClick={() => handleSocialLogin('yandex')}
                 >
                     <div className={styles.yandex}>
                         <YandexLogo />
@@ -128,7 +152,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                 <button
                     type="button"
                     className={styles.socialGoogle}
-                    onClick={() => window.location.href = `/api/auth/google/login${searchParams.get('ref') ? `?ref=${searchParams.get('ref')}` : ''}`}
+                    onClick={() => handleSocialLogin('google')}
                 >
                     <div className={styles.google}>
                         <GoogleLogo />

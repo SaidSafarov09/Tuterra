@@ -100,7 +100,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         pathname.startsWith('/subjects/')
 
     return (
-        <OnboardingProvider userOnboardingCompleted={user?.onboardingCompleted}>
+        <OnboardingProvider userOnboardingCompleted={user?.role === 'student' ? true : user?.onboardingCompleted}>
             <div className={styles.layout}>
                 <Sidebar
                     isOpen={isMobileMenuOpen}

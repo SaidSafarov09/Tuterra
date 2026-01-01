@@ -88,8 +88,14 @@ export async function POST(request: NextRequest) {
                 if (isStudent && refCode) {
                     try {
                         await linkStudentToTutor(user.id, refCode)
-                    } catch (e) {
+                    } catch (e: any) {
                         console.error('Referral linking error during signup:', e)
+                        if (e.message === 'ACCOUNT_IS_TEACHER') {
+                            return NextResponse.json({
+                                success: false,
+                                error: 'Этот аккаунт уже зарегистрирован как преподаватель и не может быть учеником'
+                            }, { status: 400 })
+                        }
                     }
                 }
             } else {
@@ -97,8 +103,14 @@ export async function POST(request: NextRequest) {
                 if (role === 'student' && refCode) {
                     try {
                         await linkStudentToTutor(user.id, refCode)
-                    } catch (e) {
+                    } catch (e: any) {
                         console.error('Referral linking error during login:', e)
+                        if (e.message === 'ACCOUNT_IS_TEACHER') {
+                            return NextResponse.json({
+                                success: false,
+                                error: 'Этот аккаунт уже зарегистрирован как преподаватель и не может быть учеником'
+                            }, { status: 400 })
+                        }
                     }
                 }
                 user = await prisma.user.update({

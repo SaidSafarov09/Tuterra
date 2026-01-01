@@ -13,6 +13,12 @@ export function OnboardingProvider({ children, userOnboardingCompleted }: Onboar
     const { start, isCompleted, reset } = useOnboardingStore()
 
     useEffect(() => {
+        if (userOnboardingCompleted === false && isCompleted) {
+            reset()
+        }
+    }, [userOnboardingCompleted, isCompleted, reset])
+
+    useEffect(() => {
         const shouldStart = userOnboardingCompleted === false && !isCompleted
 
         if (shouldStart) {

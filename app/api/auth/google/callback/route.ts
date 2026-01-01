@@ -63,9 +63,17 @@ export async function GET(req: NextRequest) {
         if (refCode) {
             try {
                 const { linkStudentToTutor } = await import('@/lib/studentConnection')
-                await linkStudentToTutor(user.id, refCode)
-            } catch (e) {
+                const linked = await linkStudentToTutor(user.id, refCode)
+                if (linked) {
+                    user.role = 'student'
+                }
+            } catch (e: any) {
                 console.error('Referral linking error during Google auth:', e)
+                if (e.message === 'ACCOUNT_IS_TEACHER') {
+                    const response = NextResponse.redirect(new URL('/auth', req.url))
+                    response.cookies.set('auth_error', 'account_is_teacher', { maxAge: 10, path: '/' })
+                    return response
+                }
             }
             // Clear the referral cookie
             cookieStore.delete('referral-code')
