@@ -52,7 +52,8 @@ import {
     CircleX,
     Ban,
     Unlink,
-    Lock
+    Lock,
+    Crown
 } from 'lucide-react'
 
 // ... (existing exports)
@@ -81,7 +82,7 @@ export const SettingsIcon: React.FC<IconProps> = (props) => <Settings {...props}
 export const CalendarIcon: React.FC<IconProps> = (props) => <Calendar {...props} />
 export const AnalyticsIcon: React.FC<IconProps> = (props) => <PieChart {...props} />
 export const LogoutIcon: React.FC<IconProps> = (props) => <LogOut {...props} />
-
+export const CrownIcon: React.FC<IconProps> = (props) => <Crown {...props} />
 
 export const PlusIcon: React.FC<IconProps> = (props) => <Plus {...props} />
 export const EditIcon: React.FC<IconProps> = (props) => <Pencil {...props} />

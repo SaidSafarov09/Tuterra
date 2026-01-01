@@ -16,7 +16,8 @@ import {
 import { teacherNavigation, studentNavigation } from '@/constants/links'
 import { getInitials, stringToColor } from '@/constants'
 import { SidebarUserSkeleton } from '@/components/skeletons'
-import ProLogo from '../icons/ProLogo'
+import { ProBadge } from '@/components/layout/ProBadge'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface SidebarProps {
     isOpen?: boolean
@@ -27,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     const pathname = usePathname()
     const { user, logout } = useAuthStore()
     const [isUserModalOpen, setIsUserModalOpen] = useState(false)
+    const isMobile = useMediaQuery('(max-width: 768px)')
 
     const avatarBgColor = user?.name ? stringToColor(user.name) : 'var(--primary)'
 
@@ -48,12 +50,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                         onClick={onClose}
                         aria-label="Close menu"
                     >
-                        <CloseIcon size={20} />
+                        <CloseIcon size={16} />
                     </button>
                 )}
                 <div className={styles.logo}>
-                    <Logo size={32} />
+                    <Logo size={isMobile ? 24 : 32} />
                     <h1 className={styles.logoText}>Tuterra</h1>
+                    <ProBadge />
                 </div>
 
                 <nav className={styles.nav}>

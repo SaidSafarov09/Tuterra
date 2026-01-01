@@ -9,6 +9,7 @@ interface MobileHeaderProps {
 }
 
 import { NotificationCenter } from '@/components/notifications/NotificationCenter'
+import { ProBadge } from './ProBadge'
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, onBurgerClick }) => {
   return (
@@ -22,6 +23,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, onBurgerClick
       </button>
       <div className={styles.logoBlock}>
         <Logo size={28} />
+        <ProBadge />
       </div>
       <div className={styles.actions}>
         <NotificationCenter />

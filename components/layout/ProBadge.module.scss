@@ -1,0 +1,46 @@
+.proContainer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--background);
+    padding: 2px 6px;
+    border-radius: 6px;
+    justify-content: center;
+    position: relative;
+    top: 2px;
+
+    @media (min-width: 768px) and (max-width: 1080px) {
+        top: -8px;
+    }
+}
+
+.proText {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    font-weight: 700;
+    border-radius: 6px;
+    position: relative;
+    text-transform: uppercase;
+
+
+    @media (min-width: 768px) and (max-width: 1080px) {
+        right: unset;
+        top: unset;
+        padding: 0;
+    }
+
+    @media (max-width: 768px) {
+        font-size: 10px;
+    }
+}
+
+.proIcon {
+    position: relative;
+    color: #f59e0b;
+
+    @media (min-width: 768px) and (max-width: 1080px) {
+        right: unset;
+        top: unset;
+    }
+}

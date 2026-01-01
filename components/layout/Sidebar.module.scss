@@ -19,6 +19,16 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    position: relative;
+
+
+    @media (min-width: 768px) and (max-width: 1080px) {
+        flex-direction: column;
+    }
+
+    @media (max-width: 768px) {
+        gap: 8px;
+    }
 }
 
 .logoText {
@@ -26,6 +36,10 @@
     font-weight: 700;
     color: var(--primary);
     margin: 0;
+
+    @media (max-width: 768px) {
+        font-size: 18px;
+    }
 }
 
 .nav {
@@ -177,12 +191,12 @@
     .closeButton {
         display: flex;
         position: absolute;
-        top: 13px;
+        top: 12px;
         right: 20px;
-        width: 30px;
-        height: 30px;
+        width: 24px;
+        height: 24px;
         border: none;
-        border-radius: 8px;
+        border-radius: 6px;
         background: var(--background);
         color: var(--text-secondary);
         cursor: pointer;
@@ -202,11 +216,6 @@
     }
 }
 
-.navText {
-    // Default visible - no special styles needed unless we want to target specifically
-}
-
-/* Tablet styles: Collapsed sidebar */
 @media (min-width: 769px) and (max-width: 1080px) {
     .sidebar {
         width: 80px;
@@ -217,7 +226,7 @@
         padding: 0;
         justify-content: center;
         border-bottom: none;
-        margin-bottom: 32px;
+        margin-bottom: 12px;
     }
 
     .logoText {
