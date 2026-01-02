@@ -29,8 +29,9 @@ import { StudentConnectionModal } from '@/components/students/StudentConnectionM
 import { Modal } from '@/components/ui/Modal'
 import { PaymentSuccessModal } from '@/components/pro/PaymentSuccessModal'
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function DashboardPage() {
+function DashboardContent() {
     const { user, setUser } = useAuthStore()
     const searchParams = useSearchParams()
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
@@ -353,5 +354,13 @@ export default function DashboardPage() {
                 proExpiresAt={user?.proExpiresAt ? new Date(user.proExpiresAt) : null}
             />
         </div>
+    )
+}
+
+export default function DashboardPage() {
+    return (
+        <Suspense fallback={<div>Загрузка...</div>}>
+            <DashboardContent />
+        </Suspense>
     )
 }
