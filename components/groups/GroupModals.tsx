@@ -98,7 +98,7 @@ export function GroupModals({
                 isEdit={false}
                 formData={lessonFormData}
                 setFormData={setLessonFormData}
-                students={allStudents}
+                students={[]}
                 groups={[group]}
                 subjects={allSubjects}
                 error=""
@@ -107,7 +107,7 @@ export function GroupModals({
                 onCreateSubject={onCreateSubject}
                 handleChange={handleLessonChange}
                 fixedSubjectId={group.subjectId}
-                fixedStudentId="" // We don't fix student, we fix group implicitly via formData
+                fixedGroupId={group.id}
             />
 
             <LessonFormModal
@@ -118,7 +118,7 @@ export function GroupModals({
                 isEdit={true}
                 formData={lessonFormData}
                 setFormData={setLessonFormData}
-                students={allStudents}
+                students={[]}
                 groups={[group]}
                 subjects={allSubjects}
                 error=""
@@ -127,6 +127,7 @@ export function GroupModals({
                 onCreateSubject={onCreateSubject}
                 handleChange={handleLessonChange}
                 fixedSubjectId={group.subjectId}
+                fixedGroupId={group.id}
             />
         </>
     )

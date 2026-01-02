@@ -165,6 +165,7 @@ export function StudentModals({
                         submitText="Добавить"
                     />
                 }
+                className={styles.modalUnsetOverflow}
             >
                 <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
                     <Dropdown
@@ -190,8 +191,10 @@ export function StudentModals({
                     isOpen={isAddGroupModalOpen}
                     onClose={onCloseAddGroupModal}
                     title={<>
-                        Добавить ученика в группу <br />
-                        <span style={{ color: stringToColor(student.name) }}>{student.name}</span>
+                        Добавить ученика
+                        <span style={{ color: stringToColor(student.name) }}> {student.name}</span>
+                        <br />
+                        в группу
                     </>}
                     footer={
                         <ModalFooter
@@ -201,6 +204,7 @@ export function StudentModals({
                             submitText="Добавить"
                         />
                     }
+                    className={styles.modalUnsetOverflow}
                 >
                     <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
                         <Dropdown
@@ -214,12 +218,11 @@ export function StudentModals({
                             }
                             searchable
                             menuPosition="relative"
+                            placeholderSearch="Найти"
                         />
                     </form>
                 </Modal>
             )}
-
-            {/* Create Lesson Modal */}
             <LessonFormModal
                 isOpen={isCreateLessonModalOpen}
                 onClose={onCloseCreateLessonModal}

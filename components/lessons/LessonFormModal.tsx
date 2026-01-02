@@ -9,6 +9,7 @@ interface LessonFormModalProps extends LessonFormProps {
     isOpen: boolean
     onClose: () => void
     customTitle?: string | React.ReactNode
+    fixedGroupId?: string
 }
 
 export function LessonFormModal({

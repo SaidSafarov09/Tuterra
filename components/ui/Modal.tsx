@@ -17,6 +17,7 @@ interface ModalProps {
     mobileView?: 'page' | 'modal'
     withHeader?: boolean
     padding?: string
+    className?: string
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -31,6 +32,7 @@ export const Modal: React.FC<ModalProps> = ({
     mobileView = 'page',
     withHeader = true,
     padding,
+    className,
 }) => {
     const modalRef = useRef<HTMLDivElement>(null)
 
@@ -82,7 +84,7 @@ export const Modal: React.FC<ModalProps> = ({
         <div className={`${styles.overlay} modal-overlay`} onClick={onClose}>
             <div
                 ref={modalRef}
-                className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''} ${mobileView === 'modal' ? styles.modalPopup : ''}`}
+                className={`${styles.modal} ${size === 'large' ? styles.modalLarge : ''} ${mobileView === 'modal' ? styles.modalPopup : ''} ${className || ''}`}
                 onClick={(e) => e.stopPropagation()}
                 style={{ maxWidth: isMobile ? "100%" : maxWidth }}
             >

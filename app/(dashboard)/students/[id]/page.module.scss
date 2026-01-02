@@ -643,3 +643,9 @@
     background: rgba(239, 68, 68, 0.1);
   }
 }
+
+.modalUnsetOverflow {
+  @media (min-width: 769px) {
+    overflow: unset !important;
+  }
+}

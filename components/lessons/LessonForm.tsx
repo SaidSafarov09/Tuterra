@@ -40,6 +40,7 @@ export interface LessonFormProps {
     handleChange: (name: string, value: any) => void
     fixedSubjectId?: string
     fixedStudentId?: string
+    fixedGroupId?: string
     children?: React.ReactNode
 }
 
@@ -62,6 +63,7 @@ export function LessonForm({
     handleChange,
     fixedSubjectId,
     fixedStudentId,
+    fixedGroupId,
     children
 }: LessonFormProps) {
     const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
@@ -134,11 +136,15 @@ export function LessonForm({
 
     useEffect(() => {
         if (fixedStudentId && formData.studentId !== fixedStudentId) {
-            // Use functional update to avoid dependency on setFormData if possible, but here we use handleChange or setFormData
-            // Safest is to just update it.
             setFormData(prev => ({ ...prev, studentId: fixedStudentId }))
         }
     }, [fixedStudentId])
+
+    useEffect(() => {
+        if (fixedGroupId && formData.groupId !== fixedGroupId) {
+            setFormData(prev => ({ ...prev, groupId: fixedGroupId, studentId: undefined }))
+        }
+    }, [fixedGroupId])
 
     const defaultRecurrence: RecurrenceRule = {
         enabled: true,
@@ -278,17 +284,17 @@ export function LessonForm({
 
                 <div className={styles.row}>
                     <Dropdown
-                        label={fixedStudentId ? "Ученик" : "Ученик / Группа"}
+                        label={fixedStudentId ? "Ученик" : fixedGroupId ? "Группа" : "Ученик / Группа"}
                         placeholder="Выберите ученика или группу"
                         value={selectedValue}
                         onChange={handleStudentOrGroupChange}
                         options={getStudentOptions()}
                         searchable
-                        creatable={!fixedStudentId && !formData.groupId}
+                        creatable={!fixedStudentId && !fixedGroupId && !formData.groupId}
                         onCreate={onCreateStudent}
                         menuPosition="relative"
                         required
-                        disabled={isSubmitting || !!fixedStudentId}
+                        disabled={isSubmitting || !!fixedStudentId || !!fixedGroupId}
                     />
 
                     <Dropdown
