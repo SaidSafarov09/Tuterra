@@ -184,6 +184,17 @@
         font-weight: 500;
     }
 
+    &.optionDisabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        color: var(--text-muted);
+
+        &:hover {
+            background: transparent;
+            color: var(--text-muted);
+        }
+    }
+
     &:first-child {
         border-radius: var(--radius-md) var(--radius-md) 0 0;
     }

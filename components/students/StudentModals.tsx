@@ -213,8 +213,14 @@ export function StudentModals({
                             value={selectedGroupId || ''}
                             onChange={setSelectedGroupId}
                             options={allGroups
-                                ?.filter(g => !student?.groups?.some(sg => sg.id === g.id))
-                                .map(g => ({ value: g.id, label: g.name })) || []
+                                ?.map(g => {
+                                    const isAlreadyMember = student?.groups?.some(sg => sg.id === g.id);
+                                    return {
+                                        value: g.id,
+                                        label: isAlreadyMember ? `${g.name} (уже добавлен)` : g.name,
+                                        disabled: isAlreadyMember
+                                    }
+                                }) || []
                             }
                             searchable
                             menuPosition="relative"

@@ -8,6 +8,7 @@ export interface DropdownOption {
     value: string
     label: string
     icon?: React.ReactNode
+    disabled?: boolean
 }
 
 export interface DropdownGroup {
@@ -124,6 +125,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
     }
 
     const handleSelect = (optionValue: string) => {
+        const option = allOptions.find(o => o.value === optionValue)
+        if (option?.disabled) return
+
         onChange(optionValue)
         setIsOpen(false)
         setSearchQuery('')
@@ -191,7 +195,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
                                         {option.options.map(opt => (
                                             <div
                                                 key={opt.value}
-                                                className={`${styles.option} ${opt.value === value ? styles.selected : ''}`}
+                                                className={`
+                                                    ${styles.option} 
+                                                    ${opt.value === value ? styles.selected : ''}
+                                                    ${opt.disabled ? styles.optionDisabled : ''}
+                                                `}
                                                 onClick={() => handleSelect(opt.value)}
                                             >
                                                 {opt.icon && opt.icon}
@@ -204,7 +212,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
                                 return (
                                     <div
                                         key={option.value}
-                                        className={`${styles.option} ${option.value === value ? styles.selected : ''}`}
+                                        className={`
+                                            ${styles.option} 
+                                            ${option.value === value ? styles.selected : ''}
+                                            ${option.disabled ? styles.optionDisabled : ''}
+                                        `}
                                         onClick={() => handleSelect(option.value)}
                                     >
                                         {option.icon && option.icon}
