@@ -132,10 +132,12 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
                                 {getInitials(student.name)}
                             </div>
                         )}
+
                         <div className={styles.studentInfo}>
-                            <div className={styles.linkedBadge}>
-                                Подключён к платформе
-                            </div>
+                            {student.linkedUser && (
+                                <div className={styles.linkedBadge}>
+                                    Подключён к платформе
+                                </div>)}
                             <h1 className={styles.studentName}>{student.name}</h1>
                         </div>
                     </div>
