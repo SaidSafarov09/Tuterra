@@ -3,81 +3,78 @@ import { prisma } from '@/lib/prisma';
 import { SUBSCRIPTION_CONFIG } from '@/lib/yookassa';
 import { PaymentMetadata } from '@/lib/yookassa';
 
-// Хранилище обработанных платежей для идемпотентности
-const processedPayments = new Set<string>();
+// Временное хранилище логов для отладки (в памяти)
+let webhookLogs: any[] = [];
+
+export async function GET() {
+    return NextResponse.json(webhookLogs.slice(-10)); // Показываем последние 10 логов
+}
 
 export async function POST(req: NextRequest) {
+    const timestamp = new Date().toISOString();
     try {
         const body = await req.json();
 
-        // Проверяем тип события
+        const logEntry = {
+            time: timestamp,
+            event: body.event,
+            paymentId: body.object?.id,
+            status: body.object?.status,
+            metadata: body.object?.metadata
+        };
+
+        console.log('--- Incoming Webhook ---', logEntry);
+        webhookLogs.push(logEntry);
+
         if (body.event !== 'payment.succeeded') {
             return NextResponse.json({ received: true });
         }
 
         const payment = body.object;
         const paymentId = payment.id;
-
-        // Проверка идемпотентности
-        if (processedPayments.has(paymentId)) {
-            console.log(`Payment ${paymentId} already processed`);
-            return NextResponse.json({ received: true });
-        }
-
-        // Проверяем статус платежа
-        if (payment.status !== 'succeeded') {
-            console.log(`Payment ${paymentId} status is not succeeded: ${payment.status}`);
-            return NextResponse.json({ received: true });
-        }
-
-        // Получаем metadata
         const metadata = payment.metadata as PaymentMetadata;
 
-        if (!metadata || !metadata.userId || metadata.type !== 'subscription') {
-            console.error('Invalid payment metadata:', metadata);
+        if (!metadata || !metadata.userId) {
+            console.error('❌ No metadata or userId found in payment');
+            webhookLogs.push({ time: timestamp, error: 'No metadata/userId', metadata });
             return NextResponse.json({ received: true });
         }
 
         const userId = metadata.userId;
 
-        // Проверяем, не был ли уже обработан этот платеж в БД
-        const existingUser = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { lastPaymentId: true },
+        // Ищем пользователя
+        const user = await prisma.user.findUnique({
+            where: { id: userId }
         });
 
-        if (existingUser?.lastPaymentId === paymentId) {
-            console.log(`Payment ${paymentId} already processed in database`);
-            processedPayments.add(paymentId);
+        if (!user) {
+            console.error(`❌ User with ID ${userId} not found in database!`);
+            webhookLogs.push({ time: timestamp, error: 'User not found', userId });
             return NextResponse.json({ received: true });
         }
 
-        // Вычисляем дату истечения подписки
-        const now = new Date();
-        const expiresAt = new Date(now);
-        expiresAt.setDate(expiresAt.getDate() + SUBSCRIPTION_CONFIG.durationDays);
+        // Обновляем до PRO
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + (SUBSCRIPTION_CONFIG.durationDays || 30));
 
-        // Обновляем пользователя
         await prisma.user.update({
             where: { id: userId },
             data: {
                 isPro: true,
-                proActivatedAt: now,
+                proActivatedAt: new Date(),
                 proExpiresAt: expiresAt,
                 lastPaymentId: paymentId,
                 plan: 'pro',
             },
         });
 
-        // Добавляем в кэш обработанных платежей
-        processedPayments.add(paymentId);
-
-        console.log(`Successfully activated PRO for user ${userId}, payment ${paymentId}`);
+        console.log(`✅ AUTO-ACTIVATED PRO for ${user.email}`);
+        webhookLogs.push({ time: timestamp, success: true, email: user.email });
 
         return NextResponse.json({ received: true });
-    } catch (error) {
-        console.error('Error processing webhook:', error);
-        // Возвращаем 200, чтобы ЮKassa не повторяла запрос
+    } catch (error: any) {
+        console.error('❌ Webhook Critical Error:', error);
+        webhookLogs.push({ time: timestamp, error: error.message });
         return NextResponse.json({ received: true });
     }
 }
