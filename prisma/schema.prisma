@@ -43,6 +43,12 @@ model User {
   onboardingCompleted Boolean            @default(false)
   referralCode      String?            @unique
   
+  // PRO subscription fields
+  isPro             Boolean            @default(false)
+  proActivatedAt    DateTime?
+  proExpiresAt      DateTime?
+  lastPaymentId     String?
+  
   studentRecords    Student[]          @relation("LinkedStudent")
   lessonRequests    LessonRequest[]    @relation("UserRequests")
 }

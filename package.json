@@ -13,6 +13,7 @@
     "db:migrate:prod": "prisma migrate deploy --schema=prisma/schema.prisma"
   },
   "dependencies": {
+    "@a2seven/yoo-checkout": "^1.1.4",
     "@auth/core": "^0.34.3",
     "@prisma/client": "^5.7.0",
     "@radix-ui/react-avatar": "^1.1.11",

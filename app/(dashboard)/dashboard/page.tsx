@@ -27,9 +27,12 @@ import { useAuthStore } from '@/store/auth'
 import { CircleCheck } from 'lucide-react'
 import { StudentConnectionModal } from '@/components/students/StudentConnectionModal'
 import { Modal } from '@/components/ui/Modal'
+import { PaymentSuccessModal } from '@/components/pro/PaymentSuccessModal'
+import { useSearchParams } from 'next/navigation'
 
 export default function DashboardPage() {
-    const { user } = useAuthStore()
+    const { user, setUser } = useAuthStore()
+    const searchParams = useSearchParams()
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
     const isMobile = useMediaQuery('(max-width: 768px)')
@@ -37,6 +40,7 @@ export default function DashboardPage() {
     const isStudent = user?.role === 'student'
     const [isConnectionModalOpen, setIsConnectionModalOpen] = React.useState(false)
     const [isRequestsModalOpen, setIsRequestsModalOpen] = React.useState(false)
+    const [isPaymentSuccessModalOpen, setIsPaymentSuccessModalOpen] = React.useState(false)
 
     const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
         try {
@@ -58,6 +62,25 @@ export default function DashboardPage() {
             setIsLoading(false)
         }
     }
+
+    // Проверяем параметр payment=success при загрузке
+    React.useEffect(() => {
+        const paymentStatus = searchParams.get('payment')
+        if (paymentStatus === 'success') {
+            // Обновляем данные пользователя
+            fetch('/api/auth/me')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.user) {
+                        setUser(data.user)
+                        setIsPaymentSuccessModalOpen(true)
+                        // Убираем параметр из URL
+                        window.history.replaceState({}, '', '/dashboard')
+                    }
+                })
+                .catch(err => console.error('Failed to update user:', err))
+        }
+    }, [searchParams, setUser])
 
     React.useEffect(() => {
         const fetchStats = async () => {
@@ -323,6 +346,12 @@ export default function DashboardPage() {
                     )}
                 </div>
             </Modal>
+
+            <PaymentSuccessModal
+                isOpen={isPaymentSuccessModalOpen}
+                onClose={() => setIsPaymentSuccessModalOpen(false)}
+                proExpiresAt={user?.proExpiresAt ? new Date(user.proExpiresAt) : null}
+            />
         </div>
     )
 }

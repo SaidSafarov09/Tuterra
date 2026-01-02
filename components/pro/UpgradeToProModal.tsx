@@ -1,11 +1,12 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Crown, Users, BookOpen, BarChart3, Calendar, Zap, CheckCircle2 } from 'lucide-react'
 import styles from './UpgradeToProModal.module.scss'
 import { LimitType, LIMIT_MESSAGES } from '@/lib/limits'
+import { toast } from 'sonner'
 
 interface UpgradeToProModalProps {
     isOpen: boolean
@@ -28,6 +29,38 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
     limitType
 }) => {
     const message = LIMIT_MESSAGES[limitType]
+    const [isLoading, setIsLoading] = useState(false)
+
+    const handleUpgrade = async () => {
+        try {
+            setIsLoading(true)
+
+            const response = await fetch('/api/payments/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Failed to create payment')
+            }
+
+            const data = await response.json()
+
+            if (data.confirmationUrl) {
+                // Редиректим на страницу оплаты ЮKassa
+                window.location.href = data.confirmationUrl
+            } else {
+                throw new Error('No confirmation URL received')
+            }
+        } catch (error) {
+            console.error('Payment error:', error)
+            toast.error(error instanceof Error ? error.message : 'Не удалось создать платеж')
+            setIsLoading(false)
+        }
+    }
 
     return (
         <Modal
@@ -67,25 +100,23 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                                 <span className={styles.price}>490</span>
                                 <span className={styles.period}>/мес</span>
                             </div>
-                            <p className={styles.priceNote}>Первые 14 дней бесплатно</p>
+                            <p className={styles.priceNote}>30 дней подписки</p>
                         </div>
                     </div>
                 </div>
 
                 <div className={styles.actions}>
                     <Button
-                        onClick={() => {
-                            alert('Переход на страницу оплаты (в разработке)')
-                            onClose()
-                        }}
+                        onClick={handleUpgrade}
                         className={styles.upgradeButton}
                         fullWidth
                         size="large"
+                        disabled={isLoading}
                     >
                         <Crown size={20} />
-                        Попробовать Pro бесплатно
+                        {isLoading ? 'Загрузка...' : 'Перейти к оплате'}
                     </Button>
-                    <button onClick={onClose} className={styles.closeButton}>
+                    <button onClick={onClose} className={styles.closeButton} disabled={isLoading}>
                         Может быть позже
                     </button>
                 </div>

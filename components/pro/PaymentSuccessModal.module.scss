@@ -1,0 +1,235 @@
+.modal {
+    padding: 0;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+
+    @media (max-width: 768px) {
+        border-radius: 0;
+    }
+}
+
+.header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    padding: 40px 32px;
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.iconWrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    z-index: 1;
+}
+
+.checkIcon {
+    color: white;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+    animation: scaleIn 0.5s ease-out;
+}
+
+.crownIcon {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    color: #fbbf24;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+    animation: bounceIn 0.6s ease-out 0.3s both;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    line-height: 1.3;
+    color: white;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 768px) {
+        font-size: 24px;
+    }
+}
+
+.subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+    max-width: 450px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    font-weight: 500;
+}
+
+.content {
+    background: var(--surface);
+    padding: 32px 24px;
+
+    @media (max-width: 768px) {
+        padding: 24px 16px;
+    }
+}
+
+.infoCard {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--success);
+    margin-bottom: 24px;
+}
+
+.infoIcon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--success);
+    flex-shrink: 0;
+}
+
+.infoText {
+    flex: 1;
+}
+
+.infoLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.infoValue {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.features {
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    border: 1px solid var(--border-light);
+}
+
+.featuresTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+}
+
+.featuresList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+
+        svg {
+            color: var(--success);
+            flex-shrink: 0;
+        }
+
+        span {
+            flex: 1;
+        }
+    }
+}
+
+.actions {
+    padding: 0 24px 24px;
+    background: var(--surface);
+
+    @media (max-width: 768px) {
+        padding: 0 16px 16px;
+    }
+}
+
+.continueButton {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    color: white !important;
+    font-weight: 700;
+    font-size: 16px;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
+
+    &:hover {
+        box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}

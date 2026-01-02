@@ -14,6 +14,9 @@ interface User {
     onboardingCompleted: boolean
     role: 'teacher' | 'student'
     plan?: 'free' | 'pro'
+    isPro?: boolean
+    proActivatedAt?: string | null
+    proExpiresAt?: string | null
 }
 
 interface AuthState {

@@ -39,6 +39,9 @@ export async function GET(request: NextRequest) {
                 region: true,
                 referralCode: true,
                 onboardingCompleted: true,
+                isPro: true,
+                proActivatedAt: true,
+                proExpiresAt: true,
                 _count: {
                     select: {
                         groups: true,
@@ -75,6 +78,9 @@ export async function GET(request: NextRequest) {
                     region: true,
                     referralCode: true,
                     onboardingCompleted: true,
+                    isPro: true,
+                    proActivatedAt: true,
+                    proExpiresAt: true,
                     _count: {
                         select: { groups: true }
                     }
