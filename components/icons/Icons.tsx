@@ -53,7 +53,8 @@ import {
     Ban,
     Unlink,
     Lock,
-    Crown
+    Crown,
+    HelpCircle
 } from 'lucide-react'
 
 // ... (existing exports)
@@ -134,3 +135,4 @@ export const RescheduleIcon: React.FC<IconProps> = (props) => <CalendarClock {..
 export const MoreVerticalIcon: React.FC<IconProps> = (props) => <MoreVertical {...props} />
 export const BellIcon: React.FC<IconProps> = (props) => <Bell {...props} />
 export const LinkIcon: React.FC<IconProps> = (props) => <Link {...props} />
+export const SupportIcon: React.FC<IconProps> = (props) => <HelpCircle {...props} />

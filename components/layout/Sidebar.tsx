@@ -12,6 +12,7 @@ import { UserProfileModal } from '@/components/user/UserProfileModal'
 import {
     LogoutIcon,
     CloseIcon,
+    SupportIcon
 } from '@/components/icons/Icons'
 import { teacherNavigation, studentNavigation } from '@/constants/links'
 import { getInitials, stringToColor } from '@/constants'
@@ -79,44 +80,62 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                     })}
                 </nav>
 
-                <div className={styles.userSection}>
-                    <div
-                        className={styles.userInfo}
-                        onClick={() => setIsUserModalOpen(true)}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <Avatar.Root className={styles.userAvatar}>
-                            <Avatar.Image
-                                className={styles.avatarImage}
-                                src={user?.avatar || undefined}
-                                alt={user?.name || 'User'}
-                            />
-                            <Avatar.Fallback
-                                className={styles.avatarFallback}
-                                style={{ backgroundColor: avatarBgColor }}
+                {!isMobile && (
+                    <>
+                        <div className={styles.supportSection}>
+                            <a
+                                href="https://t.me/tuterrahelp"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.supportLink}
                             >
-                                {getInitials(user?.name)}
-                            </Avatar.Fallback>
-                        </Avatar.Root>
-                        <div className={styles.userDetails}>
-                            <p className={styles.userName}>{user?.name || 'Пользователь'}</p>
-                            <p className={styles.userEmail}>{user?.phone || user?.email || ''}</p>
+                                <span className={styles.navIcon}>
+                                    <SupportIcon size={20} />
+                                </span>
+                                <span className={styles.navText}>Поддержка</span>
+                            </a>
                         </div>
-                    </div>
-                    <Button
-                        variant="ghost"
-                        size="small"
-                        fullWidth
-                        onClick={async () => {
-                            await logout()
-                            window.location.href = '/auth'
-                        }}
-                        className={styles.logoutButton}
-                    >
-                        <LogoutIcon size={16} />
-                        <span className={styles.navText}>Выйти</span>
-                    </Button>
-                </div>
+
+                        <div className={styles.userSection}>
+                            <div
+                                className={styles.userInfo}
+                                onClick={() => setIsUserModalOpen(true)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <Avatar.Root className={styles.userAvatar}>
+                                    <Avatar.Image
+                                        className={styles.avatarImage}
+                                        src={user?.avatar || undefined}
+                                        alt={user?.name || 'User'}
+                                    />
+                                    <Avatar.Fallback
+                                        className={styles.avatarFallback}
+                                        style={{ backgroundColor: avatarBgColor }}
+                                    >
+                                        {getInitials(user?.name)}
+                                    </Avatar.Fallback>
+                                </Avatar.Root>
+                                <div className={styles.userDetails}>
+                                    <p className={styles.userName}>{user?.name || 'Пользователь'}</p>
+                                    <p className={styles.userEmail}>{user?.phone || user?.email || ''}</p>
+                                </div>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="small"
+                                fullWidth
+                                onClick={async () => {
+                                    await logout()
+                                    window.location.href = '/auth'
+                                }}
+                                className={styles.logoutButton}
+                            >
+                                <LogoutIcon size={16} />
+                                <span className={styles.navText}>Выйти</span>
+                            </Button>
+                        </div>
+                    </>
+                )}
             </aside>
 
             <UserProfileModal

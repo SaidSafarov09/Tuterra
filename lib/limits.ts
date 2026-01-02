@@ -1,5 +1,5 @@
 export const FREE_LIMITS = {
-    students: 5,
+    students: 3,
     connectedStudents: 1,
     groups: 1,
     subjects: 1,
@@ -13,7 +13,7 @@ export type LimitType = keyof typeof FREE_LIMITS | 'income';
 export const LIMIT_MESSAGES: Record<LimitType, { title: string; description: string }> = {
     students: {
         title: 'Лимит учеников превышен',
-        description: 'В бесплатной версии можно добавить только 5 учеников. Обновитесь до Pro, чтобы снять ограничения.'
+        description: 'В бесплатной версии можно добавить только 3 ученика. Обновитесь до Pro, чтобы снять ограничения.'
     },
     connectedStudents: {
         title: 'Лимит подключений превышен',

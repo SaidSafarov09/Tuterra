@@ -10,6 +10,7 @@ interface MobileHeaderProps {
 
 import { NotificationCenter } from '@/components/notifications/NotificationCenter'
 import { ProBadge } from './ProBadge'
+import { UserMobileMenu } from '@/components/user/UserMobileMenu'
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, onBurgerClick }) => {
   return (
@@ -27,6 +28,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, onBurgerClick
       </div>
       <div className={styles.actions}>
         <NotificationCenter />
+        <UserMobileMenu />
       </div>
     </header>
   )
