@@ -191,10 +191,8 @@ export function StudentModals({
                     isOpen={isAddGroupModalOpen}
                     onClose={onCloseAddGroupModal}
                     title={<>
-                        Добавить ученика
-                        <span style={{ color: stringToColor(student.name) }}> {student.name}</span>
-                        <br />
-                        в группу
+                        Добавить ученика {isMobile ? <br /> : null}
+                        <span style={{ color: stringToColor(student.name) }}> {student.name}</span>{isMobile ? null : <br />} в группу
                     </>}
                     footer={
                         <ModalFooter
