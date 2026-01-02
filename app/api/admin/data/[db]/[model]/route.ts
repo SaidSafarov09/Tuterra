@@ -32,19 +32,21 @@ export async function GET(
                 where.id = userIdFilter;
             } else if (['subject', 'notificationsettings', 'notification', 'lessonseries', 'verificationcode', 'authprovider', 'emailotp'].includes(m)) {
                 where.userId = userIdFilter;
-            } else if (['student', 'group', 'learningplan', 'lesson', 'lessonrequest'].includes(m)) {
+            } else if (['student', 'group', 'learningplan', 'lesson'].includes(m)) {
                 where.ownerId = userIdFilter;
-            } else if (m === 'lessonpayment') {
-                where.studentId = userIdFilter; // Specialized case
+            } else if (['lessonpayment', 'lessonrequest'].includes(m)) {
+                where.lesson = { ownerId: userIdFilter };
             } else {
-                // Generic fallback - try to see if we can find data by id at least
                 where.id = userIdFilter;
             }
         }
 
+        const noCreatedAtModels = ['lessonpayment', 'notificationsettings'];
+        const shouldSort = !noCreatedAtModels.includes(model.toLowerCase());
+
         const data = await modelClient.findMany({
             where: Object.keys(where).length > 0 ? where : undefined,
-            orderBy: { createdAt: 'desc' },
+            orderBy: shouldSort ? { createdAt: 'desc' } : undefined,
             take: 200,
         });
 

@@ -1,0 +1,495 @@
+.page {
+    background-color: var(--background);
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-primary);
+    width: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
+}
+
+.title {
+    margin: 0 !important;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.main {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 2rem;
+    gap: 2rem;
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+        gap: 1rem;
+    }
+}
+
+.sidebar {
+    flex: 1 1 250px;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    @media (max-width: 768px) {
+        flex: 1;
+        max-width: none;
+        gap: 1rem;
+    }
+}
+
+.content {
+    flex: 1 1 600px;
+    min-width: 0; // important for table overflow
+}
+
+.section {
+    background-color: var(--surface);
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
+}
+
+.sectionTitle {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.dbTabs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tab {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: var(--primary);
+    }
+}
+
+.tabActive {
+    padding: 0.75rem;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-sm);
+    background-color: var(--primary);
+    color: var(--text-on-primary);
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.select {
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    background-color: var(--surface);
+    color: var(--text-primary);
+}
+
+.tableList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.tableItem {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: transparent;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+
+    &:hover {
+        background-color: var(--border-light);
+    }
+}
+
+.tableItemActive {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: var(--border-light);
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.tableHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .tableTitleContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        h2 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+    }
+
+    .tutorFilter {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+    }
+}
+
+.headerActions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.card {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.th {
+    background-color: var(--background);
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    min-width: 150px;
+}
+
+.td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+    min-width: 150px;
+    color: var(--text-primary);
+}
+
+.tr {
+    transition: background 0.2s;
+
+    &:hover {
+        background-color: var(--background);
+    }
+}
+
+.cellInput {
+    border: 1px solid transparent;
+    width: 100%;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: transparent;
+    font-size: inherit;
+    color: var(--text-primary);
+
+    &:focus {
+        border-color: var(--primary);
+        background-color: var(--surface);
+        outline: none;
+    }
+
+    &.cellInputDisabled {
+        opacity: 0.5;
+        background-color: var(--border-light) !important;
+    }
+}
+
+.deleteBtn {
+    color: var(--error);
+    background: none;
+    border: 1px solid var(--error);
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background-color: var(--error);
+        color: white;
+    }
+}
+
+.buttonPrimary {
+    background-color: var(--primary);
+    color: var(--text-on-primary);
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background-color: var(--primary-hover);
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+.buttonSecondary {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background-color: var(--border-light);
+        color: var(--text-primary);
+    }
+}
+
+.details {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.summary {
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--primary);
+    user-select: none;
+}
+
+.addForm {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.inputSmall {
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background-color: var(--surface);
+
+    &:focus {
+        border-color: var(--primary);
+        outline: none;
+    }
+}
+
+.input {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    background-color: var(--surface);
+
+    &:focus {
+        border-color: var(--primary);
+        outline: none;
+    }
+}
+
+.loginContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--background);
+}
+
+.loginCard {
+    background-color: var(--surface);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.loginForm {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.error {
+    color: var(--error);
+    background-color: rgba(239, 68, 68, 0.1);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--error);
+}
+
+.loading {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.emptyState {
+    padding: 4rem;
+    text-align: center;
+    color: var(--text-secondary);
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--border);
+}
+
+.roleTabs {
+    display: flex;
+    background-color: var(--border-light);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    gap: 4px;
+}
+
+.miniTab {
+    border: none;
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+
+    &:hover {
+        color: var(--text-primary);
+    }
+}
+
+.miniTabActive {
+    border: none;
+    background: var(--surface);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+.themeToggle {
+    background: var(--border-light);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: var(--border);
+        transform: rotate(15deg);
+    }
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
