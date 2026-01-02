@@ -13,6 +13,7 @@ import { useStudentDetail } from "@/hooks/useStudentDetail";
 import { StudentDetailSkeleton } from "@/components/skeletons";
 import { StudentNote } from "@/components/students/StudentNote";
 import { StudentPlans } from "@/components/students/StudentPlans";
+import { useCheckLimit } from "@/hooks/useCheckLimit";
 import { RescheduleModal } from "@/components/lessons/RescheduleModal";
 import { GroupPaymentModal } from "@/components/lessons/GroupPaymentModal";
 
@@ -97,6 +98,13 @@ export default function StudentDetailPage({
     setPaymentLessonDate,
     handleGroupPaymentSubmit,
   } = useStudentDetail(id);
+
+  const { checkLimit, UpgradeModal } = useCheckLimit();
+
+  const handleCreateSubjectWrapped = (name: string, forLink: boolean = false) => {
+    if (!checkLimit('subjects', allSubjects.length)) return
+    handleCreateSubject(name, forLink)
+  }
 
   const paymentGroupLesson = paymentLessonId
     ? student?.groups?.flatMap(g => (g.lessons || []).map(l => ({ ...l, group: g }))).find(l => l.id === paymentLessonId)
@@ -219,7 +227,7 @@ export default function StudentDetailPage({
         onSubmitAddSubject={handleAddSubject}
         selectedSubjectId={selectedSubjectId}
         setSelectedSubjectId={setSelectedSubjectId}
-        onCreateSubjectForLink={(name) => handleCreateSubject(name, true)}
+        onCreateSubjectForLink={(name) => handleCreateSubjectWrapped(name, true)}
         allGroups={allGroups}
         isAddGroupModalOpen={isAddGroupModalOpen}
         onCloseAddGroupModal={() => setIsAddGroupModalOpen(false)}
@@ -231,7 +239,7 @@ export default function StudentDetailPage({
         onSubmitCreateLesson={handleCreateLesson}
         lessonFormData={lessonFormData}
         setLessonFormData={setLessonFormData}
-        onCreateSubject={(name) => handleCreateSubject(name, false)}
+        onCreateSubject={(name) => handleCreateSubjectWrapped(name, false)}
         isEditLessonModalOpen={isEditLessonModalOpen}
         onCloseEditLessonModal={() => setIsEditLessonModalOpen(false)}
         onSubmitEditLesson={handleUpdateLesson}
@@ -319,6 +327,7 @@ export default function StudentDetailPage({
         price={paymentGroupLesson ? Number(paymentGroupLesson.price) : 0}
         lessonDate={paymentGroupLesson ? paymentGroupLesson.date : undefined}
       />
+      {UpgradeModal}
     </div>
   );
 }

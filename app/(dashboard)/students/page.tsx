@@ -31,10 +31,15 @@ export default function StudentsPage() {
         handleOpenModal,
         handleCloseModal,
         handleChange,
-        handleCreateSubject,
+        handleCreateSubject: originalHandleCreateSubject,
         handleSubmit,
         filteredStudents
     } = useStudents()
+
+    const handleCreateSubject = (name: string) => {
+        if (!checkLimit('subjects', subjects.length)) return
+        originalHandleCreateSubject(name)
+    }
 
     const router = useRouter()
     const isMobile = useMediaQuery('(max-width: 768px)')

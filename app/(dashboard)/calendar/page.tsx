@@ -25,6 +25,7 @@ import { lessonsApi, studentsApi, subjectsApi, groupsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { CalendarSkeleton } from '@/components/skeletons'
 import { useLessonForm } from '@/hooks/useLessonForm'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useAuthStore } from '@/store/auth'
 
@@ -159,6 +160,8 @@ export default function CalendarPage() {
         }
     }
 
+    const { checkLimit, UpgradeModal } = useCheckLimit()
+
     const {
         formData,
         setFormData,
@@ -166,12 +169,22 @@ export default function CalendarPage() {
         error,
         handleChange,
         handleStudentChange,
-        handleCreateStudent,
-        handleCreateSubject,
+        handleCreateStudent: originalHandleCreateStudent,
+        handleCreateSubject: originalHandleCheckSubject,
         handleSubmit,
         loadLessonWithDate,
         resetForm,
     } = useLessonForm(handleCreateSuccess, fetchStudents, fetchSubjects)
+
+    const handleCreateStudent = (name: string) => {
+        if (!checkLimit('students', students.length)) return
+        originalHandleCreateStudent(name)
+    }
+
+    const handleCreateSubject = (name: string) => {
+        if (!checkLimit('subjects', subjects.length)) return
+        originalHandleCheckSubject(name)
+    }
 
     const selectedDayData: DayData | null = selectedDate
         ? calculateDayData(lessons, selectedDate)
@@ -291,6 +304,8 @@ export default function CalendarPage() {
                 price={Number(paymentLesson?.price || 0)}
                 lessonDate={paymentLesson?.date}
             />
+
+            {UpgradeModal}
         </div>
     )
 }

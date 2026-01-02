@@ -11,6 +11,7 @@ import { GroupNote } from '@/components/groups/GroupNote'
 import { GroupPlan } from '@/components/groups/GroupPlan'
 import { useGroupDetail } from '@/hooks/useGroupDetail'
 import { StudentDetailSkeleton } from '@/components/skeletons'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 
@@ -60,11 +61,18 @@ export default function GroupDetailPage({
         handleToggleCancelLesson,
         handleRescheduleLesson,
         handleConfirmReschedule,
-        handleCreateSubject,
+        handleCreateSubject: originalHandleCheckSubject,
 
         openEditModal,
         openCreateLessonModal
     } = useGroupDetail(id)
+
+    const { checkLimit, UpgradeModal } = useCheckLimit()
+
+    const handleCreateSubjectWrapped = (name: string) => {
+        if (!checkLimit('subjects', allSubjects.length)) return
+        originalHandleCheckSubject(name)
+    }
 
     if (isLoading) {
         return <StudentDetailSkeleton />
@@ -121,7 +129,7 @@ export default function GroupDetailPage({
                 isEditLessonModalOpen={isEditLessonModalOpen}
                 onCloseEditLessonModal={() => setIsEditLessonModalOpen(false)}
                 onSubmitEditLesson={handleUpdateLesson}
-                onCreateSubject={handleCreateSubject}
+                onCreateSubject={handleCreateSubjectWrapped}
             />
 
             <ConfirmDialog
@@ -177,6 +185,7 @@ export default function GroupDetailPage({
                 price={paymentLessonId ? Number(group.lessons?.find(l => l.id === paymentLessonId)?.price) : 0}
                 lessonDate={paymentLessonId ? group.lessons?.find(l => l.id === paymentLessonId)?.date : undefined}
             />
+            {UpgradeModal}
         </div>
     )
 }

@@ -31,10 +31,15 @@ export default function GroupsPage() {
         handleCloseModal,
         handleChange,
         handleStudentSelection,
-        handleCreateSubject,
+        handleCreateSubject: originalHandleCreateSubject,
         handleSubmit,
         filteredGroups
     } = useGroups()
+
+    const handleCreateSubject = (name: string) => {
+        if (!checkLimit('subjects', subjects.length)) return
+        originalHandleCreateSubject(name)
+    }
 
     const isMobile = useMediaQuery('(max-width: 768px)')
     const { checkLimit, UpgradeModal } = useCheckLimit()

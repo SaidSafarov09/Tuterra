@@ -19,6 +19,7 @@ const GroupPaymentModal = dynamic(() => import('@/components/lessons/GroupPaymen
 
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import { useFetch } from '@/hooks/useFetch'
 import { useLessonsByTab } from '@/hooks/useLessonsByTab'
 import { Lesson, Student, Subject, Group, LessonFilter } from '@/types'
@@ -97,6 +98,8 @@ function LessonsContent() {
         // Set context or state to indicate it's a REQUEST
     }
 
+    const { checkLimit, UpgradeModal } = useCheckLimit()
+
     const {
         formData,
         setFormData,
@@ -106,8 +109,8 @@ function LessonsContent() {
         loadLesson,
         handleChange,
         handleStudentChange,
-        handleCreateStudent,
-        handleCreateSubject,
+        handleCreateStudent: originalHandleCreateStudent,
+        handleCreateSubject: originalHandleCreateSubject,
         handleSubmit: submitForm
     } = useLessonForm(
         () => {
@@ -117,6 +120,16 @@ function LessonsContent() {
         refetchStudents,
         refetchSubjects
     )
+
+    const handleCreateStudent = (name: string) => {
+        if (!checkLimit('students', (students || []).length)) return
+        originalHandleCreateStudent(name)
+    }
+
+    const handleCreateSubject = (name: string) => {
+        if (!checkLimit('subjects', (subjects || []).length)) return
+        originalHandleCreateSubject(name)
+    }
 
     const monthOptions = useMemo(() => {
         const options: any[] = [{ value: 'all', label: 'Все занятия' }]
@@ -380,6 +393,8 @@ function LessonsContent() {
                 price={Number(paymentLesson?.price || 0)}
                 lessonDate={paymentLesson?.date}
             />
+
+            {UpgradeModal}
         </div>
     )
 }

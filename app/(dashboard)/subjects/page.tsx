@@ -63,8 +63,8 @@ export default function SubjectsPage() {
         resetForm: resetLessonForm,
         handleChange: handleLessonChange,
         handleStudentChange,
-        handleCreateStudent,
-        handleCreateSubject,
+        handleCreateStudent: originalHandleCreateStudent,
+        handleCreateSubject: originalHandleCreateSubject,
         handleSubmit: submitLessonForm
     } = useLessonForm(
         () => {
@@ -77,6 +77,16 @@ export default function SubjectsPage() {
         refetchStudents,
         refetch
     )
+
+    const handleCreateStudent = (name: string) => {
+        if (!checkLimit('students', allStudents.length)) return
+        originalHandleCreateStudent(name)
+    }
+
+    const handleCreateSubject = (name: string) => {
+        if (!checkLimit('subjects', subjects.length)) return
+        originalHandleCreateSubject(name)
+    }
 
     const handleSubjectClick = (subject: Subject) => {
         setSelectedSubject(subject)
@@ -127,6 +137,7 @@ export default function SubjectsPage() {
         if (!selectedSubject) return { success: false }
 
         if (mode === 'create') {
+            if (!checkLimit('students', allStudents.length)) return { success: false }
             return await createAndLinkStudent(selectedSubject.id, data)
         } else {
             return await linkStudent(selectedSubject.id, data.studentId)

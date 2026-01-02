@@ -10,6 +10,7 @@ import { ru } from 'date-fns/locale'
 import { Lesson, Student, Subject } from '@/types'
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { LessonActions } from '@/components/lessons/LessonActions'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
@@ -74,6 +75,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         }
     }
 
+    const { checkLimit, UpgradeModal } = useCheckLimit()
+
     const {
         formData,
         setFormData,
@@ -81,8 +84,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         error,
         handleChange,
         handleStudentChange,
-        handleCreateStudent,
-        handleCreateSubject,
+        handleCreateStudent: originalHandleCreateStudent,
+        handleCreateSubject: originalHandleCreateSubject,
         handleSubmit,
         loadLesson
     } = useLessonForm(
@@ -93,6 +96,16 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         fetchStudents,
         fetchSubjects
     )
+
+    const handleCreateStudent = (name: string) => {
+        if (!checkLimit('students', (students || []).length)) return
+        originalHandleCreateStudent(name)
+    }
+
+    const handleCreateSubject = (name: string) => {
+        if (!checkLimit('subjects', (subjects || []).length)) return
+        originalHandleCreateSubject(name)
+    }
 
     useEffect(() => {
         if (!id) return
@@ -371,6 +384,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 price={Number(paymentLesson?.price || lesson?.price || 0)}
                 lessonDate={paymentLesson?.date || lesson?.date}
             />
+            {UpgradeModal}
         </div>
     )
 }
