@@ -23,6 +23,7 @@ const plans = [
         ],
         cta: 'Попробовать бесплатно',
         primary: false,
+        isPro: false,
         link: '/auth',
         period: 'месяц'
     },
@@ -41,6 +42,7 @@ const plans = [
         ],
         cta: 'Выбрать месяц',
         primary: true,
+        isPro: true,
         link: '/auth?plan=month',
         period: 'месяц'
     },
@@ -60,7 +62,8 @@ const plans = [
         ],
         status: 'Выгодный',
         cta: 'Выбрать год',
-        primary: false,
+        primary: true,
+        isPro: true,
         link: '/auth?plan=year',
         period: 'год'
     }
@@ -100,7 +103,7 @@ export const Pricing = () => {
                                 viewport: { once: true },
                                 transition: { delay: i * 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }
                             })}
-                            className={`${styles.plan} ${plan.primary ? styles.primary : ''}`}
+                            className={`${styles.plan} ${plan.primary ? styles.primary : ''} ${plan.isPro ? styles.proPlan : ''} ${plan.id === 'pro_year' ? styles.yearlyPlan : ''}`}
                         >
                             {plan.status && (
                                 <div className={styles.recommended}>
