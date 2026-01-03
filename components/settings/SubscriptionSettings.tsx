@@ -80,17 +80,21 @@ export const SubscriptionSettings: React.FC = () => {
             <div className={styles.card}>
                 <div className={styles.header}>
                     <div className={styles.statusInfo}>
-                        <span className={styles.statusLabel}>Текущий план</span>
+                        <span className={styles.statusLabel}>Текущий план {isExpired && "- Бесплатная версия"}</span>
                         <div className={styles.statusValue}>
                             {isPro ? (
                                 <>
                                     <span>Tuterra PRO</span>
                                     <span className={styles.proBadge}>Активен</span>
                                 </>
+                            ) : isExpired ? (
+                                <>
+                                    <span>Tuterra PRO</span>
+                                    <span className={styles.proBadge} style={{ background: 'var(--error)', color: 'white' }}>Истекла</span>
+                                </>
                             ) : (
                                 <>
                                     <span>Бесплатная версия</span>
-                                    {isExpired && <span className={styles.proBadge} style={{ background: 'var(--error)', color: 'white' }}>Истекла</span>}
                                 </>
                             )}
                         </div>
@@ -107,9 +111,13 @@ export const SubscriptionSettings: React.FC = () => {
                     {!isPro ? (
                         <div className={styles.freeInfo}>
                             <div>
-                                <h3 className={styles.freeTitle}>Выберите подходящий тариф PRO</h3>
+                                <h3 className={styles.freeTitle}>
+                                    {isExpired ? 'Продлите подписку PRO' : 'Выберите подходящий тариф PRO'}
+                                </h3>
                                 <p className={styles.freeDescription}>
-                                    Перейдите на PRO, чтобы убрать лимиты и получить доступ к полной аналитике и автоматизации.
+                                    {isExpired
+                                        ? 'Ваша подписка закончилась. Продлите её, чтобы вернуть доступ ко всем функциям без ограничений.'
+                                        : 'Перейдите на PRO, чтобы убрать лимиты и получить доступ к полной аналитике и автоматизации.'}
                                 </p>
                             </div>
 
@@ -147,7 +155,12 @@ export const SubscriptionSettings: React.FC = () => {
                                 fullWidth
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Загрузка...' : (selectedPlanId === 'year' ? 'Оформить годовую подписку' : 'Оформить подписку на месяц')}
+                                {isLoading
+                                    ? 'Загрузка...'
+                                    : isExpired
+                                        ? (selectedPlanId === 'year' ? 'Продлить на год' : 'Продлить на месяц')
+                                        : (selectedPlanId === 'year' ? 'Оформить годовую подписку' : 'Оформить подписку на месяц')
+                                }
                                 {!isLoading && <ArrowRight size={20} style={{ marginTop: '4px' }} />}
                             </Button>
                         </div>
