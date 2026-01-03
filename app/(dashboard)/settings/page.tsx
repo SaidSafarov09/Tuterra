@@ -19,6 +19,7 @@ import { formatPhoneNumber } from '@/lib/validation'
 import styles from './page.module.scss'
 import { TABS, TIMEZONES, REGIONS } from '@/constants'
 import { AnimatePresence, motion } from 'framer-motion'
+import { maskDate, displayFormatDate, apiFormatDate } from '@/lib/dateMask'
 
 interface SettingsPageProps {
     onLeaveSettings?: () => void
@@ -114,7 +115,7 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                 lastName: data.lastName || (data.name ? data.name.split(' ').slice(1).join(' ') || '' : ''),
                 email: data.email || '',
                 phone: data.phone || '',
-                birthDate: data.birthDate ? new Date(data.birthDate).toISOString().split('T')[0] : '',
+                birthDate: displayFormatDate(data.birthDate),
                 avatar: data.avatar || null,
                 timezone: data.timezone || 'Europe/Moscow',
                 region: data.region || 'all',
@@ -200,6 +201,9 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
 
             const formatted = formatPhoneNumber(value)
             setFormData((prev) => ({ ...prev, [name]: formatted }))
+        } else if (name === 'birthDate') {
+            const masked = maskDate(value)
+            setFormData((prev) => ({ ...prev, [name]: masked }))
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }))
         }
@@ -222,7 +226,36 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
         setIsSaving(true)
 
         try {
-            const updatedUser = await settingsApi.update(formData)
+            // Validate birthDate if provided
+            let apiBirthDate = null
+            if (formData.birthDate) {
+                apiBirthDate = apiFormatDate(formData.birthDate)
+                if (!apiBirthDate) {
+                    toast.error('Введите корректную дату в формате ДД.ММ.ГГГГ')
+                    setIsSaving(false)
+                    return
+                }
+
+                const dateObj = new Date(apiBirthDate)
+                if (isNaN(dateObj.getTime())) {
+                    toast.error('Некорректная дата рождения')
+                    setIsSaving(false)
+                    return
+                }
+
+                if (dateObj > new Date()) {
+                    toast.error('Дата рождения не может быть в будущем')
+                    setIsSaving(false)
+                    return
+                }
+            }
+
+            // Prepare data for API
+            const apiData = {
+                ...formData,
+                birthDate: apiBirthDate
+            }
+            const updatedUser = await settingsApi.update(apiData)
 
             setUser({
                 ...user!,
@@ -368,11 +401,10 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                                                 <Input
                                                     label="Дата рождения"
                                                     name="birthDate"
-                                                    type="date"
                                                     value={formData.birthDate || ''}
                                                     onChange={handleChange}
-                                                    min="1940-01-01"
-                                                    max={new Date(Date.now() - 86400000).toISOString().split('T')[0]}
+                                                    placeholder="ДД.ММ.ГГГГ"
+                                                    inputMode="tel"
                                                 />
                                             </div>
                                         </div>
