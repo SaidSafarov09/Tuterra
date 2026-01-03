@@ -5,11 +5,13 @@ import { UpgradeToProModal } from '@/components/pro/UpgradeToProModal';
 import { Crown, Check, Calendar, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { toast } from 'sonner';
 import styles from './SubscriptionSettings.module.scss';
 
 export const SubscriptionSettings: React.FC = () => {
     const { user } = useAuthStore();
-    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedPlanId, setSelectedPlanId] = useState<'month' | 'year'>('year');
 
     const checkIsPro = () => {
         if (!user) return false;
@@ -35,12 +37,43 @@ export const SubscriptionSettings: React.FC = () => {
         'Отсутствие любых лимитов платформы'
     ];
 
-    const [selectedPlanId, setSelectedPlanId] = useState<'month' | 'year'>('year');
-
     const PLANS = [
-        { id: 'month', label: 'Месяц', price: '490 ₽', note: 'Базовый тариф', savings: null },
-        { id: 'year', label: 'Год', price: '3 990 ₽', note: 'Выгодный тариф', savings: 'Выгода 32%' }
+        { id: 'month', label: 'Месяц', price: '490 ₽', oldPrice: null, note: 'Базовый тариф', savings: null },
+        { id: 'year', label: 'Год', price: '3 990 ₽', oldPrice: '5 880 ₽', note: '332 ₽ / мес', savings: 'Выгода 32%' }
     ];
+
+    const handleUpgrade = async () => {
+        try {
+            setIsLoading(true);
+
+            const response = await fetch('/api/payments/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    planId: selectedPlanId
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create payment');
+            }
+
+            const data = await response.json();
+
+            if (data.confirmationUrl) {
+                window.location.href = data.confirmationUrl;
+            } else {
+                throw new Error('No confirmation URL received');
+            }
+        } catch (error) {
+            console.error('Payment error:', error);
+            toast.error(error instanceof Error ? error.message : 'Не удалось создать платеж');
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className={styles.container}>
@@ -89,7 +122,10 @@ export const SubscriptionSettings: React.FC = () => {
                                     >
                                         {plan.savings && <div className={styles.savingsLabel}>{plan.savings}</div>}
                                         <div className={styles.planOptionLabel}>{plan.label}</div>
-                                        <div className={styles.planOptionPrice}>{plan.price}</div>
+                                        <div className={styles.planOptionPrice}>
+                                            <span>{plan.price}</span>
+                                            {plan.oldPrice && <span className={styles.oldPrice}>{plan.oldPrice}</span>}
+                                        </div>
                                         <div className={styles.planOptionNote}>{plan.note}</div>
                                     </div>
                                 ))}
@@ -107,11 +143,12 @@ export const SubscriptionSettings: React.FC = () => {
                             <Button
                                 type="button"
                                 className={styles.upgradeBtn}
-                                onClick={() => setIsUpgradeModalOpen(true)}
+                                onClick={handleUpgrade}
                                 fullWidth
+                                disabled={isLoading}
                             >
-                                {selectedPlanId === 'year' ? 'Оформить годовую подписку' : 'Оформить подписку на месяц'}
-                                <ArrowRight size={20} style={{ marginLeft: '12px' }} />
+                                {isLoading ? 'Загрузка...' : (selectedPlanId === 'year' ? 'Оформить годовую подписку' : 'Оформить подписку на месяц')}
+                                {!isLoading && <ArrowRight size={20} style={{ marginTop: '4px' }} />}
                             </Button>
                         </div>
                     ) : (
@@ -133,13 +170,6 @@ export const SubscriptionSettings: React.FC = () => {
                     )}
                 </div>
             </div>
-
-            <UpgradeToProModal
-                isOpen={isUpgradeModalOpen}
-                onClose={() => setIsUpgradeModalOpen(false)}
-                limitType="general"
-                defaultPlan={selectedPlanId}
-            />
         </div>
     );
 };

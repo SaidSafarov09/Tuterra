@@ -40,7 +40,7 @@ const plans = [
             'Планы обучения для групп',
             'Неограниченные планы обучения для учеников '
         ],
-        cta: 'Выбрать месяц',
+        cta: 'Подписка на месяц',
         primary: true,
         isPro: true,
         link: '/auth?plan=month',
@@ -61,7 +61,7 @@ const plans = [
             'Ранний доступ к новым фичам'
         ],
         status: 'Выгодный',
-        cta: 'Выбрать год',
+        cta: 'Подписка на год',
         primary: true,
         isPro: true,
         link: '/auth?plan=year',
