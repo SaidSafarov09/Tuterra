@@ -11,8 +11,20 @@ export const SubscriptionSettings: React.FC = () => {
     const { user } = useAuthStore();
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
-    const isPro = user?.isPro || user?.plan === 'pro' || false;
+    const checkIsPro = () => {
+        if (!user) return false;
+        const hasProFlag = user.isPro || user.plan === 'pro';
+        if (!hasProFlag) return false;
+
+        if (user.proExpiresAt) {
+            return new Date(user.proExpiresAt) > new Date();
+        }
+        return true;
+    };
+
+    const isPro = checkIsPro();
     const expiryDate = user?.proExpiresAt ? new Date(user.proExpiresAt) : null;
+    const isExpired = user?.proExpiresAt && new Date(user.proExpiresAt) < new Date();
 
     const proFeatures = [
         'Безлимитное количество учеников и групп',
@@ -35,11 +47,16 @@ export const SubscriptionSettings: React.FC = () => {
                                     <span>Tuterra PRO</span>
                                     <span className={styles.proBadge}>Активен</span>
                                 </>
+                            ) : isExpired ? (
+                                <>
+                                    <span>Tuterra PRO</span>
+                                    <span className={styles.proBadge} style={{ background: 'var(--error)', color: 'white' }}>Истекла</span>
+                                </>
                             ) : (
                                 <span>Бесплатная версия</span>
                             )}
                         </div>
-                        {isPro && expiryDate && (
+                        {((isPro && expiryDate) || (isExpired && expiryDate)) && (
                             <div className={styles.expiryDate}>
                                 <Calendar size={14} />
                                 Доступно до {format(expiryDate, 'd MMMM yyyy', { locale: ru })}

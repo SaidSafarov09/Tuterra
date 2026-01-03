@@ -85,17 +85,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
                 {!isMobile && (
                     <>
-                        {!(user?.isPro || user?.plan === 'pro') && (
-                            <div className={styles.proSection}>
-                                <Button
-                                    className={styles.proButton}
-                                    onClick={() => setIsUpgradeModalOpen(true)}
-                                    variant="outline"
-                                >
-                                    <span className={styles.proButtonText}>Разблокировать</span>PRO
-                                </Button>
-                            </div>
-                        )}
+                        {(() => {
+                            if (user?.role !== 'teacher') return null
+                            const isPro = user?.isPro || user?.plan === 'pro'
+                            const isExpired = user?.proExpiresAt && new Date(user.proExpiresAt) < new Date()
+                            const shouldShowUpgrade = !isPro || isExpired
+
+                            if (shouldShowUpgrade) {
+                                return (
+                                    <div className={styles.proSection}>
+                                        <Button
+                                            className={styles.proButton}
+                                            onClick={() => setIsUpgradeModalOpen(true)}
+                                            variant="outline"
+                                        >
+                                            <span className={styles.proButtonText}>Разблокировать</span>PRO
+                                        </Button>
+                                    </div>
+                                )
+                            }
+                            return null
+                        })()}
 
                         <div className={styles.supportSection}>
                             <a

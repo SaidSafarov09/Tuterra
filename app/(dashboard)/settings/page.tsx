@@ -137,6 +137,15 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
             setFormData(initialData)
             initialDataRef.current = initialData
             setHasOAuthProvider(data.hasOAuthProvider || false)
+
+            // Обновляем данные в сторе, чтобы другие компоненты (сайдбар, подписки) видели актуальный статус
+            setUser({
+                ...user!,
+                ...data,
+                isPro: data.isPro,
+                proActivatedAt: data.proActivatedAt,
+                proExpiresAt: data.proExpiresAt,
+            })
         } catch (error) {
             toast.error('Не удалось загрузить настройки')
         } finally {
@@ -277,7 +286,7 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
             </div>
 
             <div className={styles.tabs}>
-                {TABS.map((tab) => (
+                {TABS.filter(tab => !(user?.role === 'student' && tab.id === 'subscription')).map((tab) => (
                     <button
                         key={tab.id}
                         className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
@@ -457,7 +466,7 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                         )}
 
 
-                        {activeTab === 'subscription' && (
+                        {activeTab === 'subscription' && user?.role === 'teacher' && (
                             <div>
                                 <SubscriptionSettings />
                             </div>

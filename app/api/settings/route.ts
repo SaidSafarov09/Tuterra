@@ -93,6 +93,9 @@ export async function GET(request: NextRequest) {
                 telegramId: true,
                 onboardingCompleted: true,
                 referralCode: true,
+                isPro: true,
+                proActivatedAt: true,
+                proExpiresAt: true,
                 authProviders: {
                     select: {
                         provider: true,
@@ -130,6 +133,9 @@ export async function GET(request: NextRequest) {
                     telegramId: true,
                     onboardingCompleted: true,
                     referralCode: true,
+                    isPro: true,
+                    proActivatedAt: true,
+                    proExpiresAt: true,
                     authProviders: {
                         select: {
                             provider: true,
@@ -258,6 +264,9 @@ export async function PUT(request: NextRequest) {
                 timezone: true,
                 region: true,
                 notificationSettings: true,
+                isPro: true,
+                proActivatedAt: true,
+                proExpiresAt: true,
             },
         })
 

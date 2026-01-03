@@ -10,9 +10,22 @@ export function useCheckLimit() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [currentLimitType, setCurrentLimitType] = useState<LimitType>('students')
 
+    const checkProStatus = () => {
+        if (!user) return false
+        const isPro = user.plan === 'pro' || user.isPro
+        if (!isPro) return false
+
+        // Если есть дата истечения, проверяем её
+        if (user.proExpiresAt) {
+            return new Date(user.proExpiresAt) > new Date()
+        }
+
+        return true
+    }
+
     const checkLimit = (type: LimitType, currentCount: number): boolean => {
-        // If user is pro, no limit
-        if (user?.plan === 'pro') return true
+        // If user is pro and subscription not expired, no limit
+        if (checkProStatus()) return true
 
         const limit = FREE_LIMITS[type as keyof typeof FREE_LIMITS]
         // If we have reached or exceeded the limit
@@ -26,8 +39,8 @@ export function useCheckLimit() {
     }
 
     const checkFeature = (type: LimitType): boolean => {
-        // If user is pro, no limit
-        if (user?.plan === 'pro') return true
+        // If user is pro and subscription not expired, no limit
+        if (checkProStatus()) return true
 
         // If specific feature is hard blocked (limit 0)
         const limit = FREE_LIMITS[type as keyof typeof FREE_LIMITS]

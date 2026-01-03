@@ -241,6 +241,9 @@ interface UserSettings {
     role: 'teacher' | 'student'
     onboardingCompleted?: boolean
     plan?: 'free' | 'pro'
+    isPro?: boolean
+    proActivatedAt?: string | null
+    proExpiresAt?: string | null
 }
 
 export interface NotificationSettingsDTO {

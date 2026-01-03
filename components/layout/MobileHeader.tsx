@@ -33,14 +33,22 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ title, onBurgerClick
         <ProBadge />
       </div>
       <div className={styles.actions}>
-        {!(user?.isPro || user?.plan === 'pro') && (
-          <button
-            className={styles.proButton}
-            onClick={() => setIsUpgradeModalOpen(true)}
-          >
-            <span>PRO</span>
-          </button>
-        )}
+        {(() => {
+          if (user?.role !== 'teacher') return null
+          const isPro = user?.isPro || user?.plan === 'pro'
+          const isExpired = user?.proExpiresAt && new Date(user.proExpiresAt) < new Date()
+          if (!isPro || isExpired) {
+            return (
+              <button
+                className={styles.proButton}
+                onClick={() => setIsUpgradeModalOpen(true)}
+              >
+                <span>PRO</span>
+              </button>
+            )
+          }
+          return null
+        })()}
         <NotificationCenter />
         <UserMobileMenu />
       </div>
