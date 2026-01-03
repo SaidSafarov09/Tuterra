@@ -7,11 +7,30 @@ export const yookassa = new YooCheckout({
 });
 
 export const SUBSCRIPTION_CONFIG = {
-    price: 1, // 490 рублей
     currency: 'RUB',
     description: 'Подписка Tuterra PRO',
-    durationDays: 30, // 30 дней подписки
 } as const;
+
+export const PLANS = {
+    month: {
+        id: 'month',
+        price: 490,
+        days: 30,
+        label: 'Ежемесячно',
+        description: '490 ₽ в месяц'
+    },
+    year: {
+        id: 'year',
+        price: 3990,
+        days: 365,
+        label: 'Ежегодно',
+        description: 'Всего 332 ₽ в месяц',
+        savings: '32%',
+        oldPrice: 5880
+    }
+} as const;
+
+export type PlanType = keyof typeof PLANS;
 
 // Типы для платежей
 export interface CreatePaymentParams {
@@ -19,11 +38,13 @@ export interface CreatePaymentParams {
     amount: number;
     description: string;
     returnUrl: string;
+    planId: PlanType;
 }
 
 export interface PaymentMetadata {
     userId: string;
     type: 'subscription';
+    planId: PlanType;
 }
 
 /**
@@ -34,6 +55,7 @@ export async function createPayment({
     amount,
     description,
     returnUrl,
+    planId,
 }: CreatePaymentParams) {
     try {
         const payment = await yookassa.createPayment({
@@ -50,6 +72,7 @@ export async function createPayment({
             metadata: {
                 userId,
                 type: 'subscription',
+                planId,
             } as PaymentMetadata,
         });
 

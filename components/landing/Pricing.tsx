@@ -10,33 +10,59 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 const plans = [
     {
+        id: 'free',
         name: 'Базовый',
         price: '0',
-        description: 'Идеален для частных преподавателей с небольшой нагрузкой, которые хотят уйти от хаоса и таблиц.',
+        description: 'Идеален для частных преподавателей с небольшой нагрузкой, которые хотят уйти от хаоса.',
         features: [
-            'До 5 активных учеников',
-            'Расписание занятий без накладок',
+            'До 3-х активных учеников',
+            '1 рабочая группа',
+            '1 предмет обучения',
             'Учет оплат и задолженностей',
-            'Работа с телефона и компьютера',
-            'История занятий и тем'
+            'Работа с любого устройства'
         ],
         cta: 'Попробовать бесплатно',
-        primary: false
+        primary: false,
+        link: '/auth',
+        period: 'месяц'
     },
     {
-        name: 'Профи',
+        id: 'pro_month',
+        name: 'PRO Месяц',
         price: '490',
-        description: 'Для тех, кто зарабатывает на преподавании и хочет полный контроль над временем и доходом.',
+        description: 'Для тех, кто хочет полный контроль над временем и доходом без лишних лимитов.',
         features: [
-            'Неограниченное количество учеников',
-            'Групповые и индивидуальные занятия',
+            'Безлимитно учеников и групп',
+            'Безлимитно предметов',
             'Подробная аналитика доходов',
             'Автоматический контроль оплат',
-            'Отчеты и заметки по каждому ученику',
+            'Планы обучения для групп',
             'Приоритетная поддержка'
         ],
-        cta: 'Перейти на Профи',
-        primary: true
+        cta: 'Выбрать месяц',
+        primary: true,
+        link: '/auth?plan=month',
+        period: 'месяц'
+    },
+    {
+        id: 'pro_year',
+        name: 'PRO Год',
+        price: '3 990',
+        oldPrice: '5 880',
+        savings: 'Выгода 32%',
+        description: 'Максимальная выгода для профессионалов. По цене всего 332 ₽ в месяц.',
+        features: [
+            'Всё, что есть в PRO',
+            'Экономия 1 890 ₽ в год',
+            'Фиксация цены на 12 месяцев',
+            'Приоритетная поддержка',
+            'Ранний доступ к новым фичам'
+        ],
+        status: 'Выгодный',
+        cta: 'Выбрать год',
+        primary: false,
+        link: '/auth?plan=year',
+        period: 'год'
     }
 ]
 
@@ -76,17 +102,25 @@ export const Pricing = () => {
                             })}
                             className={`${styles.plan} ${plan.primary ? styles.primary : ''}`}
                         >
-                            {plan.primary && (
+                            {plan.status && (
                                 <div className={styles.recommended}>
-                                    <Sparkles size={14} /> ВЫБОР ОПЫТНЫХ ПРЕПОДАВАТЕЛЕЙ
+                                    <Sparkles size={14} /> {plan.status}
                                 </div>
                             )}
 
                             <h3 className={styles.planName}>{plan.name}</h3>
 
                             <div className={styles.priceBox}>
-                                <span className={styles.price}>{plan.price} ₽</span>
-                                <span className={styles.period}>/ месяц</span>
+                                <div className={styles.mainPrice}>
+                                    <span className={styles.price}>{plan.price} ₽</span>
+                                    <span className={styles.period}>/ {plan.period}</span>
+                                </div>
+                                {plan.oldPrice && (
+                                    <div className={styles.savingsRow}>
+                                        <span className={styles.oldPrice}>{plan.oldPrice} ₽</span>
+                                        <span className={styles.savingsBadge}>{plan.savings}</span>
+                                    </div>
+                                )}
                             </div>
 
                             <p className={styles.planDesc}>{plan.description}</p>
@@ -102,11 +136,20 @@ export const Pricing = () => {
                                 ))}
                             </div>
 
-                            <Link href="/auth" style={{ textDecoration: 'none' }}>
+                            <Link
+                                href={plan.link}
+                                style={{ textDecoration: 'none' }}
+                            >
                                 <Button
-                                    variant={plan.primary ? 'primary' : 'ghost'}
+                                    variant={plan.primary ? 'primary' : 'outline'}
                                     fullWidth
                                     className={`${styles.cta} ${plan.primary ? styles.ctaPrimary : styles.ctaGhost}`}
+                                    onClick={() => {
+                                        if (plan.id !== 'free') {
+                                            const planToSave = plan.id === 'pro_month' ? 'month' : 'year'
+                                            localStorage.setItem('selectedPlan', planToSave)
+                                        }
+                                    }}
                                 >
                                     {plan.cta}
                                 </Button>

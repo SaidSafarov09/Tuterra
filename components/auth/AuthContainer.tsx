@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
 import { PhoneStep } from './PhoneStep'
 import { CodeStep } from './CodeStep'
+import { useSearchParams } from 'next/navigation'
 import styles from './Auth.module.scss'
 
 export function AuthContainer() {
+    const searchParams = useSearchParams()
+    const plan = searchParams.get('plan')
     const [step, setStep] = useState<'identifier' | 'code'>('identifier')
     const [sessionId, setSessionId] = useState('')
     const [email, setEmail] = useState('')
@@ -34,6 +37,7 @@ export function AuthContainer() {
                         email={email}
                         role={role}
                         referralCode={referralCode}
+                        plan={plan}
                         onBack={handleBack}
                     />
                 )}

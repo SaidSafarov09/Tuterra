@@ -13,8 +13,6 @@ async function checkProUsers() {
         }
     });
 
-    console.log('--- PRO Users in DB ---');
-    console.log(JSON.stringify(proUsers, null, 2));
     process.exit(0);
 }
 

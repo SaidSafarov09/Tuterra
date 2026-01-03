@@ -10,10 +10,11 @@ interface CodeStepProps {
     email: string
     role: 'teacher' | 'student'
     referralCode?: string | null
+    plan?: string | null
     onBack: () => void
 }
 
-export function CodeStep({ sessionId, email, role, referralCode, onBack }: CodeStepProps) {
+export function CodeStep({ sessionId, email, role, referralCode, plan, onBack }: CodeStepProps) {
     const [code, setCode] = useState(['', '', '', '', '', ''])
     const [isLoading, setIsLoading] = useState(false)
     const [canResend, setCanResend] = useState(false)
@@ -112,7 +113,8 @@ export function CodeStep({ sessionId, email, role, referralCode, onBack }: CodeS
             if (data.user.role === 'student') {
                 window.location.href = '/student/dashboard'
             } else {
-                window.location.href = '/dashboard'
+                const redirectUrl = plan ? `/dashboard?plan=${plan}` : '/dashboard'
+                window.location.href = redirectUrl
             }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')

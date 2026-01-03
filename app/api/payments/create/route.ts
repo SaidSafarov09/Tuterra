@@ -15,6 +15,12 @@ export async function POST(req: NextRequest) {
         }
 
         const userId = payload.userId as string;
+        const body = await req.json().catch(() => ({}));
+        const planId = (body.planId === 'year' ? 'year' : 'month') as 'month' | 'year';
+
+        // Импортируем PLANS из yookassa
+        const { PLANS, SUBSCRIPTION_CONFIG } = require('@/lib/yookassa');
+        const plan = PLANS[planId];
 
         // Проверяем, не является ли пользователь уже PRO
         const user = await prisma.user.findUnique({
@@ -30,7 +36,8 @@ export async function POST(req: NextRequest) {
         }
 
         // Если пользователь уже PRO и подписка не истекла
-        if (user.isPro && user.proExpiresAt && user.proExpiresAt > new Date()) {
+        const userData = user as any;
+        if (userData?.isPro && userData?.proExpiresAt && new Date(userData.proExpiresAt) > new Date()) {
             return NextResponse.json(
                 { error: 'You already have an active PRO subscription' },
                 { status: 400 }
@@ -42,9 +49,10 @@ export async function POST(req: NextRequest) {
 
         const payment = await createPayment({
             userId,
-            amount: SUBSCRIPTION_CONFIG.price,
-            description: SUBSCRIPTION_CONFIG.description,
+            amount: plan.price,
+            description: `${SUBSCRIPTION_CONFIG.description} (${plan.label})`,
             returnUrl,
+            planId,
         });
 
         // Возвращаем URL для редиректа

@@ -35,6 +35,13 @@ export const SubscriptionSettings: React.FC = () => {
         'Отсутствие любых лимитов платформы'
     ];
 
+    const [selectedPlanId, setSelectedPlanId] = useState<'month' | 'year'>('year');
+
+    const PLANS = [
+        { id: 'month', label: 'Месяц', price: '490 ₽', note: 'Базовый тариф', savings: null },
+        { id: 'year', label: 'Год', price: '3 990 ₽', note: 'Выгодный тариф', savings: 'Выгода 32%' }
+    ];
+
     return (
         <div className={styles.container}>
             <div className={styles.card}>
@@ -47,19 +54,17 @@ export const SubscriptionSettings: React.FC = () => {
                                     <span>Tuterra PRO</span>
                                     <span className={styles.proBadge}>Активен</span>
                                 </>
-                            ) : isExpired ? (
-                                <>
-                                    <span>Tuterra PRO</span>
-                                    <span className={styles.proBadge} style={{ background: 'var(--error)', color: 'white' }}>Истекла</span>
-                                </>
                             ) : (
-                                <span>Бесплатная версия</span>
+                                <>
+                                    <span>Бесплатная версия</span>
+                                    {isExpired && <span className={styles.proBadge} style={{ background: 'var(--error)', color: 'white' }}>Истекла</span>}
+                                </>
                             )}
                         </div>
-                        {((isPro && expiryDate) || (isExpired && expiryDate)) && (
+                        {expiryDate && (
                             <div className={styles.expiryDate}>
                                 <Calendar size={14} />
-                                Доступно до {format(expiryDate, 'd MMMM yyyy', { locale: ru })}
+                                {isPro ? 'Доступно до' : 'Истекла'} {format(expiryDate, 'd MMMM yyyy', { locale: ru })}
                             </div>
                         )}
                     </div>
@@ -69,16 +74,25 @@ export const SubscriptionSettings: React.FC = () => {
                     {!isPro ? (
                         <div className={styles.freeInfo}>
                             <div>
-                                <h3 className={styles.freeTitle}>Используйте все возможности Tuterra</h3>
+                                <h3 className={styles.freeTitle}>Выберите подходящий тариф PRO</h3>
                                 <p className={styles.freeDescription}>
-                                    На бесплатном тарифе вы ограничены в количестве учеников и функционале.
-                                    Перейдите на PRO, чтобы масштабировать свою деятельность.
+                                    Перейдите на PRO, чтобы убрать лимиты и получить доступ к полной аналитике и автоматизации.
                                 </p>
                             </div>
 
-                            <div className={styles.pricing}>
-                                <span className={styles.price}>490 ₽</span>
-                                <span className={styles.period}>/ месяц</span>
+                            <div className={styles.plansSwitcher}>
+                                {PLANS.map(plan => (
+                                    <div
+                                        key={plan.id}
+                                        className={`${styles.planOption} ${selectedPlanId === plan.id ? styles.activePlan : ''}`}
+                                        onClick={() => setSelectedPlanId(plan.id as 'month' | 'year')}
+                                    >
+                                        {plan.savings && <div className={styles.savingsLabel}>{plan.savings}</div>}
+                                        <div className={styles.planOptionLabel}>{plan.label}</div>
+                                        <div className={styles.planOptionPrice}>{plan.price}</div>
+                                        <div className={styles.planOptionNote}>{plan.note}</div>
+                                    </div>
+                                ))}
                             </div>
 
                             <ul className={styles.featureList}>
@@ -96,7 +110,7 @@ export const SubscriptionSettings: React.FC = () => {
                                 onClick={() => setIsUpgradeModalOpen(true)}
                                 fullWidth
                             >
-                                Обновиться до PRO
+                                {selectedPlanId === 'year' ? 'Оформить годовую подписку' : 'Оформить подписку на месяц'}
                                 <ArrowRight size={20} style={{ marginLeft: '12px' }} />
                             </Button>
                         </div>
@@ -124,6 +138,7 @@ export const SubscriptionSettings: React.FC = () => {
                 isOpen={isUpgradeModalOpen}
                 onClose={() => setIsUpgradeModalOpen(false)}
                 limitType="general"
+                defaultPlan={selectedPlanId}
             />
         </div>
     );

@@ -98,6 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                                             className={styles.proButton}
                                             onClick={() => setIsUpgradeModalOpen(true)}
                                             variant="outline"
+                                            fullWidth
                                         >
                                             <span className={styles.proButtonText}>Разблокировать</span>PRO
                                         </Button>

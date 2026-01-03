@@ -1,8 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { UpgradeToProModal } from '@/components/pro/UpgradeToProModal'
 import {
     UsersGroupIcon,
     MoneyIcon,
@@ -42,6 +43,8 @@ function DashboardContent() {
     const [isConnectionModalOpen, setIsConnectionModalOpen] = React.useState(false)
     const [isRequestsModalOpen, setIsRequestsModalOpen] = React.useState(false)
     const [isPaymentSuccessModalOpen, setIsPaymentSuccessModalOpen] = React.useState(false)
+    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false)
+    const [selectedPlan, setSelectedPlan] = React.useState<'month' | 'year'>('year')
 
     const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
         try {
@@ -63,12 +66,12 @@ function DashboardContent() {
             setIsLoading(false)
         }
     }
-
-    // Проверяем параметр payment=success при загрузке
     React.useEffect(() => {
         const paymentStatus = searchParams.get('payment')
+        const planParam = searchParams.get('plan')
+
+
         if (paymentStatus === 'success') {
-            // Обновляем данные пользователя
             fetch('/api/auth/me')
                 .then(res => res.json())
                 .then(data => {
@@ -80,8 +83,31 @@ function DashboardContent() {
                     }
                 })
                 .catch(err => console.error('Failed to update user:', err))
+        } else if (user) {
+            const userData = user as any;
+            // Строгий запрет для учеников и тех, кто уже PRO
+            if (userData?.role === 'student' || userData?.isPro) {
+                return
+            }
+
+            const savedPlan = localStorage.getItem('selectedPlan')
+            const finalPlan = (planParam === 'month' || planParam === 'year') ? planParam : savedPlan
+
+
+            if (finalPlan === 'month' || finalPlan === 'year') {
+                setSelectedPlan(finalPlan as 'month' | 'year')
+                setIsUpgradeModalOpen(true)
+
+                // Cleanup
+                localStorage.removeItem('selectedPlan')
+                if (planParam) {
+                    const url = new URL(window.location.href)
+                    url.searchParams.delete('plan')
+                    window.history.replaceState({}, '', url.pathname + url.search)
+                }
+            }
         }
-    }, [searchParams, setUser])
+    }, [searchParams, setUser, user])
 
     React.useEffect(() => {
         const fetchStats = async () => {
@@ -353,6 +379,15 @@ function DashboardContent() {
                 onClose={() => setIsPaymentSuccessModalOpen(false)}
                 proExpiresAt={user?.proExpiresAt ? new Date(user.proExpiresAt) : null}
             />
+
+            {!isStudent && (
+                <UpgradeToProModal
+                    isOpen={isUpgradeModalOpen}
+                    onClose={() => setIsUpgradeModalOpen(false)}
+                    limitType="general"
+                    defaultPlan={selectedPlan}
+                />
+            )}
         </div>
     )
 }

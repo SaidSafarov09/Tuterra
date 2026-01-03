@@ -152,6 +152,9 @@ export async function POST(request: NextRequest) {
                     birthDate: user.birthDate,
                     region: user.region,
                     plan: (user as any).plan,
+                    isPro: user.isPro,
+                    proActivatedAt: user.proActivatedAt,
+                    proExpiresAt: user.proExpiresAt,
                 },
             })
         }
@@ -271,6 +274,9 @@ export async function POST(request: NextRequest) {
                 role: user.role,
                 birthDate: user.birthDate,
                 region: user.region,
+                isPro: user.isPro,
+                proActivatedAt: user.proActivatedAt,
+                proExpiresAt: user.proExpiresAt,
             },
         })
     } catch (error) {

@@ -2,23 +2,34 @@
 
 import { AuthContainer } from '@/components/auth/AuthContainer'
 import { useAuthStore } from '@/store/auth'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, Suspense } from 'react'
 
-export default function AuthPage() {
-    const { isAuthenticated } = useAuthStore()
+function AuthContent() {
+    const { isAuthenticated, user } = useAuthStore()
     const router = useRouter()
+    const searchParams = useSearchParams()
 
     useEffect(() => {
-
         if (isAuthenticated) {
-            router.push('/dashboard')
+            const plan = searchParams.get('plan')
+            const target = user?.role === 'student' ? '/student/dashboard' : '/dashboard'
+            const redirectUrl = plan ? `${target}?plan=${plan}` : target
+            router.push(redirectUrl)
         }
-    }, [isAuthenticated, router])
+    }, [isAuthenticated, router, searchParams, user])
 
     if (isAuthenticated) {
         return null
     }
 
     return <AuthContainer />
+}
+
+export default function AuthPage() {
+    return (
+        <Suspense fallback={null}>
+            <AuthContent />
+        </Suspense>
+    )
 }

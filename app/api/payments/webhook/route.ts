@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { SUBSCRIPTION_CONFIG } from '@/lib/yookassa';
-import { PaymentMetadata } from '@/lib/yookassa';
+import { SUBSCRIPTION_CONFIG, PLANS, PaymentMetadata } from '@/lib/yookassa';
 
 // Временное хранилище логов для отладки (в памяти)
 let webhookLogs: any[] = [];
@@ -53,18 +52,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ received: true });
         }
 
-        // Обновляем до PRO
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + (SUBSCRIPTION_CONFIG.durationDays || 30));
+        // Обновляем подписку пользователя
+        const planId = (metadata.planId as 'month' | 'year') || 'month'; // Извлекаем planId из метаданных
+        const planConfig = PLANS[planId];
+        const durationDays = planConfig ? planConfig.days : 30; // Используем durationDays из плана или 30 по умолчанию
 
         await prisma.user.update({
             where: { id: userId },
             data: {
                 isPro: true,
                 proActivatedAt: new Date(),
-                proExpiresAt: expiresAt,
+                proExpiresAt: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000), // Вычисляем дату окончания
                 lastPaymentId: paymentId,
-                plan: 'pro',
+                plan: 'pro', // Обновляем поле plan на 'pro'
             },
         });
 

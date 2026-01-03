@@ -7,11 +7,13 @@ import { Crown, Users, BookOpen, BarChart3, Calendar, Zap, CheckCircle2 } from '
 import styles from './UpgradeToProModal.module.scss'
 import { LimitType, LIMIT_MESSAGES } from '@/lib/limits'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/store/auth'
 
 interface UpgradeToProModalProps {
     isOpen: boolean
     onClose: () => void
     limitType: LimitType
+    defaultPlan?: 'month' | 'year'
 }
 
 const PRO_FEATURES = [
@@ -23,13 +25,47 @@ const PRO_FEATURES = [
     { icon: CheckCircle2, text: 'Приоритетная поддержка' }
 ]
 
+const PLANS = {
+    month: {
+        id: 'month',
+        price: 490,
+        oldPrice: null,
+        savings: null,
+        label: 'Месяц',
+        note: 'Оплата раз в месяц'
+    },
+    year: {
+        id: 'year',
+        price: 3990,
+        oldPrice: 5880,
+        savings: 'Выгода 32%',
+        label: 'Год',
+        note: '332 ₽ / мес'
+    }
+}
+
 export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
     isOpen,
     onClose,
-    limitType
+    limitType,
+    defaultPlan = 'year'
 }) => {
+    const { user } = useAuthStore()
     const message = LIMIT_MESSAGES[limitType]
     const [isLoading, setIsLoading] = useState(false)
+    const [selectedPlan, setSelectedPlan] = useState<'month' | 'year'>(defaultPlan)
+
+    // Sync state with props when modal opens or prop changes
+    React.useEffect(() => {
+        if (isOpen) {
+            setSelectedPlan(defaultPlan)
+        }
+    }, [isOpen, defaultPlan])
+
+    // Строжайшая проверка: ученикам запрещено видеть это окно
+    if (user?.role !== 'teacher') {
+        return null
+    }
 
     const handleUpgrade = async () => {
         try {
@@ -40,6 +76,9 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({
+                    planId: selectedPlan
+                })
             })
 
             if (!response.ok) {
@@ -50,7 +89,6 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             const data = await response.json()
 
             if (data.confirmationUrl) {
-                // Редиректим на страницу оплаты ЮKassa
                 window.location.href = data.confirmationUrl
             } else {
                 throw new Error('No confirmation URL received')
@@ -82,6 +120,28 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 </div>
 
                 <div className={styles.content}>
+                    <div className={styles.plans}>
+                        {(Object.values(PLANS)).map((plan) => (
+                            <div
+                                key={plan.id}
+                                className={`${styles.planCard} ${selectedPlan === plan.id ? styles.planCardActive : ''}`}
+                                onClick={() => setSelectedPlan(plan.id as 'month' | 'year')}
+                            >
+                                {plan.savings && <div className={styles.savingsBadge}>{plan.savings}</div>}
+                                <div className={styles.planLabel}>{plan.id === 'year' ? 'Выгодный' : 'Базовый'}</div>
+                                <div className={styles.planPeriod}>{plan.label}</div>
+                                <div className={styles.planPrice}>
+                                    <span className={styles.amount}>{plan.price} ₽</span>
+                                    {plan.oldPrice && <span className={styles.oldPrice}>{plan.oldPrice} ₽</span>}
+                                </div>
+                                <div className={styles.planNote}>{plan.note}</div>
+                                <div className={styles.radio}>
+                                    <div className={`${styles.radioCircle} ${selectedPlan === plan.id ? styles.radioCircleActive : ''}`} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
                     <div className={styles.features}>
                         {PRO_FEATURES.map((feature, index) => (
                             <div key={index} className={styles.feature}>
@@ -91,17 +151,6 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                                 <span className={styles.featureText}>{feature.text}</span>
                             </div>
                         ))}
-                    </div>
-
-                    <div className={styles.pricing}>
-                        <div className={styles.priceTag}>
-                            <div className={styles.priceAmount}>
-                                <span className={styles.currency}>₽</span>
-                                <span className={styles.price}>490</span>
-                                <span className={styles.period}>/мес</span>
-                            </div>
-                            <p className={styles.priceNote}>30 дней подписки</p>
-                        </div>
                     </div>
                 </div>
 
@@ -113,8 +162,8 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                         size="large"
                         disabled={isLoading}
                     >
-                        <Crown size={20} />
-                        {isLoading ? 'Загрузка...' : 'Перейти к оплате'}
+                        <Zap size={20} fill="currentColor" />
+                        {isLoading ? 'Загрузка...' : `Оплатить ${PLANS[selectedPlan].price} ₽`}
                     </Button>
                     <button onClick={onClose} className={styles.closeButton} disabled={isLoading}>
                         Может быть позже

@@ -15,7 +15,12 @@ export async function middleware(request: NextRequest) {
         const payload = token ? await verifyToken(token) : null
 
         if (payload) {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
+            const target = payload?.role === 'student' ? '/student/dashboard' : '/dashboard'
+            const url = new URL(target, request.url)
+            request.nextUrl.searchParams.forEach((value, key) => {
+                url.searchParams.set(key, value)
+            })
+            return NextResponse.redirect(url)
         }
         return NextResponse.next()
     }
@@ -37,7 +42,11 @@ export async function middleware(request: NextRequest) {
 
         // Redirect from public paths to specific dashboard, except for /admin which has its own auth
         if ((isPublicPath || pathname === '/') && !pathname.startsWith('/admin')) {
-            return NextResponse.redirect(new URL(targetDashboard, request.url))
+            const url = new URL(targetDashboard, request.url)
+            request.nextUrl.searchParams.forEach((value, key) => {
+                url.searchParams.set(key, value)
+            })
+            return NextResponse.redirect(url)
         }
 
         // Cross-role protection
@@ -45,10 +54,18 @@ export async function middleware(request: NextRequest) {
         const isTeacherPath = pathname.startsWith('/dashboard') || pathname === '/dashboard'
 
         if (payload?.role === 'student' && isTeacherPath) {
-            return NextResponse.redirect(new URL('/student/dashboard', request.url))
+            const url = new URL('/student/dashboard', request.url)
+            request.nextUrl.searchParams.forEach((value, key) => {
+                url.searchParams.set(key, value)
+            })
+            return NextResponse.redirect(url)
         }
         if (payload?.role === 'teacher' && isStudentPath) {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
+            const url = new URL('/dashboard', request.url)
+            request.nextUrl.searchParams.forEach((value, key) => {
+                url.searchParams.set(key, value)
+            })
+            return NextResponse.redirect(url)
         }
     }
 

@@ -285,7 +285,7 @@
     background: linear-gradient(135deg, #4a6cf7 0%, #00d2ff 100%);
     color: white !important;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700 !important;
     text-decoration: none;
     transition: all 0.2s ease;
     cursor: pointer;
@@ -302,9 +302,6 @@
         transform: translateY(0);
     }
 
-    .navIcon {
-        color: #fbbf24;
-    }
 
     @media (min-width: 769px) and (max-width: 1080px) {
         justify-content: center;
