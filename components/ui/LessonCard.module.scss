@@ -7,6 +7,10 @@
     transition: all 0.2s ease;
     text-decoration: none;
 
+    @media (max-width: 768px) {
+        padding: 14px;
+    }
+
     &:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
@@ -14,6 +18,10 @@
 
     &.compact {
         padding: 16px;
+
+        @media (max-width: 768px) {
+            padding: 12px;
+        }
     }
 
     &.canceled {
@@ -235,4 +243,8 @@
     justify-content: flex-end;
     position: relative;
     overflow: visible;
+
+    @media (max-width: 768px) {
+        padding: 12px;
+    }
 }

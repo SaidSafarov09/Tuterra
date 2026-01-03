@@ -8,6 +8,10 @@
     align-items: center;
     width: 100%;
     box-shadow: var(--shadow-sm);
+
+    @media (max-width: 768px) {
+        padding: 14px;
+    }
 }
 
 .bar {
