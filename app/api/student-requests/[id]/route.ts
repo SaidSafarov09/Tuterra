@@ -35,6 +35,28 @@ export async function PATCH(
 
         if (status === 'approved') {
             if (lr.type === 'reschedule' && lr.newDate) {
+                const { checkLessonOverlap, formatConflictMessage } = await import('@/lib/lessonValidation')
+
+                // Get teacher's timezone for conflict message
+                const teacher = await prisma.user.findUnique({
+                    where: { id: lr.lesson.ownerId },
+                    select: { timezone: true }
+                })
+                const timezone = teacher?.timezone || 'Europe/Moscow'
+
+                const conflict = await checkLessonOverlap(
+                    lr.lesson.ownerId,
+                    new Date(lr.newDate),
+                    lr.lesson.duration,
+                    lr.lessonId // Exclude current lesson from check
+                )
+
+                if (conflict) {
+                    return NextResponse.json({
+                        error: formatConflictMessage(conflict, undefined, timezone)
+                    }, { status: 400 })
+                }
+
                 await prisma.lesson.update({
                     where: { id: lr.lessonId },
                     data: { date: lr.newDate }

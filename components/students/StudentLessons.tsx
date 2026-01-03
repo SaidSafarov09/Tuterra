@@ -39,6 +39,15 @@ export function StudentLessons({
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
 
+    // Sync tab with URL
+    React.useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const tab = searchParams.get('tab') as LessonFilter;
+        if (tab && ["upcoming", "past", "unpaid", "canceled"].includes(tab)) {
+            setActiveTab(tab);
+        }
+    }, []);
+
     const filteredLessons = useMemo(() => {
         let filtered = [];
 
@@ -95,7 +104,12 @@ export function StudentLessons({
             <TabNav
                 tabs={LESSON_TABS}
                 activeTab={activeTab}
-                onTabChange={(tab) => setActiveTab(tab as LessonFilter)}
+                onTabChange={(tab) => {
+                    setActiveTab(tab as LessonFilter);
+                    const params = new URLSearchParams(window.location.search);
+                    params.set('tab', tab);
+                    router.push(`${window.location.pathname}?${params.toString()}`, { scroll: false });
+                }}
             />
 
             {lessons.length === 0 ? (

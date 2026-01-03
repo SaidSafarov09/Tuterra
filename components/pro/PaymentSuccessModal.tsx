@@ -72,7 +72,7 @@ export const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
                             </li>
                             <li>
                                 <CheckCircle2 size={18} />
-                                <span>Приоритетная поддержка</span>
+                                <span>Неограниченные планы обучения для учеников </span>
                             </li>
                         </ul>
                     </div>

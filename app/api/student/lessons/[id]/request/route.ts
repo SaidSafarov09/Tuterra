@@ -58,6 +58,31 @@ export async function POST(
             return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
         }
 
+        if (type === 'reschedule' && newDate) {
+            const { checkLessonOverlap, formatConflictMessage } = await import('@/lib/lessonValidation')
+
+            // Get teacher's timezone for the conflict message
+            const teacher = await prisma.user.findUnique({
+                where: { id: lesson.ownerId },
+                select: { timezone: true }
+            })
+            const timezone = teacher?.timezone || 'Europe/Moscow'
+
+            const conflict = await checkLessonOverlap(
+                lesson.ownerId,
+                new Date(newDate),
+                lesson.duration,
+                lessonId // Exclude current lesson from check
+            )
+
+            if (conflict) {
+                return NextResponse.json({
+                    success: false,
+                    error: formatConflictMessage(conflict, undefined, timezone, true)
+                }, { status: 400 })
+            }
+        }
+
         // Create the request
         const lessonRequest = await (prisma as any).lessonRequest.create({
             data: {

@@ -22,7 +22,7 @@ const PRO_FEATURES = [
     { icon: Calendar, text: 'Планы обучения для всех учеников и групп' },
     { icon: BarChart3, text: 'Расширенная аналитика доходов' },
     { icon: Zap, text: 'Автоматизация напоминаний' },
-    { icon: CheckCircle2, text: 'Приоритетная поддержка' }
+    { icon: CheckCircle2, text: 'Неограниченные планы обучения для учеников ' }
 ]
 
 const PLANS = {

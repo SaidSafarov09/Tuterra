@@ -18,10 +18,19 @@ export const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
     const [selectedHour, setSelectedHour] = useState(currentDate.getHours())
     const [selectedMinute, setSelectedMinute] = useState(currentDate.getMinutes())
 
+    // Sync state with value prop when it changes (e.g. when modal reopens)
+    React.useEffect(() => {
+        if (value) {
+            setSelectedHour(value.getHours())
+            setSelectedMinute(value.getMinutes())
+            setViewDate(new Date(value.getFullYear(), value.getMonth(), 1))
+        }
+    }, [value])
+
     const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate()
     const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay()
 
-    
+
     const startingDayIndex = (firstDayOfMonth + 6) % 7
 
     const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -55,12 +64,12 @@ export const CustomDateTimePicker: React.FC<CustomDateTimePickerProps> = ({
         const days = []
         const today = new Date()
 
-        
+
         for (let i = 0; i < startingDayIndex; i++) {
             days.push(<div key={`empty-${i}`} className={styles.emptyDay} />)
         }
 
-        
+
         for (let day = 1; day <= daysInMonth; day++) {
             const isSelected = value &&
                 value.getDate() === day &&

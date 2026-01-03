@@ -32,13 +32,20 @@ export async function checkLessonOverlap(
     })
 
     const conflict = candidates.find((lesson) => {
-        const lessonStart = new Date(lesson.date)
-        const lessonEnd = addMinutes(lessonStart, lesson.duration)
+        // Принудительно сбрасываем секунды и миллисекунды для всех сравнений
+        const lStart = new Date(lesson.date)
+        lStart.setSeconds(0, 0)
+        const lStartMs = lStart.getTime()
+        const lEndMs = lStartMs + (lesson.duration * 60 * 1000)
 
-        // Уроки пересекаются только если есть реальное наложение (не просто касание границ)
-        // Если один урок заканчивается ровно когда другой начинается - это НЕ конфликт
-        return lessonStart < endTime && lessonEnd > startTime &&
-            !(lessonEnd.getTime() === startTime.getTime() || lessonStart.getTime() === endTime.getTime())
+        const sTime = new Date(date)
+        sTime.setSeconds(0, 0)
+        const sTimeMs = sTime.getTime()
+        const eTimeMs = sTimeMs + (duration * 60 * 1000)
+
+        // Уроки пересекаются только если интервалы накладываются друг на друга.
+        // Строгие неравенства позволяют урокам идти "встык" (например, 19:00-20:00 и 20:00-21:00).
+        return lStartMs < eTimeMs && lEndMs > sTimeMs
     })
 
     return conflict
@@ -54,7 +61,7 @@ export async function checkRecurringConflicts(
 
     const sortedDates = [...dates].sort((a, b) => a.getTime() - b.getTime())
     const startRange = addMinutes(sortedDates[0], -24 * 60)
-    const endRange = addMinutes(sortedDates[sortedDates.length - 1], duration)
+    const endRange = addMinutes(sortedDates[sortedDates.length - 1], duration + 24 * 60)
 
     const existingLessons = await prisma.lesson.findMany({
         where: {
@@ -70,14 +77,18 @@ export async function checkRecurringConflicts(
     })
 
     for (const date of dates) {
-        const newStart = date
-        const newEnd = addMinutes(date, duration)
+        const sTime = new Date(date)
+        sTime.setSeconds(0, 0)
+        const sTimeMs = sTime.getTime()
+        const eTimeMs = sTimeMs + (duration * 60 * 1000)
 
         const conflict = existingLessons.find(l => {
             const lStart = new Date(l.date)
-            const lEnd = addMinutes(lStart, l.duration)
-            return lStart < newEnd && lEnd > newStart &&
-                !(lEnd.getTime() === newStart.getTime() || lStart.getTime() === newEnd.getTime())
+            lStart.setSeconds(0, 0)
+            const lStartMs = lStart.getTime()
+            const lEndMs = lStartMs + (l.duration * 60 * 1000)
+
+            return lStartMs < eTimeMs && lEndMs > sTimeMs
         })
 
         if (conflict) return conflict
@@ -85,7 +96,12 @@ export async function checkRecurringConflicts(
     return null
 }
 
-export function formatConflictMessage(conflict: any, newStudentId?: string, timezone: string = 'Europe/Moscow') {
+export function formatConflictMessage(
+    conflict: any,
+    newStudentId?: string,
+    timezone: string = 'Europe/Moscow',
+    isStudentView: boolean = false
+) {
     const startTime = new Date(conflict.date)
     const endTime = addMinutes(startTime, conflict.duration)
     const subjectName = conflict.subject?.name || 'Без предмета'
@@ -101,6 +117,10 @@ export function formatConflictMessage(conflict: any, newStudentId?: string, time
         timeZone: timezone
     })
     const timeRange = `${timeFormatter.format(startTime)} - ${timeFormatter.format(endTime)}`
+
+    if (isStudentView) {
+        return `В это время у преподавателя уже есть урок (${dateStr} с ${timeRange})`
+    }
 
     if (newStudentId && conflict.studentId === newStudentId) {
         return `Ученик уже занят ${dateStr} с ${timeRange} (${subjectName})`

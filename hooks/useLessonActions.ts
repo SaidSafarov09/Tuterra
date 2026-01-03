@@ -116,13 +116,16 @@ export function useLessonActions(onUpdate?: () => void, isStudent = false) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'reschedule', newDate: newDate.toISOString() })
                 })
-                if (!response.ok) throw new Error()
+                if (!response.ok) {
+                    const data = await response.json()
+                    throw new Error(data.error || 'Не удалось отправить запрос')
+                }
                 toast.success('Запрос на перенос отправлен преподавателю')
                 setIsRescheduleModalOpen(false)
                 setReschedulingLesson(null)
                 onUpdate?.()
-            } catch (error) {
-                toast.error('Не удалось отправить запрос')
+            } catch (error: any) {
+                toast.error(error.message || 'Не удалось отправить запрос')
             } finally {
                 setIsLoading(false)
             }

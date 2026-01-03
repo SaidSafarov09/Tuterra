@@ -53,15 +53,18 @@ function DashboardContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
             })
-            if (!response.ok) throw new Error()
+            if (!response.ok) {
+                const data = await response.json()
+                throw new Error(data.error || 'Ошибка при обновлении статуса заявки')
+            }
             toast.success(status === 'approved' ? 'Заявка одобрена' : 'Заявка отклонена')
             // Refresh stats
             const endpoint = isStudent ? '/api/student/stats' : '/api/stats'
             const res = await fetch(endpoint)
             const data = await res.json()
             if (data.success) setStats(data.stats)
-        } catch (error) {
-            console.error('Failed to fetch stats:', error)
+        } catch (error: any) {
+            toast.error(error.message || 'Ошибка при обновлении статуса заявки')
         } finally {
             setIsLoading(false)
         }

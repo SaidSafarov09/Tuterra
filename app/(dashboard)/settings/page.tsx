@@ -290,7 +290,10 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                     <button
                         key={tab.id}
                         className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => {
+                            setActiveTab(tab.id)
+                            router.push(`/settings?tab=${tab.id}`, { scroll: false })
+                        }}
                     >
                         {tab.label}
                     </button>
