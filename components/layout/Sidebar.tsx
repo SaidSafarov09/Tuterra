@@ -14,6 +14,8 @@ import {
     CloseIcon,
     SupportIcon
 } from '@/components/icons/Icons'
+import { Crown } from 'lucide-react'
+import { UpgradeToProModal } from '@/components/pro/UpgradeToProModal'
 import { teacherNavigation, studentNavigation } from '@/constants/links'
 import { getInitials, stringToColor } from '@/constants'
 import { SidebarUserSkeleton } from '@/components/skeletons'
@@ -29,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     const pathname = usePathname()
     const { user, logout } = useAuthStore()
     const [isUserModalOpen, setIsUserModalOpen] = useState(false)
+    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
     const isMobile = useMediaQuery('(max-width: 768px)')
 
     const avatarBgColor = user?.name ? stringToColor(user.name) : 'var(--primary)'
@@ -82,6 +85,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
                 {!isMobile && (
                     <>
+                        {!(user?.isPro || user?.plan === 'pro') && (
+                            <div className={styles.proSection}>
+                                <Button
+                                    className={styles.proButton}
+                                    onClick={() => setIsUpgradeModalOpen(true)}
+                                    variant="outline"
+                                >
+                                    <span className={styles.proButtonText}>Разблокировать</span>PRO
+                                </Button>
+                            </div>
+                        )}
+
                         <div className={styles.supportSection}>
                             <a
                                 href="https://t.me/tuterrahelp"
@@ -142,6 +157,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                 isOpen={isUserModalOpen}
                 onClose={() => setIsUserModalOpen(false)}
                 onSidebarClose={onClose}
+            />
+
+            <UpgradeToProModal
+                isOpen={isUpgradeModalOpen}
+                onClose={() => setIsUpgradeModalOpen(false)}
+                limitType="general"
             />
         </>
     )

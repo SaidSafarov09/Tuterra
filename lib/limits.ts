@@ -8,10 +8,15 @@ export const FREE_LIMITS = {
     income: 0
 };
 
-export type LimitType = keyof typeof FREE_LIMITS | 'income';
+export type LimitType = keyof typeof FREE_LIMITS | 'income' | 'general';
 
 export const LIMIT_MESSAGES: Record<LimitType, { title: string; description: string }> = {
+    general: {
+        title: 'Перейдите на Pro',
+        description: 'Получите доступ ко всем возможностям платформы без ограничений.'
+    },
     students: {
+        // ...
         title: 'Лимит учеников превышен',
         description: 'В бесплатной версии можно добавить только 3 ученика. Обновитесь до Pro, чтобы снять ограничения.'
     },

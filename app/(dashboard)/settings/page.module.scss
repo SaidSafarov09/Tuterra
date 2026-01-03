@@ -32,6 +32,11 @@
         color: var(--primary);
         border-bottom-color: var(--primary);
     }
+
+    @media (max-width: 768px) {
+        font-size: 12px;
+        padding: 8px 0;
+    }
 }
 
 .title {

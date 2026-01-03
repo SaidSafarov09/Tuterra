@@ -266,6 +266,56 @@
     }
 }
 
+.proSection {
+    padding: 0 24px;
+    margin-bottom: 8px;
+
+    @media (min-width: 769px) and (max-width: 1080px) {
+        padding: 0 12px;
+    }
+}
+
+.proButton {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    width: 100%;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #4a6cf7 0%, #00d2ff 100%);
+    color: white !important;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        opacity: 0.95;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    .navIcon {
+        color: #fbbf24;
+    }
+
+    @media (min-width: 769px) and (max-width: 1080px) {
+        justify-content: center;
+        padding: 12px;
+
+        .proButtonText {
+            display: none;
+        }
+    }
+}
+
 .supportSection {
     padding: 0 24px;
     margin-bottom: 16px;

@@ -12,6 +12,7 @@ import { UnsavedChangesModal } from '@/components/ui/UnsavedChangesModal'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { settingsApi } from '@/services/api'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
+import { SubscriptionSettings } from '@/components/settings/SubscriptionSettings'
 import { GENERAL_MESSAGES } from '@/constants/messages'
 import { SettingsFormSkeleton } from '@/components/skeletons'
 import { formatPhoneNumber } from '@/lib/validation'
@@ -455,6 +456,13 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                             </>
                         )}
 
+
+                        {activeTab === 'subscription' && (
+                            <div>
+                                <SubscriptionSettings />
+                            </div>
+                        )}
+
                         {activeTab === 'notifications' && (
                             <div className={styles.section}>
                                 <h2 className={styles.sectionTitle}>Уведомления</h2>
@@ -478,11 +486,14 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                             </div>
                         )}
 
-                        <div className={styles.submitSection}>
-                            <Button type="submit" disabled={isSaving}>
-                                {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
-                            </Button>
-                        </div>
+
+                        {activeTab !== 'subscription' && (
+                            <div className={styles.submitSection}>
+                                <Button type="submit" disabled={isSaving}>
+                                    {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
+                                </Button>
+                            </div>
+                        )}
                     </motion.form>
                 )}
             </AnimatePresence>

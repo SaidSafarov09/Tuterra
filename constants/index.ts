@@ -26,6 +26,7 @@ export const WEEK_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'
 
 export const TABS = [
     { id: 'general', label: 'Основные' },
+    { id: 'subscription', label: 'Подписка' },
     { id: 'notifications', label: 'Уведомления' },
     { id: 'appearance', label: 'Оформление' },
 ]

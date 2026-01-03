@@ -55,3 +55,28 @@
   align-items: center;
   gap: 10px;
 }
+
+.proButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  background: linear-gradient(135deg, #4a6cf7 0%, #00d2ff 100%);
+  color: white !important;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  svg {
+    color: #fbbf24;
+  }
+
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+}
