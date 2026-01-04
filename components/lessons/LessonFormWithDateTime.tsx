@@ -159,14 +159,11 @@ export function LessonFormWithDateTime({
                 </div>
 
                 <TrialToggle
-                    isTrial={formData.isTrial || formData.price === '0'}
+                    isTrial={formData.isTrial || false}
+                    label={formData.recurrence?.enabled ? "Первый урок пробный" : "Пробный урок"}
+                    subtitle="Если урок бесплатный — поставьте цену 0. Пробный урок может быть платным."
                     onChange={(isTrial) => {
                         handleChange('isTrial', isTrial)
-                        if (isTrial) {
-                            handleChange('price', '0')
-                        } else if (formData.price === '0') {
-                            handleChange('price', '')
-                        }
                     }}
                     disabled={isSubmitting}
                 />
@@ -228,18 +225,20 @@ export function LessonFormWithDateTime({
                     </div>
                 )}
 
-                {formData.price !== '0' && formData.price !== '' && (
+                {(formData.price !== '0' && formData.price !== '' || (formData.recurrence?.enabled && formData.seriesPrice && formData.seriesPrice !== '0')) && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
-                        <Checkbox
-                            checked={formData.isPaid}
-                            onChange={(e) => handleChange('isPaid', e.target.checked)}
-                            label={
-                                formData.recurrence?.enabled
-                                    ? 'Оплачено только первое занятие'
-                                    : 'Оплачено'
-                            }
-                            disabled={isSubmitting}
-                        />
+                        {formData.price !== '0' && formData.price !== '' && (
+                            <Checkbox
+                                checked={formData.isPaid}
+                                onChange={(e) => handleChange('isPaid', e.target.checked)}
+                                label={
+                                    formData.recurrence?.enabled
+                                        ? 'Оплачено только первое занятие'
+                                        : 'Оплачено'
+                                }
+                                disabled={isSubmitting}
+                            />
+                        )}
 
                         {formData.recurrence?.enabled && (
                             <Checkbox
@@ -251,7 +250,11 @@ export function LessonFormWithDateTime({
                                         handleChange('isPaid', true)
                                     }
                                 }}
-                                label="Оплачены все занятия серии"
+                                label={
+                                    formData.isTrial || (formData.price === '0' && formData.seriesPrice && formData.seriesPrice !== '0')
+                                        ? "Все последующие занятия серии оплачены"
+                                        : "Оплачены все занятия серии"
+                                }
                                 disabled={isSubmitting}
                             />
                         )}

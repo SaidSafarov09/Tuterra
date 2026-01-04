@@ -362,14 +362,10 @@ export function LessonForm({
 
                 <TrialToggle
                     isTrial={formData.isTrial || false}
+                    label={activeTab === 'recurring' ? "Первый урок пробный" : "Пробный урок"}
+                    subtitle="Если урок бесплатный — поставьте цену 0. Пробный урок может быть платным."
                     onChange={(isTrial) => {
                         handleChange('isTrial', isTrial)
-                        if (isTrial) {
-                            handleChange('price', '0')
-                            handleChange('isPaid', false)
-                        } else if (formData.price === '0') {
-                            handleChange('price', '')
-                        }
                     }}
                     disabled={isSubmitting}
                 />
@@ -461,20 +457,22 @@ export function LessonForm({
                     </div>
                 )}
 
-                {formData.price !== '0' && (
+                {(formData.price !== '0' && formData.price !== '' || (activeTab === 'recurring' && formData.seriesPrice && formData.seriesPrice !== '0')) && (
                     <div className={styles.paymentSection}>
                         {!formData.groupId ? (
                             <>
-                                <Checkbox
-                                    checked={formData.isPaid}
-                                    onChange={(e) => handleChange('isPaid', e.target.checked)}
-                                    label={
-                                        activeTab === 'recurring'
-                                            ? 'Оплачено только первое занятие'
-                                            : 'Оплачено'
-                                    }
-                                    disabled={isSubmitting}
-                                />
+                                {formData.price !== '0' && formData.price !== '' && (
+                                    <Checkbox
+                                        checked={formData.isPaid}
+                                        onChange={(e) => handleChange('isPaid', e.target.checked)}
+                                        label={
+                                            activeTab === 'recurring'
+                                                ? 'Оплачено только первое занятие'
+                                                : 'Оплачено'
+                                        }
+                                        disabled={isSubmitting}
+                                    />
+                                )}
 
                                 {activeTab === 'recurring' && (
                                     <Checkbox
@@ -486,7 +484,11 @@ export function LessonForm({
                                                 handleChange('isPaid', true)
                                             }
                                         }}
-                                        label="Оплачены все занятия серии"
+                                        label={
+                                            formData.isTrial || (formData.price === '0' && formData.seriesPrice && formData.seriesPrice !== '0')
+                                                ? "Все последующие занятия серии оплачены"
+                                                : "Оплачены все занятия серии"
+                                        }
                                         disabled={isSubmitting}
                                     />
                                 )}
