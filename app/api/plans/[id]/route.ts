@@ -69,7 +69,11 @@ export async function GET(
                         }
                     }
                 },
-                student: true,
+                student: {
+                    include: {
+                        linkedUser: true
+                    }
+                },
                 group: true,
                 subject: true,
             }
@@ -177,7 +181,11 @@ export async function PATCH(
                     }
                 },
                 subject: true,
-                student: true,
+                student: {
+                    include: {
+                        linkedUser: true
+                    }
+                },
                 group: true,
             }
         })

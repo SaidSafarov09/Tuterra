@@ -130,6 +130,7 @@ export function PlanEditor({ planId }: PlanEditorProps) {
     }
 
     const displayName = plan.student?.name || plan.group?.name || 'Ученик'
+    const studentAvatar = plan.student?.avatar || plan.student?.linkedUser?.avatar
 
     const handleBack = () => {
         if (hasUnsavedChanges()) {
@@ -157,9 +158,13 @@ export function PlanEditor({ planId }: PlanEditorProps) {
                     <div className={styles.profile}>
                         <div
                             className={styles.avatar}
-                            style={{ backgroundColor: stringToColor(displayName) }}
+                            style={{ backgroundColor: !studentAvatar ? stringToColor(displayName) : undefined }}
                         >
-                            {getInitials(displayName)}
+                            {studentAvatar ? (
+                                <img src={studentAvatar} alt={displayName} className={styles.avatarImage} />
+                            ) : (
+                                getInitials(displayName)
+                            )}
                         </div>
                         <div className={styles.info}>
                             <h1 className={styles.name}>План занятий для {displayName}</h1>
