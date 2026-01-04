@@ -1,18 +1,12 @@
-'use client'
-
-import React, { useState } from 'react'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
-import { Dropdown } from '@/components/ui/Dropdown'
-import { Checkbox } from '@/components/ui/Checkbox'
-import { TrialToggle } from '@/components/lessons/TrialToggle'
-import { DateTimeRecurrenceModal } from '@/components/lessons/DateTimeRecurrenceModal'
-import { Subject, LessonFormData } from '@/types'
-import type { RecurrenceRule } from '@/types/recurring'
-import { CalendarIcon, Repeat } from 'lucide-react'
-import { formatSmartDate } from '@/lib/dateUtils'
-import { useTypewriter } from '@/hooks/useTypewriter'
-import { LESSON_TOPIC_EXAMPLES } from '@/constants'
+import React from 'react'
+import { Subject, LessonFormData, Student } from '@/types'
+import { usePlanTopics } from '@/hooks/usePlanTopics'
+import { LessonFormStudentSubject } from './form/LessonFormStudentSubject'
+import { LessonFormDateTime } from './form/LessonFormDateTime'
+import { LessonFormPriceDuration } from './form/LessonFormPriceDuration'
+import { LessonFormTopic } from './form/LessonFormTopic'
+import { LessonFormPayment } from './form/LessonFormPayment'
+import styles from './form/LessonForm.module.scss'
 
 interface LessonFormWithDateTimeProps {
     formData: LessonFormData
@@ -22,7 +16,7 @@ interface LessonFormWithDateTimeProps {
     isEdit?: boolean
     isSubmitting?: boolean
     showStudentField?: boolean
-    students?: Array<{ id: string; name: string }>
+    students?: Student[]
     onStudentChange?: (studentId: string) => void
     onCreateStudent?: (name: string) => void
 }
@@ -39,41 +33,31 @@ export function LessonFormWithDateTime({
     onStudentChange,
     onCreateStudent,
 }: LessonFormWithDateTimeProps) {
-    const topicPlaceholder = useTypewriter(LESSON_TOPIC_EXAMPLES)
-    const [isDateModalOpen, setIsDateModalOpen] = useState(false)
-    const [tempDate, setTempDate] = useState<Date | undefined>(formData.date)
-    const [tempRecurrence, setTempRecurrence] = useState<RecurrenceRule | undefined>(formData.recurrence)
-    const [planTopics, setPlanTopics] = useState<any[]>([])
+    const activeTab = formData.recurrence?.enabled ? 'recurring' : 'single'
 
-    React.useEffect(() => {
-        const fetchPlanTopics = async () => {
-            if (formData.recurrence?.enabled) {
-                setPlanTopics([])
-                return
-            }
+    const { planTopics } = usePlanTopics(
+        formData.studentId,
+        formData.groupId,
+        formData.subjectId,
+        activeTab === 'single'
+    )
 
-            try {
-                if (formData.studentId && formData.subjectId) {
-                    const plans = await (await fetch(`/api/plans?studentId=${formData.studentId}&subjectId=${formData.subjectId}`)).json()
-                    if (plans.length > 0) {
-                        setPlanTopics(plans[0].topics || [])
-                    } else {
-                        setPlanTopics([])
-                    }
-                } else {
-                    setPlanTopics([])
-                }
-            } catch (error) {
-                console.error('Error fetching plan topics:', error)
-                setPlanTopics([])
-            }
-        }
-        fetchPlanTopics()
-    }, [formData.studentId, formData.subjectId, formData.recurrence?.enabled])
+    const handleChange = (name: string, value: any) => {
+        setFormData(prev => ({ ...prev, [name]: value }))
+    }
 
-    const handlePlanTopicChange = (value: string) => {
+    const handleTopicChange = (val: string) => {
+        const matchingTopic = planTopics.find(t => t.title.toLowerCase() === val.toLowerCase())
+        setFormData(prev => ({
+            ...prev,
+            topic: val,
+            planTopicId: matchingTopic ? matchingTopic.id : null
+        }))
+    }
+
+    const handlePlanTopicChange = (value: string | undefined) => {
         if (!value) {
-            setFormData(prev => ({ ...prev, planTopicId: null }))
+            handleChange('planTopicId', null)
             return
         }
         const topic = planTopics.find(t => t.id === value)
@@ -86,192 +70,96 @@ export function LessonFormWithDateTime({
         }
     }
 
-    const handleOpenDateModal = () => {
-        setTempDate(formData.date)
-        setTempRecurrence(formData.recurrence)
-        setIsDateModalOpen(true)
-    }
-
-    const handleConfirmDateTime = (date: Date, recurrence?: RecurrenceRule) => {
-        setFormData(prev => ({
-            ...prev,
-            date,
-            recurrence,
-        }))
-    }
-
-    const getDateButtonText = () => {
-        if (!formData.date) return 'Выберите дату и время'
-        return formatSmartDate(formData.date)
-    }
-
-    const handleChange = (field: string, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }))
-    }
-
     return (
-        <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {showStudentField && students.length > 0 && onStudentChange && (
-                    <Dropdown
-                        label="Ученик"
-                        placeholder="Выберите ученика"
-                        value={formData.studentId}
-                        onChange={onStudentChange}
-                        options={students.map(s => ({ value: s.id, label: s.name }))}
-                        searchable
-                        creatable
-                        onCreate={onCreateStudent}
-                        disabled={isSubmitting}
-                    />
-                )}
-
-                <Dropdown
-                    label="Предмет"
-                    placeholder="Выберите или создайте предмет"
-                    value={formData.subjectId || ''}
-                    onChange={(value) => handleChange('subjectId', value)}
-                    options={subjects.map(s => ({ value: s.id, label: s.name }))}
-                    searchable
-                    creatable
-                    onCreate={onCreateSubject}
-                    menuPosition="relative"
+        <div className={styles.form}>
+            {showStudentField && (
+                <LessonFormStudentSubject
+                    studentId={formData.studentId}
+                    groupId={formData.groupId}
+                    subjectId={formData.subjectId}
+                    students={students}
+                    groups={[]} // This version seems to only handle students or maybe it was simplified
+                    subjects={subjects}
+                    onStudentOrGroupChange={(val) => onStudentChange?.(val)}
+                    onSubjectChange={(val) => handleChange('subjectId', val)}
+                    onCreateStudent={onCreateStudent}
+                    onCreateSubject={onCreateSubject}
                     disabled={isSubmitting}
                 />
+            )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                        Дата и время
-                    </label>
-                    <Button
-                        variant="secondary"
-                        onClick={handleOpenDateModal}
-                        disabled={isSubmitting}
-                        type="button"
-                        style={{ justifyContent: 'flex-start', gap: '12px', width: '100%', textAlign: 'left' }}
-                    >
-                        <CalendarIcon size={18} />
-                        <span>{getDateButtonText()}</span>
-                        {formData.recurrence?.enabled && (
-                            <Repeat size={16} style={{ marginLeft: '0.5rem', opacity: 0.7 }} />
-                        )}
-                    </Button>
-                </div>
-
-                <TrialToggle
-                    isTrial={formData.isTrial || false}
-                    label={formData.recurrence?.enabled ? "Первый урок пробный" : "Пробный урок"}
-                    subtitle="Если урок бесплатный — поставьте цену 0. Пробный урок может быть платным."
-                    onChange={(isTrial) => {
-                        handleChange('isTrial', isTrial)
-                    }}
+            {!showStudentField && (
+                <LessonFormStudentSubject
+                    studentId={formData.studentId}
+                    groupId={formData.groupId}
+                    subjectId={formData.subjectId || ''}
+                    students={[]}
+                    groups={[]}
+                    subjects={subjects}
+                    onStudentOrGroupChange={() => { }}
+                    onSubjectChange={(val) => handleChange('subjectId', val)}
+                    onCreateSubject={onCreateSubject}
                     disabled={isSubmitting}
+                    fixedStudentId={formData.studentId}
+                    fixedGroupId={formData.groupId}
                 />
+            )}
 
-                <Input
-                    label="Стоимость (₽)"
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => handleChange('price', e.target.value)}
-                    placeholder="0"
-                    required
-                    disabled={isSubmitting}
-                />
-
-                {formData.price === '0' && formData.recurrence?.enabled && (
-                    <Input
-                        label="Стоимость следующих занятий (₽)"
-                        type="number"
-                        value={formData.seriesPrice || ''}
-                        onChange={(e) => handleChange('seriesPrice', e.target.value)}
-                        placeholder="Оставьте пустым, если тоже бесплатно"
-                        disabled={isSubmitting}
-                    />
-                )}
-
-                {!formData.recurrence?.enabled && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {planTopics.length > 0 && (
-                            <Dropdown
-                                label="Тема из плана"
-                                placeholder="Выберите тему"
-                                value={formData.planTopicId || undefined}
-                                onChange={handlePlanTopicChange}
-                                options={planTopics.map(t => ({
-                                    value: t.id,
-                                    label: `${t.isCompleted ? '✓ ' : ''}${t.title}`,
-                                }))}
-                                menuPosition="relative"
-                                disabled={isSubmitting}
-                            />
-                        )}
-                        <Input
-                            label="Тема урока"
-                            value={formData.topic || ''}
-                            onChange={(e) => {
-                                const val = e.target.value
-                                setFormData(prev => {
-                                    const matchingTopic = planTopics.find(t => t.title.toLowerCase() === val.toLowerCase())
-                                    return {
-                                        ...prev,
-                                        topic: val,
-                                        planTopicId: matchingTopic ? matchingTopic.id : null
-                                    }
-                                })
-                            }}
-                            placeholder={`Например: ${topicPlaceholder}`}
-                            disabled={isSubmitting}
-                        />
-                    </div>
-                )}
-
-                {(formData.price !== '0' && formData.price !== '' || (formData.recurrence?.enabled && formData.seriesPrice && formData.seriesPrice !== '0')) && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
-                        {formData.price !== '0' && formData.price !== '' && (
-                            <Checkbox
-                                checked={formData.isPaid}
-                                onChange={(e) => handleChange('isPaid', e.target.checked)}
-                                label={
-                                    formData.recurrence?.enabled
-                                        ? 'Оплачено только первое занятие'
-                                        : 'Оплачено'
-                                }
-                                disabled={isSubmitting}
-                            />
-                        )}
-
-                        {formData.recurrence?.enabled && (
-                            <Checkbox
-                                checked={formData.isPaidAll || false}
-                                onChange={(e) => {
-                                    const checked = e.target.checked
-                                    handleChange('isPaidAll', checked)
-                                    if (checked) {
-                                        handleChange('isPaid', true)
-                                    }
-                                }}
-                                label={
-                                    formData.isTrial || (formData.price === '0' && formData.seriesPrice && formData.seriesPrice !== '0')
-                                        ? "Все последующие занятия серии оплачены"
-                                        : "Оплачены все занятия серии"
-                                }
-                                disabled={isSubmitting}
-                            />
-                        )}
-                    </div>
-                )}
-            </div>
-
-            <DateTimeRecurrenceModal
-                isOpen={isDateModalOpen}
-                onClose={() => setIsDateModalOpen(false)}
-                onConfirm={handleConfirmDateTime}
-                date={tempDate}
-                recurrence={tempRecurrence}
-                onDateChange={setTempDate}
-                onRecurrenceChange={setTempRecurrence}
+            <LessonFormDateTime
+                date={formData.date || new Date()}
+                recurrence={formData.recurrence}
+                activeTab={activeTab}
+                onDateTimeChange={(date, recurrence) => {
+                    setFormData(prev => ({ ...prev, date, recurrence }))
+                }}
                 isEdit={isEdit}
+                disabled={isSubmitting}
             />
-        </>
+
+            <LessonFormPriceDuration
+                price={formData.price}
+                duration={formData.duration}
+                date={formData.date}
+                isTrial={!!formData.isTrial}
+                activeTab={activeTab}
+                seriesPrice={formData.seriesPrice}
+                onPriceChange={(val) => {
+                    handleChange('price', val)
+                    if (val === '0') handleChange('isPaid', false)
+                }}
+                onDurationChange={(val) => handleChange('duration', val)}
+                onTrialChange={(val) => handleChange('isTrial', val)}
+                onSeriesPriceChange={(val) => handleChange('seriesPrice', val)}
+                disabled={isSubmitting}
+                isGroup={!!formData.groupId}
+            />
+
+            <LessonFormTopic
+                topic={formData.topic}
+                planTopicId={formData.planTopicId}
+                planTopics={planTopics}
+                onTopicChange={handleTopicChange}
+                onPlanTopicChange={handlePlanTopicChange}
+                disabled={isSubmitting}
+                show={!formData.recurrence?.enabled}
+            />
+
+            <LessonFormPayment
+                isPaid={formData.isPaid}
+                isPaidAll={formData.isPaidAll}
+                paidStudentIds={formData.paidStudentIds}
+                price={formData.price}
+                seriesPrice={formData.seriesPrice}
+                isTrial={!!formData.isTrial}
+                activeTab={activeTab}
+                groupId={formData.groupId}
+                onPaidChange={(val) => handleChange('isPaid', val)}
+                onPaidAllChange={(val) => {
+                    handleChange('isPaidAll', val)
+                    if (val) handleChange('isPaid', true)
+                }}
+                disabled={isSubmitting}
+            />
+        </div>
     )
 }
