@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import * as Avatar from '@radix-ui/react-avatar'
 import { useAuthStore } from '@/store/auth'
 import { stringToColor, getInitials } from '@/constants'
@@ -8,7 +9,6 @@ import {
     SettingsIcon,
     SupportIcon,
     LogoutIcon,
-    ChevronRightIcon
 } from '@/components/icons/Icons'
 import Link from 'next/link'
 import styles from './UserMobileMenu.module.scss'
@@ -19,15 +19,44 @@ export const UserMobileMenu: React.FC = () => {
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
 
+    // Portal logic items
+    const triggerRef = useRef<HTMLButtonElement>(null)
+    const [menuPosition, setMenuPosition] = useState<React.CSSProperties>({})
+
     useEffect(() => {
         setMounted(true)
     }, [])
+
+    // Close menu on scroll to avoid detached popup
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleScroll = () => {
+            setIsOpen(false)
+        }
+
+        window.addEventListener('scroll', handleScroll, { capture: true })
+        return () => window.removeEventListener('scroll', handleScroll, { capture: true })
+    }, [isOpen])
 
     if (!mounted || !user) return null
 
     const avatarBgColor = user.name ? stringToColor(user.name) : 'var(--primary)'
 
-    const toggleMenu = () => setIsOpen(!isOpen)
+    const toggleMenu = () => {
+        if (!isOpen && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect()
+            setMenuPosition({
+                position: 'fixed',
+                top: `${rect.bottom + 8}px`,
+                right: `${window.innerWidth - rect.right}px`,
+                zIndex: 1002 // Ensure it is above sidebar (z-index 100)
+            })
+            setIsOpen(true)
+        } else {
+            setIsOpen(false)
+        }
+    }
 
     const handleLogout = async () => {
         await logout()
@@ -37,7 +66,11 @@ export const UserMobileMenu: React.FC = () => {
     return (
         <>
             <div className={styles.container}>
-                <button className={styles.avatarTrigger} onClick={toggleMenu}>
+                <button
+                    ref={triggerRef}
+                    className={styles.avatarTrigger}
+                    onClick={toggleMenu}
+                >
                     <Avatar.Root className={styles.userAvatar}>
                         <Avatar.Image
                             className={styles.avatarImage}
@@ -53,10 +86,20 @@ export const UserMobileMenu: React.FC = () => {
                     </Avatar.Root>
                 </button>
 
-                {isOpen && (
-                    <>
-                        <div className={styles.overlay} onClick={() => setIsOpen(false)} />
-                        <div className={styles.menu}>
+                {isOpen && createPortal(
+                    <div style={{ position: 'relative', zIndex: 1002 }}>
+                        {/* Overlay to close menu */}
+                        <div
+                            className={styles.overlay}
+                            onClick={() => setIsOpen(false)}
+                            style={{ zIndex: 1001 }}
+                        />
+
+                        {/* Menu content */}
+                        <div
+                            className={styles.menu}
+                            style={menuPosition}
+                        >
                             <div className={styles.items}>
 
                                 <Link href="/settings" className={styles.item} onClick={() => setIsOpen(false)}>
@@ -74,7 +117,6 @@ export const UserMobileMenu: React.FC = () => {
                                     <SupportIcon size={18} />
                                     <span>Поддержка</span>
                                 </a>
-
 
                                 <button
                                     className={styles.item}
@@ -95,7 +137,8 @@ export const UserMobileMenu: React.FC = () => {
                                 </button>
                             </div>
                         </div>
-                    </>
+                    </div>,
+                    document.body
                 )}
             </div>
 
