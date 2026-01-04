@@ -106,7 +106,7 @@
 }
 
 .studentContact {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-secondary);
   font-weight: 500;
   display: flex;
@@ -162,6 +162,10 @@
   strong {
     color: var(--text-primary);
   }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 }
 
 .metaDivider {
@@ -213,7 +217,7 @@
   }
 
   p {
-    font-size: 15px;
+    font-size: 16px;
     color: var(--text-primary);
     line-height: 1.6;
     margin: 0;
@@ -417,7 +421,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
   background: var(--background);
   padding: 6px 10px;
@@ -506,7 +510,7 @@
   gap: 8px;
   padding: 8px 16px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -565,7 +569,7 @@
   align-items: center;
   gap: 6px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   text-decoration: none;
   padding: 4px 8px;
   border-radius: 6px;

@@ -11,7 +11,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     background: var(--surface);
-    font-size: 15px;
+    font-size: 16px;
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -167,7 +167,7 @@
 .option {
     padding: 10px 16px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 16px;
     color: var(--text-primary);
     transition: background 0.15s ease;
     display: flex;
@@ -207,7 +207,7 @@
 .createOption {
     padding: 10px 16px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 16px;
     color: var(--primary);
     font-weight: 500;
     transition: background 0.15s ease;
@@ -251,7 +251,7 @@
 
 .errorMessage {
     margin-top: 6px;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--error);
 }
 
@@ -275,6 +275,6 @@
 
 .hintMessage {
     margin-top: 6px;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-muted);
 }

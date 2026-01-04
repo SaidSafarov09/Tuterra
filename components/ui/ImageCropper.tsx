@@ -1,6 +1,5 @@
-'use client'
-
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Cropper from 'react-easy-crop'
 import { Button } from '@/components/ui/Button'
 import { Minus, Plus } from 'lucide-react'
@@ -35,6 +34,24 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({
         setCroppedAreaPixels(croppedAreaPixels)
     }, [])
 
+    useEffect(() => {
+        const scrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.left = '';
+            document.body.style.right = '';
+            document.body.style.overflow = '';
+            window.scrollTo(0, scrollY);
+        };
+    }, []);
+
     const handleSave = async () => {
         setIsLoading(true)
         try {
@@ -49,7 +66,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({
         }
     }
 
-    return (
+    const content = (
         <div className={styles.overlay}>
             <div className={styles.container}>
                 <div className={styles.cropContainer}>
@@ -92,4 +109,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({
             </div>
         </div>
     )
+
+    if (typeof document === 'undefined') return null;
+    return createPortal(content, document.body)
 }

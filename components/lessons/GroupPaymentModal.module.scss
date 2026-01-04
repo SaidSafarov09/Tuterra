@@ -47,8 +47,8 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 12px;
-    @media (max-width: 768px)
-    {
+
+    @media (max-width: 768px) {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 }
@@ -62,7 +62,7 @@
     border-radius: 10px;
     border: 1px solid var(--border-light);
     transition: all 0.2s;
-    
+
     &:hover {
         border-color: var(--border);
         transform: translateY(-1px);
@@ -96,7 +96,7 @@
 }
 
 .statLabel {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-secondary);
     font-weight: 500;
 }
@@ -109,7 +109,7 @@
 }
 
 .statTotal {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 400;
     color: var(--text-secondary);
 }
@@ -167,7 +167,7 @@
 }
 
 .sectionDescription {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-secondary);
     margin: 0;
     line-height: 1.5;
@@ -206,12 +206,12 @@
     border: 1px solid var(--border-light);
     background: var(--surface);
     transition: all 0.2s;
-    
+
     &:hover {
         border-color: var(--border);
         background: var(--background);
     }
-    
+
     &.studentItemAttended {
         border-color: var(--success);
         background: rgba(16, 185, 129, 0.05);

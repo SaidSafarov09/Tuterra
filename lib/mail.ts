@@ -66,7 +66,7 @@ export const sendOTP = async (email: string, code: string) => {
                             
                             <h2 class="title" style="font-size: 26px; color: #0f172a; margin: 0 0 16px 0; font-weight: 800; letter-spacing: -0.5px;">Ваш одноразовый код</h2>
                             
-                            <p class="description" style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0 auto 32px auto;">
+                            <p class="description" style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 auto 32px auto;">
                                 Введите этот код, чтобы войти в свой кабинет.
                             </p>
                             
@@ -84,7 +84,7 @@ export const sendOTP = async (email: string, code: string) => {
                         
                         <!-- Footer -->
                         <div class="footer" style="padding: 32px 20px; background: #fdfdfe; text-align: center; border-top: 1px solid #f1f5f9;">
-                            <p class="footer-text" style="margin: 0; color: #64748b; font-size: 13px; font-weight: 600;">© ${new Date().getFullYear()} Tuterra.online</p>
+                            <p class="footer-text" style="margin: 0; color: #64748b; font-size: 14px; font-weight: 600;">© ${new Date().getFullYear()} Tuterra.online</p>
                             <p style="margin: 12px 0 0 0; color: #94a3b8; font-size: 11px; line-height: 1.5;">
                                 Если вы не запрашивали вход, просто удалите это письмо.
                             </p>

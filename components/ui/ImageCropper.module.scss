@@ -10,6 +10,7 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
+    touch-action: none;
 }
 
 .container {
@@ -17,10 +18,12 @@
     border-radius: 16px;
     width: 100%;
     max-width: 500px;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     animation: scaleIn 0.2s ease;
+    box-shadow: var(--shadow-xl);
 }
 
 .cropContainer {
@@ -28,17 +31,25 @@
     width: 100%;
     height: 400px;
     background: #000;
+    flex-shrink: 1;
+    min-height: 200px;
 
-    @media (max-height: 600px) {
+    @media (max-height: 700px) {
         height: 300px;
+    }
+
+    @media (max-height: 500px) {
+        height: 200px;
     }
 }
 
 .controls {
-    padding: 24px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+    background: var(--surface);
+    flex-shrink: 0;
 }
 
 .sliderContainer {
