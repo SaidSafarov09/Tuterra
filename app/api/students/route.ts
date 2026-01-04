@@ -48,9 +48,22 @@ export async function GET(request: NextRequest) {
                 _count: {
                     select: { lessons: true },
                 },
-            } as any,
+            },
             orderBy: { createdAt: 'desc' },
         })
+
+        // Identify students without invitation codes for batch generation
+        const studentsWithoutCodes = rawStudents.filter(s => !s.invitationCode)
+        if (studentsWithoutCodes.length > 0) {
+            await Promise.all(studentsWithoutCodes.map(async (s) => {
+                const code = await generateInvitationCode()
+                await prisma.student.update({
+                    where: { id: s.id },
+                    data: { invitationCode: code }
+                })
+                s.invitationCode = code
+            }))
+        }
 
         // Infer connection from contact if not explicitly linked
         const contacts = rawStudents
@@ -58,7 +71,6 @@ export async function GET(request: NextRequest) {
             .map(s => s.contact!)
 
         let usersMap = new Map<string, any>();
-
         if (contacts.length > 0) {
             const potentialUsers = await prisma.user.findMany({
                 where: {
@@ -71,31 +83,18 @@ export async function GET(request: NextRequest) {
             })
 
             potentialUsers.forEach(u => {
-                if (u.email) usersMap.set(u.email, u);
-                if (u.phone) usersMap.set(u.phone, u);
+                if (u.email) usersMap.set(u.email, u)
+                if (u.phone) usersMap.set(u.phone, u)
             })
         }
 
-        const students = await Promise.all(rawStudents.map(async (s: any) => {
-            // Self-healing: generate invitationCode if missing
-            if (!s.invitationCode) {
-                const code = await generateInvitationCode();
-                await prisma.student.update({
-                    where: { id: s.id },
-                    data: { invitationCode: code }
-                });
-                s.invitationCode = code;
-            }
-
-            let linkedUser = s.linkedUser;
-
-            // Try to find linked user via contact if not linked
+        const students = rawStudents.map((s: any) => {
+            let linkedUser = s.linkedUser
             if (!linkedUser && s.contact && usersMap.has(s.contact)) {
-                linkedUser = usersMap.get(s.contact);
+                linkedUser = usersMap.get(s.contact)
             }
-
-            return { ...s, linkedUser };
-        }))
+            return { ...s, linkedUser }
+        })
 
         return NextResponse.json(students)
     } catch (error) {

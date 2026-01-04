@@ -57,98 +57,66 @@ const settingsSchema = z.object({
     }).optional(),
 })
 
+const USER_FIELDS_BASE = {
+    id: true,
+    role: true,
+    plan: true,
+    firstName: true,
+    lastName: true,
+    name: true,
+    email: true,
+    phone: true,
+    avatar: true,
+    birthDate: true,
+    currency: true,
+    timezone: true,
+    region: true,
+    theme: true,
+    notificationSettings: true,
+    telegramId: true,
+    onboardingCompleted: true,
+    referralCode: true,
+    isPro: true,
+    proActivatedAt: true,
+    proExpiresAt: true,
+}
+
+const USER_SELECT_FIELDS = {
+    ...USER_FIELDS_BASE,
+    authProviders: {
+        select: {
+            provider: true,
+        },
+    },
+}
+
 export async function GET(request: NextRequest) {
     try {
-
         const token = request.cookies.get('auth-token')?.value
-
-        if (!token) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
-
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const payload = await verifyToken(token)
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!payload) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
         let currentUser = await prisma.user.findUnique({
             where: { id: payload.userId },
-            select: {
-                id: true,
-                role: true,
-                plan: true,
-                firstName: true,
-                lastName: true,
-                name: true,
-                email: true,
-                phone: true,
-                avatar: true,
-                birthDate: true,
-                currency: true,
-                timezone: true,
-                region: true,
-                theme: true,
-                notificationSettings: true,
-                telegramId: true,
-                onboardingCompleted: true,
-                referralCode: true,
-                isPro: true,
-                proActivatedAt: true,
-                proExpiresAt: true,
-                authProviders: {
-                    select: {
-                        provider: true,
-                    },
-                },
-            },
+            select: USER_SELECT_FIELDS,
         })
 
         if (!currentUser) {
             return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
         }
 
-        // Generate referral code if missing
         if (!currentUser.referralCode) {
             const code = Math.random().toString(36).substring(2, 8).toUpperCase();
             currentUser = await prisma.user.update({
                 where: { id: currentUser.id },
                 data: { referralCode: code },
-                select: {
-                    id: true,
-                    role: true,
-                    plan: true,
-                    firstName: true,
-                    lastName: true,
-                    name: true,
-                    email: true,
-                    phone: true,
-                    avatar: true,
-                    birthDate: true,
-                    currency: true,
-                    timezone: true,
-                    region: true,
-                    theme: true,
-                    notificationSettings: true,
-                    telegramId: true,
-                    onboardingCompleted: true,
-                    referralCode: true,
-                    isPro: true,
-                    proActivatedAt: true,
-                    proExpiresAt: true,
-                    authProviders: {
-                        select: {
-                            provider: true,
-                        },
-                    },
-                },
+                select: USER_SELECT_FIELDS,
             })
         }
 
-        console.log('API user:', currentUser.id, 'TelegramID:', currentUser.telegramId)
-
-
-        const hasOAuthProvider = currentUser.authProviders.length > 0
+        const hasOAuthProvider = (currentUser?.authProviders?.length ?? 0) > 0
 
         return NextResponse.json({
             ...currentUser,
@@ -167,18 +135,14 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         const token = request.cookies.get('auth-token')?.value
+        if (!token) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        if (!token) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
         const payload = await verifyToken(token)
-
-        if (!payload) {
-            return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
-        }
+        if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const body = await request.json()
         const validatedData = settingsSchema.parse(body)
+
         const userWithProviders = await prisma.user.findUnique({
             where: { id: payload.userId },
             select: {
@@ -191,7 +155,7 @@ export async function PUT(request: NextRequest) {
             },
         })
 
-        const hasOAuthProvider = userWithProviders?.authProviders.length ?? 0 > 0
+        const hasOAuthProvider = (userWithProviders?.authProviders?.length ?? 0) > 0
 
         if (hasOAuthProvider && validatedData.email && validatedData.email !== userWithProviders?.email) {
             return NextResponse.json(
@@ -199,13 +163,12 @@ export async function PUT(request: NextRequest) {
                 { status: 400 }
             )
         }
+
         if (validatedData.email) {
             const existingUser = await prisma.user.findFirst({
                 where: {
                     email: validatedData.email,
-                    NOT: {
-                        id: payload.userId
-                    }
+                    NOT: { id: payload.userId }
                 }
             })
 
@@ -216,13 +179,12 @@ export async function PUT(request: NextRequest) {
                 )
             }
         }
+
         if (validatedData.phone) {
             const existingUser = await prisma.user.findFirst({
                 where: {
                     phone: validatedData.phone,
-                    NOT: {
-                        id: payload.userId
-                    }
+                    NOT: { id: payload.userId }
                 }
             })
 
@@ -249,28 +211,9 @@ export async function PUT(request: NextRequest) {
                     }
                 } : undefined
             },
-            select: {
-                id: true,
-                role: true,
-                plan: true,
-                firstName: true,
-                lastName: true,
-                name: true,
-                email: true,
-                phone: true,
-                avatar: true,
-                birthDate: true,
-                currency: true,
-                timezone: true,
-                region: true,
-                notificationSettings: true,
-                isPro: true,
-                proActivatedAt: true,
-                proExpiresAt: true,
-            },
+            select: USER_FIELDS_BASE,
         })
 
-        // Sync name to Student records if user is a student
         if (updatedUser.role === 'student' && updatedUser.name) {
             await prisma.student.updateMany({
                 where: { linkedUserId: updatedUser.id },

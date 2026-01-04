@@ -6,7 +6,6 @@ import { generateRecurringDates, validateRecurrenceRule } from '@/lib/recurring-
 import type { RecurrenceRule } from '@/types/recurring'
 import { generateLessonSlug } from '@/lib/slugUtils'
 import { checkLessonOverlap, checkRecurringConflicts, formatConflictMessage } from '@/lib/lessonValidation'
-import { sendTelegramNotification } from '@/lib/telegram'
 
 export const dynamic = 'force-dynamic'
 
@@ -273,33 +272,8 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
         await linkSubjectToStudent(data.studentId, data.subjectId)
     }
 
-    // Send Telegram Notification
-    const user = await prisma.user.findUnique({ where: { id: userId } })
-    const timeStr = new Intl.DateTimeFormat('ru-RU', {
-        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
-        timeZone: user?.timezone || 'Europe/Moscow'
-    }).format(new Date(lesson.date))
-
-    const entityNameNotify = lesson.group?.name || lesson.student?.name || 'Ученик'
-    const sName = lesson.subject?.name || 'Без предмета'
-    const entityLabel = lesson.groupId ? 'группой' : 'учеником'
-    const notifyMsg = `🆕 **Новое занятие:**\n\nЗанятие по предмету **${sName}** с ${entityLabel} **${entityNameNotify}** добавлено в расписание на **${timeStr}**.`
-
-    const settings = await prisma.notificationSettings.findUnique({ where: { userId } })
-    if (settings?.statusChanges) {
-        if (settings.deliveryWeb) {
-            await prisma.notification.create({
-                data: {
-                    userId,
-                    title: 'Новое занятие',
-                    message: `Занятие по предмету ${sName} с ${entityLabel} ${entityNameNotify} добавлено на ${timeStr}`,
-                    type: 'lesson_created',
-                    isRead: false
-                }
-            })
-        }
-        await sendTelegramNotification(userId, notifyMsg, 'statusChanges')
-    }
+    const { notifyLessonCreated } = await import('@/lib/lesson-actions-server')
+    await notifyLessonCreated(userId, lesson, false, 1, timezone)
 
     return NextResponse.json(lesson, { status: 201 })
 }
@@ -425,17 +399,9 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         orderBy: { date: 'asc' },
     })
 
-    // Send Telegram Notification for recurring series
     if (firstLesson) {
-        const user = await prisma.user.findUnique({ where: { id: userId } })
-        const timeStr = new Intl.DateTimeFormat('ru-RU', {
-            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
-            timeZone: user?.timezone || 'Europe/Moscow'
-        }).format(new Date(firstLesson.date))
-
-        const entityNameNotify = firstLesson.group?.name || firstLesson.student?.name || 'Ученик'
-        const notifyMsg = `🔁 **Новая серия занятий:**\n📅 Первый урок: ${timeStr}\n👤 ${entityNameNotify}\n📚 ${firstLesson.subject?.name || 'Без предмета'}\n🔢 Всего: ${dates.length} уроков`
-        await sendTelegramNotification(userId, notifyMsg, 'statusChanges')
+        const { notifyLessonCreated } = await import('@/lib/lesson-actions-server')
+        await notifyLessonCreated(userId, firstLesson, true, dates.length, timezone)
     }
 
     return NextResponse.json({
