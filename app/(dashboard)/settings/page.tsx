@@ -107,9 +107,6 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                 fetch('/api/user/telegram-status', { cache: 'no-store' }).then(res => res.json())
             ])
 
-            console.log('Fetched Settings:', data)
-            console.log('Telegram Status:', telegramData)
-
             const initialData = {
                 firstName: data.firstName || (data.name ? data.name.split(' ')[0] || '' : ''),
                 lastName: data.lastName || (data.name ? data.name.split(' ').slice(1).join(' ') || '' : ''),

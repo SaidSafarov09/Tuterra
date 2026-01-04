@@ -97,6 +97,7 @@ model Student {
 
   @@index([ownerId])
   @@index([linkedUserId])
+  @@index([ownerId, createdAt])
 }
 
 model Group {
@@ -194,6 +195,9 @@ model Lesson {
   @@index([seriesId])
   @@index([planTopicId])
   @@index([status])
+  @@index([ownerId, date])
+  @@index([ownerId, isPaid])
+  @@index([ownerId, isCanceled])
 }
 
 model LessonRequest {

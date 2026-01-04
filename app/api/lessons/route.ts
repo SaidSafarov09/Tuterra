@@ -53,27 +53,16 @@ export async function GET(request: NextRequest) {
         const filter = searchParams.get('filter')
 
         const now = new Date()
+        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
         let where: any = { ownerId: payload.userId }
 
         if (filter === 'upcoming') {
             where.isCanceled = false
-            // Для upcoming нужно получить занятия, которые еще не закончились
-            // Это включает и те, которые уже начались (ongoing)
-            // Используем широкий диапазон: получаем занятия за последние 24 часа и будущие
-            // чтобы покрыть все возможные ongoing занятия (даже очень длинные)
-            const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
             where.date = { gte: oneDayAgo }
         } else if (filter === 'past') {
             where.isCanceled = false
-            // Для past можно предварительно отфильтровать по дате начала
-            // Но все равно нужно проверить с учетом длительности
             where.date = { lt: now }
         } else if (filter === 'unpaid') {
-            // For groups, "unpaid" is tricky. Maybe if not everyone paid?
-            // Or we just rely on isPaid flag for now, or check payments.
-            // User said: "Sum of lesson in list is total... sum of payments from all checked."
-            // If we want to filter unpaid, maybe we skip groups for now or check if sum < expected?
-            // Let's keep simple logic for now.
             where.isPaid = false
             where.isCanceled = false
             where.price = { gt: 0 }
@@ -84,19 +73,20 @@ export async function GET(request: NextRequest) {
         let lessons = await prisma.lesson.findMany({
             where,
             include: {
-                student: true,
+                student: { select: { id: true, name: true, contact: true } },
                 group: {
                     include: {
-                        students: true
+                        students: { select: { id: true, name: true } }
                     }
                 },
-                subject: true,
-                lessonPayments: true,
+                subject: { select: { id: true, name: true, color: true } },
+                lessonPayments: { select: { studentId: true, hasPaid: true } },
             },
             orderBy: { date: filter === 'past' ? 'desc' : 'asc' },
+            take: 300,
         })
 
-        // Фильтруем занятия с учетом длительности для фильтров 'upcoming' и 'past'
+        // Filter for precise boundaries if needed (ongoing lessons etc)
         if (filter === 'upcoming' || filter === 'past') {
             const { isLessonPast } = await import('@/lib/lessonTimeUtils')
             lessons = lessons.filter(lesson => {
@@ -109,9 +99,8 @@ export async function GET(request: NextRequest) {
             lessons = lessons.filter(lesson => {
                 if (lesson.group && lesson.lessonPayments && lesson.lessonPayments.length > 0) {
                     const paidCount = lesson.lessonPayments.filter(p => p.hasPaid).length
-                    const totalStudents = lesson.group.students?.length || 0
-                    // If everyone paid, it is NOT unpaid. Filter it out.
-                    if (totalStudents > 0 && paidCount >= totalStudents) {
+                    // Only count if there are actual payments recorded
+                    if (paidCount >= lesson.lessonPayments.length) {
                         return false
                     }
                 }

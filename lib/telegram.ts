@@ -21,11 +21,9 @@ export async function sendTelegramNotification(userId: string, message: string, 
             return false
         }
 
-        // If a specific setting is requested, check it
         if (settingKey && user.notificationSettings) {
             const settings = user.notificationSettings as any
             if (settings[settingKey] === false) {
-                console.log(`DEBUG: sendTelegramNotification skipped - ${String(settingKey)} is disabled for user ${userId}`)
                 return false
             }
         }
@@ -36,7 +34,6 @@ export async function sendTelegramNotification(userId: string, message: string, 
             return false
         }
 
-        console.log(`DEBUG: Sending Telegram message to ${user.telegramChatId}: ${message.substring(0, 20)}...`)
         const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -53,7 +50,6 @@ export async function sendTelegramNotification(userId: string, message: string, 
             return false
         }
 
-        console.log('DEBUG: Telegram message sent successfully')
         return true
     } catch (error) {
         console.error('Failed to send Telegram notification:', error)

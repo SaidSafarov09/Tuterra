@@ -6,9 +6,6 @@ async function listUsers() {
         orderBy: { createdAt: 'desc' },
         select: { id: true, email: true, name: true }
     });
-
-    console.log('--- Last 5 Users ---');
-    console.log(JSON.stringify(users, null, 2));
     process.exit(0);
 }
 

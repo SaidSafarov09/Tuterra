@@ -62,8 +62,6 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        console.log(`[STUDENT_API] Found ${lessons.length} lessons for user ${userId}, studentIds: ${studentIds.join(', ')}`)
-
         // Filter out "ghost" group lessons (past lessons where student has no payment record)
         const filteredLessons = lessons.filter(lesson => {
             // Direct lesson

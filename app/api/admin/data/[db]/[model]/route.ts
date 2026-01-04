@@ -13,8 +13,6 @@ export async function GET(
     const { db, model } = await params;
     const { searchParams } = new URL(request.url);
     const userIdFilter = searchParams.get('userId');
-
-    console.log(`[Admin API] GET ${db}/${model} (Filter: ${userIdFilter})`);
     const client = getPrismaClient(db as 'sqlite' | 'postgres');
 
     try {
@@ -87,7 +85,6 @@ export async function PATCH(
 
     const { db, model } = await params;
     const { id, ...data } = await request.json();
-    console.log(`[Admin API] PATCH ${db}/${model} ID: ${id}`);
     const client = getPrismaClient(db as 'sqlite' | 'postgres');
 
     // Pre-process data to handle nulls and booleans from strings

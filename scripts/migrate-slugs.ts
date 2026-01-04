@@ -5,7 +5,6 @@ import { generateStudentSlug, generateLessonSlug } from '../lib/slugUtils'
 const prisma = new PrismaClient()
 
 async function migrateStudents() {
-    console.log('Migrating students...')
     const students = await prisma.student.findMany()
 
     for (const student of students) {
@@ -14,14 +13,10 @@ async function migrateStudents() {
             where: { id: student.id },
             data: { slug }
         })
-        console.log(`✓ Student: ${student.name} → ${slug}`)
     }
-
-    console.log(`✓ Migrated ${students.length} students`)
 }
 
 async function migrateLessons() {
-    console.log('Migrating lessons...')
     const lessons = await prisma.lesson.findMany({
         include: { student: true }
     })
@@ -38,20 +33,15 @@ async function migrateLessons() {
                 where: { id: lesson.id },
                 data: { slug }
             })
-            console.log(`✓ Lesson: ${slug}`)
-        } else {
-            console.log(`⚠ Skipping lesson ${lesson.id} - no student assigned`)
         }
     }
 
-    console.log(`✓ Migrated ${lessons.length} lessons`)
 }
 
 async function main() {
     try {
         await migrateStudents()
         await migrateLessons()
-        console.log('✓ Migration completed successfully!')
     } catch (error) {
         console.error('Migration failed:', error)
         process.exit(1)

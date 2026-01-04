@@ -11,7 +11,6 @@ try {
     content = content.replace(/output\s*=\s*"\.\.\/node_modules\/@prisma\/client-postgres"/, '');
 
     fs.writeFileSync(prismaSchemaSqlitePath, content);
-    console.log('Successfully synced schema.sqlite.prisma from schema.prisma');
 } catch (error) {
     console.error('Error syncing schemas:', error);
     process.exit(1);

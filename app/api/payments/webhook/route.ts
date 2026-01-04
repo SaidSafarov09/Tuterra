@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
             metadata: body.object?.metadata
         };
 
-        console.log('--- Incoming Webhook ---', logEntry);
         webhookLogs.push(logEntry);
 
         if (body.event !== 'payment.succeeded') {
@@ -68,7 +67,6 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        console.log(`✅ AUTO-ACTIVATED PRO for ${user.email}`);
         webhookLogs.push({ time: timestamp, success: true, email: user.email });
 
         return NextResponse.json({ received: true });

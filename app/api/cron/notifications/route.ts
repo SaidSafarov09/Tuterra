@@ -65,9 +65,6 @@ export async function GET(request: NextRequest) {
                 },
                 include: { subject: true, student: true, group: true, owner: true }
             })
-
-            console.log(`CRON: Found ${upcomingLessons.length} upcoming lessons for reminder for user ${userId} (${user.role})`)
-
             for (const lesson of upcomingLessons) {
                 const notificationKey = `reminder_${lesson.id}`
                 const existing = await prisma.notification.findFirst({
