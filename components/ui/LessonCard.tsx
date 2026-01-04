@@ -138,13 +138,17 @@ export const LessonCard: React.FC<LessonCardProps> = ({
 
                 <div className={styles.priceContainer}>
                     <div
-                        className={`${styles.price} ${isFullyPaid ? styles.pricePaid : styles.priceUnpaid}`}
+                        className={`${styles.price} ${lesson.price === 0 ? styles.priceFree : isFullyPaid ? styles.pricePaid : styles.priceUnpaid}`}
                     >
-                        {isStudentView
-                            ? lesson.price
-                            : (lesson.group && lesson.lessonPayments
-                                ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
-                                : lesson.price)} ₽
+                        {lesson.price === 0 ? 'Бесплатно' : (
+                            <>
+                                {isStudentView
+                                    ? lesson.price
+                                    : (lesson.group && lesson.lessonPayments
+                                        ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
+                                        : lesson.price)} ₽
+                            </>
+                        )}
                     </div>
                     <LessonBadges
                         price={lesson.price}

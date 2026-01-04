@@ -61,12 +61,14 @@ export function LessonBadges({
     return (
         <div className={styles.badges}>
             {isTrial && <TrialBadge />}
-            <LessonStatusBadge
-                price={price}
-                isPaid={paymentStatus === 'paid'}
-                paymentStatus={paymentStatus}
-                isStudentView={isStudentView}
-            />
+            {price > 0 && (
+                <LessonStatusBadge
+                    price={price}
+                    isPaid={paymentStatus === 'paid'}
+                    paymentStatus={paymentStatus}
+                    isStudentView={isStudentView}
+                />
+            )}
         </div>
     )
 }

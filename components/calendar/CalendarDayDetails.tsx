@@ -156,12 +156,16 @@ export function CalendarDayDetails({
                                                     )}
                                                 </div>
                                                 <div className={styles.lessonMeta}>
-                                                    <span className={`${styles.metaPrice} ${isFullyPaid ? styles.pricePaid : styles.priceUnpaid}`}>
-                                                        {isStudentView
-                                                            ? lesson.price
-                                                            : (lesson.group && lesson.lessonPayments
-                                                                ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
-                                                                : lesson.price)} ₽
+                                                    <span className={`${styles.metaPrice} ${lesson.price === 0 ? styles.priceFree : isFullyPaid ? styles.pricePaid : styles.priceUnpaid}`}>
+                                                        {lesson.price === 0 ? 'Бесплатно' : (
+                                                            <>
+                                                                {isStudentView
+                                                                    ? lesson.price
+                                                                    : (lesson.group && lesson.lessonPayments
+                                                                        ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
+                                                                        : lesson.price)} ₽
+                                                            </>
+                                                        )}
                                                     </span>
                                                     {lesson.subject && (
                                                         <span

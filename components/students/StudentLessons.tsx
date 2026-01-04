@@ -195,12 +195,16 @@ export function StudentLessons({
                                         )}
                                     </div>
                                     <div className={styles.lessonPriceContainer}>
-                                        <span className={styles.lessonPrice}>
-                                            {isStudentView
-                                                ? lesson.price
-                                                : (lesson.group && lesson.lessonPayments
-                                                    ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
-                                                    : lesson.price)} ₽
+                                        <span className={`${styles.lessonPrice} ${lesson.price === 0 ? styles.priceFree : ''}`}>
+                                            {lesson.price === 0 ? 'Бесплатно' : (
+                                                <>
+                                                    {isStudentView
+                                                        ? lesson.price
+                                                        : (lesson.group && lesson.lessonPayments
+                                                            ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
+                                                            : lesson.price)} ₽
+                                                </>
+                                            )}
                                         </span>
                                         <LessonBadges
                                             price={lesson.price}

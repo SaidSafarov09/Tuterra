@@ -228,33 +228,35 @@ export function LessonFormWithDateTime({
                     </div>
                 )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
-                    <Checkbox
-                        checked={formData.isPaid}
-                        onChange={(e) => handleChange('isPaid', e.target.checked)}
-                        label={
-                            formData.recurrence?.enabled
-                                ? 'Оплачено только первое занятие'
-                                : 'Оплачено'
-                        }
-                        disabled={isSubmitting}
-                    />
-
-                    {formData.recurrence?.enabled && (
+                {formData.price !== '0' && formData.price !== '' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
                         <Checkbox
-                            checked={formData.isPaidAll || false}
-                            onChange={(e) => {
-                                const checked = e.target.checked
-                                handleChange('isPaidAll', checked)
-                                if (checked) {
-                                    handleChange('isPaid', true)
-                                }
-                            }}
-                            label="Оплачены все занятия серии"
+                            checked={formData.isPaid}
+                            onChange={(e) => handleChange('isPaid', e.target.checked)}
+                            label={
+                                formData.recurrence?.enabled
+                                    ? 'Оплачено только первое занятие'
+                                    : 'Оплачено'
+                            }
                             disabled={isSubmitting}
                         />
-                    )}
-                </div>
+
+                        {formData.recurrence?.enabled && (
+                            <Checkbox
+                                checked={formData.isPaidAll || false}
+                                onChange={(e) => {
+                                    const checked = e.target.checked
+                                    handleChange('isPaidAll', checked)
+                                    if (checked) {
+                                        handleChange('isPaid', true)
+                                    }
+                                }}
+                                label="Оплачены все занятия серии"
+                                disabled={isSubmitting}
+                            />
+                        )}
+                    </div>
+                )}
             </div>
 
             <DateTimeRecurrenceModal
