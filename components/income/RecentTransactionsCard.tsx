@@ -79,7 +79,12 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                                     </span>
                                 </div>
                             </div>
-                            <span className={styles.transactionAmount}>+{tx.price} ₽</span>
+                            <span
+                                className={styles.transactionAmount}
+                                style={Number(tx.price) === 0 ? { color: 'var(--primary)' } : {}}
+                            >
+                                {Number(tx.price) === 0 ? 'Бесплатно' : `+${tx.price} ₽`}
+                            </span>
                         </div>
                     ))
                 )}

@@ -52,8 +52,14 @@ export const DebtsBlock: React.FC<DebtsBlockProps> = ({ debts }) => {
                                 )}
                             </div>
                         </div>
-                        <div className={styles.amount}>
-                            {debt.amount.toLocaleString()} ₽
+                        <div
+                            className={styles.amount}
+                        >
+                            {Number(debt.amount) === 0 ? (
+                                <span style={{ color: 'var(--primary)' }}>Бесплатно</span>
+                            ) : (
+                                `${debt.amount.toLocaleString()} ₽`
+                            )}
                         </div>
                     </div>
                 ))}

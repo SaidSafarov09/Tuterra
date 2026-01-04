@@ -59,7 +59,12 @@ const TransactionItem = ({ tx, onClose, router }: { tx: any, onClose: () => void
                         </span>
                     </div>
                 </div>
-                <span className={styles.transactionAmount}>+{tx.price} ₽</span>
+                <span
+                    className={styles.transactionAmount}
+                    style={Number(tx.price) === 0 ? { color: 'var(--primary)' } : {}}
+                >
+                    {Number(tx.price) === 0 ? 'Бесплатно' : `+${tx.price} ₽`}
+                </span>
             </div>
 
             {hasParticipants && (
@@ -81,8 +86,11 @@ const TransactionItem = ({ tx, onClose, router }: { tx: any, onClose: () => void
                                     {p.student?.name || 'Ученик'}
                                 </div>
                                 {p.hasPaid ? (
-                                    <span className={styles.participantAmount}>
-                                        +{tx.price / (tx.lessonPayments?.filter((lp: any) => lp.hasPaid).length || 1)} ₽
+                                    <span
+                                        className={styles.participantAmount}
+                                        style={Number(tx.price) === 0 ? { color: 'var(--primary)' } : {}}
+                                    >
+                                        {Number(tx.price) === 0 ? 'Бесплатно' : `+${tx.price / (tx.lessonPayments?.filter((lp: any) => lp.hasPaid).length || 1)} ₽`}
                                     </span>
                                 ) : (
                                     <span className={isFutureOrOngoing ? styles.pendingLabel : styles.debtLabel}>

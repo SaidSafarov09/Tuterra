@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
                 where: {
                     ownerId: user.id,
                     isCanceled: false,
+                    price: { gt: 0 },
                     OR: [
                         { isPaid: false, groupId: null },
                         { lessonPayments: { some: { hasPaid: false } } }
@@ -127,9 +128,9 @@ export async function GET(request: NextRequest) {
                 const totalStudents = lesson.group.students?.length || 0
                 const paidPayments = lesson.lessonPayments?.filter(p => p.hasPaid).length || 0
                 lessonIncome = paidPayments * lesson.price
-                isLessonPaid = totalStudents > 0 && paidPayments >= totalStudents
+                isLessonPaid = lesson.price === 0 || (totalStudents > 0 && paidPayments >= totalStudents)
             } else {
-                if (lesson.isPaid) {
+                if (lesson.isPaid || lesson.price === 0) {
                     lessonIncome = lesson.price
                     isLessonPaid = true
                 }

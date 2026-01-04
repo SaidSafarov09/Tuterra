@@ -273,13 +273,13 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                     <div className={styles.lessonPriceContainer}>
                         <div
                             className={styles.lessonPrice}
-                            style={{ color: isFullyPaid ? 'var(--success)' : 'var(--text-primary)' }}
+                            style={{ color: Number(lesson.price) === 0 ? 'var(--primary)' : isFullyPaid ? 'var(--success)' : 'var(--text-primary)' }}
                         >
                             {isStudent
-                                ? `${lesson.price} ₽`
+                                ? (Number(lesson.price) === 0 ? 'Бесплатно' : `${lesson.price} ₽`)
                                 : (lesson.group
-                                    ? `${(lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price} ₽`
-                                    : `${lesson.price} ₽`)}
+                                    ? (Number(lesson.price) === 0 ? 'Бесплатно' : `${(lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price} ₽`)
+                                    : (Number(lesson.price) === 0 ? 'Бесплатно' : `${lesson.price} ₽`))}
                         </div>
                         <LessonBadges
                             price={lesson.price}
