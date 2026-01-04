@@ -17,6 +17,13 @@ interface User {
     isPro?: boolean
     proActivatedAt?: string | null
     proExpiresAt?: string | null
+    telegramId?: string | null
+    referralCode?: string | null
+    bonusMonthsEarned?: number
+    _count?: {
+        invitedUsers?: number
+        groups?: number
+    }
 }
 
 interface AuthState {

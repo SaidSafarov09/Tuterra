@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { generateStudentSlug } from '@/lib/slugUtils'
 import { sendTelegramNotification } from '@/lib/telegram'
 import { generateInvitationCode } from '@/lib/invitationUtils'
+import { checkAndGrantInviterBonus } from '@/lib/referral'
 
 export const dynamic = 'force-dynamic'
 
@@ -199,6 +200,9 @@ export async function POST(request: NextRequest) {
 
         // Notify
         await sendTelegramNotification(payload.userId, `👤 **Новый ученик:**\n\n**${student.name}** добавлен в систему.`, 'statusChanges')
+
+        // Trigger referral check
+        checkAndGrantInviterBonus(payload.userId).catch(e => console.error('Referral check error:', e))
 
         return NextResponse.json(updatedStudent, { status: 201 })
     } catch (error) {

@@ -4,6 +4,7 @@ import { signToken } from '@/lib/jwt'
 import { cookies } from 'next/headers'
 import { createWelcomeNotifications } from '@/lib/welcomeNotifications'
 import { linkStudentToTutor } from '@/lib/studentConnection'
+import { processTeacherReferral } from '@/lib/referral'
 import bcrypt from 'bcrypt'
 
 export async function POST(request: NextRequest) {
@@ -96,6 +97,13 @@ export async function POST(request: NextRequest) {
                                 error: 'Этот аккаунт уже зарегистрирован как преподаватель и не может быть учеником'
                             }, { status: 400 })
                         }
+                    }
+                } else if (!isStudent && refCode) {
+                    // Teacher to Teacher referral
+                    try {
+                        await processTeacherReferral(user.id, refCode)
+                    } catch (e) {
+                        console.error('Teacher referral linking error:', e)
                     }
                 }
             } else {

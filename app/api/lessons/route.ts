@@ -6,6 +6,7 @@ import { generateRecurringDates, validateRecurrenceRule } from '@/lib/recurring-
 import type { RecurrenceRule } from '@/types/recurring'
 import { generateLessonSlug } from '@/lib/slugUtils'
 import { checkLessonOverlap, checkRecurringConflicts, formatConflictMessage } from '@/lib/lessonValidation'
+import { checkAndGrantInviterBonus } from '@/lib/referral'
 
 export const dynamic = 'force-dynamic'
 
@@ -264,6 +265,9 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
     const { notifyLessonCreated } = await import('@/lib/lesson-actions-server')
     await notifyLessonCreated(userId, lesson, false, 1, timezone)
 
+    // Trigger referral check
+    checkAndGrantInviterBonus(userId).catch(e => console.error('Referral check error:', e))
+
     return NextResponse.json(lesson, { status: 201 })
 }
 
@@ -391,6 +395,9 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
     if (firstLesson) {
         const { notifyLessonCreated } = await import('@/lib/lesson-actions-server')
         await notifyLessonCreated(userId, firstLesson, true, dates.length, timezone)
+
+        // Trigger referral check
+        checkAndGrantInviterBonus(userId).catch(e => console.error('Referral check error:', e))
     }
 
     return NextResponse.json({

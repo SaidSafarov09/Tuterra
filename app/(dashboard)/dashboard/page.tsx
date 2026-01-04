@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { UpgradeToProModal } from '@/components/pro/UpgradeToProModal'
@@ -29,8 +29,11 @@ import { CircleCheck } from 'lucide-react'
 import { StudentConnectionModal } from '@/components/students/StudentConnectionModal'
 import { Modal } from '@/components/ui/Modal'
 import { PaymentSuccessModal } from '@/components/pro/PaymentSuccessModal'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense } from 'react'
+import { PromotionalBanner } from '@/components/dashboard/PromotionalBanner'
+import { settingsApi } from '@/services/api'
+import { AnimatePresence } from 'framer-motion'
 
 function DashboardContent() {
     const { user, setUser } = useAuthStore()
@@ -45,6 +48,57 @@ function DashboardContent() {
     const [isPaymentSuccessModalOpen, setIsPaymentSuccessModalOpen] = React.useState(false)
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false)
     const [selectedPlan, setSelectedPlan] = React.useState<'month' | 'year'>('year')
+    const [isTelegramBannerVisible, setIsTelegramBannerVisible] = useState(false)
+    const [isReferralBannerVisible, setIsReferralBannerVisible] = useState(false)
+    const router = useRouter()
+
+    useEffect(() => {
+        // Проверяем, нужно ли показывать баннер Telegram
+        const telegramDismissedUntil = localStorage.getItem('telegram_banner_dismissed_until')
+        const referralDismissedUntil = localStorage.getItem('referral_banner_dismissed_until')
+        const now = Date.now()
+
+        if (!user?.telegramId && (!telegramDismissedUntil || now > parseInt(telegramDismissedUntil))) {
+            setIsTelegramBannerVisible(true)
+            setIsReferralBannerVisible(false) // Приоритет боту
+        } else if (user?.telegramId && (!referralDismissedUntil || now > parseInt(referralDismissedUntil))) {
+            setIsReferralBannerVisible(true)
+            setIsTelegramBannerVisible(false)
+        } else {
+            setIsTelegramBannerVisible(false)
+            setIsReferralBannerVisible(false)
+        }
+    }, [user?.telegramId])
+
+    const handleConnectTelegram = async () => {
+        try {
+            const res = await settingsApi.generateTelegramAuthCode()
+            if (res.code) {
+                window.open(`https://t.me/TuterraBot?start=${res.code}`, '_blank')
+            } else {
+                toast.error('Не удалось получить код привязки')
+            }
+        } catch (e) {
+            toast.error('Ошибка при подключении Telegram')
+        }
+    }
+
+    const dismissTelegramBanner = () => {
+        setIsTelegramBannerVisible(false)
+        // Скрываем на 3 дня
+        const until = Date.now() + (3 * 24 * 60 * 60 * 1000)
+        localStorage.setItem('telegram_banner_dismissed_until', until.toString())
+    }
+
+    const dismissReferralBanner = () => {
+        setIsReferralBannerVisible(false)
+        const until = Date.now() + (7 * 24 * 60 * 60 * 1000) // Реферал реже
+        localStorage.setItem('referral_banner_dismissed_until', until.toString())
+    }
+
+    const handleReferralAction = () => {
+        router.push('/settings?tab=referral')
+    }
 
     const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
         try {
@@ -140,6 +194,29 @@ function DashboardContent() {
                 title="Главная"
                 subtitle={isStudent ? "Ваш учебный процесс" : "Обзор вашей активности"}
             />
+
+            <AnimatePresence>
+                {isTelegramBannerVisible && !isStudent && (
+                    <PromotionalBanner
+                        variant="telegram"
+                        title="Подключите Telegram ассистента"
+                        description="Получайте уведомления об уроках и оплатах, управляйте расписанием прямо в Telegram. Это бесплатно и занимает 10 секунд."
+                        buttonText="Подключить сейчас"
+                        onAction={handleConnectTelegram}
+                        onClose={dismissTelegramBanner}
+                    />
+                )}
+                {isReferralBannerVisible && !isStudent && (
+                    <PromotionalBanner
+                        variant="referral"
+                        title="Пригласите коллегу — получите месяц PRO"
+                        description="За каждого приглашенного репетитора мы дарим 30 дней PRO-подписки вам и вашему другу. Развивайтесь вместе!"
+                        buttonText="Пригласить друга"
+                        onAction={handleReferralAction}
+                        onClose={dismissReferralBanner}
+                    />
+                )}
+            </AnimatePresence>
 
             <div className={styles.statsContainer}>
                 <div className={styles.statsGrid} data-onboarding="dashboard-stats">

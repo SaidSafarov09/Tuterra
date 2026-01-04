@@ -13,6 +13,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { settingsApi } from '@/services/api'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { SubscriptionSettings } from '@/components/settings/SubscriptionSettings'
+import { ReferralSettings } from '@/components/settings/ReferralSettings'
 import { GENERAL_MESSAGES } from '@/constants/messages'
 import { SettingsFormSkeleton } from '@/components/skeletons'
 import { formatPhoneNumber } from '@/lib/validation'
@@ -20,6 +21,14 @@ import styles from './page.module.scss'
 import { TABS, TIMEZONES, REGIONS } from '@/constants'
 import { AnimatePresence, motion } from 'framer-motion'
 import { maskDate, displayFormatDate, apiFormatDate } from '@/lib/dateMask'
+import {
+    UserIcon,
+    CreditCardIcon,
+    GiftIcon,
+    BellIcon,
+    PaletteIcon,
+    SettingsIcon
+} from '@/components/icons/Icons'
 
 interface SettingsPageProps {
     onLeaveSettings?: () => void
@@ -316,18 +325,29 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
             </div>
 
             <div className={styles.tabs}>
-                {TABS.filter(tab => !(user?.role === 'student' && tab.id === 'subscription')).map((tab) => (
-                    <button
-                        key={tab.id}
-                        className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-                        onClick={() => {
-                            setActiveTab(tab.id)
-                            router.push(`/settings?tab=${tab.id}`, { scroll: false })
-                        }}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
+                {TABS.filter(tab => !(user?.role === 'student' && tab.id === 'subscription')).map((tab) => {
+                    let Icon = SettingsIcon
+                    if (tab.icon === 'User') Icon = UserIcon
+                    if (tab.icon === 'Premium') Icon = CreditCardIcon
+                    if (tab.icon === 'Gift') Icon = GiftIcon
+                    if (tab.icon === 'Bell') Icon = BellIcon
+                    if (tab.icon === 'Palette') Icon = PaletteIcon
+
+                    return (
+                        <button
+                            key={tab.id}
+                            className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+                            onClick={() => {
+                                setActiveTab(tab.id)
+                                router.push(`/settings?tab=${tab.id}`, { scroll: false })
+                            }}
+                            title={tab.label}
+                        >
+                            <Icon size={20} className={styles.tabIcon} />
+                            <span className={styles.tabLabel}>{tab.label}</span>
+                        </button>
+                    )
+                })}
             </div>
 
             <AnimatePresence mode="wait">
@@ -376,7 +396,6 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                                                     name="lastName"
                                                     value={formData.lastName}
                                                     onChange={handleChange}
-                                                    required
                                                 />
                                             </div>
                                             <Input
@@ -499,8 +518,16 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
 
 
                         {activeTab === 'subscription' && user?.role === 'teacher' && (
-                            <div>
+                            <div className={styles.tabSection}>
+                                <h2 className={styles.tabTitle}>Подписка</h2>
                                 <SubscriptionSettings />
+                            </div>
+                        )}
+
+                        {activeTab === 'referral' && user?.role === 'teacher' && (
+                            <div className={styles.tabSection}>
+                                <h2 className={styles.tabTitle}>Бонусы</h2>
+                                <ReferralSettings />
                             </div>
                         )}
 
@@ -528,7 +555,7 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                         )}
 
 
-                        {activeTab !== 'subscription' && (
+                        {!['subscription', 'referral'].includes(activeTab) && (
                             <div className={styles.submitSection}>
                                 <Button type="submit" disabled={isSaving}>
                                     {isSaving ? 'Сохранение...' : 'Сохранить изменения'}

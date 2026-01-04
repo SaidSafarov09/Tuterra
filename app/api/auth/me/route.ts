@@ -42,9 +42,12 @@ export async function GET(request: NextRequest) {
                 isPro: true,
                 proActivatedAt: true,
                 proExpiresAt: true,
+                telegramId: true,
+                bonusMonthsEarned: true,
                 _count: {
                     select: {
                         groups: true,
+                        invitedUsers: true,
                     },
                 },
             },
@@ -81,6 +84,7 @@ export async function GET(request: NextRequest) {
                     isPro: true,
                     proActivatedAt: true,
                     proExpiresAt: true,
+                    telegramId: true,
                     _count: {
                         select: { groups: true }
                     }

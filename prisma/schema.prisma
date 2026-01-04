@@ -42,6 +42,11 @@ model User {
   learningPlans     LearningPlan[]
   onboardingCompleted Boolean            @default(false)
   referralCode      String?            @unique
+  invitedById       String?
+  invitedBy         User?              @relation("ReferralTree", fields: [invitedById], references: [id])
+  invitedUsers      User[]             @relation("ReferralTree")
+  referralBonusClaimed Boolean         @default(false)
+  bonusMonthsEarned Int                @default(0)
   
   // PRO subscription fields
   isPro             Boolean            @default(false)

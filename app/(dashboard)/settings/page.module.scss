@@ -4,19 +4,26 @@
 
 .tabs {
     display: flex;
-    gap: 24px;
+    justify-content: flex-start;
+    gap: 32px;
     border-bottom: 1px solid var(--border-light);
     margin-bottom: 32px;
 
+    @media (min-width: 768px) and (max-width: 1080px) {
+        gap: 24px;
+    }
+
     @media (max-width: 768px) {
-        gap: 12px;
+        gap: 0;
+        justify-content: space-between;
     }
 }
 
 .tab {
-    padding: 12px 0;
-    font-size: 16px;
-    font-weight: 500;
+    padding: 12px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     color: var(--text-secondary);
     background: none;
     border: none;
@@ -33,9 +40,32 @@
         border-bottom-color: var(--primary);
     }
 
+    @media (min-width: 768px) and (max-width: 1080px) {
+        padding: 12px 0;
+
+    }
+
     @media (max-width: 768px) {
-        font-size: 13px;
-        padding: 8px 0;
+        padding: 12px 0;
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+.tabIcon {
+    display: block;
+}
+
+.tabLabel {
+    font-size: 16px;
+    font-weight: 500;
+
+    @media (min-width: 768px) and (max-width: 1080px) {
+        font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+        display: none;
     }
 }
 
@@ -164,5 +194,22 @@
 @media (max-width: 768px) {
     .title {
         font-size: 24px;
+    }
+}
+
+.tabSection {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.tabTitle {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+
+    @media (max-width: 768px) {
+        font-size: 20px;
     }
 }

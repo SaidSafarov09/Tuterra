@@ -4,24 +4,20 @@ import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Sun, Moon, Monitor } from 'lucide-react'
 import styles from './ThemeToggle.module.scss'
-import { toast } from 'sonner'
 
 export function ThemeToggle() {
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
 
-    
     useEffect(() => {
         setMounted(true)
     }, [])
 
-    if (!mounted) {
-        return null
-    }
-
     const handleThemeChange = async (newTheme: string) => {
+        // Immediate UI update through next-themes
         setTheme(newTheme)
 
+        // Persistent save in background
         try {
             await fetch('/api/user/theme', {
                 method: 'PUT',
@@ -30,8 +26,19 @@ export function ThemeToggle() {
             })
         } catch (error) {
             console.error('Failed to save theme preference', error)
-            
         }
+    }
+
+    // Standard next-themes mounting pattern to avoid hydration mismatch
+    if (!mounted) {
+        return (
+            <div className={styles.container}>
+                <label className={styles.label}>Тема оформления</label>
+                <div className={styles.toggleGroup}>
+                    <div className={styles.toggleButton}><Sun size={18} />...</div>
+                </div>
+            </div>
+        )
     }
 
     return (

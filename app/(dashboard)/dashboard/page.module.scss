@@ -16,15 +16,23 @@
 
 .statsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 24px;
     margin-bottom: 32px;
+
+    @media (max-width: 1200px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .sectionsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
 }
 
 .lessonsList {
@@ -34,15 +42,15 @@
 }
 
 @media (max-width: 768px) {
-    .sectionsGrid {
-        grid-template-columns: 1fr;
-        gap: 18px;
-    }
-
     .statsGrid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 18px;
-        margin: 24px 0;
+        gap: 16px;
+        margin-bottom: 24px;
+        margin-top: 16px;
+    }
+
+    .sectionsGrid {
+        gap: 16px;
     }
 }
 

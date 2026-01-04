@@ -6,12 +6,12 @@ import { useAuthStore } from '@/store/auth'
 export const ProBadge: React.FC = () => {
     const { user } = useAuthStore()
 
-    if (user?.plan !== 'pro') return null
+    const isPro = user?.isPro || user?.plan === 'pro'
+    if (!isPro) return null
 
     return (
         <div className={styles.proContainer}>
-            <CrownIcon size={20} className={styles.proIcon} />
-            <span className={styles.proText}>Pro</span>
+            <span className={styles.proText}>PRO</span>
         </div>
     )
 }

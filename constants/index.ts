@@ -25,10 +25,11 @@ export const STATUS_COLORS = {
 export const WEEK_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 export const TABS = [
-    { id: 'general', label: 'Основные' },
-    { id: 'subscription', label: 'Подписка' },
-    { id: 'notifications', label: 'Уведомления' },
-    { id: 'appearance', label: 'Оформление' },
+    { id: 'general', label: 'Основные', icon: 'User' },
+    { id: 'subscription', label: 'Подписка', icon: 'Premium' },
+    { id: 'referral', label: 'Бонусы', icon: 'Gift' },
+    { id: 'notifications', label: 'Уведомления', icon: 'Bell' },
+    { id: 'appearance', label: 'Оформление', icon: 'Palette' },
 ]
 
 export const TIMEZONES = [

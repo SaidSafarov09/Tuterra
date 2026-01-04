@@ -54,7 +54,9 @@ import {
     Unlink,
     Lock,
     Crown,
-    HelpCircle
+    HelpCircle,
+    Gift,
+    CreditCard
 } from 'lucide-react'
 
 // ... (existing exports)
@@ -136,3 +138,5 @@ export const MoreVerticalIcon: React.FC<IconProps> = (props) => <MoreVertical {.
 export const BellIcon: React.FC<IconProps> = (props) => <Bell {...props} />
 export const LinkIcon: React.FC<IconProps> = (props) => <Link {...props} />
 export const SupportIcon: React.FC<IconProps> = (props) => <HelpCircle {...props} />
+export const GiftIcon: React.FC<IconProps> = (props) => <Gift {...props} />
+export const CreditCardIcon: React.FC<IconProps> = (props) => <CreditCard {...props} />
