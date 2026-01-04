@@ -367,6 +367,8 @@ export function LessonForm({
                         if (isTrial) {
                             handleChange('price', '0')
                             handleChange('isPaid', false)
+                        } else if (formData.price === '0') {
+                            handleChange('price', '')
                         }
                     }}
                     disabled={isSubmitting}

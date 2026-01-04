@@ -13,6 +13,7 @@ const lessonSchema = z.object({
     price: z.number().nonnegative('Цена должна быть положительной'),
     isPaid: z.boolean(),
     isCanceled: z.boolean().optional(),
+    isTrial: z.boolean().optional(),
     notes: z.string().optional(),
     topic: z.string().optional(),
     duration: z.number().int().positive().optional(),
@@ -428,6 +429,7 @@ export async function PATCH(
         if (body.groupId !== undefined) updateData.groupId = body.groupId
         if (body.subjectId !== undefined) updateData.subjectId = body.subjectId
         if (body.isCanceled !== undefined) updateData.isCanceled = body.isCanceled
+        if (body.isTrial !== undefined) updateData.isTrial = body.isTrial
         if (body.notes !== undefined) updateData.notes = body.notes
         if (body.topic !== undefined) updateData.topic = body.topic
         if (body.duration !== undefined) updateData.duration = body.duration

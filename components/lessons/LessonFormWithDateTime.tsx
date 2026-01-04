@@ -159,11 +159,12 @@ export function LessonFormWithDateTime({
                 </div>
 
                 <TrialToggle
-                    isTrial={formData.price === '0'}
+                    isTrial={formData.isTrial || formData.price === '0'}
                     onChange={(isTrial) => {
+                        handleChange('isTrial', isTrial)
                         if (isTrial) {
                             handleChange('price', '0')
-                        } else {
+                        } else if (formData.price === '0') {
                             handleChange('price', '')
                         }
                     }}
