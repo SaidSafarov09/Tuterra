@@ -100,3 +100,70 @@ export const sendOTP = async (email: string, code: string) => {
         return { success: false, error };
     }
 };
+
+export const sendReferralBonusEmail = async (email: string, userName: string, friendName: string) => {
+    try {
+        await transporter.sendMail({
+            from: `"Tuterra" <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: '🎁 Поздравляем! Вам начислен бонус — Tuterra',
+            html: `
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        @media screen and (max-width: 480px) {
+                            .container { border-radius: 16px !important; }
+                            .header { padding: 32px 20px !important; }
+                            .content { padding: 32px 20px !important; }
+                        }
+                    </style>
+                </head>
+                <body style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px 0;">
+                    <div class="container" style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 40px rgba(74, 108, 247, 0.08); border: 1px solid #f1f5f9;">
+                        <!-- Header -->
+                        <div class="header" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 48px 40px; text-align: center; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1px;">Tuterra</h1>
+                            <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px; font-weight: 400;">Подарок для вас!</p>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="content" style="padding: 48px 40px; text-align: center;">
+                            <div style="font-size: 64px; margin-bottom: 24px;">🎁</div>
+                            
+                            <h2 style="font-size: 26px; color: #0f172a; margin: 0 0 16px 0; font-weight: 800; letter-spacing: -0.5px;">Здравствуйте, ${userName}!</h2>
+                            
+                            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 auto 32px auto;">
+                                Ваш коллега <strong>${friendName}</strong> активно начал пользоваться Tuterra! 
+                                По условиям реферальной программы, мы начислили вам <strong>30 дней PRO-подписки</strong> за это приглашение.
+                            </p>
+                            
+                            <div style="background: #fffbeb; padding: 24px; border-radius: 20px; border: 1px solid #fef3c7; margin: 32px 0;">
+                                <div style="font-size: 20px; color: #f59e0b; font-weight: 800; line-height: 1.4;">
+                                    Ваш статус обновлен: +30 дней PRO
+                                </div>
+                            </div>
+                            
+                            <a href="${process.env.NEXT_PUBLIC_APP_URL}/settings?tab=referral" 
+                               style="display: inline-block; padding: 16px 32px; background-color: #4A6CF7; color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px;">
+                                Проверить в кабинете
+                            </a>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="footer" style="padding: 32px 20px; background: #fdfdfe; text-align: center; border-top: 1px solid #f1f5f9;">
+                            <p style="margin: 0; color: #64748b; font-size: 14px; font-weight: 600;">© ${new Date().getFullYear()} Tuterra.online</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `,
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('SMTP Referral Error:', error);
+        return { success: false, error };
+    }
+};

@@ -12,6 +12,7 @@ import { MobileHeader } from './MobileHeader'
 import { DesktopHeader } from './DesktopHeader'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider'
+import { ReferralBonusManager } from '@/components/settings/ReferralBonusManager'
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -116,6 +117,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         {children}
                     </div>
                 </main>
+                <ReferralBonusManager />
             </div>
         </OnboardingProvider>
     )

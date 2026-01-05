@@ -1,5 +1,6 @@
 import { prisma } from './prisma'
 import { addDays } from 'date-fns'
+import { sendReferralBonusEmail } from './mail'
 
 export const REFERRAL_LIMITS = {
     MAX_BONUS_MONTHS: 3,     // Максимум 3 бонусных месяца на аккаунт
@@ -15,11 +16,12 @@ export const REFERRAL_LIMITS = {
 export async function processTeacherReferral(inviteeId: string, refCode: string) {
     const invitee = await prisma.user.findUnique({
         where: { id: inviteeId },
-        select: { id: true, invitedById: true }
+        select: { id: true, invitedById: true, role: true }
     })
 
-    // Если уже привязан к кому-то, ничего не делаем
-    if (!invitee || invitee.invitedById) return
+    // Если уже привязан к кому-то ИЛИ это ученик, ничего не делаем
+    // Реферальная система "Пригласи друга" работает только для преподавателей
+    if (!invitee || invitee.invitedById || invitee.role === 'student') return
 
     const inviter = await prisma.user.findUnique({
         where: { referralCode: refCode.trim().toUpperCase() }
@@ -89,6 +91,36 @@ export async function checkAndGrantInviterBonus(userId: string) {
                     referralBonusClaimed: true
                 }
             })
+
+            // Создаем уведомление для пригласившего
+            const inviteeName = invitee.firstName
+                ? `${invitee.firstName}${invitee.lastName ? ' ' + invitee.lastName : ''}`
+                : 'Ваш друг'
+
+            await prisma.notification.create({
+                data: {
+                    userId: inviter.id,
+                    type: 'referral_bonus_earned',
+                    title: '🎉 Вы получили +30 дней PRO!',
+                    message: `${inviteeName} активно использует Tuterra! Вы получили 30 дней PRO в подарок.`,
+                    link: '/settings?tab=referral',
+                    data: JSON.stringify({
+                        inviteeId: userId,
+                        inviteeName,
+                        bonusDays: 30,
+                        earnedAt: new Date().toISOString()
+                    })
+                }
+            })
+
+            // Отправляем email-уведомление, если у пользователя есть email
+            if (inviter.email) {
+                try {
+                    await sendReferralBonusEmail(inviter.email, inviter.firstName || 'Коллега', inviteeName)
+                } catch (emailError) {
+                    console.error('Failed to send referral bonus email:', emailError)
+                }
+            }
 
             console.log(`Referral: Threshold reached for ${userId}. Inviter ${inviter.id} granted 30 days PRO.`)
         } else {

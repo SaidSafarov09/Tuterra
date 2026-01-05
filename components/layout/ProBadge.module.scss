@@ -2,16 +2,27 @@
     display: inline-flex;
     align-items: center;
     background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    padding: 2px 8px;
+    padding: 4px 8px;
     border-radius: 6px;
     margin-left: 8px;
     box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+    margin-top: 6px;
+
+    @media (max-width: 768px) {
+        margin-top: 0px;
+        padding: 2px 4px;
+        border-radius: 4px;
+    }
 }
 
 .proText {
     color: white;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+
+    @media (max-width: 768px) {
+        font-size: 10px;
+    }
 }

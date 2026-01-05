@@ -11,7 +11,8 @@ import {
     StudentsIcon,
     CheckIcon,
     CircleXIcon,
-    BanIcon
+    BanIcon,
+    SubjectsIcon
 } from '@/components/icons/Icons'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatCard } from '@/components/ui/StatCard'
@@ -224,8 +225,8 @@ function DashboardContent() {
                         <>
                             <StatCardSkeleton />
                             <StatCardSkeleton />
-                            {!isStudent && <StatCardSkeleton />}
-                            {!isStudent && <StatCardSkeleton />}
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
                         </>
                     ) : (
                         <>
@@ -242,6 +243,12 @@ function DashboardContent() {
                                         label="Мои занятия"
                                         value={stats?.totalLessonsCount || 0}
                                         href="/student/lessons"
+                                    />
+                                    <StatCard
+                                        icon={<SubjectsIcon size={32} color="#14B8A6" />}
+                                        label="Мои предметы"
+                                        value={stats?.subjectsCount || 0}
+                                        href="/student/subjects"
                                     />
                                 </>
                             ) : (

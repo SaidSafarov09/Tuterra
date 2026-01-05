@@ -22,7 +22,8 @@ import {
     Moon,
     Sparkles,
     User,
-    Send
+    Send,
+    Gift
 } from 'lucide-react'
 import styles from './NotificationCenter.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -33,7 +34,7 @@ export interface Notification {
     id: string
     title: string
     message: string
-    type: 'lesson_reminder' | 'unpaid_lesson' | 'status_change' | 'income' | 'debt' | 'missing_lessons' | 'onboarding' | 'lesson_deleted' | 'lesson_rescheduled' | 'lesson_created' | 'morning_briefing' | 'evening_summary' | 'system' | 'profile_setup' | 'telegram_invite'
+    type: 'lesson_reminder' | 'unpaid_lesson' | 'status_change' | 'income' | 'debt' | 'missing_lessons' | 'onboarding' | 'lesson_deleted' | 'lesson_rescheduled' | 'lesson_created' | 'morning_briefing' | 'evening_summary' | 'system' | 'profile_setup' | 'telegram_invite' | 'referral_bonus_earned'
     isRead: boolean
     createdAt: string
     link?: string
@@ -168,6 +169,7 @@ export const NotificationCenter: React.FC = () => {
             case 'system': return <Sparkles size={20} />
             case 'profile_setup': return <User size={20} />
             case 'telegram_invite': return <Send size={20} />
+            case 'referral_bonus_earned': return <Gift size={20} />
             default: return <Info size={20} />
         }
     }
@@ -186,6 +188,7 @@ export const NotificationCenter: React.FC = () => {
             case 'system': return styles.typeIconSystem
             case 'profile_setup': return styles.typeIconProfile
             case 'telegram_invite': return styles.typeIconTelegram
+            case 'referral_bonus_earned': return styles.typeIconReferral
             default: return styles.typeIconInfo
         }
     }

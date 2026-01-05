@@ -174,10 +174,23 @@ export async function GET(request: NextRequest) {
 
         const teachersCount = new Set(ownerIds).size
 
+        // Get unique subjects the student is learning
+        const subjects = await prisma.subject.findMany({
+            where: {
+                OR: [
+                    { students: { some: { id: { in: studentIds } } } },
+                    { groups: { some: { students: { some: { id: { in: studentIds } } } } } }
+                ]
+            },
+            select: { id: true }
+        })
+        const subjectsCount = subjects.length
+
         return NextResponse.json({
             success: true,
             stats: {
                 teachersCount,
+                subjectsCount,
                 totalLessonsCount,
                 monthLessonsCount,
                 upcomingLessons: upcomingLessons.map(lesson => ({
