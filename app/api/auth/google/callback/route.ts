@@ -58,14 +58,19 @@ export async function GET(req: NextRequest) {
         // Handle referral linking
         const { cookies } = await import('next/headers')
         const cookieStore = await cookies()
-        const refCode = cookieStore.get('referral-code')?.value
+        const studentRef = cookieStore.get('student-referral-code')?.value
+        const teacherRef = cookieStore.get('referral-code')?.value
 
-        if (refCode) {
+        if (studentRef || teacherRef) {
             try {
                 const { linkStudentToTutor } = await import('@/lib/studentConnection')
-                const linked = await linkStudentToTutor(user.id, refCode)
-                if (linked) {
-                    user.role = 'student'
+                const { processTeacherReferral } = await import('@/lib/referral')
+
+                // If specialized student link OR user explicitly chose student role
+                if (studentRef) {
+                    await linkStudentToTutor(user.id, studentRef)
+                } else if (teacherRef) {
+                    await processTeacherReferral(user.id, teacherRef)
                 }
             } catch (e: any) {
                 console.error('Referral linking error during Google auth:', e)
@@ -75,8 +80,9 @@ export async function GET(req: NextRequest) {
                     return response
                 }
             }
-            // Clear the referral cookie
+            // Clear the referral cookies
             cookieStore.delete('referral-code')
+            cookieStore.delete('student-referral-code')
         }
 
         return createAuthSession(user.id, user.phone || '', req.url, user.role)

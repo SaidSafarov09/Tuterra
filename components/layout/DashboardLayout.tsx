@@ -41,19 +41,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             try {
                 const data = await settingsApi.get()
                 setUser({
-                    id: data.id,
-                    firstName: data.firstName || null,
-                    lastName: data.lastName || null,
+                    ...data,
                     name: data.name || `${data.firstName} ${data.lastName}`.trim() || null,
-                    email: data.email || null,
-                    phone: data.phone || null,
-                    avatar: data.avatar || null,
-                    birthDate: data.birthDate || null,
-                    region: data.region || null,
-                    role: data.role,
-                    onboardingCompleted: data.onboardingCompleted || false,
-                    plan: data.plan as any,
-                })
+                } as any)
 
 
                 if (data.theme) {

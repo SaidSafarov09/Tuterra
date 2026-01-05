@@ -79,6 +79,32 @@ const USER_FIELDS_BASE = {
     isPro: true,
     proActivatedAt: true,
     proExpiresAt: true,
+    bonusMonthsEarned: true,
+    invitedUsers: {
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+            createdAt: true,
+            referralBonusClaimed: true,
+            _count: {
+                select: {
+                    students: true,
+                    lessons: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    },
+    _count: {
+        select: {
+            groups: true,
+            invitedUsers: true,
+        },
+    },
 }
 
 const USER_SELECT_FIELDS = {

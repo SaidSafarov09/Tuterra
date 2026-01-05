@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Modal, ModalFooter } from '@/components/ui/Modal'
 import { RecurrenceSection } from '@/components/lessons/RecurrenceSection'
 import { DatePicker } from '@/components/ui/DatePicker'
@@ -41,21 +41,41 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
     isEdit = false,
     showRecurrence = true,
 }) => {
+    // Local state to track changes before confirmation
+    const [localDate, setLocalDate] = useState<Date | undefined>(date)
+    const [localRecurrence, setLocalRecurrence] = useState<RecurrenceRule | undefined>(recurrence)
+
+    // Sync local state when props change or modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setLocalDate(date)
+            setLocalRecurrence(recurrence)
+        }
+    }, [isOpen, date, recurrence])
+
     const handleConfirm = () => {
-        if (date) {
-            onConfirm(date, recurrence)
+        if (localDate) {
+            onConfirm(localDate, localRecurrence)
             onClose()
         }
     }
+
+    const handleLocalDateChange = (newDate: Date | undefined) => {
+        setLocalDate(newDate)
+    }
+
+    const handleLocalRecurrenceChange = (newRecurrence: RecurrenceRule) => {
+        setLocalRecurrence(newRecurrence)
+    }
     const willAutoAddWeekday = () => {
-        if (!date || !recurrence?.enabled) return false
-        if (recurrence.type === 'daily') return false
-        const daysArray = typeof recurrence.daysOfWeek === 'string'
-            ? JSON.parse(recurrence.daysOfWeek || '[]')
-            : recurrence.daysOfWeek;
+        if (!localDate || !localRecurrence?.enabled) return false
+        if (localRecurrence.type === 'daily') return false
+        const daysArray = typeof localRecurrence.daysOfWeek === 'string'
+            ? JSON.parse(localRecurrence.daysOfWeek || '[]')
+            : localRecurrence.daysOfWeek;
         if (daysArray.length === 0) return false
 
-        const selectedDayOfWeek = date.getDay()
+        const selectedDayOfWeek = localDate.getDay()
         return !daysArray.includes(selectedDayOfWeek)
     }
 
@@ -85,35 +105,35 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
                 <div className={styles.dateTimeContainer}>
                     <div className={styles.dateSection}>
                         <DatePicker
-                            value={date}
+                            value={localDate}
                             onChange={(newDate) => {
-                                const updated = new Date(date || new Date())
+                                const updated = new Date(localDate || new Date())
                                 updated.setFullYear(newDate.getFullYear())
                                 updated.setMonth(newDate.getMonth())
                                 updated.setDate(newDate.getDate())
-                                onDateChange(updated)
+                                handleLocalDateChange(updated)
                             }}
                         />
                     </div>
                     <div className={styles.timeSection}>
                         <TimeSelect
                             label="Время начала"
-                            value={date}
+                            value={localDate}
                             onChange={(newTime) => {
-                                const updated = new Date(date || new Date())
+                                const updated = new Date(localDate || new Date())
                                 updated.setHours(newTime.getHours())
                                 updated.setMinutes(newTime.getMinutes())
-                                onDateChange(updated)
+                                handleLocalDateChange(updated)
                             }}
                         />
                     </div>
                 </div>
 
-                {willAutoAddWeekday() && date && showRecurrence && (
+                {willAutoAddWeekday() && localDate && showRecurrence && (
                     <div className={styles.info}>
                         <Info size={16} />
                         <span>
-                            Первое занятие будет {getWeekdayName(date.getDay(), 'accusative')} ({date.toLocaleDateString()}),
+                            Первое занятие будет {getWeekdayName(localDate.getDay(), 'accusative')} ({localDate.toLocaleDateString()}),
                             а последующие повторения будут только по выбранным дням.
                         </span>
                     </div>
@@ -122,8 +142,8 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
                 {!isEdit && showRecurrence && (
                     <div className={styles.recurrenceWrapper}>
                         <RecurrenceSection
-                            value={recurrence || defaultRecurrence}
-                            onChange={onRecurrenceChange}
+                            value={localRecurrence || defaultRecurrence}
+                            onChange={handleLocalRecurrenceChange}
                         />
                     </div>
                 )}

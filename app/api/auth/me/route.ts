@@ -44,6 +44,24 @@ export async function GET(request: NextRequest) {
                 proExpiresAt: true,
                 telegramId: true,
                 bonusMonthsEarned: true,
+                invitedUsers: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        createdAt: true,
+                        referralBonusClaimed: true,
+                        _count: {
+                            select: {
+                                students: true,
+                                lessons: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                },
                 _count: {
                     select: {
                         groups: true,
@@ -84,10 +102,33 @@ export async function GET(request: NextRequest) {
                     isPro: true,
                     proActivatedAt: true,
                     proExpiresAt: true,
+                    bonusMonthsEarned: true,
                     telegramId: true,
                     _count: {
-                        select: { groups: true }
-                    }
+                        select: {
+                            groups: true,
+                            invitedUsers: true,
+                        },
+                    },
+                    invitedUsers: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            avatar: true,
+                            createdAt: true,
+                            referralBonusClaimed: true,
+                            _count: {
+                                select: {
+                                    students: true,
+                                    lessons: true
+                                }
+                            }
+                        },
+                        orderBy: {
+                            createdAt: 'desc'
+                        }
+                    },
                 },
             }) as any
         }

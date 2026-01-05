@@ -13,6 +13,14 @@ export const REFERRAL_LIMITS = {
  * Приглашенный (invitee) СРАЗУ получает 30 дней PRO.
  */
 export async function processTeacherReferral(inviteeId: string, refCode: string) {
+    const invitee = await prisma.user.findUnique({
+        where: { id: inviteeId },
+        select: { id: true, invitedById: true }
+    })
+
+    // Если уже привязан к кому-то, ничего не делаем
+    if (!invitee || invitee.invitedById) return
+
     const inviter = await prisma.user.findUnique({
         where: { referralCode: refCode.trim().toUpperCase() }
     })
@@ -98,13 +106,16 @@ export async function checkAndGrantInviterBonus(userId: string) {
  * Вспомогательная функция для продления PRO
  */
 async function grantProBonus(userId: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } })
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, proExpiresAt: true, proActivatedAt: true }
+    })
     if (!user) return
 
     const now = new Date()
     let newExpiry: Date
 
-    // Если PRO уже есть, прибавляем к дате окончания
+    // Если PRO уже есть и он активен, прибавляем к дате окончания
     if (user.proExpiresAt && user.proExpiresAt > now) {
         newExpiry = addDays(user.proExpiresAt, REFERRAL_LIMITS.BONUS_DAYS)
     } else {

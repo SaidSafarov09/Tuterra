@@ -22,11 +22,23 @@ export async function GET(req: NextRequest) {
             scope,
         }).toString()
 
+    const studentRef = searchParams.get('refStudent')
+    const teacherRef = searchParams.get('ref')
+
     const response = NextResponse.redirect(yandexAuthUrl)
-    if (ref) {
-        response.cookies.set('referral-code', ref, { maxAge: 3600, path: '/' })
-    } else {
-        response.cookies.delete('referral-code')
+
+    if (studentRef) {
+        response.cookies.set('student-referral-code', studentRef, { maxAge: 3600, path: '/' })
     }
+    if (teacherRef) {
+        response.cookies.set('referral-code', teacherRef, { maxAge: 3600, path: '/' })
+    }
+
+    // Clear cookies if not in URL
+    if (!studentRef && !teacherRef) {
+        response.cookies.delete('referral-code')
+        response.cookies.delete('student-referral-code')
+    }
+
     return response
 }

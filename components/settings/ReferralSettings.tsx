@@ -73,6 +73,76 @@ export const ReferralSettings: React.FC = () => {
 
     return (
         <div className={styles.container}>
+
+
+            {user?.invitedUsers && user.invitedUsers.length > 0 && (
+                <div className={styles.invitedSection}>
+                    <h3 className={styles.sectionTitle}>Приглашенные друзья</h3>
+                    <div className={styles.invitedList}>
+                        {user.invitedUsers.map((friend) => {
+                            const studentProgress = Math.min((friend._count.students / 3) * 100, 100)
+                            const lessonProgress = Math.min((friend._count.lessons / 5) * 100, 100)
+                            const isClaimed = friend.referralBonusClaimed
+
+                            return (
+                                <div key={friend.id} className={styles.friendCard}>
+                                    <div className={styles.friendHeader}>
+                                        <div className={styles.friendAvatar}>
+                                            {friend.avatar ? (
+                                                <img src={friend.avatar} alt={friend.firstName || ''} className={styles.avatarImg} />
+                                            ) : (
+                                                (friend.firstName?.[0] || friend.lastName?.[0] || '?').toUpperCase()
+                                            )}
+                                        </div>
+                                        <div className={styles.friendInfo}>
+                                            <div className={styles.friendName}>
+                                                {friend.firstName} {friend.lastName}
+                                            </div>
+                                            <div className={styles.friendDate}>
+                                                Присоединился {new Date(friend.createdAt).toLocaleDateString('ru-RU')}
+                                            </div>
+                                        </div>
+                                        {isClaimed ? (
+                                            <div className={styles.statusBadge}>Готово</div>
+                                        ) : (
+                                            <div className={styles.statusBadgeActive}>В процессе</div>
+                                        )}
+                                    </div>
+
+                                    {!isClaimed && (
+                                        <div className={styles.progressContainer}>
+                                            <div className={styles.progressItem}>
+                                                <div className={styles.progressLabel}>
+                                                    <span>Ученики</span>
+                                                    <span>{friend._count.students}/3</span>
+                                                </div>
+                                                <div className={styles.progressBar}>
+                                                    <div
+                                                        className={styles.progressFill}
+                                                        style={{ width: `${studentProgress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className={styles.progressItem}>
+                                                <div className={styles.progressLabel}>
+                                                    <span>Уроки</span>
+                                                    <span>{friend._count.lessons}/5</span>
+                                                </div>
+                                                <div className={styles.progressBar}>
+                                                    <div
+                                                        className={styles.progressFill}
+                                                        style={{ width: `${lessonProgress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
             <div className={styles.card}>
                 <div className={styles.header}>
                     <div className={styles.iconWrapper}>

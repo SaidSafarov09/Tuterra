@@ -23,7 +23,7 @@ export const StudentLinkModal: React.FC<StudentLinkModalProps> = ({
     const [copiedType, setCopiedType] = useState<'link' | 'code' | null>(null)
 
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const referralLink = `${baseUrl}/auth?ref=${referralCode}`
+    const referralLink = `${baseUrl}/auth?refStudent=${referralCode}`
     const inviteText = `Привет! Подключайся к моим занятиям в Tuterra: ${referralLink}`
 
     const handleCopy = async (text: string, type: 'link' | 'code') => {

@@ -20,6 +20,18 @@ interface User {
     telegramId?: string | null
     referralCode?: string | null
     bonusMonthsEarned?: number
+    invitedUsers?: Array<{
+        id: string
+        firstName: string | null
+        lastName: string | null
+        avatar: string | null
+        createdAt: string
+        referralBonusClaimed: boolean
+        _count: {
+            students: number
+            lessons: number
+        }
+    }>
     _count?: {
         invitedUsers?: number
         groups?: number

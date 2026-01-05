@@ -7,6 +7,53 @@ import { linkStudentToTutor } from '@/lib/studentConnection'
 import { processTeacherReferral } from '@/lib/referral'
 import bcrypt from 'bcrypt'
 
+const fullUserSelect = {
+    id: true,
+    role: true,
+    plan: true,
+    firstName: true,
+    lastName: true,
+    name: true,
+    email: true,
+    phone: true,
+    avatar: true,
+    birthDate: true,
+    currency: true,
+    timezone: true,
+    region: true,
+    theme: true,
+    onboardingCompleted: true,
+    referralCode: true,
+    isPro: true,
+    proActivatedAt: true,
+    proExpiresAt: true,
+    bonusMonthsEarned: true,
+    invitedUsers: {
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            createdAt: true,
+            referralBonusClaimed: true,
+            _count: {
+                select: {
+                    students: true,
+                    lessons: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    },
+    _count: {
+        select: {
+            groups: true,
+            invitedUsers: true,
+        },
+    },
+}
+
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
@@ -24,6 +71,9 @@ export async function POST(request: NextRequest) {
         const emailSession = emailOTPModel ? await emailOTPModel.findUnique({
             where: { id: sessionId },
         }) : null;
+
+        let user;
+        let isStudent = role === 'student';
 
         if (emailSession) {
             if (new Date() > emailSession.expiresAt) {
@@ -59,12 +109,10 @@ export async function POST(request: NextRequest) {
                 )
             }
 
-            // Success!
-            let user = await prisma.user.findUnique({
+            // Success with Email!
+            user = await prisma.user.findUnique({
                 where: { email: emailSession.email },
             })
-
-            const isStudent = role === 'student'
 
             if (!user) {
                 const defaultFirstName = isStudent ? 'Новый' : 'Преподаватель'
@@ -91,15 +139,8 @@ export async function POST(request: NextRequest) {
                         await linkStudentToTutor(user.id, refCode)
                     } catch (e: any) {
                         console.error('Referral linking error during signup:', e)
-                        if (e.message === 'ACCOUNT_IS_TEACHER') {
-                            return NextResponse.json({
-                                success: false,
-                                error: 'Этот аккаунт уже зарегистрирован как преподаватель и не может быть учеником'
-                            }, { status: 400 })
-                        }
                     }
                 } else if (!isStudent && refCode) {
-                    // Teacher to Teacher referral
                     try {
                         await processTeacherReferral(user.id, refCode)
                     } catch (e) {
@@ -107,18 +148,18 @@ export async function POST(request: NextRequest) {
                     }
                 }
             } else {
-                // If user exists, but we have a refCode, we should still try to link
-                if (role === 'student' && refCode) {
+                // Existing user linking
+                if (isStudent && refCode) {
                     try {
                         await linkStudentToTutor(user.id, refCode)
                     } catch (e: any) {
                         console.error('Referral linking error during login:', e)
-                        if (e.message === 'ACCOUNT_IS_TEACHER') {
-                            return NextResponse.json({
-                                success: false,
-                                error: 'Этот аккаунт уже зарегистрирован как преподаватель и не может быть учеником'
-                            }, { status: 400 })
-                        }
+                    }
+                } else if (!isStudent && refCode) {
+                    try {
+                        await processTeacherReferral(user.id, refCode)
+                    } catch (e) {
+                        console.error('Teacher referral linking error during login:', e)
                     }
                 }
                 user = await prisma.user.update({
@@ -128,134 +169,112 @@ export async function POST(request: NextRequest) {
             }
 
             await emailOTPModel.delete({ where: { id: sessionId } })
-
-            const token = await signToken({
-                userId: user.id,
-                phone: user.phone || '',
-                role: user.role,
-            })
-
-            const isLocalhost = request.url.includes('localhost')
-            const secure = !isLocalhost
-
-            const cookieStore = await cookies()
-            cookieStore.set('auth-token', token, {
-                httpOnly: true,
-                secure: secure,
-                sameSite: 'lax',
-                maxAge: 30 * 24 * 60 * 60,
-                path: '/',
-            })
-
-            return NextResponse.json({
-                success: true,
-                token,
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone,
-                    avatar: user.avatar,
-                    role: user.role,
-                    birthDate: user.birthDate,
-                    region: user.region,
-                    plan: (user as any).plan,
-                    isPro: user.isPro,
-                    proActivatedAt: user.proActivatedAt,
-                    proExpiresAt: user.proExpiresAt,
-                },
-            })
-        }
-
-        // Falls back to phone verification session (for legacy/commented out feature)
-        const phoneSession = await prisma.verificationSession.findUnique({
-            where: { id: sessionId },
-        })
-
-        if (!phoneSession) {
-            return NextResponse.json(
-                { success: false, error: 'Сессия не найдена' },
-                { status: 404 }
-            )
-        }
-
-        if (new Date() > phoneSession.expiresAt) {
-            await prisma.verificationSession.delete({ where: { id: sessionId } })
-            return NextResponse.json(
-                { success: false, error: 'Код истек. Запросите новый код' },
-                { status: 400 }
-            )
-        }
-
-        if (phoneSession.attemptsLeft <= 0) {
-            await prisma.verificationSession.delete({ where: { id: sessionId } })
-            return NextResponse.json(
-                { success: false, error: 'Превышено количество попыток. Запросите новый код' },
-                { status: 400 }
-            )
-        }
-
-        if (phoneSession.code !== code) {
-            await prisma.verificationSession.update({
+        } else {
+            // Falls back to phone verification
+            const phoneSession = await prisma.verificationSession.findUnique({
                 where: { id: sessionId },
-                data: { attemptsLeft: phoneSession.attemptsLeft - 1 },
             })
 
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: `Неверный код. Осталось попыток: ${phoneSession.attemptsLeft - 1}`
-                },
-                { status: 400 }
-            )
-        }
+            if (!phoneSession) {
+                return NextResponse.json(
+                    { success: false, error: 'Сессия не найдена' },
+                    { status: 404 }
+                )
+            }
 
-        let user = await prisma.user.findUnique({
-            where: { phone: phoneSession.phone },
-        })
+            if (new Date() > phoneSession.expiresAt) {
+                await prisma.verificationSession.delete({ where: { id: sessionId } })
+                return NextResponse.json(
+                    { success: false, error: 'Код истек. Запросите новый код' },
+                    { status: 400 }
+                )
+            }
+
+            if (phoneSession.attemptsLeft <= 0) {
+                await prisma.verificationSession.delete({ where: { id: sessionId } })
+                return NextResponse.json(
+                    { success: false, error: 'Превышено количество попыток. Запросите новый код' },
+                    { status: 400 }
+                )
+            }
+
+            if (phoneSession.code !== code) {
+                await prisma.verificationSession.update({
+                    where: { id: sessionId },
+                    data: { attemptsLeft: phoneSession.attemptsLeft - 1 },
+                })
+
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: `Неверный код. Осталось попыток: ${phoneSession.attemptsLeft - 1}`
+                    },
+                    { status: 400 }
+                )
+            }
+
+            user = await prisma.user.findUnique({
+                where: { phone: phoneSession.phone },
+            })
+
+            if (!user) {
+                user = await prisma.user.create({
+                    data: {
+                        phone: phoneSession.phone,
+                        phoneVerified: true,
+                        role: role || 'teacher',
+                        firstName: 'Новый',
+                        lastName: isStudent ? 'Ученик' : 'Пользователь',
+                        name: 'Новый Пользователь',
+                        plan: (isStudent ? null : 'free') as any,
+                    },
+                })
+                await createWelcomeNotifications(user.id)
+
+                if (isStudent && refCode) {
+                    try {
+                        await linkStudentToTutor(user.id, refCode)
+                    } catch (e) {
+                        console.error('Phone referral linking error during signup:', e)
+                    }
+                } else if (!isStudent && refCode) {
+                    try {
+                        await processTeacherReferral(user.id, refCode)
+                    } catch (e) {
+                        console.error('Phone teacher referral linking error signup:', e)
+                    }
+                }
+            } else {
+                if (isStudent && refCode) {
+                    try {
+                        await linkStudentToTutor(user.id, refCode)
+                    } catch (e) {
+                        console.error('Phone referral linking error during login:', e)
+                    }
+                } else if (!isStudent && refCode) {
+                    try {
+                        await processTeacherReferral(user.id, refCode)
+                    } catch (e) {
+                        console.error('Phone teacher referral linking error login:', e)
+                    }
+                }
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { phoneVerified: true },
+                })
+            }
+
+            await prisma.verificationSession.delete({ where: { id: sessionId } })
+        }
 
         if (!user) {
-            user = await prisma.user.create({
-                data: {
-                    phone: phoneSession.phone,
-                    phoneVerified: true,
-                    role: role || 'teacher',
-                    firstName: 'Новый',
-                    lastName: role === 'student' ? 'Ученик' : 'Пользователь',
-                    name: 'Новый Пользователь',
-                    plan: (role === 'student' ? null : 'free') as any,
-                },
-            })
-            await createWelcomeNotifications(user.id)
-
-            // Referral linking for phone auth
-            if (role === 'student' && refCode) {
-                try {
-                    await linkStudentToTutor(user.id, refCode)
-                } catch (e) {
-                    console.error('Phone referral linking error during signup:', e)
-                }
-            }
-        } else {
-            // If user exists, but we have a refCode, we should still try to link
-            if (role === 'student' && refCode) {
-                try {
-                    await linkStudentToTutor(user.id, refCode)
-                } catch (e) {
-                    console.error('Phone referral linking error during login:', e)
-                }
-            }
-            user = await prisma.user.update({
-                where: { id: user.id },
-                data: { phoneVerified: true },
-            })
+            return NextResponse.json({ success: false, error: 'Ошибка авторизации' }, { status: 500 })
         }
 
-        await prisma.verificationSession.delete({ where: { id: sessionId } })
-
+        // Finalize session
         const token = await signToken({
             userId: user.id,
-            phone: user.phone!,
+            phone: user.phone || '',
             role: user.role,
         })
 
@@ -271,22 +290,18 @@ export async function POST(request: NextRequest) {
             path: '/',
         })
 
+        // Refetch full user data for the frontend store
+        const fullUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: fullUserSelect as any
+        })
+
         return NextResponse.json({
             success: true,
             token,
-            user: {
-                id: user.id,
-                name: user.name,
-                phone: user.phone,
-                avatar: user.avatar,
-                role: user.role,
-                birthDate: user.birthDate,
-                region: user.region,
-                isPro: user.isPro,
-                proActivatedAt: user.proActivatedAt,
-                proExpiresAt: user.proExpiresAt,
-            },
+            user: fullUser,
         })
+
     } catch (error) {
         console.error('Verify code error:', error)
         return NextResponse.json(

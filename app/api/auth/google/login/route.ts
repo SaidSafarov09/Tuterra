@@ -21,12 +21,23 @@ export async function GET(req: NextRequest) {
 
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope.replace(/ /g, '%20')}&access_type=offline&prompt=consent`
 
+    const studentRef = searchParams.get('refStudent')
+    const teacherRef = searchParams.get('ref')
+
     const response = NextResponse.redirect(googleAuthUrl)
-    if (ref) {
-        response.cookies.set('referral-code', ref, { maxAge: 3600, path: '/' })
-    } else {
-        // Clear the cookie if no ref is provided (user chose "Teacher" or came directly)
-        response.cookies.delete('referral-code')
+
+    if (studentRef) {
+        response.cookies.set('student-referral-code', studentRef, { maxAge: 3600, path: '/' })
     }
+    if (teacherRef) {
+        response.cookies.set('referral-code', teacherRef, { maxAge: 3600, path: '/' })
+    }
+
+    // Clear cookies if not in URL but were present (to avoid mixing contexts)
+    if (!studentRef && !teacherRef) {
+        response.cookies.delete('referral-code')
+        response.cookies.delete('student-referral-code')
+    }
+
     return response
 }

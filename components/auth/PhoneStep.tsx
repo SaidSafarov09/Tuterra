@@ -23,8 +23,8 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
     const isDesk = useMediaQuery('(min-width: 768px)')
 
     useEffect(() => {
-        const ref = searchParams.get('ref')
-        if (ref) {
+        const studentRef = searchParams.get('refStudent')
+        if (studentRef) {
             setUserRole('student')
         }
 
@@ -70,7 +70,13 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
             }
 
             toast.success('Код отправлен на ваш email')
-            onSuccess(data.sessionId || '', email, userRole, userRole === 'student' ? searchParams.get('ref') : null)
+
+            // Priority: refStudent for students, ref for teachers
+            const refCode = userRole === 'student'
+                ? (searchParams.get('refStudent') || searchParams.get('ref'))
+                : searchParams.get('ref')
+
+            onSuccess(data.sessionId || '', email, userRole, refCode)
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Произошла ошибка')
         } finally {
@@ -79,9 +85,20 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
     }
 
     const handleSocialLogin = (provider: 'google' | 'yandex') => {
-        const ref = userRole === 'student' ? searchParams.get('ref') : null
-        const baseUrl = `/api/auth/${provider}/login`
-        const url = ref ? `${baseUrl}?ref=${ref}` : baseUrl
+        const studentRef = searchParams.get('refStudent')
+        const teacherRef = searchParams.get('ref')
+
+        let url = `/api/auth/${provider}/login`
+        const params = new URLSearchParams()
+
+        if (studentRef) params.set('refStudent', studentRef)
+        if (teacherRef) params.set('ref', teacherRef)
+
+        const queryString = params.toString()
+        if (queryString) {
+            url += `?${queryString}`
+        }
+
         window.location.href = url
     }
 
