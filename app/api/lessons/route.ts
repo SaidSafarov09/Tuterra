@@ -37,6 +37,7 @@ const lessonSchema = z.object({
     seriesPrice: z.number().optional(),
     paidStudentIds: z.array(z.string()).optional(),
     planTopicId: z.string().optional().nullable().transform(val => val === '' ? null : val),
+    link: z.string().optional().nullable(),
 }).refine(data => data.studentId || data.groupId, {
     message: "Необходимо выбрать ученика или группу",
     path: ["studentId"],
@@ -243,6 +244,7 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             subjectName,
             subjectColor,
             planTopicId: data.planTopicId,
+            link: data.link,
             lessonPayments: data.groupId ? {
                 create: groupStudents.map(student => ({
                     studentId: student.id,

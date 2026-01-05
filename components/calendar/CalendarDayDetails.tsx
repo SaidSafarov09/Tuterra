@@ -8,6 +8,7 @@ import { isTrial, isGroupLesson, isFullyPaidLesson, getLessonPaymentStatus } fro
 import { getLessonTimeInfo, isLessonOngoing, isLessonPast } from '@/lib/lessonTimeUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
 import { stringToColor } from '@/constants'
+import { LessonLinkSection } from '@/components/lessons/LessonLinkSection'
 
 import { getDayInfo, getRandomColor } from '@/lib/holidayUtils'
 
@@ -211,6 +212,12 @@ export function CalendarDayDetails({
                                                 />
                                             </div>
                                         </div>
+
+                                        <LessonLinkSection
+                                            lesson={lesson}
+                                            isStudentView={isStudentView}
+                                        />
+
                                         <div className={styles.lessonActions}>
                                             {!lesson.isCanceled && !isTrial(lesson.price) && !isStudentView && (
                                                 <button
@@ -269,7 +276,8 @@ export function CalendarDayDetails({
                         </div>
                     </div>
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     )
 }

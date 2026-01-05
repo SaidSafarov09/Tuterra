@@ -109,6 +109,7 @@ export default function GroupDetailPage({
                 onToggleCancelLesson={handleToggleCancelLesson}
                 onRescheduleLesson={handleRescheduleLesson}
                 isStudentView={isStudent}
+                emptyText="У этой группы пока нет занятий"
             />
 
             <GroupModals

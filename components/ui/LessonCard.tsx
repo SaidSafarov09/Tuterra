@@ -3,13 +3,18 @@ import Link from 'next/link'
 import { Lesson } from '@/types'
 import { formatSmartDate } from '@/lib/dateUtils'
 import { ClockIcon, NoteIcon } from '@/components/icons/Icons'
-import { Repeat } from 'lucide-react'
+import { Repeat, Video, Save, Edit2, ExternalLink } from 'lucide-react'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { LessonActions } from '@/components/lessons/LessonActions'
 import { getRecurrenceDescription } from '@/lib/recurring-lessons'
 import { getLessonTimeInfo, isLessonOngoing } from '@/lib/lessonTimeUtils'
 import styles from './LessonCard.module.scss'
 import { stringToColor } from '@/lib/utils'
+import { lessonsApi } from '@/services/api'
+import { toast } from 'sonner'
+import { Input } from '@/components/ui/Input'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { LessonLinkSection } from '@/components/lessons/LessonLinkSection'
 
 interface LessonCardProps {
     lesson: Lesson & { series?: any }
@@ -41,8 +46,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     isActionLoading = false,
 }) => {
     const [showTopic, setShowTopic] = useState(false)
-
-    // Определяем, полностью ли оплачен урок
+    const isMobile = useMediaQuery('(max-width: 768px)')
     const isFullyPaid = isStudentView
         ? (lesson.userHasPaid ?? (lesson.group
             ? !!lesson.lessonPayments?.find(p => p.hasPaid)
@@ -65,6 +69,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
         },
         new Date(lesson.date)
     ) : null
+
 
     const CardContent = (
         <div className={`${styles.card} ${variant === 'compact' ? styles.compact : ''} ${lesson.isCanceled ? styles.canceled : ''}`}>
@@ -164,35 +169,40 @@ export const LessonCard: React.FC<LessonCardProps> = ({
         </div>
     )
 
-    if (showActions) {
-        return (
-            <div className={styles.cardWrapper}>
-                <Link href={`${isStudentView ? '/student' : ''}/lessons/${lesson.slug || lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
-                    {CardContent}
-                </Link>
-                {onTogglePaid && (
-                    <div className={styles.actionsFooter} onClick={(e) => e.stopPropagation()}>
-                        <LessonActions
-                            lesson={lesson}
-                            onTogglePaid={onTogglePaid}
-                            onToggleCancel={onToggleCancel}
-                            onReschedule={onReschedule}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            index={index}
-                            totalItems={totalItems}
-                            isStudentView={isStudentView}
-                            isLoading={isActionLoading}
-                        />
-                    </div>
-                )}
-            </div>
-        )
-    }
+    const LinkSection = (
+        <LessonLinkSection
+            lesson={lesson}
+            isStudentView={isStudentView}
+        />
+    )
 
     return (
-        <Link href={`${isStudentView ? '/student' : ''}/lessons/${lesson.slug || lesson.id}`} style={{ textDecoration: 'none', display: 'block' }}>
-            {CardContent}
-        </Link>
+        <div className={styles.cardWrapper}>
+            <Link
+                href={`${isStudentView ? '/student' : ''}/lessons/${lesson.slug || lesson.id}`}
+                style={{ textDecoration: 'none', display: 'block' }}
+            >
+                {CardContent}
+            </Link>
+
+            {LinkSection}
+
+            {showActions && onTogglePaid && (
+                <div className={styles.actionsFooter} onClick={(e) => e.stopPropagation()}>
+                    <LessonActions
+                        lesson={lesson}
+                        onTogglePaid={onTogglePaid}
+                        onToggleCancel={onToggleCancel}
+                        onReschedule={onReschedule}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        index={index}
+                        totalItems={totalItems}
+                        isStudentView={isStudentView}
+                        isLoading={isActionLoading}
+                    />
+                </div>
+            )}
+        </div>
     )
 }

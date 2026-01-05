@@ -15,6 +15,8 @@ interface LessonFormDateTimeProps {
     onDateTimeChange: (date: Date, recurrence?: RecurrenceRule) => void
     isEdit: boolean
     disabled?: boolean
+    link?: string | null
+    onLinkChange?: (link: string) => void
 }
 
 export function LessonFormDateTime({
@@ -23,7 +25,9 @@ export function LessonFormDateTime({
     activeTab,
     onDateTimeChange,
     isEdit,
-    disabled
+    disabled,
+    link,
+    onLinkChange
 }: LessonFormDateTimeProps) {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
@@ -58,35 +62,49 @@ export function LessonFormDateTime({
 
     if (activeTab === 'single') {
         return (
-            <div className={styles.rowDate}>
-                <div className={styles.dateInputWrapper} ref={calendarRef}>
-                    <label className={styles.label}>Дата</label>
-                    <Button
-                        variant="secondary"
-                        onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                        disabled={disabled}
-                        type="button"
-                    >
-                        <CalendarIcon size={18} />
-                        <span>{date ? formatSmartDate(date) : 'Выберите дату'}</span>
-                    </Button>
-                    {isCalendarOpen && (
-                        <div className={styles.calendarPopover}>
-                            <DatePicker
-                                value={date}
-                                onChange={handleDateChange}
-                            />
-                        </div>
-                    )}
-                </div>
+            <>
+                <div className={styles.rowDate}>
+                    <div className={styles.dateInputWrapper} ref={calendarRef}>
+                        <label className={styles.label}>Дата</label>
+                        <Button
+                            variant="secondary"
+                            onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                            disabled={disabled}
+                            type="button"
+                        >
+                            <CalendarIcon size={18} />
+                            <span>{date ? formatSmartDate(date) : 'Выберите дату'}</span>
+                        </Button>
+                        {isCalendarOpen && (
+                            <div className={styles.calendarPopover}>
+                                <DatePicker
+                                    value={date}
+                                    onChange={handleDateChange}
+                                />
+                            </div>
+                        )}
+                    </div>
 
-                <TimeSelect
-                    label="Время"
-                    value={date}
-                    onChange={handleTimeChange}
-                    disabled={disabled}
-                />
-            </div>
+                    <TimeSelect
+                        label="Время"
+                        value={date}
+                        onChange={handleTimeChange}
+                        disabled={disabled}
+                    />
+                </div>
+                {!recurrence?.enabled && (
+                    <div className={styles.linkRow}>
+                        <label className={styles.label}>Ссылка на урок (Zoom, Телемост, и др.)</label>
+                        <input
+                            type="text"
+                            placeholder="https://zoom.us/j/..."
+                            value={link || ''}
+                            onChange={(e) => onLinkChange?.(e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                )}
+            </>
         )
     }
 

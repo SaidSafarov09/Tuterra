@@ -151,6 +151,7 @@ export interface Lesson {
     userHasPaid?: boolean
     planTopicId?: string | null
     planTopic?: LearningPlanTopic
+    link?: string | null
     owner?: {
         id: string
         name: string | null
@@ -211,6 +212,7 @@ export interface LessonFormData {
     seriesPrice?: string
     paidStudentIds?: string[]
     planTopicId?: string | null
+    link?: string | null
 }
 
 export type LessonFilter = 'all' | 'upcoming' | 'past' | 'unpaid' | 'canceled'

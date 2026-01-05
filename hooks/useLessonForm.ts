@@ -20,6 +20,7 @@ export function useLessonForm(
         duration: 60,
         paidStudentIds: [],
         planTopicId: undefined,
+        link: '',
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -41,6 +42,7 @@ export function useLessonForm(
             seriesPrice: undefined,
             paidStudentIds: [],
             planTopicId: undefined,
+            link: '',
         })
         setError('')
     }
@@ -59,6 +61,7 @@ export function useLessonForm(
             duration: lesson.duration || 60,
             paidStudentIds: lesson.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || [],
             planTopicId: lesson.planTopicId || undefined,
+            link: lesson.link || '',
         })
     }
 
@@ -170,6 +173,7 @@ export function useLessonForm(
                     seriesPrice: formData.seriesPrice ? parseInt(formData.seriesPrice) : undefined,
                     paidStudentIds: formData.paidStudentIds,
                     planTopicId: formData.planTopicId,
+                    link: formData.link || undefined,
                 }),
             })
 

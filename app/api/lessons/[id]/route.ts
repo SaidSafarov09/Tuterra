@@ -20,6 +20,7 @@ const lessonSchema = z.object({
     paidStudentIds: z.array(z.string()).optional(),
     attendedStudentIds: z.array(z.string()).optional(),
     planTopicId: z.string().optional().nullable().transform(val => val === '' ? null : val),
+    link: z.string().optional().nullable(),
 })
 
 export async function GET(
@@ -231,7 +232,7 @@ export async function PATCH(
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
 
         const updateData: any = {}
-        const fields = ['isPaid', 'price', 'studentId', 'groupId', 'subjectId', 'isCanceled', 'isTrial', 'notes', 'topic', 'duration', 'planTopicId']
+        const fields = ['isPaid', 'price', 'studentId', 'groupId', 'subjectId', 'isCanceled', 'isTrial', 'notes', 'topic', 'duration', 'planTopicId', 'link']
         fields.forEach(f => { if (body[f] !== undefined) updateData[f] = body[f] })
         if (body.date !== undefined) updateData.date = new Date(body.date)
 

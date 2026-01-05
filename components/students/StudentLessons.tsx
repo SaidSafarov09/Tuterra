@@ -9,6 +9,7 @@ import { LESSON_TABS, stringToColor } from "@/constants";
 import { LessonActions } from "@/components/lessons/LessonActions";
 import { LessonBadges } from "@/components/lessons/LessonBadges";
 import { getLessonTimeInfo, isLessonPast, isLessonOngoing } from "@/lib/lessonTimeUtils";
+import { LessonLinkSection } from "@/components/lessons/LessonLinkSection";
 import styles from "../../app/(dashboard)/students/[id]/page.module.scss";
 
 interface StudentLessonsProps {
@@ -22,6 +23,7 @@ interface StudentLessonsProps {
     onRescheduleLesson: (lessonId: string) => void;
     onOpenGroupPayment?: (lesson: Lesson) => void;
     isStudentView?: boolean;
+    emptyText?: string;
 }
 
 export function StudentLessons({
@@ -35,6 +37,7 @@ export function StudentLessons({
     onRescheduleLesson,
     onOpenGroupPayment,
     isStudentView = false,
+    emptyText = "У этого ученика пока нет занятий",
 }: StudentLessonsProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
@@ -114,7 +117,7 @@ export function StudentLessons({
 
             {lessons.length === 0 ? (
                 <div className={styles.emptyState}>
-                    <p className={styles.emptyText}>У этого ученика пока нет занятий</p>
+                    <p className={styles.emptyText}>{emptyText}</p>
                     {!isStudentView && onCreateLesson && (
                         <Button onClick={onCreateLesson}>Создать первое занятие</Button>
                     )}
@@ -217,6 +220,10 @@ export function StudentLessons({
                                         />
                                     </div>
                                 </div>
+                                <LessonLinkSection
+                                    lesson={lesson}
+                                    isStudentView={isStudentView}
+                                />
 
                                 <div onClick={(e) => e.stopPropagation()}>
                                     <LessonActions
@@ -243,7 +250,8 @@ export function StudentLessons({
                         );
                     })}
                 </div>
-            )}
+            )
+            }
         </div>
     );
 }

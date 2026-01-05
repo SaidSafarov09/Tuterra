@@ -186,6 +186,7 @@ model Lesson {
   planTopicId    String?
   duration       Int             @default(60)
   seriesId       String?
+  link           String?
   group          Group?          @relation(fields: [groupId], references: [id])
   owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   series         LessonSeries?   @relation(fields: [seriesId], references: [id])

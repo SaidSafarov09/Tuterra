@@ -114,6 +114,8 @@ export function LessonFormWithDateTime({
                 }}
                 isEdit={isEdit}
                 disabled={isSubmitting}
+                link={formData.link}
+                onLinkChange={(val) => handleChange('link', val)}
             />
 
             <LessonFormPriceDuration
