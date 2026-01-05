@@ -56,7 +56,11 @@ import {
     Crown,
     HelpCircle,
     Gift,
-    CreditCard
+    CreditCard,
+    Trophy,
+    Star,
+    TrendingUp,
+    Award
 } from 'lucide-react'
 
 // ... (existing exports)
@@ -140,3 +144,7 @@ export const LinkIcon: React.FC<IconProps> = (props) => <Link {...props} />
 export const SupportIcon: React.FC<IconProps> = (props) => <HelpCircle {...props} />
 export const GiftIcon: React.FC<IconProps> = (props) => <Gift {...props} />
 export const CreditCardIcon: React.FC<IconProps> = (props) => <CreditCard {...props} />
+export const TrophyIcon: React.FC<IconProps> = (props) => <Trophy {...props} />
+export const StarIcon: React.FC<IconProps> = (props) => <Star {...props} />
+export const TrendingUpIcon: React.FC<IconProps> = (props) => <TrendingUp {...props} />
+export const AwardIcon: React.FC<IconProps> = (props) => <Award {...props} />

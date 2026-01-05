@@ -12,6 +12,8 @@ interface User {
     birthDate: string | null
     region: string | null
     onboardingCompleted: boolean
+    showProgressBlock?: boolean
+    showInsightsBlock?: boolean
     role: 'teacher' | 'student'
     plan?: 'free' | 'pro'
     isPro?: boolean

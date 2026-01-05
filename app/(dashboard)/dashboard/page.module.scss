@@ -63,6 +63,23 @@
     }
 }
 
+.progressWrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 768px) {
+        gap: 16px;
+        margin-bottom: 0;
+        margin-top: 16px;
+    }
+}
+
 .requestsList {
     width: 100%;
     display: grid;

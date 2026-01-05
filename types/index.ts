@@ -175,6 +175,8 @@ export interface DashboardStats {
     countConnectedStudents?: number
     countStudentPlans?: number
     countGroupPlans?: number
+    teacherRank?: number
+    totalTeachers?: number
 }
 
 export interface DayData {

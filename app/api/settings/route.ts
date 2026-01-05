@@ -41,6 +41,8 @@ const settingsSchema = z.object({
     currency: z.string().optional(),
     timezone: z.string(),
     region: z.string().optional().nullable(),
+    showProgressBlock: z.boolean().optional(),
+    showInsightsBlock: z.boolean().optional(),
     notificationSettings: z.object({
         lessonReminders: z.boolean(),
         unpaidLessons: z.boolean(),
@@ -75,6 +77,8 @@ const USER_FIELDS_BASE = {
     notificationSettings: true,
     telegramId: true,
     onboardingCompleted: true,
+    showProgressBlock: true,
+    showInsightsBlock: true,
     referralCode: true,
     isPro: true,
     proActivatedAt: true,

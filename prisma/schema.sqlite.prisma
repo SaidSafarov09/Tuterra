@@ -41,6 +41,8 @@ model User {
   verificationCodes VerificationCode[]
   learningPlans     LearningPlan[]
   onboardingCompleted Boolean            @default(false)
+  showProgressBlock Boolean              @default(true)
+  showInsightsBlock Boolean              @default(true)
   referralCode      String?            @unique
   invitedById       String?
   invitedBy         User?              @relation("ReferralTree", fields: [invitedById], references: [id])

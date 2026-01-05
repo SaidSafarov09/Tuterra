@@ -239,6 +239,8 @@ interface UserSettings {
     telegramId?: string | null
     referralCode?: string | null
     role: 'teacher' | 'student'
+    showProgressBlock?: boolean
+    showInsightsBlock?: boolean
     onboardingCompleted?: boolean
     plan?: 'free' | 'pro'
     isPro?: boolean

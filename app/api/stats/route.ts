@@ -218,7 +218,13 @@ export async function GET(request: NextRequest) {
             prisma.student.count({ where: { ownerId: userId, linkedUserId: { not: null } } }),
             prisma.learningPlan.count({ where: { ownerId: userId, studentId: { not: null } } }),
             prisma.learningPlan.count({ where: { ownerId: userId, groupId: { not: null } } }),
-            prisma.user.findUnique({ where: { id: userId }, select: { createdAt: true } })
+            prisma.user.findUnique({ where: { id: userId }, select: { createdAt: true } }),
+            prisma.user.count({ where: { role: 'teacher' } }),
+            prisma.lesson.groupBy({
+                by: ['ownerId'],
+                _count: { _all: true },
+                where: { isCanceled: false }
+            })
         ])
 
         const [
@@ -234,7 +240,9 @@ export async function GET(request: NextRequest) {
             countConnectedStudents,
             countStudentPlans,
             countGroupPlans,
-            uProfile
+            uProfile,
+            totalTeachers,
+            allTeacherStats
         ] = results as any[]
 
         const unpaidLessons = tRawUnpaidLessons.filter((lesson: any) => {
@@ -258,6 +266,16 @@ export async function GET(request: NextRequest) {
             return lesson.isPaid ? total + lesson.price : total
         }, 0)
 
+        // Calculate rank
+        const teacherLessonsMap = allTeacherStats.map((s: any) => ({
+            ownerId: s.ownerId,
+            count: s._count._all
+        }))
+        const sortedTeachers = teacherLessonsMap.sort((a: any, b: any) => b.count - a.count)
+        const currentTeacherStats = sortedTeachers.find((s: any) => s.ownerId === userId)
+        const myLessonCount = currentTeacherStats ? currentTeacherStats.count : 0
+        const teacherRank = sortedTeachers.filter((s: any) => s.count > myLessonCount).length + 1
+
         const stats = {
             studentsCount: countStudents,
             groupsCount: countGroups,
@@ -271,7 +289,9 @@ export async function GET(request: NextRequest) {
             createdAt: uProfile?.createdAt,
             countConnectedStudents,
             countStudentPlans,
-            countGroupPlans
+            countGroupPlans,
+            teacherRank,
+            totalTeachers
         }
 
         return NextResponse.json({ success: true, stats, ...stats })

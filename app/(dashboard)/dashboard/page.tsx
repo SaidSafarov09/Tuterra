@@ -35,6 +35,8 @@ import { Suspense } from 'react'
 import { PromotionalBanner } from '@/components/dashboard/PromotionalBanner'
 import { settingsApi } from '@/services/api'
 import { AnimatePresence } from 'framer-motion'
+import { CareerProgress } from '@/components/dashboard/CareerProgress'
+import { Insights } from '@/components/dashboard/Insights'
 
 function DashboardContent() {
     const { user, setUser } = useAuthStore()
@@ -348,6 +350,13 @@ function DashboardContent() {
                     </div>
                 )}
 
+                {!isStudent && stats && (user?.showProgressBlock !== false || user?.showInsightsBlock !== false) && (
+                    <div className={styles.progressWrapper}>
+                        {user?.showProgressBlock !== false && <CareerProgress stats={stats} />}
+                        {user?.showInsightsBlock !== false && <Insights stats={stats} />}
+                    </div>
+                )}
+
                 <div className={styles.sectionsGrid}>
                     <Section title="Ближайшие занятия" viewAllHref={isStudent ? "/student/lessons" : "/lessons"} viewAllText="Все занятия →">
                         {isLoading ? (
@@ -467,15 +476,17 @@ function DashboardContent() {
                 proExpiresAt={user?.proExpiresAt ? new Date(user.proExpiresAt) : null}
             />
 
-            {!isStudent && (
-                <UpgradeToProModal
-                    isOpen={isUpgradeModalOpen}
-                    onClose={() => setIsUpgradeModalOpen(false)}
-                    limitType="general"
-                    defaultPlan={selectedPlan}
-                />
-            )}
-        </div>
+            {
+                !isStudent && (
+                    <UpgradeToProModal
+                        isOpen={isUpgradeModalOpen}
+                        onClose={() => setIsUpgradeModalOpen(false)}
+                        limitType="general"
+                        defaultPlan={selectedPlan}
+                    />
+                )
+            }
+        </div >
     )
 }
 

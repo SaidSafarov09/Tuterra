@@ -70,6 +70,8 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
             quietHoursEnd: '08:00',
         },
         telegramId: null as string | null,
+        showProgressBlock: true,
+        showInsightsBlock: true,
     })
 
     useEffect(() => {
@@ -140,6 +142,8 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                     quietHoursEnd: '08:00',
                 },
                 telegramId: telegramData.telegramId || data.telegramId || null,
+                showProgressBlock: data.showProgressBlock ?? true,
+                showInsightsBlock: data.showInsightsBlock ?? true,
             }
             setFormData(initialData)
             initialDataRef.current = initialData
@@ -273,6 +277,8 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                 avatar: updatedUser.avatar || null,
                 birthDate: updatedUser.birthDate || null,
                 region: updatedUser.region || null,
+                showProgressBlock: updatedUser.showProgressBlock,
+                showInsightsBlock: updatedUser.showInsightsBlock,
             })
 
 
@@ -551,6 +557,46 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                                 <div className={styles.appGrid}>
                                     <ThemeToggle />
                                 </div>
+
+                                {user?.role === 'teacher' && (
+                                    <div className={styles.controlPanel}>
+                                        <h3 className={styles.sectionHeader}>Панель управления</h3>
+
+                                        <div className={styles.controlItem}>
+                                            <div className={styles.itemInfo}>
+                                                <div className={styles.itemName}>Блок профессионального роста</div>
+                                                <div className={styles.itemDesc}>
+                                                    Отображать прогресс и достижения на главной странице
+                                                </div>
+                                            </div>
+                                            <label className={styles.switch}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.showProgressBlock}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, showProgressBlock: e.target.checked }))}
+                                                />
+                                                <span className={`${styles.slider} ${styles.round}`}></span>
+                                            </label>
+                                        </div>
+
+                                        <div className={styles.controlItem}>
+                                            <div className={styles.itemInfo}>
+                                                <div className={styles.itemName}>Блок умных советов</div>
+                                                <div className={styles.itemDesc}>
+                                                    Персональные рекомендации на основе вашей активности
+                                                </div>
+                                            </div>
+                                            <label className={styles.switch}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.showInsightsBlock}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, showInsightsBlock: e.target.checked }))}
+                                                />
+                                                <span className={`${styles.slider} ${styles.round}`}></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
