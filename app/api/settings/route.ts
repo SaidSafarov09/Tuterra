@@ -100,7 +100,7 @@ const USER_FIELDS_BASE = {
             }
         },
         orderBy: {
-            createdAt: 'desc'
+            createdAt: 'desc' as const
         }
     },
     _count: {
