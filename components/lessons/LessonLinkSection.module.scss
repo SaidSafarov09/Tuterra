@@ -1,5 +1,5 @@
 .linkSection {
-    padding: 16px;
+    padding: 16px 0;
     background: var(--background-subtle);
     border-top: 1px solid var(--border-light);
     display: flex;
@@ -8,13 +8,22 @@
     transition: all 0.2s ease;
 
     @media (max-width: 768px) {
-        padding: 12px;
+        padding: 12px 0;
     }
 
     &.pastLinkSection {
         background: rgba(0, 0, 0, 0.02);
         opacity: 0.8;
     }
+
+    &.inLesson {
+        padding: 16px;
+
+        @media (max-width: 768px) {
+            padding: 12px;
+        }
+    }
+
 }
 
 .linkInputWrapper {
@@ -31,6 +40,7 @@
 .editActions {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
 }
 
@@ -98,7 +108,7 @@
     font-size: 16px;
     font-weight: 600;
     text-decoration: none;
-    padding: 12px 24px;
+    padding: 14px 24px;
     background: rgba(74, 108, 247, 0.1);
     border-radius: 14px;
     transition: all 0.2s;

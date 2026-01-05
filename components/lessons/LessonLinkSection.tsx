@@ -12,9 +12,10 @@ import styles from './LessonLinkSection.module.scss'
 interface LessonLinkSectionProps {
     lesson: Lesson
     isStudentView?: boolean
+    variant?: 'default' | 'inLesson'
 }
 
-export function LessonLinkSection({ lesson, isStudentView }: LessonLinkSectionProps) {
+export function LessonLinkSection({ lesson, isStudentView, variant = 'default' }: LessonLinkSectionProps) {
     const [isEditing, setIsEditing] = useState(false)
     const [link, setLink] = useState(lesson.link || '')
     const [isSaving, setIsSaving] = useState(false)
@@ -43,7 +44,7 @@ export function LessonLinkSection({ lesson, isStudentView }: LessonLinkSectionPr
 
     if (isEditing && !isStudentView) {
         return (
-            <div className={styles.linkSection}>
+            <div className={`${styles.linkSection} ${variant === 'inLesson' ? styles.inLesson : ''}`}>
                 <div className={styles.linkInputWrapper}>
                     <Input
                         value={link}
@@ -77,7 +78,7 @@ export function LessonLinkSection({ lesson, isStudentView }: LessonLinkSectionPr
     }
 
     return (
-        <div className={`${styles.linkSection} ${isPast ? styles.pastLinkSection : ''}`}>
+        <div className={`${styles.linkSection} ${isPast ? styles.pastLinkSection : ''} ${variant === 'inLesson' ? styles.inLesson : ''}`}>
             {lesson.link ? (
                 <div className={styles.linkDisplay}>
                     <a

@@ -173,6 +173,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
         <LessonLinkSection
             lesson={lesson}
             isStudentView={isStudentView}
+            variant="inLesson"
         />
     )
 

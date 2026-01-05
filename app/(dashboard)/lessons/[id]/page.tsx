@@ -17,7 +17,6 @@ import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
 import { ClockIcon } from '@/components/icons/Icons'
 import styles from './page.module.scss'
-
 import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { LessonDetailSkeleton } from '@/components/skeletons'
@@ -33,7 +32,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const isStudent = currentUser?.role === 'student'
     const router = useRouter()
     const { id } = usePromise(params)
-
     const [lesson, setLesson] = useState<Lesson | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [deleteConfirm, setDeleteConfirm] = useState(false)
