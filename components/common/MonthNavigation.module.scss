@@ -1,4 +1,4 @@
-.navigation {
+.calendarHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -11,6 +11,15 @@
     color: var(--text-primary);
     margin: 0;
     text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.monthIcon {
+    font-size: 28px;
+    line-height: 1;
+    margin-top: 4px;
 }
 
 .navButton {
@@ -32,5 +41,24 @@
 
     &:active {
         transform: scale(0.95);
+    }
+
+    @media (max-width: 768px) {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .calendarHeader {
+        margin-bottom: 24px;
+    }
+
+    .monthTitle {
+        font-size: 18px;
+        gap: 8px;
+    }
+
+    .monthIcon {
+        font-size: 20px;
     }
 }
