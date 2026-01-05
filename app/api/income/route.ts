@@ -204,6 +204,89 @@ export async function GET(request: NextRequest) {
             }
         })
 
+        // --- Smart Insights (Pro only) ---
+        const insights: any[] = []
+        if (user.plan === 'pro' || user.isPro) {
+            // 1. Busiest Day Insight
+            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+            const lessonsByDay = new Array(7).fill(0)
+
+            allLessonsInRange.forEach(l => {
+                if (!l.isCanceled) {
+                    const day = l.date.getDay()
+                    lessonsByDay[day]++
+                }
+            })
+
+            const maxDayIndex = lessonsByDay.indexOf(Math.max(...lessonsByDay))
+            const minDayIndex = lessonsByDay.indexOf(Math.min(...lessonsByDay.filter((_, i) => i !== 0 && i !== 6 && lessonsByDay[i] > 0) || [1]))
+
+            if (lessonsByDay[maxDayIndex] >= 3 && lessonsByDay[maxDayIndex] > lessonsByDay[minDayIndex] + 1) {
+                insights.push({
+                    id: 'busiest-day',
+                    type: 'schedule',
+                    title: 'Оптимизация расписания',
+                    text: `Ваш самый загруженный день — ${dayNames[maxDayIndex].toLowerCase()}. Возможно, стоит перенести часть занятий на ${dayNames[minDayIndex === -1 ? 1 : minDayIndex].toLowerCase()}?`,
+                    icon: 'calendar',
+                    color: 'purple'
+                })
+            }
+
+            // 2. Income Prediction (Already partially implemented in memory)
+            if (currentIncome > 0 && currentLessonsCount > 3) {
+                const projected = Math.round(currentIncome * 1.15)
+                insights.push({
+                    id: 'income-projection',
+                    type: 'income',
+                    title: 'Анализ доходов',
+                    text: `При текущем темпе ваш доход может вырасти на 15% к концу месяца.`,
+                    icon: 'trending',
+                    color: 'blue'
+                })
+            }
+
+            // 3. Inactive Students Insight (Missed 2+ lessons)
+            // Get all students
+            const students = await prisma.student.findMany({
+                where: { ownerId: user.id },
+                include: {
+                    linkedUser: { select: { phone: true } },
+                    lessons: {
+                        where: { ownerId: user.id, date: { lte: now } },
+                        orderBy: { date: 'desc' },
+                        take: 2
+                    }
+                }
+            })
+
+            students.forEach(s => {
+                if (s.lessons.length >= 2 && s.lessons.every(l => l.isCanceled)) {
+                    insights.push({
+                        id: `inactive-${s.id}`,
+                        type: 'retention',
+                        title: 'Удержание ученика',
+                        text: `Ученик ${s.name} пропустил ${s.lessons.length} занятия подряд. Написать ему?`,
+                        icon: 'message',
+                        color: 'orange',
+                        studentId: s.id,
+                        studentPhone: (s as any).linkedUser?.phone || s.contact
+                    })
+                }
+            })
+
+            // 4. Default Pro Insight if list is still empty
+            if (insights.length === 0) {
+                insights.push({
+                    id: 'pro-welcome',
+                    type: 'income',
+                    title: 'Финансовый помощник',
+                    text: 'Добавьте больше занятий и оплат, чтобы получить советы по росту дохода.',
+                    icon: 'trending',
+                    color: 'blue'
+                })
+            }
+        }
+
         return NextResponse.json({
             monthlyData,
             currentMonthIncome: currentIncome,
@@ -216,7 +299,9 @@ export async function GET(request: NextRequest) {
             currentMonthDuration: (currentMonthDurationResult as any)._sum?.duration || 0,
             previousMonthDuration: (previousMonthDurationResult as any)._sum?.duration || 0,
             recentTransactions,
-            debts
+            debts,
+            insights,
+            isPro: user.plan === 'pro' || user.isPro
         })
     } catch (error) {
         console.error('Get income stats error:', error)

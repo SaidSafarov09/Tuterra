@@ -51,9 +51,22 @@ function DashboardContent() {
     const [isPaymentSuccessModalOpen, setIsPaymentSuccessModalOpen] = React.useState(false)
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false)
     const [selectedPlan, setSelectedPlan] = React.useState<'month' | 'year'>('year')
+    const [upgradeLimitType, setUpgradeLimitType] = React.useState<any>('general')
     const [isTelegramBannerVisible, setIsTelegramBannerVisible] = useState(false)
     const [isReferralBannerVisible, setIsReferralBannerVisible] = useState(false)
     const router = useRouter()
+
+    useEffect(() => {
+        // Expose global function to open upgrade modal from nested components
+        (window as any).dispatchUpgradeModal = (limitType: any = 'income') => {
+            setUpgradeLimitType(limitType)
+            setIsUpgradeModalOpen(true)
+        }
+
+        return () => {
+            delete (window as any).dispatchUpgradeModal
+        }
+    }, [])
 
     useEffect(() => {
         // Проверяем, нужно ли показывать баннер Telegram
@@ -481,7 +494,7 @@ function DashboardContent() {
                     <UpgradeToProModal
                         isOpen={isUpgradeModalOpen}
                         onClose={() => setIsUpgradeModalOpen(false)}
-                        limitType="general"
+                        limitType={upgradeLimitType}
                         defaultPlan={selectedPlan}
                     />
                 )

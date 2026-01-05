@@ -212,6 +212,8 @@ interface IncomeData {
     previousMonthDuration: number
     recentTransactions: any[]
     debts: any[]
+    insights: any[]
+    isPro: boolean
 }
 
 export const incomeApi = {

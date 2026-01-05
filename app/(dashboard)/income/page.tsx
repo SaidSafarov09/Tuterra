@@ -23,6 +23,7 @@ import { RecentTransactionsCard } from '@/components/income/RecentTransactionsCa
 import { IncomeCharts } from '@/components/income/IncomeCharts'
 import { useCheckLimit } from '@/hooks/useCheckLimit'
 import { useAuthStore } from '@/store/auth'
+import { IncomeInsights } from '@/components/income/IncomeInsights'
 
 export default function IncomePage() {
     const router = useRouter()
@@ -43,6 +44,7 @@ export default function IncomePage() {
     const [previousMonthDuration, setPreviousMonthDuration] = useState(0)
     const [recentTransactions, setRecentTransactions] = useState<any[]>([])
     const [debts, setDebts] = useState<any[]>([])
+    const [insights, setInsights] = useState<any[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     const fetchIncomeData = async (isMonthSwitch = false) => {
@@ -63,6 +65,7 @@ export default function IncomePage() {
             setPreviousMonthDuration(data.previousMonthDuration || 0)
             setRecentTransactions(data.recentTransactions || [])
             setDebts(data.debts || [])
+            setInsights(data.insights || [])
 
             setHasAnyIncomeEver(Boolean(data.hasAnyIncomeEver))
         } catch (error) {
@@ -180,6 +183,9 @@ export default function IncomePage() {
                     )
                 ) : (
                     <>
+                        {user?.showInsightsBlock !== false && insights.length > 0 && (
+                            <IncomeInsights insights={insights} />
+                        )}
                         <DebtsBlock debts={debts} />
 
                         <AnimatePresence mode="wait">

@@ -60,7 +60,8 @@ import {
     Trophy,
     Star,
     TrendingUp,
-    Award
+    Award,
+    MessageSquare
 } from 'lucide-react'
 
 // ... (existing exports)
@@ -148,3 +149,4 @@ export const TrophyIcon: React.FC<IconProps> = (props) => <Trophy {...props} />
 export const StarIcon: React.FC<IconProps> = (props) => <Star {...props} />
 export const TrendingUpIcon: React.FC<IconProps> = (props) => <TrendingUp {...props} />
 export const AwardIcon: React.FC<IconProps> = (props) => <Award {...props} />
+export const MessageIcon: React.FC<IconProps> = (props) => <MessageSquare {...props} />
