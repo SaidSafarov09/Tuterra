@@ -189,7 +189,10 @@ export function LessonForm({
                 }}
                 isEdit={isEdit}
                 disabled={isSubmitting}
+                link={formData.link}
+                onLinkChange={(val) => handleChange('link', val)}
             />
+
 
             <LessonFormPriceDuration
                 price={formData.price}

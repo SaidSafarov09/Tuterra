@@ -23,6 +23,7 @@ import { LESSON_MESSAGES } from '@/constants/messages'
 import { LessonDetailSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
+import { LessonLinkSection } from '@/components/lessons/LessonLinkSection'
 
 
 import { useAuthStore } from '@/store/auth'
@@ -306,6 +307,11 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         <p>{lesson.notes}</p>
                     </div>
                 )}
+
+                <LessonLinkSection
+                    lesson={lesson}
+                    isStudentView={isStudent}
+                />
 
                 <div className={styles.lessonActions}>
                     <LessonActions
