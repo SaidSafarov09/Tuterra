@@ -19,6 +19,11 @@
     padding: 32px;
     max-width: 1620px;
     margin: 0 auto;
+    margin-top: 69px;
+
+    @media (max-width: 768px) {
+        margin-top: 0;
+    }
 }
 
 .overlay {

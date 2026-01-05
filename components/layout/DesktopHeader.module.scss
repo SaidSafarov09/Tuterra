@@ -5,9 +5,10 @@
     justify-content: space-between;
     background: var(--surface);
     border-bottom: 1px solid var(--border-light);
-    position: sticky;
+    position: fixed;
     top: 0;
     z-index: 90;
+    width: -webkit-fill-available;
 
     @media (max-width: 768px) {
         display: none;
