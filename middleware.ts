@@ -8,11 +8,17 @@ const publicPaths = ['/auth', '/debug-auth', '/admin']
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
-
-    // Construction of the base URL for redirects
-    // Priority: X-Forwarded headers (from Traefik) > process.env > request.url
-    const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || ''
     const proto = request.headers.get('x-forwarded-proto') || 'https'
+
+    // 1. Redirect www to non-www
+    if (host.startsWith('www.')) {
+        const newHost = host.replace('www.', '')
+        const newUrl = new URL(pathname + request.nextUrl.search, `https://${newHost}`)
+        return NextResponse.redirect(newUrl, 301)
+    }
+
+    // 2. Construction of the base URL for redirects
     const baseUrl = host && !host.includes('0.0.0.0') && !host.includes('localhost')
         ? `${proto}://${host}`
         : (process.env.NEXTAUTH_URL || request.url)
@@ -25,7 +31,7 @@ export async function middleware(request: NextRequest) {
         return url
     }
 
-    // 1. Landing Page logic
+    // 3. Landing Page logic
     if (pathname === '/') {
         const token = request.cookies.get('auth-token')?.value
         const payload = token ? await verifyToken(token) : null
@@ -37,14 +43,14 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next()
     }
 
-    // 2. Auth check
+    // 4. Auth check
     const token = request.cookies.get('auth-token')?.value
     const payload = token ? await verifyToken(token) : null
     const isAuthenticated = payload !== null
 
     const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
 
-    // 3. Redirect logic
+    // 5. Redirect logic
     if (!isPublicPath && !isAuthenticated) {
         return NextResponse.redirect(getTargetUrl('/auth'))
     }
