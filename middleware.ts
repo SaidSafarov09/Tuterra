@@ -9,6 +9,16 @@ const publicPaths = ['/auth', '/debug-auth', '/admin']
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
+    // Helper to construct URL correctly regardless of environment
+    const getTargetUrl = (path: string) => {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.url
+        const url = new URL(path, baseUrl)
+        request.nextUrl.searchParams.forEach((value, key) => {
+            url.searchParams.set(key, value)
+        })
+        return url
+    }
+
     // 1. Landing Page logic
     if (pathname === '/') {
         const token = request.cookies.get('auth-token')?.value
@@ -16,11 +26,7 @@ export async function middleware(request: NextRequest) {
 
         if (payload) {
             const target = payload?.role === 'student' ? '/student/dashboard' : '/dashboard'
-            const url = new URL(target, request.url)
-            request.nextUrl.searchParams.forEach((value, key) => {
-                url.searchParams.set(key, value)
-            })
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(getTargetUrl(target))
         }
         return NextResponse.next()
     }
@@ -42,11 +48,7 @@ export async function middleware(request: NextRequest) {
 
         // Redirect from public paths to specific dashboard, except for /admin which has its own auth
         if ((isPublicPath || pathname === '/') && !pathname.startsWith('/admin')) {
-            const url = new URL(targetDashboard, request.url)
-            request.nextUrl.searchParams.forEach((value, key) => {
-                url.searchParams.set(key, value)
-            })
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(getTargetUrl(targetDashboard))
         }
 
         // Cross-role protection
@@ -54,18 +56,10 @@ export async function middleware(request: NextRequest) {
         const isTeacherPath = pathname.startsWith('/dashboard') || pathname === '/dashboard'
 
         if (payload?.role === 'student' && isTeacherPath) {
-            const url = new URL('/student/dashboard', request.url)
-            request.nextUrl.searchParams.forEach((value, key) => {
-                url.searchParams.set(key, value)
-            })
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(getTargetUrl('/student/dashboard'))
         }
         if (payload?.role === 'teacher' && isStudentPath) {
-            const url = new URL('/dashboard', request.url)
-            request.nextUrl.searchParams.forEach((value, key) => {
-                url.searchParams.set(key, value)
-            })
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(getTargetUrl('/dashboard'))
         }
     }
 
