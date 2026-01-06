@@ -9,7 +9,6 @@ export const formatSmartDate = (date: Date | string): string => {
     const timeStr = new Intl.DateTimeFormat('ru-RU', {
         hour: '2-digit', minute: '2-digit'
     }).format(d)
-
     if (isToday(d)) {
         return `Сегодня, ${timeStr}`
     }
