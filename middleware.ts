@@ -11,8 +11,24 @@ export async function middleware(request: NextRequest) {
 
     // Helper to construct URL correctly regardless of environment
     const getTargetUrl = (path: string) => {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.url
-        const url = new URL(path, baseUrl)
+        // Try to get the base URL from env, headers, or fallback to a safe default
+        let base = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
+
+        // If env is missing or points to internal IP, use request headers (standard for proxies)
+        if (!base || base.includes('0.0.0.0') || base.includes('localhost')) {
+            const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
+            const proto = request.headers.get('x-forwarded-proto') || 'https';
+            if (host && !host.includes('0.0.0.0')) {
+                base = `${proto}://${host}`;
+            }
+        }
+
+        // Final safety net to avoid 0.0.0.0
+        if (!base || base.includes('0.0.0.0')) {
+            base = 'https://tuterra.online';
+        }
+
+        const url = new URL(path, base)
         request.nextUrl.searchParams.forEach((value, key) => {
             url.searchParams.set(key, value)
         })
