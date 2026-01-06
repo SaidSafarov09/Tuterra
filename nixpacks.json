@@ -1,0 +1,29 @@
+{
+    "providers": [
+        "node"
+    ],
+    "phases": {
+        "setup": {
+            "nixPkgs": [
+                "nodejs-20_x",
+                "npm-9_x",
+                "openssl"
+            ]
+        },
+        "install": {
+            "cmds": [
+                "npm ci",
+                "npx prisma generate --schema=prisma/schema.prisma"
+            ]
+        },
+        "build": {
+            "cmds": [
+                "npm run build"
+            ],
+            "cacheDirectories": [
+                ".next/cache",
+                "node_modules/.cache"
+            ]
+        }
+    }
+}
