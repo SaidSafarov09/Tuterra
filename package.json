@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node scripts/sync-schema.js && prisma generate --schema=prisma/schema.sqlite.prisma && node -e \"const fs=require('fs'); let s=fs.readFileSync('prisma/schema.prisma','utf8').replace(/generator client {/, 'generator client {\\n  output = \\\"../node_modules/@prisma/client-postgres\\\"'); fs.writeFileSync('prisma/schema.admin.prisma', s)\" && prisma generate --schema=prisma/schema.admin.prisma && rm prisma/schema.admin.prisma && next dev",
     "dev:fresh": "rm -rf dev.db && node scripts/sync-schema.js && prisma db push --schema=prisma/schema.sqlite.prisma && npm run dev",
-    "build": "prisma generate --schema=prisma/schema.prisma && prisma db push --schema=prisma/schema.prisma --accept-data-loss && next build",
+    "build": "prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate --schema=prisma/schema.prisma",

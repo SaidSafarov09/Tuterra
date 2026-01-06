@@ -9,6 +9,22 @@ const publicPaths = ['/auth', '/debug-auth', '/admin']
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
+    // Construction of the base URL for redirects
+    // Priority: X-Forwarded headers (from Traefik) > process.env > request.url
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
+    const proto = request.headers.get('x-forwarded-proto') || 'https'
+    const baseUrl = host && !host.includes('0.0.0.0') && !host.includes('localhost')
+        ? `${proto}://${host}`
+        : (process.env.NEXTAUTH_URL || request.url)
+
+    const getTargetUrl = (target: string) => {
+        const url = new URL(target, baseUrl)
+        request.nextUrl.searchParams.forEach((value, key) => {
+            url.searchParams.set(key, value)
+        })
+        return url
+    }
+
     // 1. Landing Page logic
     if (pathname === '/') {
         const token = request.cookies.get('auth-token')?.value
@@ -16,11 +32,7 @@ export async function middleware(request: NextRequest) {
 
         if (payload) {
             const target = payload?.role === 'student' ? '/student/dashboard' : '/dashboard'
-            const url = new URL(target, process.env.NEXTAUTH_URL || request.url)
-            request.nextUrl.searchParams.forEach((value, key) => {
-                url.searchParams.set(key, value)
-            })
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(getTargetUrl(target))
         }
         return NextResponse.next()
     }
@@ -34,7 +46,7 @@ export async function middleware(request: NextRequest) {
 
     // 3. Redirect logic
     if (!isPublicPath && !isAuthenticated) {
-        return NextResponse.redirect(new URL('/auth', process.env.NEXTAUTH_URL || request.url))
+        return NextResponse.redirect(getTargetUrl('/auth'))
     }
 
     if (isAuthenticated) {
@@ -42,11 +54,7 @@ export async function middleware(request: NextRequest) {
 
         // Redirect from public paths to specific dashboard, except for /admin which has its own auth
         if ((isPublicPath || pathname === '/') && !pathname.startsWith('/admin')) {
-            const url = new URL(targetDashboard, process.env.NEXTAUTH_URL || request.url)
-            request.nextUrl.searchParams.forEach((value, key) => {
-                url.searchParams.set(key, value)
-            })
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(getTargetUrl(targetDashboard))
         }
 
         // Cross-role protection
@@ -54,18 +62,10 @@ export async function middleware(request: NextRequest) {
         const isTeacherPath = pathname.startsWith('/dashboard') || pathname === '/dashboard'
 
         if (payload?.role === 'student' && isTeacherPath) {
-            const url = new URL('/student/dashboard', process.env.NEXTAUTH_URL || request.url)
-            request.nextUrl.searchParams.forEach((value, key) => {
-                url.searchParams.set(key, value)
-            })
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(getTargetUrl('/student/dashboard'))
         }
         if (payload?.role === 'teacher' && isStudentPath) {
-            const url = new URL('/dashboard', process.env.NEXTAUTH_URL || request.url)
-            request.nextUrl.searchParams.forEach((value, key) => {
-                url.searchParams.set(key, value)
-            })
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(getTargetUrl('/dashboard'))
         }
     }
 
