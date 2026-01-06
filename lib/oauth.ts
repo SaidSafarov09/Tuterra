@@ -133,11 +133,15 @@ export async function createAuthSession(userId: string, phone: string, requestUr
         const cookieStore = await cookies()
         cookieStore.set('auth-token', token, cookieOptions)
 
-        const redirectUrl = new URL('/dashboard', requestUrl)
+        // Robust redirect URL construction
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || requestUrl
+        const targetPath = role === 'student' ? '/student/dashboard' : '/dashboard'
+        const redirectUrl = new URL(targetPath, baseUrl)
 
         return NextResponse.redirect(redirectUrl)
     } catch (error) {
         console.error(`[OAuth] Fatal error in createAuthSession:`, error)
-        return NextResponse.redirect(new URL('/auth?error=session_error', requestUrl))
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || requestUrl
+        return NextResponse.redirect(new URL('/auth?error=session_error', baseUrl))
     }
 }
