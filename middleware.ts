@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
 
         if (payload) {
             const target = payload?.role === 'student' ? '/student/dashboard' : '/dashboard'
-            const url = new URL(target, request.url)
+            const url = new URL(target, process.env.NEXTAUTH_URL || request.url)
             request.nextUrl.searchParams.forEach((value, key) => {
                 url.searchParams.set(key, value)
             })
@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
 
     // 3. Redirect logic
     if (!isPublicPath && !isAuthenticated) {
-        return NextResponse.redirect(new URL('/auth', request.url))
+        return NextResponse.redirect(new URL('/auth', process.env.NEXTAUTH_URL || request.url))
     }
 
     if (isAuthenticated) {
@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
 
         // Redirect from public paths to specific dashboard, except for /admin which has its own auth
         if ((isPublicPath || pathname === '/') && !pathname.startsWith('/admin')) {
-            const url = new URL(targetDashboard, request.url)
+            const url = new URL(targetDashboard, process.env.NEXTAUTH_URL || request.url)
             request.nextUrl.searchParams.forEach((value, key) => {
                 url.searchParams.set(key, value)
             })
@@ -54,14 +54,14 @@ export async function middleware(request: NextRequest) {
         const isTeacherPath = pathname.startsWith('/dashboard') || pathname === '/dashboard'
 
         if (payload?.role === 'student' && isTeacherPath) {
-            const url = new URL('/student/dashboard', request.url)
+            const url = new URL('/student/dashboard', process.env.NEXTAUTH_URL || request.url)
             request.nextUrl.searchParams.forEach((value, key) => {
                 url.searchParams.set(key, value)
             })
             return NextResponse.redirect(url)
         }
         if (payload?.role === 'teacher' && isStudentPath) {
-            const url = new URL('/dashboard', request.url)
+            const url = new URL('/dashboard', process.env.NEXTAUTH_URL || request.url)
             request.nextUrl.searchParams.forEach((value, key) => {
                 url.searchParams.set(key, value)
             })
