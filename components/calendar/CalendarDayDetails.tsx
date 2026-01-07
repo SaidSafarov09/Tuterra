@@ -10,6 +10,7 @@ import styles from '../../app/(dashboard)/calendar/page.module.scss'
 import { stringToColor } from '@/constants'
 import { LessonLinkSection } from '@/components/lessons/LessonLinkSection'
 
+import { useAuthStore } from '@/store/auth'
 import { getDayInfo, getRandomColor } from '@/lib/holidayUtils'
 
 interface CalendarDayDetailsProps {
@@ -45,6 +46,8 @@ export function CalendarDayDetails({
     lockedGroupIds = [],
     onLockedAction
 }: CalendarDayDetailsProps) {
+    const { user } = useAuthStore()
+
     if (isLoading) {
         return <div className={styles.modalLoading}>Загрузка...</div>
     }
@@ -57,6 +60,18 @@ export function CalendarDayDetails({
 
     const checkLessonLock = (lesson: Lesson): boolean => {
         if (isStudentView) return false
+
+        if (user?.proExpiresAt) {
+            // If subscription expires at end of 7th, and lesson is on 7th, it should be valid.
+            // Assuming proExpiresAt is a timestamp or date string.
+            // We'll trust standard comparison. If proExpiresAt is "2024-01-08T00:00:00" effectively covering 7th.
+            // Or if it's "2024-01-07T23:59:59".
+            // User requested if valid on the date of subscription "even on the last day".
+            if (new Date(lesson.date) <= new Date(user.proExpiresAt)) {
+                return false
+            }
+        }
+
         if (onLockedAction) {
             if (lesson.student?.id && lockedStudentIds.includes(lesson.student.id)) return true
             if (lesson.group?.id && lockedGroupIds.includes(lesson.group.id)) return true

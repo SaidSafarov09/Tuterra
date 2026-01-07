@@ -164,16 +164,23 @@ export async function PUT(
         })
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
 
+        const userDb = await prisma.user.findUnique({ where: { id: user.id }, select: { timezone: true, proExpiresAt: true } })
+        const timezone = userDb?.timezone || 'Europe/Moscow'
+
         // Check if student or group is locked
-        if (currentLesson.studentId && await isStudentLocked(currentLesson.studentId, user.id)) {
-            return NextResponse.json({ error: 'Данный ученик заблокирован. Продлите PRO.' }, { status: 403 })
-        }
-        if (currentLesson.groupId && await isGroupLocked(currentLesson.groupId, user.id)) {
-            return NextResponse.json({ error: 'Данная группа заблокирована. Продлите PRO.' }, { status: 403 })
+        // Allow editing if lesson falls within valid subscription period (or on the expiry day)
+        const isCoveredByPro = userDb?.proExpiresAt && currentLesson.date <= userDb.proExpiresAt
+
+        if (!isCoveredByPro) {
+            if (currentLesson.studentId && await isStudentLocked(currentLesson.studentId, user.id)) {
+                return NextResponse.json({ error: 'Данный ученик заблокирован. Продлите PRO.' }, { status: 403 })
+            }
+            if (currentLesson.groupId && await isGroupLocked(currentLesson.groupId, user.id)) {
+                return NextResponse.json({ error: 'Данная группа заблокирована. Продлите PRO.' }, { status: 403 })
+            }
         }
 
-        const userTz = await prisma.user.findUnique({ where: { id: user.id }, select: { timezone: true } })
-        const timezone = userTz?.timezone || 'Europe/Moscow'
+
 
         const { checkLessonOverlap, formatConflictMessage } = await import('@/lib/lessonValidation')
         const conflict = await checkLessonOverlap(user.id, validatedData.date, validatedData.duration || 60, lessonId)
@@ -244,12 +251,20 @@ export async function PATCH(
         })
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
 
+        const userDb = await prisma.user.findUnique({ where: { id: user.id }, select: { timezone: true, proExpiresAt: true } })
+        const timezone = userDb?.timezone || 'Europe/Moscow'
+
         // Check if student or group is locked
-        if (currentLesson.studentId && await isStudentLocked(currentLesson.studentId, user.id)) {
-            return NextResponse.json({ error: 'Данный ученик заблокирован. Продлите PRO.' }, { status: 403 })
-        }
-        if (currentLesson.groupId && await isGroupLocked(currentLesson.groupId, user.id)) {
-            return NextResponse.json({ error: 'Данная группа заблокирована. Продлите PRO.' }, { status: 403 })
+        // Allow editing if lesson falls within valid subscription period (or on the expiry day)
+        const isCoveredByPro = userDb?.proExpiresAt && currentLesson.date <= userDb.proExpiresAt
+
+        if (!isCoveredByPro) {
+            if (currentLesson.studentId && await isStudentLocked(currentLesson.studentId, user.id)) {
+                return NextResponse.json({ error: 'Данный ученик заблокирован. Продлите PRO.' }, { status: 403 })
+            }
+            if (currentLesson.groupId && await isGroupLocked(currentLesson.groupId, user.id)) {
+                return NextResponse.json({ error: 'Данная группа заблокирована. Продлите PRO.' }, { status: 403 })
+            }
         }
 
         const updateData: any = {}
@@ -260,8 +275,7 @@ export async function PATCH(
             updateData.date.setSeconds(0, 0)
         }
 
-        const userTz = await prisma.user.findUnique({ where: { id: user.id }, select: { timezone: true } })
-        const timezone = userTz?.timezone || 'Europe/Moscow'
+
 
         if (updateData.date || updateData.duration) {
             const { checkLessonOverlap, formatConflictMessage } = await import('@/lib/lessonValidation')

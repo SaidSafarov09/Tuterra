@@ -12,6 +12,8 @@ import { getLessonTimeInfo, isLessonPast, isLessonOngoing } from "@/lib/lessonTi
 import { LessonLinkSection } from "@/components/lessons/LessonLinkSection";
 import styles from "../../app/(dashboard)/students/[id]/page.module.scss";
 
+import { useAuthStore } from "@/store/auth";
+
 interface StudentLessonsProps {
     lessons: Lesson[];
     student: Student;
@@ -44,6 +46,7 @@ export function StudentLessons({
     onLockedAction,
 }: StudentLessonsProps) {
     const router = useRouter();
+    const { user } = useAuthStore()
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
 
     // Sync tab with URL
@@ -134,12 +137,20 @@ export function StudentLessons({
                 <div className={styles.lessonsList}>
                     {filteredLessons.map((lesson, index) => {
                         const subject = lesson.subject;
+                        let lessonIsLocked = isLocked
+
+                        if (lessonIsLocked && user?.proExpiresAt) {
+                            if (new Date(lesson.date) <= new Date(user.proExpiresAt)) {
+                                lessonIsLocked = false
+                            }
+                        }
+
                         return (
                             <div
                                 key={lesson.id}
                                 className={styles.lessonCard}
                                 onClick={() => {
-                                    if (isLocked && onLockedAction && !isStudentView) {
+                                    if (lessonIsLocked && onLockedAction && !isStudentView) {
                                         onLockedAction("Для просмотра деталей занятия необходимо обновить подписку");
                                         return;
                                     }
@@ -231,7 +242,7 @@ export function StudentLessons({
                                 <LessonLinkSection
                                     lesson={lesson}
                                     isStudentView={isStudentView}
-                                    isLocked={isLocked}
+                                    isLocked={lessonIsLocked}
                                     onLockedAction={onLockedAction}
                                 />
 
@@ -254,7 +265,7 @@ export function StudentLessons({
                                         index={index}
                                         totalItems={filteredLessons.length}
                                         isStudentView={isStudentView}
-                                        isLocked={isLocked}
+                                        isLocked={lessonIsLocked}
                                         onLockedAction={onLockedAction}
                                     />
                                 </div>

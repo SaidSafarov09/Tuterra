@@ -5,6 +5,8 @@ import { LessonCard } from '@/components/ui/LessonCard'
 import { LessonCardSkeleton } from '@/components/skeletons'
 import styles from '../../app/(dashboard)/lessons/page.module.scss'
 
+import { useAuthStore } from '@/store/auth'
+
 interface LessonsListProps {
     lessons: Lesson[]
     isLoading: boolean
@@ -36,6 +38,8 @@ export function LessonsList({
     lockedGroupIds = [],
     onLockedAction
 }: LessonsListProps) {
+    const { user } = useAuthStore()
+
     if (isLoading) {
         return (
             <div className={styles.lessonsList}>
@@ -64,6 +68,13 @@ export function LessonsList({
                 if (onLockedAction && !isStudentView) {
                     if (lesson.student?.id && lockedStudentIds.includes(lesson.student.id)) isLocked = true
                     if (lesson.group?.id && lockedGroupIds.includes(lesson.group.id)) isLocked = true
+
+                    if (isLocked && user?.proExpiresAt) {
+                        // Unlock if lesson was during valid subscription
+                        if (new Date(lesson.date) <= new Date(user.proExpiresAt)) {
+                            isLocked = false
+                        }
+                    }
                 }
 
                 return (
