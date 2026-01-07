@@ -38,17 +38,68 @@ import { AnimatePresence } from 'framer-motion'
 import { CareerProgress } from '@/components/dashboard/CareerProgress'
 import { Insights } from '@/components/dashboard/Insights'
 
+import { useCheckLimit } from '@/hooks/useCheckLimit'
+import { FREE_LIMITS } from '@/lib/limits'
+import { Student, Group } from '@/types'
+
 function DashboardContent() {
     const { user, setUser } = useAuthStore()
+    const { checkLimit, UpgradeModal, isPro } = useCheckLimit()
     const searchParams = useSearchParams()
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
     const isMobile = useMediaQuery('(max-width: 768px)')
     const currentMonth = Date.now()
-    // 1. Замораживаем роль, чтобы при логауте UI не прыгал
+
+    const [lockedStudentIds, setLockedStudentIds] = React.useState<string[]>([])
+    const [lockedGroupIds, setLockedGroupIds] = React.useState<string[]>([])
+
+    // 1. Замораживаем роль пока ui не прыгал
     const [initialRole] = React.useState(user?.role)
     const currentRole = user?.role || initialRole
     const isStudent = currentRole === 'student'
+
+    React.useEffect(() => {
+        if (!user || isStudent || isPro) return
+
+        const fetchData = async () => {
+            try {
+                const [studentsRes, groupsRes] = await Promise.all([
+                    fetch('/api/students'),
+                    fetch('/api/groups')
+                ])
+                const studentsData = await studentsRes.json()
+                const groupsData = await groupsRes.json()
+
+                if (Array.isArray(studentsData)) {
+                    const lockedS = studentsData.filter((s: any) => s.isLocked).map((s: any) => s.id)
+                    setLockedStudentIds(lockedS)
+                }
+                if (Array.isArray(groupsData)) {
+                    const lockedG = groupsData.filter((g: any) => g.isLocked).map((g: any) => g.id)
+                    setLockedGroupIds(lockedG)
+                }
+            } catch (e) {
+                console.error("Failed to fetch limits data", e)
+            }
+        }
+        fetchData()
+    }, [user, isStudent, isPro])
+
+    const checkLessonLock = (lesson: any): boolean => {
+        if (isStudent) return false
+        let locked = false
+        if (lesson.student?.id && lockedStudentIds.includes(lesson.student.id)) locked = true
+        if (lesson.group?.id && lockedGroupIds.includes(lesson.group.id)) locked = true
+
+        if (locked && user?.proExpiresAt) {
+            if (new Date(lesson.date) <= new Date(user.proExpiresAt)) {
+                locked = false
+            }
+        }
+        return locked
+    }
+
 
     const [isConnectionModalOpen, setIsConnectionModalOpen] = React.useState(false)
     const [isRequestsModalOpen, setIsRequestsModalOpen] = React.useState(false)
@@ -391,7 +442,14 @@ function DashboardContent() {
                         ) : stats?.upcomingLessons && stats.upcomingLessons.length > 0 ? (
                             <div className={styles.lessonsList}>
                                 {stats.upcomingLessons.map((lesson) => (
-                                    <LessonCard key={lesson.id} lesson={lesson} variant="compact" isStudentView={isStudent} />
+                                    <LessonCard
+                                        key={lesson.id}
+                                        lesson={lesson}
+                                        variant="compact"
+                                        isStudentView={isStudent}
+                                        isLocked={checkLessonLock(lesson)}
+                                        onLockedAction={(msg) => checkLimit('students', stats?.studentsCount || 100, msg)}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -413,7 +471,14 @@ function DashboardContent() {
                         ) : stats?.unpaidLessons && stats.unpaidLessons.length > 0 ? (
                             <div className={styles.lessonsList}>
                                 {stats.unpaidLessons.slice(0, 5).map((lesson) => (
-                                    <LessonCard key={lesson.id} lesson={lesson} variant="compact" isStudentView={isStudent} />
+                                    <LessonCard
+                                        key={lesson.id}
+                                        lesson={lesson}
+                                        variant="compact"
+                                        isStudentView={isStudent}
+                                        isLocked={checkLessonLock(lesson)}
+                                        onLockedAction={(msg) => checkLimit('students', stats?.studentsCount || 100, msg)}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -424,6 +489,8 @@ function DashboardContent() {
                     </Section>
                 </div>
             </div>
+
+            {UpgradeModal}
 
             <StudentConnectionModal
                 isOpen={isConnectionModalOpen}

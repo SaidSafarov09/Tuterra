@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
             console.warn('Failed to cleanup old OTPs:', e);
         }
 
-        const testEmails = ['test@test.ru', 'demo@demo.ru', 'admin@admin.com', 'demo@tuterra.ru', 'test@tuterra.ru']
+        const testEmails = ['test@test.ru', 'test2@test.ru', 'demo@demo.ru', 'admin@admin.com', 'demo@tuterra.ru', 'test@tuterra.ru']
         const isTestEmail = testEmails.includes(email)
         const code = isTestEmail ? '111111' : generateVerificationCode(6)
         const codeHash = await bcrypt.hash(code, 10)
