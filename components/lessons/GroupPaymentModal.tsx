@@ -84,6 +84,8 @@ export function GroupPaymentModal({
         })
     }
 
+    const isPast = lessonDate ? new Date(lessonDate) < new Date() : false
+
     const handleSubmit = () => {
         const paidStudentIds = Object.entries(attendanceRecords)
             .filter(([_, record]) => record.paid)
@@ -93,7 +95,7 @@ export function GroupPaymentModal({
             .filter(([_, record]) => record.attended)
             .map(([studentId, _]) => studentId)
 
-        if (attendedStudentIds.length === 0) {
+        if (attendedStudentIds.length === 0 && !isPast) {
             toast.warning('Никто не пришел на занятие. Занятие будет отменено.')
         }
 
@@ -197,7 +199,7 @@ export function GroupPaymentModal({
                     )}
                 </div>
 
-                {paymentStatus === 'none' && (
+                {paymentStatus === 'none' && !isPast && (
                     <div className={styles.warningBanner}>
                         <XCircle size={18} />
                         <span>Если никто не пришел, занятие будет отменено</span>

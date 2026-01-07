@@ -15,12 +15,14 @@ interface RecurrenceSectionProps {
     value: RecurrenceRule
     onChange: (value: RecurrenceRule) => void
     disabled?: boolean
+    startDate?: Date
 }
 
 export const RecurrenceSection: React.FC<RecurrenceSectionProps> = ({
     value,
     onChange,
-    disabled = false
+    disabled = false,
+    startDate
 }) => {
     const updateRule = (updates: Partial<RecurrenceRule>) => {
         onChange({ ...value, ...updates })
@@ -32,8 +34,17 @@ export const RecurrenceSection: React.FC<RecurrenceSectionProps> = ({
         { value: 'every_x_weeks', label: RECURRENCE_TYPE_LABELS['every_x_weeks'] },
     ]
 
+    const getEndOfSchoolYearLabel = () => {
+        const referenceDate = startDate || new Date()
+        let year = referenceDate.getFullYear()
+        if (referenceDate.getMonth() >= 5) { // Июнь и позже
+            year += 1
+        }
+        return `${RECURRENCE_END_TYPE_LABELS.never} (до конца мая ${year})`
+    }
+
     const endTypeOptions = [
-        { value: 'never', label: RECURRENCE_END_TYPE_LABELS.never },
+        { value: 'never', label: getEndOfSchoolYearLabel() },
         { value: 'until_date', label: RECURRENCE_END_TYPE_LABELS.until_date },
         { value: 'count', label: RECURRENCE_END_TYPE_LABELS.count },
     ]
@@ -67,8 +78,8 @@ export const RecurrenceSection: React.FC<RecurrenceSectionProps> = ({
                         <Input
                             label="Интервал (недель)"
                             type="number"
-                            value={value.interval.toString()}
-                            onChange={(e) => updateRule({ interval: parseInt(e.target.value) || 1 })}
+                            value={value.interval?.toString() || ''}
+                            onChange={(e) => updateRule({ interval: e.target.value === '' ? '' as any : parseInt(e.target.value) })}
                             min={1}
                             disabled={disabled}
                             required

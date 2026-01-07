@@ -18,21 +18,21 @@ export function generateRecurringDates({
         return [startDate]
     }
 
-    
+
     const dates: Date[] = [new Date(startDate)]
 
-    
+
     let effectiveLimit = limit
     if (rule.endType === 'count' && rule.occurrencesCount) {
         effectiveLimit = Math.min(limit, rule.occurrencesCount)
 
-        
-        
-        
+
+
+
         effectiveLimit += 1
     }
 
-    
+
     if (dates.length >= effectiveLimit) {
         return dates
     }
@@ -40,25 +40,25 @@ export function generateRecurringDates({
     let calculatedEndDate = hardEndDate
 
     if (rule.endType === 'until_date' && rule.endDate) {
-        
+
         const date = new Date(rule.endDate)
         date.setHours(23, 59, 59, 999)
         calculatedEndDate = date
     } else if (rule.endType === 'count' && rule.occurrencesCount) {
-        
-        
+
+
     }
 
     if (hardEndDate && (!calculatedEndDate || isAfter(calculatedEndDate, hardEndDate))) {
         calculatedEndDate = hardEndDate
     }
 
-    
-    
-    
 
-    
-    
+
+
+
+
+
 
     switch (rule.type) {
         case 'daily':
@@ -91,7 +91,7 @@ export function getRecurrenceDescription(rule: RecurrenceRule, startDate: Date):
 
     const parts: string[] = []
 
-    
+
     switch (rule.type) {
         case 'daily':
             parts.push('Каждый день')
@@ -122,17 +122,21 @@ export function getRecurrenceDescription(rule: RecurrenceRule, startDate: Date):
             break
     }
 
-    
+
     const hours = startDate.getHours().toString().padStart(2, '0')
     const minutes = startDate.getMinutes().toString().padStart(2, '0')
     parts.push(`в ${hours}:${minutes}`)
 
-    
+
     if (rule.endType === 'until_date' && rule.endDate) {
         const date = new Date(rule.endDate)
         parts.push(`до ${date.toLocaleDateString('ru-RU')}`)
     } else if (rule.endType === 'count' && rule.occurrencesCount) {
         parts.push(`(${rule.occurrencesCount} ${getPluralLessons(rule.occurrencesCount)})`)
+    } else if (rule.endType === 'never') {
+        let year = startDate.getFullYear()
+        if (startDate.getMonth() >= 5) year += 1
+        parts.push(`до конца мая ${year}`)
     }
 
     return parts.join(' ')
@@ -172,7 +176,7 @@ function getRecurrenceEndDate(
     let endDate: Date | null = null
 
     if (rule.endType === 'until_date' && rule.endDate) {
-        
+
         const date = new Date(rule.endDate)
         date.setHours(23, 59, 59, 999)
         endDate = date
@@ -194,7 +198,7 @@ function generateDailyDates(
     dates: Date[],
     limit: number
 ): void {
-    let currentDate = addDays(startDate, 1) 
+    let currentDate = addDays(startDate, 1)
 
     while (dates.length < limit) {
         if (endDate && isAfter(currentDate, endDate)) {
@@ -272,7 +276,7 @@ function generateEveryXWeeksDates(
     let weeksChecked = 0
     const maxWeeksToCheck = 1000
 
-    
+
     const normalizedStart = new Date(startDate)
     normalizedStart.setSeconds(0, 0)
 
@@ -281,7 +285,7 @@ function generateEveryXWeeksDates(
             let targetDate = addDays(currentWeekStart, dayOfWeek)
             targetDate.setHours(hours, minutes, 0, 0)
 
-            
+
             if (targetDate > normalizedStart) {
                 if (endDate && isAfter(targetDate, endDate)) {
                     return

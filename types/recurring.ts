@@ -21,7 +21,7 @@ export interface LessonSeriesData {
     endDate?: Date | string | null
     occurrencesCount?: number | null
 
-    
+
     studentId: string
     subjectId?: string | null
     price: number
@@ -33,7 +33,7 @@ export interface LessonSeriesData {
 }
 
 export interface RecurringLessonFormData {
-    
+
     studentId: string
     subjectId?: string
     date: Date
@@ -41,7 +41,7 @@ export interface RecurringLessonFormData {
     topic?: string
     notes?: string
 
-    
+
     recurrence: RecurrenceRule
 }
 
@@ -64,7 +64,7 @@ export const RECURRENCE_TYPE_LABELS: Record<RecurrenceType, string> = {
 }
 
 export const RECURRENCE_END_TYPE_LABELS: Record<RecurrenceEndType, string> = {
-    never: 'Бессрочно',
+    never: 'До конца учебного года',
     until_date: 'До даты',
     count: 'Количество повторений'
 }

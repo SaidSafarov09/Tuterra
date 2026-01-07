@@ -144,6 +144,7 @@ export const DateTimeRecurrenceModal: React.FC<DateTimeRecurrenceModalProps> = (
                         <RecurrenceSection
                             value={localRecurrence || defaultRecurrence}
                             onChange={handleLocalRecurrenceChange}
+                            startDate={localDate}
                         />
                     </div>
                 )}

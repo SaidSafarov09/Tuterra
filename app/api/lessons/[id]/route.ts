@@ -312,18 +312,36 @@ export async function DELETE(
         const lessonWithSeries = lesson as any
 
         if (scope === 'series' && lessonWithSeries.seriesId) {
+            const now = new Date()
+
+            // Delete only future lessons in the series
             await prisma.lesson.deleteMany({
                 where: {
                     seriesId: lessonWithSeries.seriesId,
                     ownerId: user.id,
+                    date: {
+                        gte: now
+                    }
                 } as any,
             })
-            await (prisma as any).lessonSeries.delete({
+
+            // Check if any lessons remain in this series
+            const remainingLessonsCount = await prisma.lesson.count({
                 where: {
-                    id: lessonWithSeries.seriesId,
-                    userId: user.id,
-                },
+                    seriesId: lessonWithSeries.seriesId,
+                    ownerId: user.id,
+                }
             })
+
+            // Only delete the series record if no lessons (past or future) remain
+            if (remainingLessonsCount === 0) {
+                await (prisma as any).lessonSeries.delete({
+                    where: {
+                        id: lessonWithSeries.seriesId,
+                        userId: user.id,
+                    },
+                })
+            }
         } else {
             await prisma.lesson.delete({
                 where: {

@@ -67,8 +67,10 @@ export async function updateLessonPayments(
         finalAttendedIds.push(currentLesson.studentId)
     }
 
-    if (finalAttendedIds.length === 0) {
-        // Cancel lesson if no one attended
+    const isPast = new Date(currentLesson.date) < new Date()
+
+    if (finalAttendedIds.length === 0 && !isPast) {
+        // Cancel lesson if no one attended AND it's a future lesson
         await prisma.lessonPayment.deleteMany({ where: { lessonId } })
         await prisma.lesson.update({
             where: { id: lessonId },
@@ -76,13 +78,16 @@ export async function updateLessonPayments(
         })
     } else {
         await prisma.lessonPayment.deleteMany({ where: { lessonId } })
-        await prisma.lessonPayment.createMany({
-            data: finalAttendedIds.map(studentId => ({
-                lessonId,
-                studentId,
-                hasPaid: finalPaidIds.includes(studentId)
-            }))
-        })
+
+        if (finalAttendedIds.length > 0) {
+            await prisma.lessonPayment.createMany({
+                data: finalAttendedIds.map(studentId => ({
+                    lessonId,
+                    studentId,
+                    hasPaid: finalPaidIds.includes(studentId)
+                }))
+            })
+        }
 
         // Re-fetch to get updated payments and group info
         const lessonWithGroup = await prisma.lesson.findUnique({
@@ -90,8 +95,9 @@ export async function updateLessonPayments(
             include: { group: true, lessonPayments: true }
         })
 
-        if (lessonWithGroup?.group && lessonWithGroup.lessonPayments) {
-            const status = getGroupLessonPaymentStatus(lessonWithGroup.lessonPayments)
+        if (lessonWithGroup?.group) {
+            const payments = lessonWithGroup.lessonPayments || []
+            const status = payments.length > 0 ? getGroupLessonPaymentStatus(payments) : 'unpaid'
             await prisma.lesson.update({
                 where: { id: lessonId },
                 data: {
@@ -101,7 +107,7 @@ export async function updateLessonPayments(
             })
         } else if (!lessonWithGroup?.group) {
             // Individual lesson: isPaid is just whatever we were told
-            const isPaid = finalPaidIds.includes(currentLesson.studentId)
+            const isPaid = finalPaidIds.length > 0 && currentLesson.studentId ? finalPaidIds.includes(currentLesson.studentId) : false
             await prisma.lesson.update({
                 where: { id: lessonId },
                 data: { isPaid, isCanceled: false }

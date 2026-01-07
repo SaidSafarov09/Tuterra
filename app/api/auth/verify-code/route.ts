@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { signToken } from '@/lib/jwt'
 import { cookies } from 'next/headers'
 import { createWelcomeNotifications } from '@/lib/welcomeNotifications'
-import { linkStudentToTutor } from '@/lib/studentConnection'
+import { linkStudentToTutor, autoLinkByContact } from '@/lib/studentConnection'
 import { processTeacherReferral } from '@/lib/referral'
 import bcrypt from 'bcrypt'
 
@@ -271,11 +271,28 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Ошибка авторизации' }, { status: 500 })
         }
 
-        // Finalize session
+        // Auto-link any matching student records by contact info (email/phone)
+        try {
+            await autoLinkByContact(user.id)
+        } catch (e) {
+            console.error('Auto-linking error:', e)
+        }
+
+        // Refetch full user data for the frontend store
+        const fullUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: fullUserSelect as any
+        })
+
+        if (!fullUser) {
+            return NextResponse.json({ success: false, error: 'Ошибка получения данных' }, { status: 500 })
+        }
+
+        // Finalize session with the MOST UP TO DATE role (might have changed during auto-link)
         const token = await signToken({
-            userId: user.id,
-            phone: user.phone || '',
-            role: user.role,
+            userId: (fullUser as any).id,
+            phone: (fullUser as any).phone || '',
+            role: (fullUser as any).role,
         })
 
         const isLocalhost = request.url.includes('localhost')
@@ -288,12 +305,6 @@ export async function POST(request: NextRequest) {
             sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60,
             path: '/',
-        })
-
-        // Refetch full user data for the frontend store
-        const fullUser = await prisma.user.findUnique({
-            where: { id: user.id },
-            select: fullUserSelect as any
         })
 
         return NextResponse.json({

@@ -280,14 +280,18 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const threeMonthsFromNow = new Date()
-    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3)
+    const startDate = new Date(data.date)
+    let year = startDate.getFullYear()
+    if (startDate.getMonth() >= 5) { // Июнь или позже - учебный год заканчивается в следующем календарном году
+        year += 1
+    }
+    const schoolYearEnd = new Date(year, 4, 31, 23, 59, 59)
 
     const dates = generateRecurringDates({
-        startDate: data.date,
+        startDate: startDate,
         rule: recurrence,
-        limit: 100,
-        endDate: threeMonthsFromNow,
+        limit: 300,
+        endDate: schoolYearEnd,
     })
 
     const [conflict, group, userTz] = await Promise.all([

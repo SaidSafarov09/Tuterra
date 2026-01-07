@@ -139,6 +139,14 @@ export function useCalendarLessonForm(options: UseCalendarLessonFormOptions = {}
             return false
         }
 
+        if (formData.recurrence?.enabled && formData.recurrence.type === 'every_x_weeks') {
+            const interval = formData.recurrence.interval
+            if (interval === undefined || interval === null || interval === '' as any) {
+                toast.error('Укажите интервал недель')
+                return false
+            }
+        }
+
         setIsSubmitting(true)
         setError('')
 

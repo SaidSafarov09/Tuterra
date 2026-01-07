@@ -59,6 +59,7 @@ export function useStudentDetail(studentId: string) {
         duration: 60,
         price: '',
         isPaid: false,
+        isTrial: false,
         topic: '',
         notes: '',
         recurrence: undefined as any,
@@ -215,11 +216,16 @@ export function useStudentDetail(studentId: string) {
             studentId: student?.id || studentId,
             subjectId: lessonFormData.subjectId || '',
             date: lessonFormData.date,
+            duration: lessonFormData.duration,
+            isTrial: !!lessonFormData.isTrial,
             price: lessonFormData.price,
             isPaid: lessonFormData.isPaid,
             topic: lessonFormData.topic,
             notes: lessonFormData.notes,
             planTopicId: lessonFormData.planTopicId,
+            recurrence: lessonFormData.recurrence,
+            seriesPrice: lessonFormData.seriesPrice,
+            isPaidAll: lessonFormData.isPaidAll,
         })
 
         if (lesson) {
@@ -251,6 +257,7 @@ export function useStudentDetail(studentId: string) {
             subjectId: lesson.subject?.id || '',
             date: new Date(lesson.date),
             duration: lesson.duration || 60,
+            isTrial: !!lesson.isTrial,
             price: lesson.price.toString(),
             isPaid: lesson.isPaid,
             topic: lesson.topic || '',
@@ -272,11 +279,16 @@ export function useStudentDetail(studentId: string) {
             studentId: student?.id || studentId,
             subjectId: lessonFormData.subjectId || undefined,
             date: lessonFormData.date,
+            duration: lessonFormData.duration,
+            isTrial: !!lessonFormData.isTrial,
             price: lessonFormData.price,
             isPaid: lessonFormData.isPaid,
             topic: lessonFormData.topic,
             notes: lessonFormData.notes,
             planTopicId: lessonFormData.planTopicId,
+            recurrence: lessonFormData.recurrence,
+            seriesPrice: lessonFormData.seriesPrice,
+            isPaidAll: lessonFormData.isPaidAll,
         })
 
         if (updated) {
@@ -393,6 +405,7 @@ export function useStudentDetail(studentId: string) {
             duration: 60,
             price: '',
             isPaid: false,
+            isTrial: false,
             topic: '',
             notes: '',
             recurrence: undefined,

@@ -109,10 +109,23 @@ import { cookies } from 'next/headers'
 
 export async function createAuthSession(userId: string, phone: string, requestUrl: string, role: string = 'teacher') {
     try {
+        let finalRole = role
+        // Auto-link any matching student records
+        try {
+            const { autoLinkByContact } = await import('@/lib/studentConnection')
+            await autoLinkByContact(userId)
+
+            // Refetch user to get the latest role after auto-link
+            const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+            if (user) finalRole = user.role
+        } catch (e) {
+            console.error('Auto-linking error during OAuth:', e)
+        }
+
         const token = await signToken({
             userId,
             phone: phone || '',
-            role,
+            role: finalRole,
         })
 
         if (!token) {

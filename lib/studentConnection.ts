@@ -216,3 +216,72 @@ export async function linkStudentToTutor(userId: string, code: string) {
         return newStudent;
     }
 }
+
+/**
+ * Automatically links a User to any Student records that match their contact info.
+ * This is used during login/signup to ensure "ghost" student records (added by teachers only by phone/email)
+ * are linked to the actual User account as soon as it exists.
+ */
+export async function autoLinkByContact(userId: string) {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, email: true, phone: true, role: true }
+    });
+
+    if (!user) return;
+
+    const normalizedEmail = normalizeContact(user.email);
+    const normalizedPhone = normalizeContact(user.phone);
+
+    if (!normalizedEmail && !normalizedPhone) return;
+
+    // Find all unlinked student records
+    const orphanedStudents = await prisma.student.findMany({
+        where: { linkedUserId: null },
+        include: { owner: { select: { plan: true } } }
+    });
+
+    // Filter by matching contact
+    const matchingStudents = orphanedStudents.filter(s => {
+        const normalizedSContact = normalizeContact(s.contact);
+        if (!normalizedSContact) return false;
+        return normalizedSContact === normalizedEmail || normalizedSContact === normalizedPhone;
+    });
+
+    if (matchingStudents.length === 0) return;
+
+    let linkedCount = 0;
+
+    // Link each matching student record
+    for (const studentRecord of matchingStudents) {
+        try {
+            // Check limits for each teacher
+            await checkLimits(studentRecord.ownerId, false);
+
+            await prisma.student.update({
+                where: { id: studentRecord.id },
+                data: { linkedUserId: user.id }
+            });
+            linkedCount++;
+        } catch (e) {
+            console.error(`Auto-linking failed for student record ${studentRecord.id}:`, e);
+        }
+    }
+
+    // If we linked at least one record and user is currently "teacher" but has zero data, 
+    // convert them to "student"
+    if (linkedCount > 0 && user.role === 'teacher') {
+        const [studentCount, groupCount, subjectCount] = await Promise.all([
+            prisma.student.count({ where: { ownerId: userId } }),
+            prisma.group.count({ where: { ownerId: userId } }),
+            prisma.subject.count({ where: { userId: userId } }),
+        ]);
+
+        if (studentCount === 0 && groupCount === 0 && subjectCount === 0) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { role: 'student', plan: null }
+            });
+        }
+    }
+}

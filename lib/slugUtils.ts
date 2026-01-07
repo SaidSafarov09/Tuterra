@@ -28,11 +28,11 @@ export function generateSlug(input: string, extra?: string): string {
     let slug = transliterate(input)
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, '-')           
-        .replace(/[^\w\-]+/g, '')       
-        .replace(/\-\-+/g, '-')         
-        .replace(/^-+/, '')             
-        .replace(/-+$/, '')             
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '')
 
     if (extra) {
         slug += `-${extra}`
@@ -59,8 +59,9 @@ export function generateStudentSlug(name: string, id: string): string {
  */
 export function generateLessonSlug(studentName: string, date: Date, topic?: string): string {
     const dateStr = date.toISOString().slice(0, 16).replace('T', '-').replace(/:/g, '-')
+    const randomSuffix = Math.random().toString(36).substring(2, 6)
     const base = topic || studentName
-    return generateSlug(base, dateStr)
+    return generateSlug(base, `${dateStr}-${randomSuffix}`)
 }
 
 export function isCuid(str: string): boolean {

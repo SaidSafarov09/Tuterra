@@ -45,7 +45,11 @@ function DashboardContent() {
     const [isLoading, setIsLoading] = React.useState(true)
     const isMobile = useMediaQuery('(max-width: 768px)')
     const currentMonth = Date.now()
-    const isStudent = user?.role === 'student'
+    // 1. Замораживаем роль, чтобы при логауте UI не прыгал
+    const [initialRole] = React.useState(user?.role)
+    const currentRole = user?.role || initialRole
+    const isStudent = currentRole === 'student'
+
     const [isConnectionModalOpen, setIsConnectionModalOpen] = React.useState(false)
     const [isRequestsModalOpen, setIsRequestsModalOpen] = React.useState(false)
     const [isPaymentSuccessModalOpen, setIsPaymentSuccessModalOpen] = React.useState(false)
@@ -69,22 +73,28 @@ function DashboardContent() {
     }, [])
 
     useEffect(() => {
-        // Проверяем, нужно ли показывать баннер Telegram
+        // Если пользователя нет (логаут), мгновенно всё скрываем и не считаем баннеры
+        if (!user || user.role === 'student') {
+            setIsTelegramBannerVisible(false)
+            setIsReferralBannerVisible(false)
+            return
+        }
+
         const telegramDismissedUntil = localStorage.getItem('telegram_banner_dismissed_until')
         const referralDismissedUntil = localStorage.getItem('referral_banner_dismissed_until')
         const now = Date.now()
 
-        if (!user?.telegramId && (!telegramDismissedUntil || now > parseInt(telegramDismissedUntil))) {
+        if (!user.telegramId && (!telegramDismissedUntil || now > parseInt(telegramDismissedUntil))) {
             setIsTelegramBannerVisible(true)
-            setIsReferralBannerVisible(false) // Приоритет боту
-        } else if (user?.telegramId && (!referralDismissedUntil || now > parseInt(referralDismissedUntil))) {
+            setIsReferralBannerVisible(false)
+        } else if (user.telegramId && (!referralDismissedUntil || now > parseInt(referralDismissedUntil))) {
             setIsReferralBannerVisible(true)
             setIsTelegramBannerVisible(false)
         } else {
             setIsTelegramBannerVisible(false)
             setIsReferralBannerVisible(false)
         }
-    }, [user?.telegramId])
+    }, [user?.telegramId, user?.role, !!user])
 
     const handleConnectTelegram = async () => {
         try {
@@ -101,14 +111,13 @@ function DashboardContent() {
 
     const dismissTelegramBanner = () => {
         setIsTelegramBannerVisible(false)
-        // Скрываем на 3 дня
         const until = Date.now() + (3 * 24 * 60 * 60 * 1000)
         localStorage.setItem('telegram_banner_dismissed_until', until.toString())
     }
 
     const dismissReferralBanner = () => {
         setIsReferralBannerVisible(false)
-        const until = Date.now() + (7 * 24 * 60 * 60 * 1000) // Реферал реже
+        const until = Date.now() + (7 * 24 * 60 * 60 * 1000)
         localStorage.setItem('referral_banner_dismissed_until', until.toString())
     }
 
@@ -117,6 +126,7 @@ function DashboardContent() {
     }
 
     const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
+        if (!user) return; // Не даем слать запросы, если вышли
         try {
             const response = await fetch(`/api/student-requests/${requestId}`, {
                 method: 'PATCH',
@@ -128,7 +138,6 @@ function DashboardContent() {
                 throw new Error(data.error || 'Ошибка при обновлении статуса заявки')
             }
             toast.success(status === 'approved' ? 'Заявка одобрена' : 'Заявка отклонена')
-            // Refresh stats
             const endpoint = isStudent ? '/api/student/stats' : '/api/stats'
             const res = await fetch(endpoint)
             const data = await res.json()
@@ -139,10 +148,11 @@ function DashboardContent() {
             setIsLoading(false)
         }
     }
+
     React.useEffect(() => {
+        if (!user) return; // FIX: Не лезем в URL, если логаут
         const paymentStatus = searchParams.get('payment')
         const planParam = searchParams.get('plan')
-
 
         if (paymentStatus === 'success') {
             fetch('/api/auth/me')
@@ -151,27 +161,20 @@ function DashboardContent() {
                     if (data.success && data.user) {
                         setUser(data.user)
                         setIsPaymentSuccessModalOpen(true)
-                        // Убираем параметр из URL
                         window.history.replaceState({}, '', '/dashboard')
                     }
                 })
                 .catch(err => console.error('Failed to update user:', err))
-        } else if (user) {
+        } else {
             const userData = user as any;
-            // Строгий запрет для учеников и тех, кто уже PRO
-            if (userData?.role === 'student' || userData?.isPro) {
-                return
-            }
+            if (userData?.role === 'student' || userData?.isPro) return
 
             const savedPlan = localStorage.getItem('selectedPlan')
             const finalPlan = (planParam === 'month' || planParam === 'year') ? planParam : savedPlan
 
-
             if (finalPlan === 'month' || finalPlan === 'year') {
                 setSelectedPlan(finalPlan as 'month' | 'year')
                 setIsUpgradeModalOpen(true)
-
-                // Cleanup
                 localStorage.removeItem('selectedPlan')
                 if (planParam) {
                     const url = new URL(window.location.href)
@@ -180,13 +183,15 @@ function DashboardContent() {
                 }
             }
         }
-    }, [searchParams, setUser, user])
+    }, [searchParams, setUser, !!user])
 
     React.useEffect(() => {
         const fetchStats = async () => {
+            if (!user) return; // FIX: Главный стопор для запросов при логауте
             try {
                 const endpoint = isStudent ? '/api/student/stats' : '/api/stats'
                 const response = await fetch(endpoint)
+                if (!response.ok) return // Не спамим тостами, если сессия кончилась
                 const data = await response.json()
                 if (data.success) {
                     setStats(data.stats)
@@ -195,14 +200,17 @@ function DashboardContent() {
                     }
                 }
             } catch (error) {
-                toast.error('Не удалось загрузить статистику')
+                // Молчим, если просто нет сети или сессии
             } finally {
                 setIsLoading(false)
             }
         }
-
         fetchStats()
-    }, [isStudent])
+    }, [isStudent, !!user])
+
+    // 2. Если пользователя нет (совсем!), возвращаем пустой скелет или "ничего"
+    // Но благодаря AnimatePresence и замороженной роли, юзер этого даже не увидит, т.к. страница исчезнет раньше
+    if (!user && !isLoading) return null;
 
     return (
         <div>
@@ -211,9 +219,10 @@ function DashboardContent() {
                 subtitle={isStudent ? "Ваш учебный процесс" : "Обзор вашей активности"}
             />
 
-            <AnimatePresence>
-                {isTelegramBannerVisible && !isStudent && (
+            <AnimatePresence mode="wait">
+                {isTelegramBannerVisible && user && user.role !== 'student' && (
                     <PromotionalBanner
+                        key="telegram"
                         variant="telegram"
                         title="Подключите Telegram ассистента"
                         description="Получайте уведомления об уроках и оплатах, управляйте расписанием прямо в Telegram. Это бесплатно и занимает 10 секунд."
@@ -222,8 +231,9 @@ function DashboardContent() {
                         onClose={dismissTelegramBanner}
                     />
                 )}
-                {isReferralBannerVisible && !isStudent && (
+                {isReferralBannerVisible && user && user.role !== 'student' && (
                     <PromotionalBanner
+                        key="referral"
                         variant="referral"
                         title="Пригласите коллегу — получите месяц PRO"
                         description="За каждого приглашенного репетитора мы дарим 30 дней PRO-подписки вам и вашему другу. Развивайтесь вместе!"

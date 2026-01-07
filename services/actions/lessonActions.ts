@@ -29,22 +29,23 @@ export async function createLesson(data: {
     duration?: number
     isTrial?: boolean
     price: number | string
-    isPaid: boolean
+    isPaid?: boolean
     topic?: string
     notes?: string
     paidStudentIds?: string[]
     planTopicId?: string | null
+    recurrence?: any
+    seriesPrice?: number | string
+    isPaidAll?: boolean
 }): Promise<Lesson | null> {
-    if (!data.price) {
+    if (data.price === undefined || data.price === '') {
         toast.error(VALIDATION_MESSAGES.ENTER_PRICE)
         return null
     }
 
     const lessonDate = typeof data.date === 'string' ? new Date(data.date) : data.date
-    if (lessonDate < new Date()) {
-        toast.error(VALIDATION_MESSAGES.PAST_DATE)
-        return null
-    }
+    // Allow past dates for manual entry if needed, but usually we warn
+    // Removed strict past date check to match other creation points
 
     try {
         const lesson = await lessonsApi.create({
@@ -55,11 +56,14 @@ export async function createLesson(data: {
             duration: data.duration,
             isTrial: data.isTrial,
             price: Number(data.price),
-            isPaid: data.isPaid,
+            isPaid: data.isPaid || false,
             topic: data.topic,
             notes: data.notes,
             paidStudentIds: data.paidStudentIds,
             planTopicId: data.planTopicId,
+            recurrence: data.recurrence,
+            seriesPrice: data.seriesPrice ? Number(data.seriesPrice) : undefined,
+            isPaidAll: data.isPaidAll
         })
         toast.success(LESSON_MESSAGES.CREATED)
         return lesson
@@ -86,6 +90,9 @@ export async function updateLesson(
         paidStudentIds: string[]
         attendedStudentIds: string[]
         planTopicId: string | null
+        recurrence: any
+        seriesPrice: number | string
+        isPaidAll: boolean
     }>,
     options?: { showToast?: boolean }
 ): Promise<Lesson | null> {
@@ -108,6 +115,18 @@ export async function updateLesson(
 
         if (data.isTrial !== undefined) {
             updateData.isTrial = data.isTrial
+        }
+
+        if (data.recurrence !== undefined) {
+            updateData.recurrence = data.recurrence
+        }
+
+        if (data.seriesPrice !== undefined) {
+            updateData.seriesPrice = Number(data.seriesPrice)
+        }
+
+        if (data.isPaidAll !== undefined) {
+            updateData.isPaidAll = data.isPaidAll
         }
 
         const lesson = await lessonsApi.update(lessonId, updateData)
