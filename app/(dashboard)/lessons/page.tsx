@@ -237,6 +237,20 @@ function LessonsContent() {
         handleRescheduleLesson(lesson)
     }
 
+    const lockedStudentIds = useMemo(() =>
+        (students || []).filter(s => s.isLocked).map(s => s.id),
+        [students]
+    )
+
+    const lockedGroupIds = useMemo(() =>
+        (groups || []).filter(g => g.isLocked).map(g => g.id),
+        [groups]
+    )
+
+    const handleLockedAction = (message: string) => {
+        checkLimit('students', (students || []).length, message)
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -328,6 +342,9 @@ function LessonsContent() {
                             onDelete={handleDeleteClick}
                             isStudentView={isStudent}
                             isActionLoading={isLoading}
+                            lockedStudentIds={lockedStudentIds}
+                            lockedGroupIds={lockedGroupIds}
+                            onLockedAction={handleLockedAction}
                         />
                     </motion.div>
                 )}

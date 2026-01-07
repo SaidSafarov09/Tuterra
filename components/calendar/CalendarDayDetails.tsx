@@ -24,6 +24,9 @@ interface CalendarDayDetailsProps {
     region?: string | null
     isStudentView?: boolean
     isLoadingAction?: boolean
+    lockedStudentIds?: string[]
+    lockedGroupIds?: string[]
+    onLockedAction?: (message: string) => void
 }
 
 export function CalendarDayDetails({
@@ -37,7 +40,10 @@ export function CalendarDayDetails({
     userBirthDate,
     region,
     isStudentView,
-    isLoadingAction = false
+    isLoadingAction = false,
+    lockedStudentIds = [],
+    lockedGroupIds = [],
+    onLockedAction
 }: CalendarDayDetailsProps) {
     if (isLoading) {
         return <div className={styles.modalLoading}>Загрузка...</div>
@@ -48,6 +54,23 @@ export function CalendarDayDetails({
     const birthdayGreeting = dayInfo?.isBirthday ? `🎈🎉🎁 С днем рождения! 🎈🎉🎁` : null
 
     const isEmpty = !dayData || (!dayData.lessons?.length && dayData.totalEarned === 0 && dayData.potentialEarnings === 0)
+
+    const checkLessonLock = (lesson: Lesson): boolean => {
+        if (isStudentView) return false
+        if (onLockedAction) {
+            if (lesson.student?.id && lockedStudentIds.includes(lesson.student.id)) return true
+            if (lesson.group?.id && lockedGroupIds.includes(lesson.group.id)) return true
+        }
+        return false
+    }
+
+    const handleAction = (lesson: Lesson, action: () => void, message: string) => {
+        if (checkLessonLock(lesson) && onLockedAction) {
+            onLockedAction(message)
+            return
+        }
+        action()
+    }
 
     return (
         <div className={styles.dayDetails}>
@@ -126,6 +149,7 @@ export function CalendarDayDetails({
                                         ? !!lesson.lessonPayments?.find(p => p.hasPaid)
                                         : lesson.isPaid))
                                     : lesson.isPaid
+                                const isLocked = checkLessonLock(lesson)
 
                                 return (
                                     <div
@@ -216,13 +240,15 @@ export function CalendarDayDetails({
                                         <LessonLinkSection
                                             lesson={lesson}
                                             isStudentView={isStudentView}
+                                            isLocked={isLocked}
+                                            onLockedAction={onLockedAction}
                                         />
 
                                         <div className={styles.lessonActions}>
                                             {!lesson.isCanceled && !isTrial(lesson.price) && !isStudentView && (
                                                 <button
                                                     className={`${styles.actionButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
-                                                    onClick={() => onTogglePaid(lesson)}
+                                                    onClick={() => handleAction(lesson, () => onTogglePaid(lesson), 'Для управления финансами этого ученика необходимо продлить подписку.')}
                                                     disabled={lesson.isCanceled}
                                                 >
                                                     <CheckIcon size={16} />
@@ -244,7 +270,7 @@ export function CalendarDayDetails({
                                             {!isLessonPast(lesson.date, lesson.duration || 60) && (!isStudentView || !isGroupLesson(lesson)) && (
                                                 <button
                                                     className={styles.actionButton}
-                                                    onClick={() => onReschedule(lesson)}
+                                                    onClick={() => handleAction(lesson, () => onReschedule(lesson), 'Для переноса уроков этого ученика необходимо продлить подписку.')}
                                                 >
                                                     <RescheduleIcon size={16} />
                                                     {isStudentView ? 'Запрос на перенос' : 'Перенести'}
@@ -254,7 +280,7 @@ export function CalendarDayDetails({
                                             {!isLessonPast(lesson.date, lesson.duration || 60) && (!isStudentView || !isGroupLesson(lesson)) && (
                                                 <button
                                                     className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.deleteButton}`}
-                                                    onClick={() => onToggleCancel(lesson)}
+                                                    onClick={() => handleAction(lesson, () => onToggleCancel(lesson), 'Для отмены уроков этого ученика необходимо продлить подписку.')}
                                                 >
                                                     {lesson.isCanceled ? (
                                                         <>

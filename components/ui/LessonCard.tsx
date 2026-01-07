@@ -29,6 +29,8 @@ interface LessonCardProps {
     totalItems?: number
     isStudentView?: boolean
     isActionLoading?: boolean
+    isLocked?: boolean
+    onLockedAction?: (message: string) => void
 }
 
 export const LessonCard: React.FC<LessonCardProps> = ({
@@ -44,6 +46,8 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     totalItems,
     isStudentView = false,
     isActionLoading = false,
+    isLocked,
+    onLockedAction
 }) => {
     const [showTopic, setShowTopic] = useState(false)
     const isMobile = useMediaQuery('(max-width: 768px)')
@@ -174,17 +178,28 @@ export const LessonCard: React.FC<LessonCardProps> = ({
             lesson={lesson}
             isStudentView={isStudentView}
             variant="inLesson"
+            isLocked={isLocked}
+            onLockedAction={onLockedAction}
         />
     )
 
     return (
         <div className={styles.cardWrapper}>
-            <Link
-                href={`${isStudentView ? '/student' : ''}/lessons/${lesson.slug || lesson.id}`}
-                style={{ textDecoration: 'none', display: 'block' }}
-            >
-                {CardContent}
-            </Link>
+            {isLocked && onLockedAction ? (
+                <div
+                    onClick={() => onLockedAction('Для просмотра деталей урока этого ученика необходимо продлить подписку.')}
+                    style={{ cursor: 'pointer' }}
+                >
+                    {CardContent}
+                </div>
+            ) : (
+                <Link
+                    href={`${isStudentView ? '/student' : ''}/lessons/${lesson.slug || lesson.id}`}
+                    style={{ textDecoration: 'none', display: 'block' }}
+                >
+                    {CardContent}
+                </Link>
+            )}
 
             {LinkSection}
 
@@ -201,6 +216,8 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                         totalItems={totalItems}
                         isStudentView={isStudentView}
                         isLoading={isActionLoading}
+                        isLocked={isLocked}
+                        onLockedAction={onLockedAction}
                     />
                 </div>
             )}

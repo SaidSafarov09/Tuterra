@@ -171,7 +171,7 @@ export default function StudentDetailPage({
               // Логика отображения групповых уроков:
               // 1. Если есть запись об этом студенте (payment) -> ПОКАЗЫВАЕМ (значит, он в списке).
               // 2. Если записей НЕТ вообще ни для кого (l.lessonPayments пуст) -> ПОКАЗЫВАЕМ (значит, урок только запланирован и состав еще не уточнялся, идут все "по умолчанию").
-              // 3. Если записи ЕСТЬ для других, но НЕТ для этого -> СКРЫВАЕМ (значит, состав определен, и этого студента там нет).
+              // 3. Если записи ЕСТЬ для других, но НЕТ для этого -> СКРЫВАЕМ (значит, состав определен, и этого ученика там нет).
 
               const hasAnyPayments = l.lessonPayments && l.lessonPayments.length > 0;
 
@@ -211,6 +211,8 @@ export default function StudentDetailPage({
           setPaymentLessonDate(l.date);
           setIsGroupPaymentModalOpen(true);
         }}
+        isLocked={student.isLocked}
+        onLockedAction={(message) => checkLimit('students', 0, message)}
       />
 
       <StudentModals

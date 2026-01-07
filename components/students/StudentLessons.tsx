@@ -24,6 +24,8 @@ interface StudentLessonsProps {
     onOpenGroupPayment?: (lesson: Lesson) => void;
     isStudentView?: boolean;
     emptyText?: string;
+    isLocked?: boolean;
+    onLockedAction?: (message: string) => void;
 }
 
 export function StudentLessons({
@@ -38,6 +40,8 @@ export function StudentLessons({
     onOpenGroupPayment,
     isStudentView = false,
     emptyText = "У этого ученика пока нет занятий",
+    isLocked,
+    onLockedAction,
 }: StudentLessonsProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<LessonFilter>("upcoming");
@@ -134,9 +138,13 @@ export function StudentLessons({
                             <div
                                 key={lesson.id}
                                 className={styles.lessonCard}
-                                onClick={() =>
+                                onClick={() => {
+                                    if (isLocked && onLockedAction && !isStudentView) {
+                                        onLockedAction("Для просмотра деталей занятия необходимо обновить подписку");
+                                        return;
+                                    }
                                     router.push(`/lessons/${lesson.slug || lesson.id}`)
-                                }
+                                }}
                             >
                                 <div className={styles.lessonHeader}>
                                     <div>
@@ -223,6 +231,8 @@ export function StudentLessons({
                                 <LessonLinkSection
                                     lesson={lesson}
                                     isStudentView={isStudentView}
+                                    isLocked={isLocked}
+                                    onLockedAction={onLockedAction}
                                 />
 
                                 <div onClick={(e) => e.stopPropagation()}>
@@ -244,6 +254,8 @@ export function StudentLessons({
                                         index={index}
                                         totalItems={filteredLessons.length}
                                         isStudentView={isStudentView}
+                                        isLocked={isLocked}
+                                        onLockedAction={onLockedAction}
                                     />
                                 </div>
                             </div>

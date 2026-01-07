@@ -13,9 +13,11 @@ interface LessonLinkSectionProps {
     lesson: Lesson
     isStudentView?: boolean
     variant?: 'default' | 'inLesson'
+    isLocked?: boolean
+    onLockedAction?: (message: string) => void
 }
 
-export function LessonLinkSection({ lesson, isStudentView, variant = 'default' }: LessonLinkSectionProps) {
+export function LessonLinkSection({ lesson, isStudentView, variant = 'default', isLocked, onLockedAction }: LessonLinkSectionProps) {
     const [isEditing, setIsEditing] = useState(false)
     const [link, setLink] = useState(lesson.link || '')
     const [isSaving, setIsSaving] = useState(false)
@@ -42,6 +44,15 @@ export function LessonLinkSection({ lesson, isStudentView, variant = 'default' }
         } finally {
             setIsSaving(false)
         }
+    }
+
+    const handleEditClick = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (isLocked && onLockedAction) {
+            onLockedAction('Для добавления и редактирования ссылки на урок этого ученика необходимо продлить подписку.')
+            return
+        }
+        setIsEditing(true)
     }
 
     if (isEditing && !isStudentView) {
@@ -100,10 +111,7 @@ export function LessonLinkSection({ lesson, isStudentView, variant = 'default' }
                     {!isStudentView && !isPast && (
                         <button
                             className={styles.editBtn}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                setIsEditing(true)
-                            }}
+                            onClick={handleEditClick}
                             title="Редактировать ссылку"
                         >
                             <Edit2 size={16} />
@@ -114,10 +122,7 @@ export function LessonLinkSection({ lesson, isStudentView, variant = 'default' }
                 !isStudentView && (
                     <button
                         className={styles.addLinkBtn}
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            setIsEditing(true)
-                        }}
+                        onClick={handleEditClick}
                     >
                         <Video size={18} />
                         Добавить ссылку на урок

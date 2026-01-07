@@ -18,6 +18,8 @@ interface LessonActionsProps {
     totalItems?: number
     isStudentView?: boolean
     isLoading?: boolean
+    isLocked?: boolean
+    onLockedAction?: (message: string) => void
 }
 
 export function LessonActions({
@@ -33,6 +35,8 @@ export function LessonActions({
     totalItems = 0,
     isStudentView = false,
     isLoading = false,
+    isLocked,
+    onLockedAction,
 }: LessonActionsProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
@@ -89,6 +93,14 @@ export function LessonActions({
         setIsDropdownOpen(false)
     }
 
+    const handleLockedWrapper = (action: () => void, message: string) => {
+        if (isLocked && onLockedAction && !isStudentView) {
+            onLockedAction(message)
+            return
+        }
+        action()
+    }
+
     const handleDropdownToggle = (e: React.MouseEvent) => {
         e.stopPropagation()
         setIsDropdownOpen(!isDropdownOpen)
@@ -100,7 +112,7 @@ export function LessonActions({
                 {!isTrialLesson && !isStudentView && (
                     <button
                         className={`${styles.actionButton} ${styles.paidButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
-                        onClick={() => onTogglePaid(lesson)}
+                        onClick={() => handleLockedWrapper(() => onTogglePaid(lesson), 'Для управления финансами этого ученика необходимо продлить подписку.')}
                         disabled={lesson.isCanceled}
                     >
                         {isGroupLesson(lesson) ? (isFullyPaidLesson(lesson) ? <CheckIcon size={16} /> : null) : <CheckIcon size={16} />}
@@ -122,7 +134,7 @@ export function LessonActions({
                 {lesson.isCanceled && showCancelButton && !isLessonEnded && onToggleCancel && (
                     <button
                         className={`${styles.actionButton} ${styles.restoreButton}`}
-                        onClick={() => onToggleCancel(lesson)}
+                        onClick={() => handleLockedWrapper(() => onToggleCancel(lesson), 'Для восстановления уроков этого ученика необходимо продлить подписку.')}
                     >
                         <CheckIcon size={16} />
                         Восстановить
@@ -143,7 +155,7 @@ export function LessonActions({
                             {canCancel && (
                                 <button
                                     className={styles.dropdownItem}
-                                    onClick={() => handleAction(() => onToggleCancel!(lesson))}
+                                    onClick={() => handleLockedWrapper(() => handleAction(() => onToggleCancel!(lesson)), 'Для отмены уроков этого ученика необходимо продлить подписку.')}
                                 >
                                     <XCircleIcon size={16} />
                                     Отменить
@@ -153,7 +165,7 @@ export function LessonActions({
                             {canReschedule && (
                                 <button
                                     className={styles.dropdownItem}
-                                    onClick={() => handleAction(() => onReschedule(lesson))}
+                                    onClick={() => handleLockedWrapper(() => handleAction(() => onReschedule(lesson)), 'Для переноса уроков этого ученика необходимо продлить подписку.')}
                                 >
                                     <RescheduleIcon size={16} />
                                     Перенести
@@ -163,7 +175,7 @@ export function LessonActions({
                             {canEdit && (
                                 <button
                                     className={styles.dropdownItem}
-                                    onClick={() => handleAction(() => onEdit(lesson))}
+                                    onClick={() => handleLockedWrapper(() => handleAction(() => onEdit(lesson)), 'Для редактирования уроков этого ученика необходимо продлить подписку.')}
                                     disabled={isLessonEnded}
                                 >
                                     <EditIcon size={16} />
@@ -174,7 +186,7 @@ export function LessonActions({
                             {canDelete && (
                                 <button
                                     className={`${styles.dropdownItem} ${styles.deleteItem}`}
-                                    onClick={() => handleAction(() => onDelete(lesson.id))}
+                                    onClick={() => handleLockedWrapper(() => handleAction(() => onDelete(lesson.id)), 'Для удаления уроков этого ученика необходимо продлить подписку.')}
                                 >
                                     <DeleteIcon size={16} />
                                     Удалить
@@ -192,7 +204,7 @@ export function LessonActions({
             {!isTrialLesson && !isStudentView && (
                 <button
                     className={`${styles.actionButton} ${styles.paidButton} ${getLessonPaymentStatus(lesson) === 'paid' ? styles.isPaid : getLessonPaymentStatus(lesson) === 'partial' ? styles.isPartial : getLessonPaymentStatus(lesson) === 'unpaid' ? styles.isUnpaid : ''}`}
-                    onClick={() => onTogglePaid(lesson)}
+                    onClick={() => handleLockedWrapper(() => onTogglePaid(lesson), 'Для управления финансами этого ученика необходимо продлить подписку.')}
                     disabled={lesson.isCanceled}
                 >
                     {isGroupLesson(lesson) ? (isFullyPaidLesson(lesson) ? <CheckIcon size={16} /> : null) : <CheckIcon size={16} />}
@@ -214,7 +226,7 @@ export function LessonActions({
             {showCancelButton && !isLessonEnded && onToggleCancel && (!isStudentView || !isGroupLesson(lesson)) && (
                 <button
                     className={`${styles.actionButton} ${lesson.isCanceled ? styles.restoreButton : styles.cancelButton}`}
-                    onClick={() => onToggleCancel(lesson)}
+                    onClick={() => handleLockedWrapper(() => onToggleCancel(lesson), lesson.isCanceled ? 'Для восстановления уроков этого ученика необходимо продлить подписку.' : 'Для отмены уроков этого ученика необходимо продлить подписку.')}
                 >
                     {lesson.isCanceled ? (
                         <>
@@ -233,7 +245,7 @@ export function LessonActions({
             {!isLessonEnded && onReschedule && (!isStudentView || !isGroupLesson(lesson)) && (
                 <button
                     className={`${styles.actionButton} ${styles.rescheduleButton}`}
-                    onClick={() => onReschedule(lesson)}
+                    onClick={() => handleLockedWrapper(() => onReschedule(lesson), 'Для переноса уроков этого ученика необходимо продлить подписку.')}
                 >
                     <RescheduleIcon size={16} />
                     Перенести
@@ -243,7 +255,7 @@ export function LessonActions({
             {onEdit && !isStudentView && (
                 <button
                     className={`${styles.actionButton} ${styles.editButton}`}
-                    onClick={() => onEdit(lesson)}
+                    onClick={() => handleLockedWrapper(() => onEdit(lesson), 'Для редактирования уроков этого ученика необходимо продлить подписку.')}
                     disabled={isLessonEnded}
                 >
                     <EditIcon size={16} />
@@ -253,7 +265,7 @@ export function LessonActions({
             {onDelete && !isStudentView && (
                 <button
                     className={`${styles.actionButton} ${styles.deleteButton}`}
-                    onClick={() => onDelete(lesson.id)}
+                    onClick={() => handleLockedWrapper(() => onDelete(lesson.id), 'Для удаления уроков этого ученика необходимо продлить подписку.')}
                 >
                     <DeleteIcon size={16} />
                     Удалить

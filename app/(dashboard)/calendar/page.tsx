@@ -186,6 +186,20 @@ export default function CalendarPage() {
         originalHandleCheckSubject(name)
     }
 
+    const lockedStudentIds = React.useMemo(() =>
+        students.filter(s => s.isLocked).map(s => s.id),
+        [students]
+    )
+
+    const lockedGroupIds = React.useMemo(() =>
+        groups.filter(g => g.isLocked).map(g => g.id),
+        [groups]
+    )
+
+    const handleLockedAction = (message: string) => {
+        checkLimit('students', students.length, message)
+    }
+
     const selectedDayData: DayData | null = selectedDate
         ? calculateDayData(lessons, selectedDate)
         : null
@@ -248,6 +262,9 @@ export default function CalendarPage() {
                     region={userRegion}
                     isStudentView={isStudent}
                     isLoadingAction={isActionsLoading}
+                    lockedStudentIds={lockedStudentIds}
+                    lockedGroupIds={lockedGroupIds}
+                    onLockedAction={handleLockedAction}
                 />
             </Modal>
 

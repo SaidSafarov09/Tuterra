@@ -110,6 +110,8 @@ export default function GroupDetailPage({
                 onRescheduleLesson={handleRescheduleLesson}
                 isStudentView={isStudent}
                 emptyText="У этой группы пока нет занятий"
+                isLocked={group.isLocked}
+                onLockedAction={(message) => checkLimit('students', 0, message)}
             />
 
             <GroupModals

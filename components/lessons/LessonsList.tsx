@@ -16,6 +16,9 @@ interface LessonsListProps {
     onDelete: (lessonId: string) => void
     isStudentView?: boolean
     isActionLoading?: boolean
+    lockedStudentIds?: string[]
+    lockedGroupIds?: string[]
+    onLockedAction?: (message: string) => void
 }
 
 export function LessonsList({
@@ -28,7 +31,10 @@ export function LessonsList({
     onEdit,
     onDelete,
     isStudentView = false,
-    isActionLoading = false
+    isActionLoading = false,
+    lockedStudentIds = [],
+    lockedGroupIds = [],
+    onLockedAction
 }: LessonsListProps) {
     if (isLoading) {
         return (
@@ -53,22 +59,32 @@ export function LessonsList({
 
     return (
         <div className={`${styles.lessonsList} ${isRefreshing ? styles.refreshing : ''}`}>
-            {lessons.map((lesson, index) => (
-                <LessonCard
-                    key={lesson.id}
-                    lesson={lesson}
-                    showActions={true}
-                    onTogglePaid={onTogglePaid}
-                    onToggleCancel={onToggleCancel}
-                    onReschedule={onReschedule}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                    index={index}
-                    totalItems={lessons.length}
-                    isStudentView={isStudentView}
-                    isActionLoading={isActionLoading}
-                />
-            ))}
+            {lessons.map((lesson, index) => {
+                let isLocked = false
+                if (onLockedAction && !isStudentView) {
+                    if (lesson.student?.id && lockedStudentIds.includes(lesson.student.id)) isLocked = true
+                    if (lesson.group?.id && lockedGroupIds.includes(lesson.group.id)) isLocked = true
+                }
+
+                return (
+                    <LessonCard
+                        key={lesson.id}
+                        lesson={lesson}
+                        showActions={true}
+                        onTogglePaid={onTogglePaid}
+                        onToggleCancel={onToggleCancel}
+                        onReschedule={onReschedule}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        index={index}
+                        totalItems={lessons.length}
+                        isStudentView={isStudentView}
+                        isActionLoading={isActionLoading}
+                        isLocked={isLocked}
+                        onLockedAction={onLockedAction}
+                    />
+                )
+            })}
         </div>
     )
 }
