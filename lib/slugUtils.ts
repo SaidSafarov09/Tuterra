@@ -48,7 +48,8 @@ export function generateSlug(input: string, extra?: string): string {
  */
 export function generateStudentSlug(name: string, id: string): string {
     const uniqueSuffix = id.slice(-6)
-    return generateSlug(name, uniqueSuffix)
+    const randomSuffix = Math.random().toString(36).substring(2, 6)
+    return generateSlug(name, `${uniqueSuffix}-${randomSuffix}`)
 }
 
 /**

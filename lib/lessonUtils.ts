@@ -113,12 +113,19 @@ export function calculateDayData(lessons: Lesson[], date: Date): DayData {
     const potentialEarnings = dayLessons
         .filter(lesson => !lesson.isCanceled)
         .reduce((sum, lesson) => {
-            if (lesson.group && lesson.lessonPayments) {
-                // Учитываем только присутствовавших студентов (те, у кого есть запись в lessonPayments)
-                const attendedCount = lesson.lessonPayments.length
-                const paidCount = lesson.lessonPayments.filter(p => p.hasPaid).length
-                const unpaidAttendedCount = attendedCount - paidCount
-                return sum + (unpaidAttendedCount * lesson.price)
+            if (lesson.group) {
+                const payments = lesson.lessonPayments || []
+                if (payments.length > 0) {
+                    // Lesson started or finished: count only unpaid attendees
+                    const paidCount = payments.filter(p => p.hasPaid).length
+                    const unpaidCount = payments.length - paidCount
+                    return sum + (unpaidCount * lesson.price)
+                } else if (new Date(lesson.date) > new Date()) {
+                    // Future lesson, no marks yet: assume full group potential
+                    const studentCount = (lesson.group as any)._count?.students || (lesson.group as any).students?.length || 0
+                    return sum + (studentCount * lesson.price)
+                }
+                return sum
             }
             return sum + (!lesson.isPaid ? lesson.price : 0)
         }, 0)

@@ -1,5 +1,6 @@
 import { prisma } from './prisma';
 import { FREE_LIMITS } from './limits';
+import { isPro } from './auth';
 
 /**
  * Normalizes a contact string (email or phone) for comparison.
@@ -31,10 +32,10 @@ export function normalizeContact(contact: string | null | undefined): string | n
 async function checkLimits(teacherId: string, isCreatingNew: boolean) {
     const teacher = await prisma.user.findUnique({
         where: { id: teacherId },
-        select: { plan: true }
+        select: { plan: true, proExpiresAt: true }
     })
 
-    if (teacher && teacher.plan !== 'pro') {
+    if (teacher && !isPro(teacher)) {
         const connectedCount = await prisma.student.count({
             where: { ownerId: teacherId, linkedUserId: { not: null } }
         })
@@ -238,7 +239,7 @@ export async function autoLinkByContact(userId: string) {
     // Find all unlinked student records
     const orphanedStudents = await prisma.student.findMany({
         where: { linkedUserId: null },
-        include: { owner: { select: { plan: true } } }
+        include: { owner: { select: { plan: true, proExpiresAt: true } } }
     });
 
     // Filter by matching contact

@@ -3,6 +3,7 @@ import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { sendTelegramNotification } from '@/lib/telegram'
+import { isPro } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,10 +60,9 @@ export async function POST(request: NextRequest) {
 
         const user = await prisma.user.findUnique({
             where: { id: payload.userId },
-            select: { plan: true }
+            select: { plan: true, proExpiresAt: true }
         })
-
-        if (!user || user.plan !== 'pro') {
+        if (!user || !isPro(user)) {
             const count = await prisma.group.count({
                 where: { ownerId: payload.userId }
             })

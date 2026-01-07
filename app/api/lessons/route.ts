@@ -24,7 +24,11 @@ const lessonSchema = z.object({
     studentId: z.string().optional(),
     groupId: z.string().optional(),
     subjectId: z.string().optional(),
-    date: z.string().transform((str) => new Date(str)),
+    date: z.string().transform((str) => {
+        const d = new Date(str)
+        d.setSeconds(0, 0)
+        return d
+    }),
     price: z.number().nonnegative('Цена должна быть положительной'),
     isPaid: z.boolean().optional(),
     isCanceled: z.boolean().optional(),
@@ -318,96 +322,107 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
     const groupName = group?.name || null
     const groupStudents = group?.students || []
 
-    const series = await prisma.lessonSeries.create({
-        data: {
-            userId,
-            type: recurrence.type,
-            interval: recurrence.interval,
-            daysOfWeek: typeof recurrence.daysOfWeek === 'string'
-                ? recurrence.daysOfWeek
-                : JSON.stringify(recurrence.daysOfWeek),
-            startDate: data.date,
-            endDate: recurrence.endDate,
-            occurrencesCount: recurrence.occurrencesCount,
-            studentId: data.studentId,
-            groupId: data.groupId,
-            subjectId: data.subjectId,
-            price: data.price,
-            topic: data.topic,
-            duration: data.duration,
-            notes: data.notes,
-        } as any,
-    })
-
-    const lessonsData = dates.map((date, index) => ({
-        date,
-        price: index === 0 ? data.price : (data.seriesPrice !== undefined ? data.seriesPrice : data.price),
-        isPaid: data.isPaidAll || (data.paidStudentIds && data.paidStudentIds.length > 0) ? true : (index === 0 ? (data.isPaid || false) : false),
-        isTrial: index === 0 ? (data.isTrial || false) : false,
-        isCanceled: false,
-        notes: data.notes,
-        topic: data.topic,
-        duration: data.duration,
-        ownerId: userId,
-        studentId: data.studentId,
-        groupId: data.groupId,
-        groupName,
-        subjectId: data.subjectId,
-        seriesId: series.id,
-        planTopicId: data.planTopicId,
-    }))
-
-    // Batch create lessons
-    await prisma.lesson.createMany({ data: lessonsData })
-
-    // If it's a group, we need to batch create lesson payments for ALL students for ALL lessons
-    if (data.groupId && groupStudents.length > 0) {
-        const createdLessons = await prisma.lesson.findMany({
-            where: { seriesId: series.id },
-            select: { id: true }
+    const result = await prisma.$transaction(async (tx) => {
+        const series = await tx.lessonSeries.create({
+            data: {
+                userId,
+                type: recurrence.type,
+                interval: recurrence.interval,
+                daysOfWeek: typeof recurrence.daysOfWeek === 'string'
+                    ? recurrence.daysOfWeek
+                    : JSON.stringify(recurrence.daysOfWeek),
+                startDate: data.date,
+                endDate: recurrence.endDate,
+                occurrencesCount: recurrence.occurrencesCount,
+                studentId: data.studentId,
+                groupId: data.groupId,
+                subjectId: data.subjectId,
+                price: data.price,
+                topic: data.topic,
+                duration: data.duration,
+                notes: data.notes,
+            } as any,
         })
 
-        const paymentsData = []
-        for (const lesson of createdLessons) {
-            for (const student of groupStudents) {
-                paymentsData.push({
-                    lessonId: lesson.id,
-                    studentId: student.id,
-                    hasPaid: data.paidStudentIds?.includes(student.id) || false
-                })
+        const lessonsData = dates.map((date, index) => ({
+            date,
+            price: index === 0 ? data.price : (data.seriesPrice !== undefined ? data.seriesPrice : data.price),
+            isPaid: data.isPaidAll || (data.paidStudentIds && data.paidStudentIds.length > 0) ? true : (index === 0 ? (data.isPaid || false) : false),
+            isTrial: index === 0 ? (data.isTrial || false) : false,
+            isCanceled: false,
+            notes: data.notes,
+            topic: data.topic,
+            duration: data.duration,
+            ownerId: userId,
+            studentId: data.studentId,
+            groupId: data.groupId,
+            groupName,
+            subjectId: data.subjectId,
+            seriesId: series.id,
+            planTopicId: data.planTopicId,
+            slug: generateLessonSlug(groupName || 'Lesson', date, data.topic || undefined)
+        }))
+
+        // createMany is not supported in all environments with returning data,
+        // but since we provided the seriesId, we can find them.
+        await tx.lesson.createMany({ data: lessonsData })
+
+        // If it's a group, we need to batch create lesson payments for ALL students for ALL lessons
+        if (data.groupId && groupStudents.length > 0) {
+            const createdLessons = await tx.lesson.findMany({
+                where: { seriesId: series.id },
+                select: { id: true }
+            })
+
+            const paymentsData = []
+            for (const lesson of createdLessons) {
+                for (const student of groupStudents) {
+                    paymentsData.push({
+                        lessonId: lesson.id,
+                        studentId: student.id,
+                        hasPaid: data.paidStudentIds?.includes(student.id) || false
+                    })
+                }
+            }
+
+            if (paymentsData.length > 0) {
+                await tx.lessonPayment.createMany({ data: paymentsData })
             }
         }
 
-        if (paymentsData.length > 0) {
-            await prisma.lessonPayment.createMany({ data: paymentsData })
+        if (data.subjectId && data.studentId) {
+            await tx.student.update({
+                where: { id: data.studentId },
+                data: {
+                    subjects: {
+                        connect: { id: data.subjectId },
+                    },
+                },
+            }).catch(() => { /* simple ignore if already linked */ })
         }
-    }
 
-    if (data.subjectId && data.studentId) {
-        await linkSubjectToStudent(data.studentId, data.subjectId)
-    }
+        const firstLesson = await tx.lesson.findFirst({
+            where: { seriesId: series.id },
+            include: {
+                student: true,
+                group: true,
+                subject: true,
+                lessonPayments: true,
+            },
+            orderBy: { date: 'asc' },
+        })
 
-    const firstLesson = await prisma.lesson.findFirst({
-        where: { seriesId: series.id },
-        include: {
-            student: true,
-            group: true,
-            subject: true,
-            lessonPayments: true,
-        },
-        orderBy: { date: 'asc' },
+        return { firstLesson, seriesId: series.id }
     })
 
-    if (firstLesson) {
+    if (result.firstLesson) {
         const { notifyLessonCreated } = await import('@/lib/lesson-actions-server')
-        await notifyLessonCreated(userId, firstLesson, true, dates.length, timezone)
-
-        // Trigger referral check
+        await notifyLessonCreated(userId, result.firstLesson, true, dates.length, timezone)
         checkAndGrantInviterBonus(userId).catch(e => console.error('Referral check error:', e))
     }
 
     return NextResponse.json({
-        ...firstLesson,
+        ...result.firstLesson,
         _meta: {
             isRecurring: true,
             totalLessons: dates.length,

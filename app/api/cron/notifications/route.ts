@@ -89,20 +89,24 @@ export async function GET(request: NextRequest) {
                         ? `🔔 **Напоминание о занятии**\n\n${entityLabel} ${entityName}\n📚 Предмет: ${subjectName}\n🕒 Время: ${timeString}`
                         : `🔔 **Скоро занятие**\n\n${entityLabel} ${entityName}\n📚 Предмет: ${subjectName}\n🕒 Время: ${timeString}\n⏳ Длительность: ${lesson.duration} мин`
 
-                    await prisma.notification.create({
-                        data: {
-                            userId,
-                            title: 'Скоро занятие',
-                            message: isStudent ? `${subjectName} с ${teacherName} в ${timeString}` : `${subjectName} с ${entityName} в ${timeString}`,
-                            type: 'lesson_reminder',
-                            data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
-                            link: isStudent ? '/student/lessons' : `/calendar?date=${lesson.date.toISOString().split('T')[0]}`,
-                            isRead: !settings.deliveryWeb
-                        }
-                    })
+                    try {
+                        await prisma.notification.create({
+                            data: {
+                                userId,
+                                title: 'Скоро занятие',
+                                message: isStudent ? `${subjectName} с ${teacherName} в ${timeString}` : `${subjectName} с ${entityName} в ${timeString}`,
+                                type: 'lesson_reminder',
+                                data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
+                                link: isStudent ? '/student/lessons' : `/calendar?date=${lesson.date.toISOString().split('T')[0]}`,
+                                isRead: !settings.deliveryWeb
+                            }
+                        })
 
-                    await sendTelegramNotification(userId, message, 'lessonReminders')
-                    notificationsCreated.push('reminder')
+                        await sendTelegramNotification(userId, message, 'lessonReminders')
+                        notificationsCreated.push('reminder')
+                    } catch (notificationError) {
+                        console.error('Failed to create reminder notification record:', notificationError)
+                    }
                 }
             }
         }

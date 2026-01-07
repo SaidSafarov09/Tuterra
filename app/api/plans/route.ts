@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { isPro } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -99,10 +100,10 @@ export async function POST(request: NextRequest) {
         // Check limits
         const user = await prisma.user.findUnique({
             where: { id: payload.userId },
-            select: { plan: true }
+            select: { plan: true, proExpiresAt: true }
         })
 
-        if (!user || user.plan !== 'pro') {
+        if (!user || !isPro(user)) {
             if (validatedData.groupId) {
                 if (FREE_LIMITS.groupPlans === 0) {
                     return NextResponse.json(

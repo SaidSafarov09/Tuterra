@@ -6,6 +6,7 @@ import { generateStudentSlug } from '@/lib/slugUtils'
 import { sendTelegramNotification } from '@/lib/telegram'
 import { generateInvitationCode } from '@/lib/invitationUtils'
 import { checkAndGrantInviterBonus } from '@/lib/referral'
+import { isPro } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -120,10 +121,10 @@ export async function POST(request: NextRequest) {
         // Check limits
         const user = await prisma.user.findUnique({
             where: { id: payload.userId },
-            select: { plan: true }
+            select: { plan: true, proExpiresAt: true }
         })
 
-        if (!user || user.plan !== 'pro') {
+        if (!user || !isPro(user)) {
             const count = await prisma.student.count({
                 where: { ownerId: payload.userId }
             })

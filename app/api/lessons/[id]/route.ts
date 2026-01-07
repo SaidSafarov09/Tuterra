@@ -9,7 +9,11 @@ import { sendTelegramNotification } from '@/lib/telegram'
 const lessonSchema = z.object({
     studentId: z.string().optional(),
     groupId: z.string().optional(),
-    date: z.string().transform((str) => new Date(str)),
+    date: z.string().transform((str) => {
+        const d = new Date(str)
+        d.setSeconds(0, 0)
+        return d
+    }),
     price: z.number().nonnegative('Цена должна быть положительной'),
     isPaid: z.boolean(),
     isCanceled: z.boolean().optional(),
@@ -234,7 +238,10 @@ export async function PATCH(
         const updateData: any = {}
         const fields = ['isPaid', 'price', 'studentId', 'groupId', 'subjectId', 'isCanceled', 'isTrial', 'notes', 'topic', 'duration', 'planTopicId', 'link']
         fields.forEach(f => { if (body[f] !== undefined) updateData[f] = body[f] })
-        if (body.date !== undefined) updateData.date = new Date(body.date)
+        if (body.date !== undefined) {
+            updateData.date = new Date(body.date)
+            updateData.date.setSeconds(0, 0)
+        }
 
         const userTz = await prisma.user.findUnique({ where: { id: user.id }, select: { timezone: true } })
         const timezone = userTz?.timezone || 'Europe/Moscow'
