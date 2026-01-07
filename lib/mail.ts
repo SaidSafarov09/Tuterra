@@ -1,20 +1,25 @@
 import nodemailer from 'nodemailer';
 
+const smtpPort = Number(process.env.SMTP_PORT) || 465;
+const smtpHost = process.env.SMTP_HOST || 'smtp.timeweb.ru';
+
 const transporter = nodemailer.createTransport({
-    host: 'mail.hosting.reg.ru',
-    port: 465,
-    secure: true, // SSL/TLS для порта 465
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpPort === 465,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
     },
     tls: {
-        // Это необходимо для корректной работы SSL на многих хостингах
         rejectUnauthorized: false
     }
 });
 
+console.log(`📡 Mailer initialized: ${smtpHost}:${smtpPort} (Secure: ${smtpPort === 465})`);
+
 export const sendOTP = async (email: string, code: string) => {
+
     try {
         await transporter.sendMail({
             from: `"Tuterra" <${process.env.SMTP_USER}>`,
