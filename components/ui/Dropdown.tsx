@@ -2,13 +2,14 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import styles from './Dropdown.module.scss'
-import { ChevronDownIcon, SearchIcon, PlusIcon } from '@/components/icons/Icons'
+import { ChevronDownIcon, SearchIcon, PlusIcon, LockIcon } from '@/components/icons/Icons'
 
 export interface DropdownOption {
     value: string
     label: string
     icon?: React.ReactNode
     disabled?: boolean
+    isLocked?: boolean
 }
 
 export interface DropdownGroup {
@@ -126,11 +127,14 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
     const handleSelect = (optionValue: string) => {
         const option = allOptions.find(o => o.value === optionValue)
-        if (option?.disabled) return
+        if (option?.disabled && !option?.isLocked) return
 
         onChange(optionValue)
-        setIsOpen(false)
-        setSearchQuery('')
+
+        if (!option?.isLocked) {
+            setIsOpen(false)
+            setSearchQuery('')
+        }
     }
 
     const handleCreate = () => {
@@ -199,11 +203,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
                                                     ${styles.option} 
                                                     ${opt.value === value ? styles.selected : ''}
                                                     ${opt.disabled ? styles.optionDisabled : ''}
+                                                    ${opt.isLocked ? styles.optionLocked : ''}
                                                 `}
                                                 onClick={() => handleSelect(opt.value)}
                                             >
                                                 {opt.icon && opt.icon}
                                                 <span>{opt.label}</span>
+                                                {opt.isLocked && <LockIcon size={12} className={styles.lockIcon} />}
                                             </div>
                                         ))}
                                     </div>
@@ -216,11 +222,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
                                             ${styles.option} 
                                             ${option.value === value ? styles.selected : ''}
                                             ${option.disabled ? styles.optionDisabled : ''}
+                                            ${option.isLocked ? styles.optionLocked : ''}
                                         `}
                                         onClick={() => handleSelect(option.value)}
                                     >
                                         {option.icon && option.icon}
                                         <span>{option.label}</span>
+                                        {option.isLocked && <LockIcon size={12} className={styles.lockIcon} />}
                                     </div>
                                 )
                             }

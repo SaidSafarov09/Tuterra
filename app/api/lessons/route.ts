@@ -7,6 +7,7 @@ import type { RecurrenceRule } from '@/types/recurring'
 import { generateLessonSlug } from '@/lib/slugUtils'
 import { checkLessonOverlap, checkRecurringConflicts, formatConflictMessage } from '@/lib/lessonValidation'
 import { checkAndGrantInviterBonus } from '@/lib/referral'
+import { isStudentLocked, isGroupLocked, isPlanLocked } from '@/lib/guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -158,6 +159,13 @@ export async function POST(request: NextRequest) {
                     { status: 404 }
                 )
             }
+
+            if (await isStudentLocked(validatedData.studentId, payload.userId)) {
+                return NextResponse.json(
+                    { error: 'Данный ученик заблокирован (превышен лимит бесплатного тарифа). Продлите PRO доступ.' },
+                    { status: 403 }
+                )
+            }
         } else if (validatedData.groupId) {
             const group = await prisma.group.findFirst({
                 where: {
@@ -169,6 +177,26 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json(
                     { error: 'Группа не найдена' },
                     { status: 404 }
+                )
+            }
+
+            if (await isGroupLocked(validatedData.groupId, payload.userId)) {
+                return NextResponse.json(
+                    { error: 'Данная группа заблокирована (превышен лимит бесплатного тарифа). Продлите PRO доступ.' },
+                    { status: 403 }
+                )
+            }
+        }
+
+        if (validatedData.planTopicId) {
+            const topic = await prisma.learningPlanTopic.findUnique({
+                where: { id: validatedData.planTopicId },
+                select: { planId: true }
+            })
+            if (topic && await isPlanLocked(topic.planId, payload.userId)) {
+                return NextResponse.json(
+                    { error: 'Данный план обучения заблокирован. Продлите PRO доступ для использования тем из него.' },
+                    { status: 403 }
                 )
             }
         }

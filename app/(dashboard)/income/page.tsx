@@ -28,7 +28,7 @@ import { IncomeInsights } from '@/components/income/IncomeInsights'
 export default function IncomePage() {
     const router = useRouter()
     const { user } = useAuthStore()
-    const { checkLimit, UpgradeModal } = useCheckLimit()
+    const { checkLimit, isPro, UpgradeModal } = useCheckLimit()
     const [currentDate, setCurrentDate] = useState(new Date())
     const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([])
     const [currentMonthIncome, setCurrentMonthIncome] = useState(0)
@@ -206,7 +206,7 @@ export default function IncomePage() {
                                         averageCheck={averageCheck}
                                         percentageChange={percentageChange}
                                         isGrowth={isGrowth}
-                                        isPro={user?.plan === 'pro'}
+                                        isPro={isPro}
                                         onUnlock={() => checkLimit('income', 1)}
                                     />
 
@@ -216,7 +216,7 @@ export default function IncomePage() {
                                         duration={previousMonthDuration}
                                         lessonsCount={previousLessonsCount}
                                         averageCheck={previousAverageCheck}
-                                        isPro={user?.plan === 'pro'}
+                                        isPro={isPro}
                                         onUnlock={() => checkLimit('income', 1)}
                                     />
 
@@ -227,7 +227,7 @@ export default function IncomePage() {
                                                 setIsModalOpen(true)
                                             }
                                         }}
-                                        isLocked={user?.plan !== 'pro'}
+                                        isLocked={!isPro}
                                     />
                                 </div>
 

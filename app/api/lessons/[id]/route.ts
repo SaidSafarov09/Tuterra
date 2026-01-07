@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { isCuid } from '@/lib/slugUtils'
 import { sendTelegramNotification } from '@/lib/telegram'
+import { isStudentLocked, isGroupLocked } from '@/lib/guard'
 
 const lessonSchema = z.object({
     studentId: z.string().optional(),
@@ -163,6 +164,14 @@ export async function PUT(
         })
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
 
+        // Check if student or group is locked
+        if (currentLesson.studentId && await isStudentLocked(currentLesson.studentId, user.id)) {
+            return NextResponse.json({ error: 'Данный ученик заблокирован. Продлите PRO.' }, { status: 403 })
+        }
+        if (currentLesson.groupId && await isGroupLocked(currentLesson.groupId, user.id)) {
+            return NextResponse.json({ error: 'Данная группа заблокирована. Продлите PRO.' }, { status: 403 })
+        }
+
         const userTz = await prisma.user.findUnique({ where: { id: user.id }, select: { timezone: true } })
         const timezone = userTz?.timezone || 'Europe/Moscow'
 
@@ -234,6 +243,14 @@ export async function PATCH(
             include: { student: true, subject: true, group: true }
         })
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+
+        // Check if student or group is locked
+        if (currentLesson.studentId && await isStudentLocked(currentLesson.studentId, user.id)) {
+            return NextResponse.json({ error: 'Данный ученик заблокирован. Продлите PRO.' }, { status: 403 })
+        }
+        if (currentLesson.groupId && await isGroupLocked(currentLesson.groupId, user.id)) {
+            return NextResponse.json({ error: 'Данная группа заблокирована. Продлите PRO.' }, { status: 403 })
+        }
 
         const updateData: any = {}
         const fields = ['isPaid', 'price', 'studentId', 'groupId', 'subjectId', 'isCanceled', 'isTrial', 'notes', 'topic', 'duration', 'planTopicId', 'link']

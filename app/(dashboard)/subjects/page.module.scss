@@ -340,3 +340,44 @@
         font-size: 24px;
     }
 }
+.lockedCard {
+    position: relative;
+    filter: grayscale(0.8);
+    opacity: 0.8;
+    cursor: pointer !important;
+    overflow: hidden;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.05);
+        pointer-events: none;
+    }
+
+    &:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
+.lockOverlay {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+}
+
+.lockBadge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #000 !important;
+    color: #fff !important;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

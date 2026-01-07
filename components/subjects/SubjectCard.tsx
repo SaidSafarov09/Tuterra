@@ -3,6 +3,8 @@ import { Subject } from '@/types'
 import { UsersGroupIcon, BookIcon, EditIcon, DeleteIcon } from '@/components/icons/Icons'
 import styles from '../../app/(dashboard)/subjects/page.module.scss'
 
+import { useCheckLimit } from '@/hooks/useCheckLimit'
+
 interface SubjectCardProps {
     subject: Subject
     onEdit?: (subject: Subject) => void
@@ -13,11 +15,29 @@ interface SubjectCardProps {
 }
 
 export function SubjectCard({ subject, onEdit, onDelete, onClick, isStudentView = false, hideActions = false }: SubjectCardProps) {
+    const { checkLimit, UpgradeModal } = useCheckLimit()
+
+    const handleCardClick = () => {
+        if (subject.isLocked) {
+            checkLimit('subjects', 100)
+            return
+        }
+        if (onClick) onClick(subject)
+    }
+
     return (
         <div
-            className={`${styles.subjectCard} ${!onClick ? styles.noClick : ''}`}
-            onClick={() => onClick && onClick(subject)}
+            className={`${styles.subjectCard} ${!onClick ? styles.noClick : ''} ${subject.isLocked ? styles.lockedCard : ''}`}
+            onClick={handleCardClick}
         >
+            {subject.isLocked && (
+                <div className={styles.lockOverlay}>
+                    <div className={styles.lockBadge}>
+                        <span>PRO</span>
+                    </div>
+                </div>
+            )}
+            {UpgradeModal}
             <div
                 className={styles.colorAccent}
                 style={{ backgroundColor: subject.color }}

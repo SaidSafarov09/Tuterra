@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { toast } from 'sonner'
 import { Trash2, GripVertical, Save, Loader2, Plus, CheckCircle2, Calendar, User, BookOpen } from 'lucide-react'
 import { formatSmartDate } from '@/lib/dateUtils'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import styles from './PlanEditor.module.scss'
 
 interface PlanEditorProps {
@@ -22,6 +23,7 @@ export function PlanEditor({ planId }: PlanEditorProps) {
     const [newTopicTitle, setNewTopicTitle] = useState('')
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const { checkLimit, UpgradeModal } = useCheckLimit()
     const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -56,6 +58,11 @@ export function PlanEditor({ planId }: PlanEditorProps) {
         if (e) e.preventDefault()
         if (!newTopicTitle.trim()) return
 
+        if ((plan as any)?.isLocked) {
+            checkLimit('studentPlans', 100)
+            return
+        }
+
         const newTopic: Partial<LearningPlanTopic> = {
             title: newTopicTitle.trim(),
             order: topics.length
@@ -67,16 +74,28 @@ export function PlanEditor({ planId }: PlanEditorProps) {
     }
 
     const handleUpdateTopic = (index: number, title: string) => {
+        if ((plan as any)?.isLocked) {
+            checkLimit('studentPlans', 100)
+            return
+        }
         const newTopics = [...topics]
         newTopics[index] = { ...newTopics[index], title }
         setTopics(newTopics)
     }
 
     const handleRemoveTopic = (index: number) => {
+        if ((plan as any)?.isLocked) {
+            checkLimit('studentPlans', 100)
+            return
+        }
         setTopics(topics.filter((_, i) => i !== index))
     }
 
     const handleSave = async () => {
+        if ((plan as any)?.isLocked) {
+            checkLimit('studentPlans', 100)
+            return
+        }
         if (topics.length === 0) {
             toast.error('Добавьте хотя бы одну тему')
             return
@@ -293,6 +312,7 @@ export function PlanEditor({ planId }: PlanEditorProps) {
                     </div>
                 </div>
             )}
+            {UpgradeModal}
         </div>
     )
 }

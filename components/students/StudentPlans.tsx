@@ -113,8 +113,14 @@ export function StudentPlans({ student }: StudentPlansProps) {
                         return (
                             <div
                                 key={plan.id}
-                                className={styles.planWrapper}
-                                onClick={() => router.push(`/plans/${plan.id}`)}
+                                className={`${styles.planWrapper} ${plan.isLocked ? styles.lockedPlan : ''}`}
+                                onClick={() => {
+                                    if (plan.isLocked) {
+                                        checkLimit('studentPlans', 100)
+                                        return
+                                    }
+                                    router.push(`/plans/${plan.id}`)
+                                }}
                             >
                                 <PlanProgressBar
                                     title={subject?.name || 'План'}
@@ -122,6 +128,11 @@ export function StudentPlans({ student }: StudentPlansProps) {
                                     completed={completedTopics}
                                     color={subject?.color}
                                 />
+                                {plan.isLocked && (
+                                    <div className={styles.lockBadge}>
+                                        <span>PRO</span>
+                                    </div>
+                                )}
                             </div>
                         )
                     })}

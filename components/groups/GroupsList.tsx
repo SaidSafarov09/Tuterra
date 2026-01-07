@@ -4,6 +4,8 @@ import { Group } from '@/types'
 import styles from '../../app/(dashboard)/groups/page.module.scss'
 import { NoteIcon } from '../icons/Icons'
 
+import { useCheckLimit } from '@/hooks/useCheckLimit'
+
 interface GroupsListProps {
     groups: Group[]
     isStudentView?: boolean
@@ -11,10 +13,15 @@ interface GroupsListProps {
 
 export function GroupsList({ groups, isStudentView = false }: GroupsListProps) {
     const router = useRouter()
+    const { checkLimit, UpgradeModal } = useCheckLimit()
 
-    const handleGroupClick = (groupId: string) => {
+    const handleGroupClick = (group: Group) => {
+        if (group.isLocked) {
+            checkLimit('groups', 100) // Trigger modal
+            return
+        }
         const basePath = isStudentView ? '/student/groups' : '/groups'
-        router.push(`${basePath}/${groupId}`)
+        router.push(`${basePath}/${group.id}`)
     }
 
     const getInitials = (name: string) => {
@@ -40,9 +47,17 @@ export function GroupsList({ groups, isStudentView = false }: GroupsListProps) {
             {groups.map((group) => (
                 <div
                     key={group.id}
-                    className={styles.groupCard}
-                    onClick={() => handleGroupClick(group.id)}
+                    className={`${styles.groupCard} ${group.isLocked ? styles.lockedCard : ''}`}
+                    onClick={() => handleGroupClick(group)}
+                    style={{ position: 'relative' }}
                 >
+                    {group.isLocked && (
+                        <div className={styles.lockOverlay}>
+                            <div className={styles.lockBadge}>
+                                <NoteIcon size={14} /> <span>PRO</span>
+                            </div>
+                        </div>
+                    )}
                     <div className={styles.cardHeader}>
                         <div
                             className={styles.groupAvatarFallback}
@@ -90,6 +105,7 @@ export function GroupsList({ groups, isStudentView = false }: GroupsListProps) {
                     </div>
                 </div>
             ))}
+            {UpgradeModal}
         </div>
     )
 }

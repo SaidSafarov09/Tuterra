@@ -15,12 +15,16 @@ export function getPrismaClient(dbType: 'sqlite' | 'postgres') {
             // This is only for the local admin panel dev experience
             const { PrismaClient: PostgresClient } = require('@prisma/client-postgres');
 
+            const targetUrl = process.env.PROD_DATABASE_URL || process.env.DATABASE_URL;
+
             // @ts-ignore
-            if (!global.adminPostgresClient) {
+            if (!global.adminPostgresClient || global.adminPostgresUrl !== targetUrl) {
                 // @ts-ignore
                 global.adminPostgresClient = new PostgresClient({
-                    datasources: { db: { url: process.env.DATABASE_URL } },
+                    datasources: { db: { url: targetUrl } },
                 });
+                // @ts-ignore
+                global.adminPostgresUrl = targetUrl;
             }
             // @ts-ignore
             return global.adminPostgresClient;

@@ -21,7 +21,9 @@ export function LessonLinkSection({ lesson, isStudentView, variant = 'default' }
     const [isSaving, setIsSaving] = useState(false)
     const isMobile = useMediaQuery('(max-width: 768px)')
 
-    const isPast = new Date(lesson.date) < new Date()
+    const duration = lesson.duration || 60
+    const lessonEnd = new Date(new Date(lesson.date).getTime() + duration * 60 * 1000)
+    const isPast = lessonEnd < new Date()
     const isCanceled = lesson.isCanceled
 
     if (isCanceled) return null

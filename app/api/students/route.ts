@@ -7,6 +7,7 @@ import { sendTelegramNotification } from '@/lib/telegram'
 import { generateInvitationCode } from '@/lib/invitationUtils'
 import { checkAndGrantInviterBonus } from '@/lib/referral'
 import { isPro } from '@/lib/auth'
+import { isConnectionLocked } from '@/lib/guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -90,12 +91,46 @@ export async function GET(request: NextRequest) {
             })
         }
 
+        const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
+            select: { plan: true, proExpiresAt: true }
+        })
+        const userIsPro = user && isPro(user)
+
+        // Get IDs of free students (oldest 3)
+        const freeStudentsIds = await prisma.student.findMany({
+            where: { ownerId: payload.userId },
+            orderBy: { createdAt: 'asc' },
+            take: FREE_LIMITS.students,
+            select: { id: true }
+        }).then(list => list.map(s => s.id))
+
+        // Get IDs of allowed connections (first N connected students)
+        const allowedConnectionIds = await prisma.student.findMany({
+            where: {
+                ownerId: payload.userId,
+                linkedUserId: { not: null }
+            },
+            orderBy: { createdAt: 'asc' },
+            take: FREE_LIMITS.connectedStudents,
+            select: { id: true }
+        }).then(list => list.map(s => s.id))
+
         const students = rawStudents.map((s: any) => {
             let linkedUser = s.linkedUser
             if (!linkedUser && s.contact && usersMap.has(s.contact)) {
                 linkedUser = usersMap.get(s.contact)
             }
-            return { ...s, linkedUser }
+            const isLocked = !userIsPro && !freeStudentsIds.includes(s.id)
+
+            // Check connection lock
+            // A connection is locked if:
+            // 1. User is not Pro
+            // 2. Student HAS a linked user
+            // 3. Student ID is NOT in the allowed list
+            const isConnectionLocked = !userIsPro && !!s.linkedUser && !allowedConnectionIds.includes(s.id)
+
+            return { ...s, linkedUser, isLocked, isConnectionLocked }
         })
 
         return NextResponse.json(students)

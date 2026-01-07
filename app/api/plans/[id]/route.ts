@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { isPlanLocked } from '@/lib/guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -83,7 +84,10 @@ export async function GET(
             return NextResponse.json({ error: 'План не найден' }, { status: 404 })
         }
 
-        return NextResponse.json(enrichPlan(plan))
+        const planIsLocked = await isPlanLocked(plan.id, payload.userId)
+        const enriched = enrichPlan(plan)
+
+        return NextResponse.json({ ...enriched, isLocked: planIsLocked })
     } catch (error) {
         console.error('Get plan error:', error)
         return NextResponse.json(
@@ -118,6 +122,13 @@ export async function PATCH(
 
         if (!plan) {
             return NextResponse.json({ error: 'План не найден' }, { status: 404 })
+        }
+
+        if (await isPlanLocked(plan.id, payload.userId)) {
+            return NextResponse.json(
+                { error: 'Данный план заблокирован. Продлите Pro.' },
+                { status: 403 }
+            )
         }
 
         if (validatedData.topics) {
@@ -224,6 +235,13 @@ export async function DELETE(
 
         if (!plan) {
             return NextResponse.json({ error: 'План не найден' }, { status: 404 })
+        }
+
+        if (await isPlanLocked(plan.id, payload.userId)) {
+            return NextResponse.json(
+                { error: 'Данный план заблокирован. Продлите Pro.' },
+                { status: 403 }
+            )
         }
 
         await prisma.learningPlan.delete({

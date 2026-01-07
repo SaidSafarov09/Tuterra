@@ -10,6 +10,7 @@ export interface Subject {
         groups?: number
     }
     learningPlans?: LearningPlan[]
+    isLocked?: boolean
 }
 
 export interface LearningPlanTopic {
@@ -45,6 +46,7 @@ export interface LearningPlan {
     student?: Student
     group?: Group
     subject?: Subject
+    isLocked?: boolean
 }
 
 export interface Student {
@@ -88,6 +90,8 @@ export interface Student {
         avatar: string | null
     } | null
     linkedUserId?: string | null
+    isLocked?: boolean
+    isConnectionLocked?: boolean
 }
 
 export interface Group {
@@ -104,6 +108,7 @@ export interface Group {
         students: number
     }
     learningPlan?: LearningPlan
+    isLocked?: boolean
 }
 
 export interface LessonPayment {

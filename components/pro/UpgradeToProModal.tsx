@@ -14,6 +14,7 @@ interface UpgradeToProModalProps {
     onClose: () => void
     limitType: LimitType
     defaultPlan?: 'month' | 'year'
+    customMessage?: string | null
 }
 
 const PRO_FEATURES = [
@@ -48,12 +49,16 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
     isOpen,
     onClose,
     limitType,
-    defaultPlan = 'year'
+    defaultPlan = 'year',
+    customMessage
 }) => {
     const { user } = useAuthStore()
     const message = LIMIT_MESSAGES[limitType]
     const [isLoading, setIsLoading] = useState(false)
     const [selectedPlan, setSelectedPlan] = useState<'month' | 'year'>(defaultPlan)
+
+    // Check if subscription expired
+    const isExpired = !!(user?.proExpiresAt && new Date(user.proExpiresAt) < new Date())
 
     // Sync state with props when modal opens or prop changes
     React.useEffect(() => {
@@ -100,6 +105,18 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
         }
     }
 
+    const getTitle = () => {
+        if (customMessage) return 'Доступ ограничено'
+        if (isExpired) return 'Продлите подписку Pro'
+        return message.title
+    }
+
+    const getDescription = () => {
+        if (customMessage) return customMessage
+        if (isExpired) return 'Ваша подписка истекла. Чтобы снова получить доступ к заблокированным функциям и данным, пожалуйста, продлите подписку.'
+        return message.description
+    }
+
     return (
         <Modal
             isOpen={isOpen}
@@ -115,8 +132,14 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                         <Crown size={20} />
                         <span>PRO</span>
                     </div>
-                    <h2 className={styles.title}>Перейдите на <span>Pro</span><br /> и раскройте весь потенциал</h2>
-                    <p className={styles.subtitle}>{message.description}</p>
+                    <h2 className={styles.title}>
+                        {isExpired ? (
+                            <>Продлите <span>Pro</span>,<br />чтобы вернуть доступ</>
+                        ) : (
+                            <>Перейдите на <span>Pro</span><br /> и раскройте весь потенциал</>
+                        )}
+                    </h2>
+                    <p className={styles.subtitle}>{getDescription()}</p>
                 </div>
 
                 <div className={styles.content}>

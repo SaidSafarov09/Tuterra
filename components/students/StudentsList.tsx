@@ -83,10 +83,23 @@ export function StudentsList({ students }: StudentsListProps) {
             {students.map((student) => (
                 <div
                     key={student.id}
-                    className={`${styles.studentCard} ${student.linkedUser ? styles.linkedCard : ''}`}
-                    onClick={() => router.push(`/students/${student.slug || student.id}`)}
+                    className={`${styles.studentCard} ${student.linkedUser ? styles.linkedCard : ''} ${student.isLocked ? styles.lockedCard : ''}`}
+                    onClick={() => {
+                        if (student.isLocked) {
+                            checkLimit('students', 100) // Trigger modal
+                            return
+                        }
+                        router.push(`/students/${student.slug || student.id}`)
+                    }}
                     style={{ position: 'relative' }}
                 >
+                    {student.isLocked && (
+                        <div className={styles.lockOverlay}>
+                            <div className={styles.lockBadge}>
+                                <NoteIcon size={14} /> <span>PRO</span>
+                            </div>
+                        </div>
+                    )}
 
                     <div className={styles.cardHeader}>
                         {student.linkedUser?.avatar ? (
@@ -178,9 +191,20 @@ export function StudentsList({ students }: StudentsListProps) {
                                     <LinkIcon size={16} />
                                 </button>
                             )}
-                            {student.linkedUser && (
+                            {student.linkedUser && !student.isConnectionLocked && (
                                 <div className={styles.linkedBadge}>
                                     Подключён к платформе
+                                </div>
+                            )}
+                            {student.linkedUser && student.isConnectionLocked && (
+                                <div
+                                    className={`${styles.linkedBadge} ${styles.linkedBadgeLocked}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        checkLimit('connectedStudents', 100, 'Лимит подключений превышен. Эта связь заморожена.')
+                                    }}
+                                >
+                                    Связь на паузе (PRO)
                                 </div>
                             )}
                         </div>

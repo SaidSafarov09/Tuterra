@@ -26,10 +26,22 @@ export async function GET(request: NextRequest) {
                     select: { students: true, lessons: true },
                 },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: 'asc' },
         })
 
-        return NextResponse.json(subjects)
+        const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
+            select: { plan: true, proExpiresAt: true }
+        })
+
+        const isPro = user?.plan === 'pro' && (!user.proExpiresAt || new Date(user.proExpiresAt) > new Date())
+
+        const subjectsWithLock = subjects.map((subject, index) => ({
+            ...subject,
+            isLocked: !isPro && index >= 1 // FREE_LIMITS.subjects is 1
+        }))
+
+        return NextResponse.json(subjectsWithLock)
     } catch (error) {
         console.error('Get subjects error:', error)
         return NextResponse.json(
@@ -50,7 +62,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const validatedData = subjectSchema.parse(body)
 
-        
+
         const existing = await prisma.subject.findFirst({
             where: {
                 userId: payload.userId,

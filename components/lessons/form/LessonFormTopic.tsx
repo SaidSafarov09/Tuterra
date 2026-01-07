@@ -10,6 +10,7 @@ interface LessonFormTopicProps {
     topic: string
     planTopicId?: string | null
     planTopics: LearningPlanTopic[]
+    isPlanLocked?: boolean
     onTopicChange: (value: string) => void
     onPlanTopicChange: (value: string | undefined) => void
     disabled?: boolean
@@ -20,6 +21,7 @@ export function LessonFormTopic({
     topic,
     planTopicId,
     planTopics,
+    isPlanLocked,
     onTopicChange,
     onPlanTopicChange,
     disabled,
@@ -40,6 +42,7 @@ export function LessonFormTopic({
                     options={planTopics.map(t => ({
                         value: t.id,
                         label: `${t.isCompleted ? '✓ ' : ''}${t.title}`,
+                        isLocked: isPlanLocked
                     }))}
                     menuPosition="relative"
                     disabled={disabled}

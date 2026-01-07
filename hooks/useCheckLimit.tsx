@@ -9,6 +9,7 @@ export function useCheckLimit() {
     const { user } = useAuthStore()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [currentLimitType, setCurrentLimitType] = useState<LimitType>('students')
+    const [customMessage, setCustomMessage] = useState<string | null>(null)
 
     const checkProStatus = () => {
         if (!user) return false
@@ -23,7 +24,7 @@ export function useCheckLimit() {
         return true
     }
 
-    const checkLimit = (type: LimitType, currentCount: number): boolean => {
+    const checkLimit = (type: LimitType, currentCount: number, message?: string): boolean => {
         // If user is pro and subscription not expired, no limit
         if (checkProStatus()) return true
 
@@ -31,6 +32,7 @@ export function useCheckLimit() {
         // If we have reached or exceeded the limit
         if (typeof limit === 'number' && currentCount >= limit) {
             setCurrentLimitType(type)
+            setCustomMessage(message || null)
             setIsModalOpen(true)
             return false
         }
@@ -38,7 +40,7 @@ export function useCheckLimit() {
         return true
     }
 
-    const checkFeature = (type: LimitType): boolean => {
+    const checkFeature = (type: LimitType, message?: string): boolean => {
         // If user is pro and subscription not expired, no limit
         if (checkProStatus()) return true
 
@@ -46,6 +48,7 @@ export function useCheckLimit() {
         const limit = FREE_LIMITS[type as keyof typeof FREE_LIMITS]
         if (limit === 0) {
             setCurrentLimitType(type)
+            setCustomMessage(message || null)
             setIsModalOpen(true)
             return false
         }
@@ -53,6 +56,7 @@ export function useCheckLimit() {
         // For income block
         if (type === 'income') {
             setCurrentLimitType('income')
+            setCustomMessage(message || null)
             setIsModalOpen(true)
             return false
         }
@@ -63,11 +67,13 @@ export function useCheckLimit() {
     return {
         checkLimit,
         checkFeature,
+        isPro: checkProStatus(),
         UpgradeModal: isModalOpen ? (
             <UpgradeToProModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 limitType={currentLimitType}
+                customMessage={customMessage}
             />
         ) : null
     }

@@ -7,6 +7,7 @@ import { LessonFormDateTime } from './form/LessonFormDateTime'
 import { LessonFormPriceDuration } from './form/LessonFormPriceDuration'
 import { LessonFormTopic } from './form/LessonFormTopic'
 import { LessonFormPayment } from './form/LessonFormPayment'
+import { useCheckLimit } from '@/hooks/useCheckLimit'
 import styles from './form/LessonForm.module.scss'
 
 export interface LessonFormProps {
@@ -53,7 +54,9 @@ export function LessonForm({
         formData.recurrence?.enabled ? 'recurring' : 'single'
     )
 
-    const { planTopics } = usePlanTopics(
+    const { checkLimit, UpgradeModal } = useCheckLimit()
+
+    const { planTopics, isLocked: isPlanLocked } = usePlanTopics(
         formData.studentId,
         formData.groupId,
         formData.subjectId,
@@ -91,10 +94,15 @@ export function LessonForm({
     const handleStudentOrGroupChange = (value: string) => {
         if (value.startsWith('group_')) {
             const groupId = value.replace('group_', '')
+            const group = groups.find(g => g.id === groupId)
+            if (group?.isLocked) {
+                checkLimit('groups', 100, 'Эта группа доступна только в Pro версии') // Trigger modal
+                return
+            }
+
             if (onGroupChange) {
                 onGroupChange(groupId, groups)
             } else {
-                const group = groups.find(g => g.id === groupId)
                 if (group) {
                     setFormData(prev => ({
                         ...prev,
@@ -106,6 +114,12 @@ export function LessonForm({
                 }
             }
         } else {
+            const student = students.find(s => s.id === value)
+            if (student?.isLocked) {
+                checkLimit('students', 100, 'Этот ученик доступен только в Pro версии')
+                return
+            }
+
             setFormData(prev => ({
                 ...prev,
                 studentId: value,
@@ -131,6 +145,16 @@ export function LessonForm({
             handleChange('planTopicId', null)
             return
         }
+
+        if (isPlanLocked) {
+            if (formData.groupId) {
+                checkLimit('groupPlans', 100)
+            } else {
+                checkLimit('studentPlans', 100)
+            }
+            return
+        }
+
         const topic = planTopics.find(t => t.id === value)
         if (topic) {
             setFormData(prev => ({
@@ -171,7 +195,14 @@ export function LessonForm({
                 groups={groups}
                 subjects={subjects}
                 onStudentOrGroupChange={handleStudentOrGroupChange}
-                onSubjectChange={(val) => handleChange('subjectId', val)}
+                onSubjectChange={(val) => {
+                    const subject = subjects.find(s => s.id === val)
+                    if (subject?.isLocked) {
+                        checkLimit('subjects', 100, 'Этот предмет доступен только в Pro версии')
+                        return
+                    }
+                    handleChange('subjectId', val)
+                }}
                 onCreateStudent={onCreateStudent}
                 onCreateSubject={onCreateSubject}
                 disabled={isSubmitting}
@@ -216,6 +247,7 @@ export function LessonForm({
                 topic={formData.topic}
                 planTopicId={formData.planTopicId}
                 planTopics={planTopics}
+                isPlanLocked={isPlanLocked}
                 onTopicChange={handleTopicChange}
                 onPlanTopicChange={handlePlanTopicChange}
                 disabled={isSubmitting}
@@ -243,6 +275,7 @@ export function LessonForm({
 
             {error && <div className={styles.error}>{error}</div>}
             {children}
+            {UpgradeModal}
         </form>
     )
 }

@@ -22,23 +22,43 @@ export async function GET(request: NextRequest) {
         const payload = await verifyToken(token)
         if (!payload) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
-        const groups = await prisma.group.findMany({
-            where: { ownerId: payload.userId },
-            include: {
-                subject: true,
-                students: true,
-                lessons: {
-                    orderBy: { date: 'desc' },
-                    take: 1,
+        const [user, rawGroups] = await Promise.all([
+            prisma.user.findUnique({
+                where: { id: payload.userId },
+                select: { plan: true, proExpiresAt: true }
+            }),
+            prisma.group.findMany({
+                where: { ownerId: payload.userId },
+                include: {
+                    subject: true,
+                    students: true,
+                    lessons: {
+                        orderBy: { date: 'desc' },
+                        take: 1,
+                    },
+                    _count: {
+                        select: { lessons: true, students: true },
+                    },
                 },
-                _count: {
-                    select: { lessons: true, students: true },
-                },
-            },
-            orderBy: { createdAt: 'desc' },
-        })
+                orderBy: { createdAt: 'desc' },
+            })
+        ])
 
-        return NextResponse.json(groups)
+        const userIsPro = user && isPro(user)
+
+        const freeGroupsIds = await prisma.group.findMany({
+            where: { ownerId: payload.userId },
+            orderBy: { createdAt: 'asc' },
+            take: FREE_LIMITS.groups,
+            select: { id: true }
+        }).then(list => list.map(g => g.id))
+
+        const groupsWithLocked = rawGroups.map(g => ({
+            ...g,
+            isLocked: !userIsPro && !freeGroupsIds.includes(g.id)
+        }))
+
+        return NextResponse.json(groupsWithLocked)
     } catch (error) {
         console.error('Get groups error:', error)
         return NextResponse.json(

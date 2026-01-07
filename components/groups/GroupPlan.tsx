@@ -76,8 +76,14 @@ export function GroupPlan({ group }: GroupPlanProps) {
                 </div>
             ) : (
                 <div
-                    className={styles.planWrapper}
-                    onClick={() => router.push(`/plans/${plan!.id}`)}
+                    className={`${styles.planWrapper} ${plan!.isLocked ? styles.lockedPlan : ''}`}
+                    onClick={() => {
+                        if (plan!.isLocked) {
+                            checkFeature('groupPlans')
+                            return
+                        }
+                        router.push(`/plans/${plan!.id}`)
+                    }}
                 >
                     <PlanProgressBar
                         title={group.name}
@@ -85,6 +91,11 @@ export function GroupPlan({ group }: GroupPlanProps) {
                         completed={completedTopics}
                         color={group.color || '#4A6CF7'}
                     />
+                    {plan!.isLocked && (
+                        <div className={styles.lockBadge}>
+                            <span>PRO</span>
+                        </div>
+                    )}
                 </div>
             )}
             {UpgradeModal}

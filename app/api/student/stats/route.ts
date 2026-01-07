@@ -34,14 +34,16 @@ export async function GET(request: NextRequest) {
         const ownerIds = studentRecords.map(s => s.ownerId)
         const studentIds = studentRecords.map(s => s.id)
 
+        const queryTime = new Date()
+
         // Get upcoming lessons
-        const upcomingLessons = await prisma.lesson.findMany({
+        const rawUpcomingLessons = await prisma.lesson.findMany({
             where: {
                 OR: [
                     { studentId: { in: studentIds } },
                     { group: { students: { some: { id: { in: studentIds } } } } }
                 ],
-                date: { gte: new Date() },
+                date: { gte: new Date(queryTime.getTime() - 12 * 60 * 60 * 1000) },
                 isCanceled: false
             },
             include: {
@@ -49,18 +51,19 @@ export async function GET(request: NextRequest) {
                 group: true,
                 subject: true,
                 lessonPayments: true,
-                owner: {
-                    select: {
-                        id: true,
-                        name: true,
-                        firstName: true,
-                        avatar: true
-                    }
-                }
+                owner: true
             },
             orderBy: { date: 'asc' },
-            take: 5
+            take: 50
         })
+
+        const upcomingLessons = rawUpcomingLessons
+            .filter(lesson => {
+                const duration = lesson.duration || 60
+                const endTime = new Date(lesson.date).getTime() + duration * 60 * 1000
+                return endTime > Date.now()
+            })
+            .slice(0, 5)
 
         // Get unpaid lessons
         const rawUnpaidLessons = await prisma.lesson.findMany({

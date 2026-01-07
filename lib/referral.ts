@@ -71,6 +71,10 @@ export async function checkAndGrantInviterBonus(userId: string) {
     const hasEnoughStudents = invitee._count.students >= REFERRAL_LIMITS.THRESHOLD_STUDENTS
 
     if (hasEnoughLessons && hasEnoughStudents) {
+        const inviteeName = invitee.firstName
+            ? `${invitee.firstName}${invitee.lastName ? ' ' + invitee.lastName : ''}`
+            : 'Ваш друг'
+
         // Проверяем лимит бонусов у пригласившего
         if (inviter.bonusMonthsEarned < REFERRAL_LIMITS.MAX_BONUS_MONTHS) {
             // Начисляем бонус пригласившему
@@ -93,10 +97,6 @@ export async function checkAndGrantInviterBonus(userId: string) {
             })
 
             // Создаем уведомление для пригласившего
-            const inviteeName = invitee.firstName
-                ? `${invitee.firstName}${invitee.lastName ? ' ' + invitee.lastName : ''}`
-                : 'Ваш друг'
-
             await prisma.notification.create({
                 data: {
                     userId: inviter.id,
@@ -124,8 +124,24 @@ export async function checkAndGrantInviterBonus(userId: string) {
 
             console.log(`Referral: Threshold reached for ${userId}. Inviter ${inviter.id} granted 30 days PRO.`)
         } else {
+            // Если лимит достигнут, все равно отправляем уведомление, но без бонуса
+            await prisma.notification.create({
+                data: {
+                    userId: inviter.id,
+                    type: 'referral_limit_reached',
+                    title: '🙌 Ваш друг с нами!',
+                    message: `${inviteeName} активно использует Tuterra! Лимит бонусных месяцев (30 дней × 3) уже достигнут, но спасибо, что развиваете сообщество!`,
+                    link: '/settings?tab=referral',
+                    data: JSON.stringify({
+                        inviteeId: userId,
+                        inviteeName,
+                        earnedAt: new Date().toISOString()
+                    })
+                }
+            })
+
             console.log(`Referral: Threshold reached for ${userId}, but inviter ${inviter.id} has reached MAX bonus limit.`)
-            // Даже если лимит достигнут, помечаем чтобы больше не проверять
+            // Помечаем чтобы больше не проверять
             await prisma.user.update({
                 where: { id: userId },
                 data: { referralBonusClaimed: true }

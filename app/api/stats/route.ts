@@ -3,6 +3,8 @@ import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { startOfMonth, endOfMonth } from 'date-fns'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
     try {
         const token = request.cookies.get('auth-token')?.value
@@ -33,19 +35,19 @@ export async function GET(request: NextRequest) {
                             { studentId: { in: studentIds } },
                             { group: { students: { some: { id: { in: studentIds } } } } }
                         ],
-                        date: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+                        // Fetch starting from 12 hours ago to catch ongoing lessons with potential timezone drift
+                        date: { gte: new Date(now.getTime() - 12 * 60 * 60 * 1000) },
                         isCanceled: false,
                     },
                     include: {
                         student: true,
                         subject: true,
                         group: true,
-                        owner: {
-                            select: { id: true, name: true, firstName: true, avatar: true }
-                        }
+                        owner: true,
+                        lessonPayments: true,
                     },
                     orderBy: { date: 'asc' },
-                    take: 10,
+                    take: 200,
                 }),
                 prisma.lesson.findMany({
                     where: {
@@ -97,9 +99,14 @@ export async function GET(request: NextRequest) {
                 })
             ])
 
-            const { isLessonPast } = await import('@/lib/lessonTimeUtils')
+            // Filter out fully completed lessons
             const filteredUpcomingLessons = upcomingLessons
-                .filter(lesson => !isLessonPast(lesson.date, lesson.duration || 60))
+                .filter(lesson => {
+                    const duration = lesson.duration || 60
+                    const endTime = new Date(lesson.date).getTime() + duration * 60 * 1000
+                    const now = Date.now()
+                    return endTime > now
+                })
                 .slice(0, 5)
 
             // Filter unpaid lessons correctly for student
@@ -162,7 +169,7 @@ export async function GET(request: NextRequest) {
             prisma.lesson.findMany({
                 where: {
                     ownerId: userId,
-                    date: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+                    date: { gte: new Date(now.getTime() - 5 * 60 * 60 * 1000) },
                     isCanceled: false,
                 },
                 include: {
@@ -172,7 +179,7 @@ export async function GET(request: NextRequest) {
                     lessonPayments: { select: { hasPaid: true } }
                 },
                 orderBy: { date: 'asc' },
-                take: 10,
+                take: 100,
             }),
             prisma.lesson.findMany({
                 where: {
@@ -254,9 +261,13 @@ export async function GET(request: NextRequest) {
             return paidCount < totalStudents
         })
 
-        const { isLessonPast } = await import('@/lib/lessonTimeUtils')
+        // Filter out fully completed lessons
         const filteredUpcomingLessons = tUpcomingLessons
-            .filter((lesson: any) => !isLessonPast(lesson.date, lesson.duration || 60))
+            .filter((lesson: any) => {
+                const duration = lesson.duration || 60
+                const endTime = new Date(lesson.date).getTime() + duration * 60 * 1000
+                return endTime > Date.now()
+            })
             .slice(0, 5)
 
         const monthlyIncome = (mIncomeData as any[]).reduce((total, lesson) => {

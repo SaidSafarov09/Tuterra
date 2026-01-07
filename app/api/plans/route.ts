@@ -3,6 +3,7 @@ import { verifyToken } from '@/lib/jwt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { isPro } from '@/lib/auth'
+import { isStudentLocked, isGroupLocked, isPlanLocked } from '@/lib/guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -72,7 +73,20 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        const enrichedPlans = plans.map(enrichPlan)
+        const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
+            select: { plan: true, proExpiresAt: true }
+        })
+        const userIsPro = user && isPro(user)
+
+        const enrichedPlans = await Promise.all(plans.map(async (p) => {
+            const enriched = enrichPlan(p)
+            let planLocked = false
+            if (!userIsPro) {
+                planLocked = await isPlanLocked(p.id, payload.userId)
+            }
+            return { ...enriched, isLocked: planLocked }
+        }))
 
         return NextResponse.json(enrichedPlans)
     } catch (error) {

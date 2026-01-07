@@ -39,10 +39,24 @@ export function LessonFormStudentSubject({
     const getStudentOptions = () => {
         const options = []
         if (groups.length > 0) {
-            options.push({ label: 'Группы', options: groups.map(g => ({ value: `group_${g.id}`, label: g.name })) })
+            options.push({
+                label: 'Группы',
+                options: groups.map(g => ({
+                    value: `group_${g.id}`,
+                    label: g.name,
+                    isLocked: g.isLocked
+                }))
+            })
         }
         if (students.length > 0) {
-            options.push({ label: 'Ученики', options: students.map(s => ({ value: s.id, label: s.name })) })
+            options.push({
+                label: 'Ученики',
+                options: students.map(s => ({
+                    value: s.id,
+                    label: s.name,
+                    isLocked: s.isLocked
+                }))
+            })
         }
         return options
     }
@@ -73,6 +87,7 @@ export function LessonFormStudentSubject({
                 options={subjects.map((subject) => ({
                     value: subject.id,
                     label: subject.name,
+                    isLocked: subject.isLocked
                 }))}
                 searchable
                 creatable={!fixedSubjectId}
