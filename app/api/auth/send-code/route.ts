@@ -6,7 +6,11 @@ import bcrypt from 'bcrypt'
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json()
+        const text = await request.text();
+        if (!text) {
+            return NextResponse.json({ success: false, error: 'Пустой запрос' }, { status: 400 });
+        }
+        const body = JSON.parse(text);
         const { email } = body
 
         if (!email || !email.includes('@')) {

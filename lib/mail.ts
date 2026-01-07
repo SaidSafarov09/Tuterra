@@ -12,14 +12,21 @@ const transporter = nodemailer.createTransport({
         pass: process.env.SMTP_PASSWORD,
     },
     tls: {
-        rejectUnauthorized: false
-    }
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+    },
+    // For non-465 ports, ensure we upgrade to TLS
+    requireTLS: smtpPort !== 465,
+    pool: true,
+    maxConnections: 3,
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 30000
 });
 
 console.log(`📡 Mailer initialized: ${smtpHost}:${smtpPort} (Secure: ${smtpPort === 465})`);
 
 export const sendOTP = async (email: string, code: string) => {
-
     try {
         await transporter.sendMail({
             from: `"Tuterra" <${process.env.SMTP_USER}>`,
@@ -90,9 +97,6 @@ export const sendOTP = async (email: string, code: string) => {
                         <!-- Footer -->
                         <div class="footer" style="padding: 32px 20px; background: #fdfdfe; text-align: center; border-top: 1px solid #f1f5f9;">
                             <p class="footer-text" style="margin: 0; color: #64748b; font-size: 14px; font-weight: 600;">© ${new Date().getFullYear()} Tuterra.online</p>
-                            <p style="margin: 12px 0 0 0; color: #94a3b8; font-size: 11px; line-height: 1.5;">
-                                Если вы не запрашивали вход, просто удалите это письмо.
-                            </p>
                         </div>
                     </div>
                 </body>
