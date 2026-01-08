@@ -8,10 +8,13 @@ import { ru } from 'date-fns/locale';
 import { toast } from 'sonner';
 import styles from './SubscriptionSettings.module.scss';
 
+import { PartnerPromoInput } from '@/components/ui/PartnerPromoInput';
+
 export const SubscriptionSettings: React.FC = () => {
     const { user } = useAuthStore();
     const [isLoading, setIsLoading] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState<'month' | 'year'>('year');
+    const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
     const checkIsPro = () => {
         if (!user) return false;
@@ -28,6 +31,17 @@ export const SubscriptionSettings: React.FC = () => {
     const expiryDate = user?.proExpiresAt ? new Date(user.proExpiresAt) : null;
     const isExpired = user?.proExpiresAt && new Date(user.proExpiresAt) < new Date();
 
+    // Partner discount logic
+    const PARTNER_DISCOUNT = 0.20; // 20%
+    const hasPartnerDiscount = !!user?.invitedByPartnerCode || !!appliedPromo;
+
+    const getDisplayPrice = (basePrice: number) => {
+        if (hasPartnerDiscount) {
+            return Math.round(basePrice * (1 - PARTNER_DISCOUNT));
+        }
+        return basePrice;
+    };
+
     const proFeatures = [
         'Безлимитное количество учеников и групп',
         'Безлимитное подключение учеников к платформе',
@@ -38,8 +52,8 @@ export const SubscriptionSettings: React.FC = () => {
     ];
 
     const PLANS = [
-        { id: 'month', label: 'Месяц', price: '490 ₽', oldPrice: null, note: 'Базовый тариф', savings: null },
-        { id: 'year', label: 'Год', price: '3 990 ₽', oldPrice: '5 880 ₽', note: '332 ₽ / мес', savings: 'Выгода 32%' }
+        { id: 'month', label: 'Месяц', price: 490, oldPrice: null, note: 'Базовый тариф', savings: null },
+        { id: 'year', label: 'Год', price: 3990, oldPrice: 5880, note: '332 ₽ / мес', savings: 'Выгода 32%' }
     ];
 
     const handleUpgrade = async () => {
@@ -52,7 +66,8 @@ export const SubscriptionSettings: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    planId: selectedPlanId
+                    planId: selectedPlanId,
+                    promoCode: appliedPromo || undefined
                 })
             });
 
@@ -121,6 +136,23 @@ export const SubscriptionSettings: React.FC = () => {
                                 </p>
                             </div>
 
+                            {!hasPartnerDiscount && (
+                                <div className={styles.promoSection}>
+                                    <p className={styles.promoLabel}>У вас есть промокод ?</p>
+                                    <PartnerPromoInput
+                                        onSuccess={setAppliedPromo}
+                                        initialCode={appliedPromo}
+                                    />
+                                </div>
+                            )}
+
+                            {hasPartnerDiscount && (
+                                <div className={styles.discountBanner}>
+                                    🎁 Промокод активирован: скидка 20%
+                                </div>
+                            )}
+
+
                             <div className={styles.plansSwitcher}>
                                 {PLANS.map(plan => (
                                     <div
@@ -128,13 +160,22 @@ export const SubscriptionSettings: React.FC = () => {
                                         className={`${styles.planOption} ${selectedPlanId === plan.id ? styles.activePlan : ''}`}
                                         onClick={() => setSelectedPlanId(plan.id as 'month' | 'year')}
                                     >
-                                        {plan.savings && <div className={styles.savingsLabel}>{plan.savings}</div>}
+                                        {plan.id === 'year' && (
+                                            <div className={styles.savingsLabel}>
+                                                {hasPartnerDiscount ? 'Выгода 46%' : plan.savings}
+                                            </div>
+                                        )}
                                         <div className={styles.planOptionLabel}>{plan.label}</div>
                                         <div className={styles.planOptionPrice}>
-                                            <span>{plan.price}</span>
-                                            {plan.oldPrice && <span className={styles.oldPrice}>{plan.oldPrice}</span>}
+                                            <span>{getDisplayPrice(plan.price).toLocaleString()} ₽</span>
+                                            {hasPartnerDiscount && <span className={styles.oldPrice}>{plan.price.toLocaleString()} ₽</span>}
+                                            {!hasPartnerDiscount && plan.oldPrice && <span className={styles.oldPrice}>{plan.oldPrice}</span>}
                                         </div>
-                                        <div className={styles.planOptionNote}>{plan.note}</div>
+                                        <div className={styles.planOptionNote}>
+                                            {hasPartnerDiscount && plan.id === 'year'
+                                                ? `${Math.round(getDisplayPrice(plan.price) / 12)} ₽ / мес`
+                                                : plan.note}
+                                        </div>
                                     </div>
                                 ))}
                             </div>

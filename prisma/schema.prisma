@@ -58,6 +58,36 @@ model User {
   
   studentRecords    Student[]          @relation("LinkedStudent")
   lessonRequests    LessonRequest[]    @relation("UserRequests")
+
+  // --- Partner Program ---
+  isPartner            Boolean             @default(false)
+  partnerCode          String?             @unique
+  partnerBalance       Float               @default(0)
+  commissionRate       Float?              
+  commissionPaymentsLimit Int              @default(3)  // How many payments bring commission
+  invitedByPartnerCode String?             
+  invitedByPartnerAt   DateTime?           
+  partnerPaymentsCount Int                 @default(0)  // Counter of payments made to partner
+
+  
+  partnerTransactions  PartnerTransaction[] @relation("PartnerOwner")
+}
+
+model PartnerTransaction {
+  id              String    @id @default(cuid())
+  partnerId       String
+  amount          Float     // +Earned, -Payout
+  type            String    // commission | payout
+  status          String    @default("completed")
+  sourceUserId    String?   // Context
+  paymentId       String?   
+  description     String?   
+  createdAt       DateTime  @default(now())
+  
+  partner         User      @relation("PartnerOwner", fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId])
+  @@index([createdAt])
 }
 
 model Subject {

@@ -6,7 +6,7 @@ import { YandexLogo } from '@/components/icons/YandexLogo'
 import { GoogleLogo } from '@/components/icons/GoogleLogo'
 import styles from './Auth.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { Check } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
@@ -20,6 +20,8 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
     const [email, setEmail] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [userRole, setUserRole] = useState<'teacher' | 'student'>('teacher')
+    const [showPromoInput, setShowPromoInput] = useState(false)
+    const [promoCode, setPromoCode] = useState('')
     const isDesk = useMediaQuery('(min-width: 768px)')
 
     useEffect(() => {
@@ -71,10 +73,10 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
 
             toast.success('Код отправлен на ваш email')
 
-            // Priority: refStudent for students, ref for teachers
+            // Priority: refStudent for students, ref for teachers, then promoCode
             const refCode = userRole === 'student'
-                ? (searchParams.get('refStudent') || searchParams.get('ref'))
-                : searchParams.get('ref')
+                ? (searchParams.get('refStudent') || searchParams.get('ref') || promoCode)
+                : (searchParams.get('ref') || promoCode)
 
             onSuccess(data.sessionId || '', email, userRole, refCode)
         } catch (error) {
@@ -132,7 +134,6 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                         <span className={styles.roleLabel}>Я ученик</span>
                     </div>
                 </div>
-                <p className={styles.label}>Введите ваш email</p>
                 <Input
                     type="email"
                     value={email}
@@ -141,6 +142,39 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                     autoFocus
                     required
                 />
+
+                {!searchParams.get('inviteRef') && !searchParams.get('ref') && (
+                    <div className={styles.promoWrapper}>
+                        {!showPromoInput ? (
+                            <button
+                                type="button"
+                                className={styles.promoToggle}
+                                onClick={() => setShowPromoInput(true)}
+                            >
+                                У меня есть промокод
+                            </button>
+                        ) : (
+                            <div className={styles.promoInputRow}>
+                                <Input
+                                    value={promoCode}
+                                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                                    placeholder="ПРОМОКОД"
+                                    className={styles.promoInput}
+                                />
+                                <button
+                                    type="button"
+                                    className={styles.promoClose}
+                                    onClick={() => {
+                                        setShowPromoInput(false)
+                                        setPromoCode('')
+                                    }}
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <Button
                     type="submit"

@@ -24,11 +24,16 @@ const fullUserSelect = {
     theme: true,
     onboardingCompleted: true,
     referralCode: true,
+    isPartner: true,
     isPro: true,
     proActivatedAt: true,
     proExpiresAt: true,
     bonusMonthsEarned: true,
+    invitedByPartnerCode: true,
+    partnerPaymentsCount: true,
+    invitedByPartnerAt: true,
     invitedUsers: {
+
         select: {
             id: true,
             firstName: true,
@@ -50,6 +55,8 @@ const fullUserSelect = {
         select: {
             groups: true,
             invitedUsers: true,
+            lessons: true,
+            students: true,
         },
     },
 }
@@ -59,6 +66,10 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const { sessionId, code, role, referralCode: refCode } = body
 
+        // Handle Partner Referral Cookie
+        const requestCookies = await cookies()
+        const partnerRef = requestCookies.get('partner_ref')?.value || null
+
         if (!sessionId || !code) {
             return NextResponse.json(
                 { success: false, error: 'Не указан sessionId или код' },
@@ -66,7 +77,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Try to finding in EmailOTP first
+        // Try finding in EmailOTP first
         const emailOTPModel = (prisma as any).emailOTP || (prisma as any).EmailOTP;
         const emailSession = emailOTPModel ? await emailOTPModel.findUnique({
             where: { id: sessionId },
@@ -76,148 +87,106 @@ export async function POST(request: NextRequest) {
         let isStudent = role === 'student';
 
         if (emailSession) {
+            // Email Verification Flow
             if (new Date() > emailSession.expiresAt) {
                 await emailOTPModel.delete({ where: { id: sessionId } })
-                return NextResponse.json(
-                    { success: false, error: 'Код истек. Запросите новый код' },
-                    { status: 400 }
-                )
+                return NextResponse.json({ success: false, error: 'Код истек. Запросите новый код' }, { status: 400 })
             }
 
             if (emailSession.attemptsLeft <= 0) {
                 await emailOTPModel.delete({ where: { id: sessionId } })
-                return NextResponse.json(
-                    { success: false, error: 'Превышено количество попыток. Запросите новый код' },
-                    { status: 400 }
-                )
+                return NextResponse.json({ success: false, error: 'Превышено количество попыток. Запросите новый код' }, { status: 400 })
             }
 
             const isCodeValid = await bcrypt.compare(code, emailSession.codeHash)
-
             if (!isCodeValid) {
                 await emailOTPModel.update({
                     where: { id: sessionId },
                     data: { attemptsLeft: emailSession.attemptsLeft - 1 },
                 })
-
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: `Неверный код. Осталось попыток: ${emailSession.attemptsLeft - 1}`
-                    },
-                    { status: 400 }
-                )
+                return NextResponse.json({ success: false, error: `Неверный код. Осталось попыток: ${emailSession.attemptsLeft - 1}` }, { status: 400 })
             }
 
-            // Success with Email!
-            user = await prisma.user.findUnique({
-                where: { email: emailSession.email },
-            })
+            user = await prisma.user.findUnique({ where: { email: emailSession.email } })
 
             if (!user) {
-                const defaultFirstName = isStudent ? 'Новый' : 'Преподаватель'
-                const defaultLastName = isStudent ? 'Ученик' : ''
-                const displayName = emailSession.email.split('@')[0]
-                const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1)
-
+                // New User via Email
                 user = await prisma.user.create({
                     data: {
                         email: emailSession.email,
                         emailVerified: true,
                         role: role || 'teacher',
-                        firstName: defaultFirstName,
-                        lastName: defaultLastName,
-                        name: capitalizedName,
-                        plan: ((role || 'teacher') === 'student' ? null : 'free') as any,
+                        firstName: isStudent ? 'Новый' : 'Преподаватель',
+                        lastName: isStudent ? 'Ученик' : '',
+                        name: emailSession.email.split('@')[0],
+                        plan: (isStudent ? null : 'free') as any,
                     },
                 })
                 await createWelcomeNotifications(user.id)
-
-                // Referral linking
-                if (isStudent && refCode) {
-                    try {
-                        await linkStudentToTutor(user.id, refCode)
-                    } catch (e: any) {
-                        console.error('Referral linking error during signup:', e)
-                    }
-                } else if (!isStudent && refCode) {
-                    try {
-                        await processTeacherReferral(user.id, refCode)
-                    } catch (e) {
-                        console.error('Teacher referral linking error:', e)
-                    }
-                }
             } else {
-                // Existing user linking
-                if (isStudent && refCode) {
-                    try {
-                        await linkStudentToTutor(user.id, refCode)
-                    } catch (e: any) {
-                        console.error('Referral linking error during login:', e)
-                    }
-                } else if (!isStudent && refCode) {
-                    try {
-                        await processTeacherReferral(user.id, refCode)
-                    } catch (e) {
-                        console.error('Teacher referral linking error during login:', e)
-                    }
-                }
+                // Existing User via Email
                 user = await prisma.user.update({
                     where: { id: user.id },
                     data: { emailVerified: true },
                 })
             }
 
+            // Centralized Partner/Referral Linking for Email Flow
+            const finalRefCode = (refCode || partnerRef)?.toString().trim()
+            if (finalRefCode && !user.invitedById && !(user as any).invitedByPartnerCode && !((user as any).partnerPaymentsCount > 0)) {
+                const partner = await prisma.user.findFirst({
+                    where: {
+                        OR: [
+                            { partnerCode: finalRefCode.toUpperCase() },
+                            { partnerCode: finalRefCode },
+                            { partnerCode: finalRefCode.toLowerCase() }
+                        ],
+                        isPartner: true
+                    }
+                })
+
+                if (partner && partner.id !== user.id) {
+                    user = await prisma.user.update({
+                        where: { id: user.id },
+                        data: {
+                            invitedByPartnerCode: partner.partnerCode,
+                            invitedByPartnerAt: new Date()
+                        } as any
+                    })
+                } else if (!partner) {
+                    // Try student/teacher referral if not a partner code
+                    if (isStudent) {
+                        try { await linkStudentToTutor(user.id, finalRefCode) } catch (e) { }
+                    } else {
+                        try { await processTeacherReferral(user.id, finalRefCode) } catch (e) { }
+                    }
+                }
+            }
             await emailOTPModel.delete({ where: { id: sessionId } })
         } else {
-            // Falls back to phone verification
-            const phoneSession = await prisma.verificationSession.findUnique({
-                where: { id: sessionId },
-            })
-
-            if (!phoneSession) {
-                return NextResponse.json(
-                    { success: false, error: 'Сессия не найдена' },
-                    { status: 404 }
-                )
-            }
+            // Phone Verification Flow
+            const phoneSession = await prisma.verificationSession.findUnique({ where: { id: sessionId } })
+            if (!phoneSession) return NextResponse.json({ success: false, error: 'Сессия не найдена' }, { status: 404 })
 
             if (new Date() > phoneSession.expiresAt) {
                 await prisma.verificationSession.delete({ where: { id: sessionId } })
-                return NextResponse.json(
-                    { success: false, error: 'Код истек. Запросите новый код' },
-                    { status: 400 }
-                )
+                return NextResponse.json({ success: false, error: 'Код истек' }, { status: 400 })
             }
 
             if (phoneSession.attemptsLeft <= 0) {
                 await prisma.verificationSession.delete({ where: { id: sessionId } })
-                return NextResponse.json(
-                    { success: false, error: 'Превышено количество попыток. Запросите новый код' },
-                    { status: 400 }
-                )
+                return NextResponse.json({ success: false, error: 'Превышено кол-во попыток' }, { status: 400 })
             }
 
             if (phoneSession.code !== code) {
-                await prisma.verificationSession.update({
-                    where: { id: sessionId },
-                    data: { attemptsLeft: phoneSession.attemptsLeft - 1 },
-                })
-
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: `Неверный код. Осталось попыток: ${phoneSession.attemptsLeft - 1}`
-                    },
-                    { status: 400 }
-                )
+                await prisma.verificationSession.update({ where: { id: sessionId }, data: { attemptsLeft: phoneSession.attemptsLeft - 1 } })
+                return NextResponse.json({ success: false, error: `Неверный код. Осталось: ${phoneSession.attemptsLeft - 1}` }, { status: 400 })
             }
 
-            user = await prisma.user.findUnique({
-                where: { phone: phoneSession.phone },
-            })
+            user = await prisma.user.findUnique({ where: { phone: phoneSession.phone } })
 
             if (!user) {
+                // New User via Phone
                 user = await prisma.user.create({
                     data: {
                         phone: phoneSession.phone,
@@ -227,97 +196,90 @@ export async function POST(request: NextRequest) {
                         lastName: isStudent ? 'Ученик' : 'Пользователь',
                         name: 'Новый Пользователь',
                         plan: (isStudent ? null : 'free') as any,
-                    },
+                    } as any,
                 })
                 await createWelcomeNotifications(user.id)
-
-                if (isStudent && refCode) {
-                    try {
-                        await linkStudentToTutor(user.id, refCode)
-                    } catch (e) {
-                        console.error('Phone referral linking error during signup:', e)
-                    }
-                } else if (!isStudent && refCode) {
-                    try {
-                        await processTeacherReferral(user.id, refCode)
-                    } catch (e) {
-                        console.error('Phone teacher referral linking error signup:', e)
-                    }
-                }
             } else {
-                if (isStudent && refCode) {
-                    try {
-                        await linkStudentToTutor(user.id, refCode)
-                    } catch (e) {
-                        console.error('Phone referral linking error during login:', e)
+                // Existing User via Phone
+                user = await prisma.user.update({ where: { id: user.id }, data: { phoneVerified: true } })
+            }
+
+            // Centralized Partner/Referral Linking for Phone Flow
+            const finalRefCode = (refCode || partnerRef)?.toString().trim()
+            if (finalRefCode && !user.invitedById && !(user as any).invitedByPartnerCode && !((user as any).partnerPaymentsCount > 0)) {
+                const partner = await prisma.user.findFirst({
+                    where: {
+                        OR: [
+                            { partnerCode: finalRefCode.toUpperCase() },
+                            { partnerCode: finalRefCode },
+                            { partnerCode: finalRefCode.toLowerCase() }
+                        ],
+                        isPartner: true
                     }
-                } else if (!isStudent && refCode) {
-                    try {
-                        await processTeacherReferral(user.id, refCode)
-                    } catch (e) {
-                        console.error('Phone teacher referral linking error login:', e)
+                })
+
+                if (partner && partner.id !== user.id) {
+                    user = await prisma.user.update({
+                        where: { id: user.id },
+                        data: {
+                            invitedByPartnerCode: partner.partnerCode,
+                            invitedByPartnerAt: new Date()
+                        } as any
+                    })
+                } else if (!partner) {
+                    // Try student/teacher referral if not a partner code
+                    if (isStudent) {
+                        try { await linkStudentToTutor(user.id, finalRefCode) } catch (e) { }
+                    } else {
+                        try { await processTeacherReferral(user.id, finalRefCode) } catch (e) { }
                     }
                 }
-                user = await prisma.user.update({
-                    where: { id: user.id },
-                    data: { phoneVerified: true },
-                })
             }
 
             await prisma.verificationSession.delete({ where: { id: sessionId } })
         }
 
-        if (!user) {
-            return NextResponse.json({ success: false, error: 'Ошибка авторизации' }, { status: 500 })
-        }
+        if (!user) return NextResponse.json({ success: false, error: 'Ошибка авторизации' }, { status: 500 })
 
-        // Auto-link any matching student records by contact info (email/phone)
-        try {
-            await autoLinkByContact(user.id)
-        } catch (e) {
-            console.error('Auto-linking error:', e)
-        }
+        // Post-login actions
+        try { await autoLinkByContact(user.id) } catch (e) { }
 
-        // Refetch full user data for the frontend store
         const fullUser = await prisma.user.findUnique({
             where: { id: user.id },
             select: fullUserSelect as any
         })
 
-        if (!fullUser) {
-            return NextResponse.json({ success: false, error: 'Ошибка получения данных' }, { status: 500 })
+        if (!fullUser) return NextResponse.json({ success: false, error: 'Ошибка получения данных' }, { status: 500 })
+
+        // Redirect logic
+        let startPage = (fullUser as any).role === 'student' ? '/student/dashboard' : '/dashboard';
+        if ((fullUser as any).isPartner && (fullUser as any).role === 'teacher' && (fullUser as any)._count?.lessons === 0 && (fullUser as any)._count?.students === 0) {
+            startPage = '/partner';
         }
 
-        // Finalize session with the MOST UP TO DATE role (might have changed during auto-link)
         const token = await signToken({
             userId: (fullUser as any).id,
             phone: (fullUser as any).phone || '',
-            role: (fullUser as any).role,
+            role: (fullUser as any).role as any,
+            isPartner: !!(fullUser as any).isPartner,
+            startPage
         })
 
-        const isLocalhost = request.url.includes('localhost')
-        const secure = !isLocalhost
 
+        const isLocalhost = request.url.includes('localhost')
         const cookieStore = await cookies()
         cookieStore.set('auth-token', token, {
             httpOnly: true,
-            secure: secure,
+            secure: !isLocalhost,
             sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60,
             path: '/',
         })
 
-        return NextResponse.json({
-            success: true,
-            token,
-            user: fullUser,
-        })
+        return NextResponse.json({ success: true, token, user: fullUser })
 
     } catch (error) {
         console.error('Verify code error:', error)
-        return NextResponse.json(
-            { success: false, error: 'Произошла ошибка при проверке кода' },
-            { status: 500 }
-        )
+        return NextResponse.json({ success: false, error: 'Ошибка при проверке кода' }, { status: 500 })
     }
 }

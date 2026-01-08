@@ -116,16 +116,41 @@ export async function createAuthSession(userId: string, phone: string, requestUr
             await autoLinkByContact(userId)
 
             // Refetch user to get the latest role after auto-link
-            const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    role: true,
+                    isPartner: true,
+                    _count: { select: { lessons: true, students: true } }
+                }
+            })
             if (user) finalRole = user.role
+            var isPartner = user?.isPartner || false
+            var lessonsCount = user?._count?.lessons || 0
+            var studentsCount = user?._count?.students || 0
         } catch (e) {
             console.error('Auto-linking error during OAuth:', e)
+            // Fallback
+            const user = await prisma.user.findUnique({ where: { id: userId }, select: { isPartner: true } })
+            var isPartner = user?.isPartner || false
+            var lessonsCount = 0
+            var studentsCount = 0
+        }
+
+        // Logic to determine Start Page
+        let startPage = finalRole === 'student' ? '/student/dashboard' : '/dashboard';
+        if (isPartner && finalRole === 'teacher') {
+            if (lessonsCount === 0 && studentsCount === 0) {
+                startPage = '/partner';
+            }
         }
 
         const token = await signToken({
             userId,
             phone: phone || '',
             role: finalRole,
+            isPartner: isPartner,
+            startPage
         })
 
         if (!token) {
@@ -148,7 +173,9 @@ export async function createAuthSession(userId: string, phone: string, requestUr
 
         // Robust redirect URL construction
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || requestUrl
-        const targetPath = role === 'student' ? '/student/dashboard' : '/dashboard'
+        // Use the calculated startPage!
+        let targetPath = startPage
+
         const redirectUrl = new URL(targetPath, baseUrl)
 
         return NextResponse.redirect(redirectUrl)

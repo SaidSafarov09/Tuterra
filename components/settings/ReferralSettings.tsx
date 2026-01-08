@@ -3,10 +3,11 @@
 import React, { useState } from 'react'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
-import { Copy, Check, Gift, Share2, Users } from 'lucide-react'
+import { Copy, Check, Gift, Share2, Users, Ticket } from 'lucide-react'
 import { toast } from 'sonner'
 import styles from './ReferralSettings.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { PartnerPromoInput } from '@/components/ui/PartnerPromoInput'
 
 export const ReferralSettings: React.FC = () => {
     const { user } = useAuthStore()
@@ -145,7 +146,7 @@ export const ReferralSettings: React.FC = () => {
             )}
             <div className={styles.card}>
                 <div className={styles.header}>
-                    <div className={styles.iconWrapper}>
+                    <div className={styles.iconWrapper} style={{ background: 'rgba(74, 108, 247, 0.1)', color: 'var(--primary)' }}>
                         <Gift size={isMobile ? 24 : 32} />
                     </div>
                     <div className={styles.headerText}>
@@ -210,6 +211,60 @@ export const ReferralSettings: React.FC = () => {
                     </Button>
                 </div>
             </div>
+
+            {/* My Promo Codes Section */}
+            <div className={`${styles.card} ${styles.promoCard}`}>
+                <div className={styles.header}>
+                    <div className={styles.iconWrapper} style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#0ea5e9' }}>
+                        <Ticket size={isMobile ? 24 : 32} />
+                    </div>
+                    <div className={styles.headerText}>
+                        <h3 className={styles.title}>Промокоды</h3>
+                        <p className={styles.description}>
+                            Используйте промокоды для получения скидок и специальных условий на подписку PRO.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Promo Code Input - Always visible so user can try entering new codes (e.g. system codes) */}
+                <div className={styles.promoInputSection}>
+                    <PartnerPromoInput
+                        placeholder="Введите промокод"
+                        hideInputWhenApplied={false}
+                    />
+                </div>
+
+
+                {/* ACTIVE: Applied but NOT yet used for any payment (count is 0 or null) */}
+                {user?.invitedByPartnerCode && (!user.partnerPaymentsCount || user.partnerPaymentsCount === 0) && (
+                    <div className={styles.activePromoStatus}>
+                        <div className={styles.promoStatusBadge}>
+                            <Check size={14} />
+                            <span>Промокод <strong>{user.invitedByPartnerCode}</strong> активен и будет применен при следующей оплате</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* USED / HISTORY: Has code AND has made at least one payment */}
+                {user?.invitedByPartnerCode && user.partnerPaymentsCount && user.partnerPaymentsCount > 0 && (
+                    <div className={styles.promoHistory}>
+                        <h4 className={styles.historyTitle}>История промокодов</h4>
+                        <div className={styles.usedPromoCard}>
+                            <div className={styles.usedPromoInfo}>
+                                <span className={styles.usedPromoCode}>{user.invitedByPartnerCode}</span>
+                                <span className={styles.usedStatusBadge}>Использован</span>
+                            </div>
+                            {user.invitedByPartnerAt && (
+                                <div className={styles.usedDate}>
+                                    Применен: {new Date(user.invitedByPartnerAt).toLocaleDateString('ru-RU')}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+            </div>
+
 
             <div className={styles.infoGrid}>
                 <div className={styles.infoCard}>

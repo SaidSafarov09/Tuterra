@@ -1,0 +1,181 @@
+.layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: #f0f9ff; // Fallback
+    overflow: hidden;
+
+    // Advanced Mesh Gradient Background
+    &::before {
+        content: '';
+        position: absolute;
+        width: 140%;
+        height: 140%;
+        top: -20%;
+        left: -20%;
+        z-index: 0;
+        background:
+            radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+            radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+        background:
+            radial-gradient(at 10% 10%, rgba(56, 189, 248, 0.4) 0px, transparent 50%), // Light Blue
+            radial-gradient(at 90% 10%, rgba(129, 140, 248, 0.4) 0px, transparent 50%), // Indigo
+            radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.8) 0px, transparent 50%), // White center
+            radial-gradient(at 80% 80%, rgba(192, 132, 252, 0.3) 0px, transparent 50%); // Purple
+        filter: blur(60px);
+        animation: breath 20s infinite ease-in-out alternate;
+    }
+}
+
+@keyframes breath {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1.1) rotate(2deg);
+    }
+}
+
+.header {
+    height: 70px;
+    // Glassmorphism Header
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+
+    @media (max-width: 768px) {
+        padding: 0 16px;
+    }
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+
+    h1 {
+        font-size: 20px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+    }
+}
+
+.userMenu {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+        gap: 12px;
+    }
+}
+
+.appLink {
+    text-decoration: none;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    &:hover {
+        color: #0f172a;
+    }
+
+    .appLinkIcon {
+        font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+        .appLinkText {
+            display: none; // Hide text on mobile
+        }
+
+        .appLinkIcon {
+            font-size: 24px; // Make arrow larger
+            background: rgba(0, 0, 0, 0.05);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+    }
+}
+
+.userEmail {
+    font-size: 14px;
+    color: #64748b;
+
+    @media (max-width: 768px) {
+        display: none; // Hide email on mobile to save space
+    }
+}
+
+.logoutBtn {
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #475569;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .logoutIcon {
+        display: none;
+        font-size: 16px;
+    }
+
+    &:hover {
+        background: #fff;
+        color: #0f172a;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    @media (max-width: 768px) {
+        padding: 8px; // Square button
+
+        .logoutText {
+            display: none;
+        }
+
+        .logoutIcon {
+            display: block; // Show icon only
+        }
+    }
+}
+
+.main {
+    flex: 1;
+    padding: 32px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 768px) {
+        padding: 16px;
+    }
+}

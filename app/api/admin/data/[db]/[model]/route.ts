@@ -96,7 +96,15 @@ export async function PATCH(
             processedData[key] = true;
         } else if (value === 'false') {
             processedData[key] = false;
-        } else if (typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '' && (key.toLowerCase().includes('price') || key.toLowerCase().includes('duration'))) {
+        } else if (typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '' && (
+            key.toLowerCase().includes('price') ||
+            key.toLowerCase().includes('duration') ||
+            key.toLowerCase().includes('limit') ||
+            key.toLowerCase().includes('count') ||
+            key.toLowerCase().includes('rate') ||
+            key.toLowerCase().includes('balance') ||
+            key.toLowerCase().includes('amount')
+        )) {
             // Basic numeric conversion for common fields
             processedData[key] = Number(value);
         } else {

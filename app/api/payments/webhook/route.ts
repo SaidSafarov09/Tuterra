@@ -42,7 +42,13 @@ export async function POST(req: NextRequest) {
 
         // Ищем пользователя
         const user = await prisma.user.findUnique({
-            where: { id: userId }
+            where: { id: userId },
+            select: {
+                id: true,
+                email: true,
+                invitedByPartnerCode: true,
+                partnerPaymentsCount: true
+            }
         });
 
         if (!user) {
@@ -52,20 +58,113 @@ export async function POST(req: NextRequest) {
         }
 
         // Обновляем подписку пользователя
-        const planId = (metadata.planId as 'month' | 'year') || 'month'; // Извлекаем planId из метаданных
+        const planId = (metadata.planId as 'month' | 'year') || 'month';
         const planConfig = PLANS[planId];
-        const durationDays = planConfig ? planConfig.days : 30; // Используем durationDays из плана или 30 по умолчанию
+        const durationDays = planConfig ? planConfig.days : 30;
 
         await prisma.user.update({
             where: { id: userId },
             data: {
                 isPro: true,
                 proActivatedAt: new Date(),
-                proExpiresAt: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000), // Вычисляем дату окончания
+                proExpiresAt: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000),
                 lastPaymentId: paymentId,
-                plan: 'pro', // Обновляем поле plan на 'pro'
+                plan: 'pro',
             },
         });
+
+        // Partner commission logic
+        if (user.invitedByPartnerCode) {
+            try {
+                const partner = await prisma.user.findFirst({
+                    where: { partnerCode: user.invitedByPartnerCode },
+                    select: {
+                        id: true,
+                        partnerBalance: true,
+                        commissionRate: true,
+                        commissionPaymentsLimit: true
+                    }
+                });
+
+                if (partner) {
+                    // Check if user hasn't exceeded commission payment limit
+                    const currentPaymentCount = user.partnerPaymentsCount || 0;
+                    const paymentLimit = partner.commissionPaymentsLimit || 3;
+
+                    if (currentPaymentCount < paymentLimit) {
+                        // Calculate commission from ACTUAL paid amount (with discount applied)
+                        const paidAmount = parseFloat(payment.amount.value);
+                        const commissionRate = partner.commissionRate || 0.20; // Default 20%
+                        const commission = Math.round(paidAmount * commissionRate);
+
+                        // Update partner balance
+                        await prisma.user.update({
+                            where: { id: partner.id },
+                            data: {
+                                partnerBalance: {
+                                    increment: commission
+                                }
+                            }
+                        });
+
+                        // Create transaction record
+                        await prisma.partnerTransaction.create({
+                            data: {
+                                partnerId: partner.id,
+                                amount: commission,
+                                type: 'commission',
+                                description: `Комиссия за подписку ${planId === 'year' ? 'Год' : 'Месяц'} (платеж ${currentPaymentCount + 1}/${paymentLimit})`,
+                                status: 'completed',
+                                sourceUserId: userId,
+                                paymentId: paymentId
+                            }
+                        });
+
+                        webhookLogs.push({
+                            time: timestamp,
+                            partnerCommission: true,
+                            partnerId: partner.id,
+                            commission,
+                            paidAmount,
+                            paymentNumber: currentPaymentCount + 1,
+                            paymentLimit
+                        });
+                    } else {
+                        webhookLogs.push({
+                            time: timestamp,
+                            partnerCommissionSkipped: true,
+                            reason: 'Payment limit reached',
+                            currentCount: currentPaymentCount,
+                            limit: paymentLimit
+                        });
+                    }
+
+                    // Increment payment counter (always, even after limit)
+                    await prisma.user.update({
+                        where: { id: userId },
+                        data: {
+                            partnerPaymentsCount: {
+                                increment: 1
+                            }
+                        }
+                    });
+
+                    // Remove invitedByPartnerCode only after reaching the limit
+                    if (currentPaymentCount + 1 >= paymentLimit) {
+                        await prisma.user.update({
+                            where: { id: userId },
+                            data: {
+                                invitedByPartnerCode: null
+                            }
+                        });
+                    }
+                }
+
+            } catch (partnerError: any) {
+                console.error('Partner commission error:', partnerError);
+                webhookLogs.push({ time: timestamp, partnerError: partnerError.message });
+            }
+        }
 
         webhookLogs.push({ time: timestamp, success: true, email: user.email });
 

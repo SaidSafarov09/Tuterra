@@ -9,6 +9,8 @@ import { LimitType, LIMIT_MESSAGES } from '@/lib/limits'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/auth'
 
+import { PartnerPromoInput } from '@/components/ui/PartnerPromoInput'
+
 interface UpgradeToProModalProps {
     isOpen: boolean
     onClose: () => void
@@ -56,6 +58,18 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
     const message = LIMIT_MESSAGES[limitType]
     const [isLoading, setIsLoading] = useState(false)
     const [selectedPlan, setSelectedPlan] = useState<'month' | 'year'>(defaultPlan)
+    const [appliedPromo, setAppliedPromo] = useState<string | null>(null)
+
+    // Partner discount logic
+    const PARTNER_DISCOUNT = 0.20 // 20%
+    const hasPartnerDiscount = !!user?.invitedByPartnerCode || !!appliedPromo
+
+    const getDisplayPrice = (basePrice: number) => {
+        if (hasPartnerDiscount) {
+            return Math.round(basePrice * (1 - PARTNER_DISCOUNT))
+        }
+        return basePrice
+    }
 
     // Check if subscription expired
     const isExpired = !!(user?.proExpiresAt && new Date(user.proExpiresAt) < new Date())
@@ -82,7 +96,8 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    planId: selectedPlan
+                    planId: selectedPlan,
+                    promoCode: appliedPromo || undefined
                 })
             })
 
@@ -129,20 +144,37 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             <div className={styles.modal}>
                 <div className={styles.header}>
                     <div className={styles.badge}>
-                        <Crown size={20} />
-                        <span>PRO</span>
+                        <Zap size={16} fill="white" />
+                        Tuterra PRO
                     </div>
                     <h2 className={styles.title}>
-                        {isExpired ? (
-                            <>Продлите <span>Pro</span>,<br />чтобы вернуть доступ</>
-                        ) : (
-                            <>Перейдите на <span>Pro</span><br /> и раскройте весь потенциал</>
-                        )}
+                        {getTitle()} <span>без ограничений</span>
                     </h2>
-                    <p className={styles.subtitle}>{getDescription()}</p>
+                    <p className={styles.subtitle}>
+                        {getDescription()}
+                    </p>
+
+                    {hasPartnerDiscount && (
+                        <div className={styles.discountBadge}>
+                            🎁 Промокод активирован: скидка 20%
+                        </div>
+                    )}
                 </div>
 
+
                 <div className={styles.content}>
+                    {!hasPartnerDiscount && (
+                        <div className={styles.promoSection}>
+                            <p className={styles.promoLabel}>У вас есть промокод ?</p>
+                            <PartnerPromoInput
+                                onSuccess={setAppliedPromo}
+                                initialCode={appliedPromo}
+                            />
+
+
+                        </div>
+                    )}
+
                     <div className={styles.plans}>
                         {(Object.values(PLANS)).map((plan) => (
                             <div
@@ -150,14 +182,32 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                                 className={`${styles.planCard} ${selectedPlan === plan.id ? styles.planCardActive : ''}`}
                                 onClick={() => setSelectedPlan(plan.id as 'month' | 'year')}
                             >
-                                {plan.savings && <div className={styles.savingsBadge}>{plan.savings}</div>}
+                                {plan.id === 'year' && (
+                                    <div className={styles.savingsBadge}>
+                                        {hasPartnerDiscount ? 'Выгода 46%' : plan.savings}
+                                    </div>
+                                )}
                                 <div className={styles.planLabel}>{plan.id === 'year' ? 'Выгодный' : 'Базовый'}</div>
                                 <div className={styles.planPeriod}>{plan.label}</div>
                                 <div className={styles.planPrice}>
-                                    <span className={styles.amount}>{plan.price} ₽</span>
-                                    {plan.oldPrice && <span className={styles.oldPrice}>{plan.oldPrice} ₽</span>}
+                                    <span className={styles.amount}>{getDisplayPrice(plan.price)} ₽</span>
+                                    {hasPartnerDiscount && plan.id === 'year' && (
+                                        <>
+                                            <span className={styles.oldPrice}>{plan.price} ₽</span>
+                                            <span className={styles.oldPrice}>{plan.oldPrice} ₽</span>
+                                        </>
+                                    )}
+                                    {hasPartnerDiscount && plan.id === 'month' && (
+                                        <span className={styles.oldPrice}>{plan.price} ₽</span>
+                                    )}
+                                    {!hasPartnerDiscount && plan.oldPrice && <span className={styles.oldPrice}>{plan.oldPrice} ₽</span>}
                                 </div>
-                                <div className={styles.planNote}>{plan.note}</div>
+                                <div className={styles.planNote}>
+                                    {hasPartnerDiscount && plan.id === 'year'
+                                        ? `${Math.round(getDisplayPrice(plan.price) / 12)} ₽ / мес`
+                                        : plan.note
+                                    }
+                                </div>
                                 <div className={styles.radio}>
                                     <div className={`${styles.radioCircle} ${selectedPlan === plan.id ? styles.radioCircleActive : ''}`} />
                                 </div>
@@ -186,7 +236,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                         disabled={isLoading}
                     >
                         <Zap size={20} fill="currentColor" />
-                        {isLoading ? 'Загрузка...' : `Оплатить ${PLANS[selectedPlan].price} ₽`}
+                        {isLoading ? 'Загрузка...' : `Оплатить ${getDisplayPrice(PLANS[selectedPlan].price)} ₽`}
                     </Button>
                     <button onClick={onClose} className={styles.closeButton} disabled={isLoading}>
                         Может быть позже

@@ -12,9 +12,9 @@ import { UserProfileModal } from '@/components/user/UserProfileModal'
 import {
     LogoutIcon,
     CloseIcon,
-    SupportIcon
+    SupportIcon,
+    HandshakeIcon
 } from '@/components/icons/Icons'
-import { Crown } from 'lucide-react'
 import { UpgradeToProModal } from '@/components/pro/UpgradeToProModal'
 import { teacherNavigation, studentNavigation } from '@/constants/links'
 import { getInitials, stringToColor } from '@/constants'
@@ -82,6 +82,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                         )
                     })}
                 </nav>
+
+                {(user as any)?.isPartner && (
+                    <Link
+                        href="/partner"
+                        className={styles.partnerLink}
+                        onClick={() => onClose?.()}
+                    >
+                        <span className={styles.navIcon}>
+                            <HandshakeIcon size={20} />
+                        </span>
+                        <span className={styles.navText}>Партнерство</span>
+                    </Link>
+                )}
 
                 {!isMobile && (
                     <>
@@ -162,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                         </div>
                     </>
                 )}
-            </aside>
+            </aside >
 
             <UserProfileModal
                 isOpen={isUserModalOpen}

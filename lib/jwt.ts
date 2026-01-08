@@ -7,6 +7,8 @@ export interface JWTPayload {
     userId: string
     phone: string
     role: string
+    isPartner?: boolean
+    startPage?: string // 'partner' | 'dashboard' | 'student'
 }
 
 
@@ -34,6 +36,8 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
                 userId: payload.userId as string,
                 phone: (payload.phone as string) || '',
                 role: (payload.role as string) || 'teacher',
+                isPartner: (payload.isPartner as boolean) || false,
+                startPage: (payload.startPage as string) || undefined,
             }
         }
 

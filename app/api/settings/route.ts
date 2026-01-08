@@ -84,6 +84,12 @@ const USER_FIELDS_BASE = {
     proActivatedAt: true,
     proExpiresAt: true,
     bonusMonthsEarned: true,
+    invitedByPartnerCode: true,
+    // Partner fields
+    isPartner: true,
+    partnerCode: true,
+    partnerBalance: true,
+    commissionRate: true,
     invitedUsers: {
         select: {
             id: true,

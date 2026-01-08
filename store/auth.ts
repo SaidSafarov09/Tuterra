@@ -38,7 +38,16 @@ interface User {
         invitedUsers?: number
         groups?: number
     }
+    // Partner fields
+    invitedByPartnerCode?: string | null
+    invitedByPartnerAt?: string | null
+    partnerPaymentsCount?: number
+    isPartner?: boolean
+    partnerCode?: string | null
+    partnerBalance?: number
+    commissionRate?: number | null
 }
+
 
 interface AuthState {
     user: User | null
