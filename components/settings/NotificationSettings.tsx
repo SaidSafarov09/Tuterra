@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Switch } from '@/components/ui/Switch'
-import { Input } from '@/components/ui/Input'
+import { TimeInput } from '@/components/ui/TimeInput'
 import styles from './NotificationSettings.module.scss'
 import { NotificationSettingsDTO } from '@/services/api'
 
@@ -87,17 +87,15 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ sett
 
                     {settings.quietHoursEnabled && (
                         <div className={styles.timeRange}>
-                            <Input
-                                type="time"
+                            <TimeInput
                                 label="С"
                                 value={settings.quietHoursStart}
-                                onChange={(e) => onChange({ quietHoursStart: e.target.value })}
+                                onChange={(value) => onChange({ quietHoursStart: value })}
                             />
-                            <Input
-                                type="time"
+                            <TimeInput
                                 label="До"
                                 value={settings.quietHoursEnd}
-                                onChange={(e) => onChange({ quietHoursEnd: e.target.value })}
+                                onChange={(value) => onChange({ quietHoursEnd: value })}
                             />
                         </div>
                     )}

@@ -52,7 +52,7 @@ export const CareerProgress: React.FC<CareerProgressProps> = ({ stats }) => {
                         Топ {stats.teacherRank || 1}
                     </span>
                     <span className={styles.statSubtext}>
-                        из {stats.totalTeachers || 1} преподавателей
+                        среди всех преподавателей
                     </span>
                 </div>
             </div>

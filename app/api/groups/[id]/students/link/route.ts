@@ -54,6 +54,20 @@ export async function POST(
             },
         })
 
+        // Автоматически связываем ученика с предметом группы
+        if (group.subjectId) {
+            await prisma.student.update({
+                where: { id: studentId },
+                data: {
+                    subjects: {
+                        connect: { id: group.subjectId },
+                    },
+                },
+            }).catch(() => {
+                // Игнорируем ошибку, если предмет уже связан
+            })
+        }
+
         // Находим будущие занятия группы и создаем для них записи об оплате с hasPaid=false
         const now = new Date()
         const futureLessons = await prisma.lesson.findMany({

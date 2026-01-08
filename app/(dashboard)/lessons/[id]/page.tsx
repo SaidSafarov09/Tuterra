@@ -15,7 +15,7 @@ import { LessonFormModal } from '@/components/lessons/LessonFormModal'
 import { LessonActions } from '@/components/lessons/LessonActions'
 import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
-import { ClockIcon } from '@/components/icons/Icons'
+import { ClockIcon, CloseIcon, CheckIcon } from '@/components/icons/Icons'
 import styles from './page.module.scss'
 import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
@@ -303,6 +303,38 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                     <div className={styles.notesSection}>
                         <strong>Заметки:</strong>
                         <p>{lesson.notes}</p>
+                    </div>
+                )}
+
+                {!isStudent && lesson.group && lesson.group.students && lesson.group.students.length > 0 && (
+                    <div className={styles.participantsSection}>
+                        <strong>Участники занятия:</strong>
+                        <div className={styles.participantsList}>
+                            {lesson.group.students.map((student) => {
+                                const payment = lesson.lessonPayments?.find(p => p.studentId === student.id)
+                                const hasPaid = payment?.hasPaid || false
+                                const hasAttended = !!payment // если есть запись о платеже, значит присутствовал
+
+                                return (
+                                    <div key={student.id} className={styles.participantItem}>
+                                        <div className={styles.participantInfo}>
+                                            <span className={styles.participantName}>{student.name}</span>
+                                            {!hasAttended && (
+                                                <span className={styles.absentBadge}>Отсутствовал</span>
+                                            )}
+                                        </div>
+                                        <div className={styles.participantStatus}>
+                                            {hasAttended && (
+                                                <span className={`${styles.paymentBadge} ${hasPaid ? styles.paid : styles.unpaid}`}>
+                                                    {hasPaid ? <><CheckIcon size={14} />Оплачено</> :
+                                                        <><CloseIcon size={14} />Не оплачено</>}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
                 )}
 

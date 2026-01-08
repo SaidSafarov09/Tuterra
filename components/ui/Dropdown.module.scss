@@ -255,6 +255,10 @@
     color: var(--text-primary);
     margin-bottom: 8px;
     display: block;
+
+    @media (max-width: 768px) {
+        font-size: 12px;
+    }
 }
 
 .required {

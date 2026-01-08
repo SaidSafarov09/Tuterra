@@ -44,6 +44,15 @@ export async function GET(request: NextRequest) {
                         avatar: true,
                     }
                 },
+                groups: {
+                    select: {
+                        id: true,
+                        name: true,
+                        _count: {
+                            select: { lessons: true }
+                        }
+                    }
+                },
                 lessons: {
                     orderBy: { date: 'desc' },
                     take: 1,

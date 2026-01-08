@@ -179,7 +179,9 @@ export function StudentsList({ students }: StudentsListProps) {
                         <div className={styles.statItem}>
                             <div className={styles.statInfo}>
                                 <span className={styles.statLabel}>Занятий</span>
-                                <span className={styles.statValue}>{student._count?.lessons || 0}</span>
+                                <span className={styles.statValue}>
+                                    {(student._count?.lessons || 0) + (student.groups?.reduce((total, group) => total + (group._count?.lessons || 0), 0) || 0)}
+                                </span>
                             </div>
 
                             {!student.linkedUser && (

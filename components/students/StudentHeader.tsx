@@ -75,7 +75,12 @@ export function StudentHeader({ student, onEdit, onCreateLesson, onDelete, onUnl
         return `hsl(${hue}, 65%, 55%)`
     }
 
-    const totalLessons = student._count?.lessons || 0
+    // Подсчитываем общее количество занятий (индивидуальные + групповые)
+    const individualLessonsCount = student._count?.lessons || 0
+    const groupLessonsCount = student.groups?.reduce((total, group) => {
+        return total + (group.lessons?.length || 0)
+    }, 0) || 0
+    const totalLessons = individualLessonsCount + groupLessonsCount
     const totalSubjects = student.subjects.length
 
     const ContactDisplay = ({ value, type, label }: { value: string, type: string, label?: string }) => {
