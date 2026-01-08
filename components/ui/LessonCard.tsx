@@ -154,7 +154,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                                 {isStudentView
                                     ? lesson.price
                                     : (lesson.group
-                                        ? (lesson.group.students?.length || 0) * lesson.price
+                                        ? (lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price
                                         : lesson.price)} ₽
                             </>
                         )}

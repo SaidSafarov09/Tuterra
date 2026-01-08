@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
                 include: {
                     student: { select: { id: true, name: true } },
                     subject: { select: { id: true, name: true, color: true } },
-                    group: { select: { id: true, name: true } },
+                    group: { select: { id: true, name: true, students: { select: { id: true } } } },
                     lessonPayments: { select: { hasPaid: true } }
                 },
                 orderBy: { date: 'asc' },
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
                 include: {
                     student: { select: { id: true, name: true } },
                     subject: { select: { id: true, name: true, color: true } },
-                    group: { select: { id: true, name: true } },
+                    group: { select: { id: true, name: true, students: { select: { id: true } } } },
                     lessonPayments: true
                 },
                 orderBy: { date: 'desc' },
