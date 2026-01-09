@@ -1,8 +1,8 @@
-# Используем Alpine сразу, чтобы работать с Prisma
+# Base image на Alpine
 FROM node:20-alpine AS base
 
-# Устанавливаем системные зависимости для Prisma и Node
-RUN apk add --no-cache libc6-compat openssl1.1-compat bash
+# Устанавливаем только то, что реально нужно для Node и Prisma
+RUN apk add --no-cache libc6-compat bash
 
 WORKDIR /app
 
@@ -22,7 +22,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Генерация Prisma Client и билд Next.js
 RUN npx prisma generate
 RUN npm run build
 
@@ -33,11 +32,11 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Создаем пользователя для запуска
+# Создаем пользователя
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nextjs
 
-# Копируем публичные файлы и собранный Next.js
+# Копируем файлы и сборку Next.js
 COPY --from=builder /app/public ./public
 RUN mkdir .next && chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
