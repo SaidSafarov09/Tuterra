@@ -31,7 +31,7 @@ FROM base AS runner
 WORKDIR /app
 
 # Final image needs openssl 1.1 compat for Prisma to work on Alpine 3.19+
-RUN apk add --no-cache openssl1.1-compat
+RUN apk add --no-cache openssl1.1-compat libcrypto1.1
 
 ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
