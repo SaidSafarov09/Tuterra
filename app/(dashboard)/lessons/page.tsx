@@ -165,8 +165,20 @@ function LessonsContent() {
 
     useEffect(() => {
         const tab = searchParams.get('tab') as LessonFilter
-        if (tab && ['upcoming', 'past', 'unpaid', 'canceled'].includes(tab)) {
-            setActiveTab(tab)
+        const filter = searchParams.get('filter') as LessonFilter
+        const activeFilter = tab || filter
+
+        if (activeFilter && ['upcoming', 'past', 'unpaid', 'canceled'].includes(activeFilter)) {
+            setActiveTab(activeFilter)
+
+            // If legacy 'filter' was used, clean it up and use 'tab'
+            if (filter && !tab) {
+                const params = new URLSearchParams(searchParams.toString())
+                params.delete('filter')
+                params.set('tab', activeFilter)
+                const basePath = isStudent ? '/student/lessons' : '/lessons'
+                router.replace(`${basePath}?${params.toString()}`, { scroll: false })
+            }
         }
 
         const month = searchParams.get('month')
@@ -185,6 +197,7 @@ function LessonsContent() {
     const handleTabChange = (id: string) => {
         setActiveTab(id as LessonFilter)
         const params = new URLSearchParams(searchParams.toString())
+        params.delete('filter') // Remove legacy filter
         params.set('tab', id)
         const basePath = isStudent ? '/student/lessons' : '/lessons'
         router.push(`${basePath}?${params.toString()}`)
@@ -193,6 +206,7 @@ function LessonsContent() {
     const handleMonthChange = (month: string) => {
         setSelectedMonth(month)
         const params = new URLSearchParams(searchParams.toString())
+        params.delete('filter') // Keep it clean
         if (month === 'all') {
             params.delete('month')
         } else {

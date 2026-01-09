@@ -23,6 +23,7 @@ export const CareerProgress: React.FC<CareerProgressProps> = ({ stats }) => {
 
     const levelInfo = getLevelInfo(totalLessons)
     const progress = Math.min((totalLessons / levelInfo.target) * 100, 100)
+    const isNewAccount = totalLessons === 0 && studentsCount === 0
 
 
     return (
@@ -46,15 +47,24 @@ export const CareerProgress: React.FC<CareerProgressProps> = ({ stats }) => {
                         +{stats.monthLessonsCount || 0} в этом месяце
                     </span>
                 </div>
-                <div className={styles.statItem}>
-                    <span className={styles.statLabel}>Ваш рейтинг</span>
-                    <span className={styles.statValue}>
-                        Топ {stats.teacherRank || 1}
-                    </span>
-                    <span className={styles.statSubtext}>
-                        среди всех преподавателей
-                    </span>
-                </div>
+                {!isNewAccount ? (
+                    <div className={styles.statItem}>
+                        <span className={styles.statLabel}>Ваш рейтинг</span>
+                        <span className={styles.statValue}>
+                            Топ {stats.teacherRank || 1}
+                        </span>
+                        <span className={styles.statSubtext}>
+                            среди всех преподавателей
+                        </span>
+                    </div>
+                ) : (
+                    <div className={styles.statItem}>
+                        <span className={styles.statLabel}>Рейтинг</span>
+                        <span className={styles.statValue} style={{ fontSize: '14px', whiteSpace: 'normal', lineHeight: '1.4', fontWeight: 400, opacity: 0.7 }}>
+                            Начните работу в платформе, чтобы увидеть свой рейтинг
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className={styles.milestones}>
@@ -81,4 +91,5 @@ export const CareerProgress: React.FC<CareerProgressProps> = ({ stats }) => {
             </div>
         </div>
     )
+
 }

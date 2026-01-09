@@ -65,9 +65,13 @@ export async function GET(
                 ]
             }
         } else {
-            whereClause = isId
-                ? { id: id, ownerId: user.id }
-                : { slug: id, ownerId: user.id }
+            whereClause = {
+                OR: [
+                    { id: id },
+                    { slug: id }
+                ],
+                ownerId: user.id
+            }
         }
 
         const lesson = await prisma.lesson.findFirst({
@@ -132,15 +136,18 @@ export async function PUT(
         if (!user) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const body = await request.json()
-        let lessonId = id
-        if (!isCuid(id)) {
-            const found = await prisma.lesson.findFirst({
-                where: { slug: id, ownerId: user.id },
-                select: { id: true }
-            })
-            if (!found) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
-            lessonId = found.id
-        }
+        const currentLesson = await prisma.lesson.findFirst({
+            where: {
+                OR: [
+                    { id: id },
+                    { slug: id }
+                ],
+                ownerId: user.id
+            },
+            include: { student: true, subject: true, group: true }
+        })
+        if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+        const lessonId = currentLesson.id
 
         const validatedData = lessonSchema.parse(body)
 
@@ -157,12 +164,6 @@ export async function PUT(
             })
             if (!group) return NextResponse.json({ error: 'Группа не найдена' }, { status: 404 })
         }
-
-        const currentLesson = await prisma.lesson.findUnique({
-            where: { id: lessonId },
-            include: { student: true, subject: true, group: true }
-        })
-        if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
 
         const userDb = await prisma.user.findUnique({ where: { id: user.id }, select: { timezone: true, proExpiresAt: true } })
         const timezone = userDb?.timezone || 'Europe/Moscow'
@@ -235,21 +236,19 @@ export async function PATCH(
         if (!user) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 
         const body = await request.json()
-        let lessonId = id
-        if (!isCuid(id)) {
-            const found = await prisma.lesson.findFirst({
-                where: { slug: id, ownerId: user.id },
-                select: { id: true }
-            })
-            if (!found) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
-            lessonId = found.id
-        }
-
-        const currentLesson = await prisma.lesson.findUnique({
-            where: { id: lessonId, ownerId: user.id },
+        const currentLesson = await prisma.lesson.findFirst({
+            where: {
+                OR: [
+                    { id: id },
+                    { slug: id }
+                ],
+                ownerId: user.id
+            },
             include: { student: true, subject: true, group: true }
         })
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
+        const lessonId = currentLesson.id
+
 
         const userDb = await prisma.user.findUnique({ where: { id: user.id }, select: { timezone: true, proExpiresAt: true } })
         const timezone = userDb?.timezone || 'Europe/Moscow'
@@ -333,13 +332,14 @@ export async function DELETE(
         const { searchParams } = new URL(request.url)
         const scope = searchParams.get('scope')
 
-        const isId = isCuid(id)
-        const whereClause = isId
-            ? { id: id, ownerId: user.id }
-            : { slug: id, ownerId: user.id }
-
         const lesson = await prisma.lesson.findFirst({
-            where: whereClause,
+            where: {
+                OR: [
+                    { id: id },
+                    { slug: id }
+                ],
+                ownerId: user.id
+            },
             include: { student: true, group: true, subject: true }
         })
 
@@ -404,9 +404,11 @@ export async function DELETE(
                         title: 'Занятие удалено',
                         message: `Занятие по предмету ${subjectName} с ${entityLabel} ${entityName} было удалено`,
                         type: 'lesson_deleted',
+                        link: '/lessons',
                         isRead: false
                     }
                 })
+
             }
             await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\nЗанятие по предмету **${subjectName}** с ${entityLabel} **${entityName}** было удалено.`, 'statusChanges')
         }

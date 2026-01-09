@@ -78,10 +78,22 @@ export async function POST(req: NextRequest) {
 
 
         // Возвращаем URL для редиректа
-        return NextResponse.json({
+        const response = NextResponse.json({
             confirmationUrl: payment.confirmation?.confirmation_url,
             paymentId: payment.id,
         });
+
+        // If a partner code was applied during this request, set the cookie as well
+        if (promoCode && user.invitedByPartnerCode) {
+            response.cookies.set('partner_ref', String(user.invitedByPartnerCode), {
+                path: '/',
+                maxAge: 90 * 24 * 60 * 60,
+                sameSite: 'lax',
+            });
+        }
+
+        return response;
+
     } catch (error) {
         console.error('Error creating payment:', error);
         return NextResponse.json(

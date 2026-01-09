@@ -76,7 +76,14 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
 
     useEffect(() => {
         const tab = searchParams.get('tab')
-        if (tab && TABS.some(t => t.id === tab)) {
+        const isValidTab = TABS.some(t => {
+            if (user?.role === 'student') {
+                return t.id === tab && !['subscription', 'referral'].includes(t.id);
+            }
+            return t.id === tab;
+        });
+
+        if (tab && isValidTab) {
             setActiveTab(tab)
         }
         fetchSettings()
@@ -331,7 +338,12 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
             </div>
 
             <div className={styles.tabs}>
-                {TABS.filter(tab => !(user?.role === 'student' && tab.id === 'subscription')).map((tab) => {
+                {TABS.filter(tab => {
+                    if (user?.role === 'student') {
+                        return !['subscription', 'referral'].includes(tab.id);
+                    }
+                    return true;
+                }).map((tab) => {
                     let Icon = SettingsIcon
                     if (tab.icon === 'User') Icon = UserIcon
                     if (tab.icon === 'Premium') Icon = CreditCardIcon

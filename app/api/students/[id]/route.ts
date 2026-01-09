@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { isCuid } from '@/lib/slugUtils'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,14 +26,14 @@ export async function GET(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-
-        const isId = isCuid(id)
-        const whereClause = isId
-            ? { id: id, ownerId: user.id }
-            : { slug: id, ownerId: user.id }
-
         const student = await prisma.student.findFirst({
-            where: whereClause,
+            where: {
+                OR: [
+                    { id: id },
+                    { slug: id }
+                ],
+                ownerId: user.id
+            },
             include: {
                 subjects: true,
                 linkedUser: {
@@ -86,7 +84,8 @@ export async function GET(
             }
         }
 
-        if (isId && student.slug) {
+        // Redirect to slug version if accessed by ID for SEO/Clean URL
+        if (id === student.id && student.slug) {
             return NextResponse.redirect(
                 new URL(`/students/${student.slug}`, request.url),
                 { status: 301 }
@@ -118,22 +117,29 @@ export async function PUT(
         const body = await request.json()
         const validatedData = studentSchema.parse(body)
 
-        const isId = isCuid(id)
-        const whereClause = isId
-            ? { id: id, ownerId: user.id }
-            : { slug: id, ownerId: user.id }
-
-        const student = await prisma.student.updateMany({
-            where: whereClause,
+        const studentUpdate = await prisma.student.updateMany({
+            where: {
+                OR: [
+                    { id: id },
+                    { slug: id }
+                ],
+                ownerId: user.id
+            },
             data: validatedData,
         })
 
-        if (student.count === 0) {
+        if (studentUpdate.count === 0) {
             return NextResponse.json({ error: 'Ученик не найден' }, { status: 404 })
         }
 
         const updatedStudent = await prisma.student.findFirst({
-            where: whereClause,
+            where: {
+                OR: [
+                    { id: id },
+                    { slug: id }
+                ],
+                ownerId: user.id
+            },
         })
 
         return NextResponse.json(updatedStudent)
@@ -165,13 +171,14 @@ export async function DELETE(
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
-        const isId = isCuid(id)
-        const whereClause = isId
-            ? { id: id, ownerId: user.id }
-            : { slug: id, ownerId: user.id }
-
         const student = await prisma.student.findFirst({
-            where: whereClause,
+            where: {
+                OR: [
+                    { id: id },
+                    { slug: id }
+                ],
+                ownerId: user.id
+            }
         })
 
         if (!student) {

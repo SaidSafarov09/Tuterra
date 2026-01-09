@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import styles from './layout.module.scss';
 import { Logo } from '@/components/icons/Logo';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/Button';
+import { ArrowLeft, LogOut, User as UserIcon } from 'lucide-react';
+
 
 export default function PartnerLayout({ children }: { children: React.ReactNode }) {
     const { user, logout, setUser } = useAuthStore();
@@ -28,7 +31,6 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
                     setUser(data as any);
                 } catch (e) {
                     // If fetch fails, we are probably not logged in
-                    // router.replace('/auth'); // Let the next effect handle it
                 }
             }
             setLoading(false);
@@ -51,7 +53,6 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     };
 
     if (!mounted || loading) return (
-        // Simple Loading State
         <div style={{
             height: '100vh',
             display: 'flex',
@@ -59,17 +60,7 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
             justifyContent: 'center',
             background: '#f8fafc'
         }}>
-            <div style={{
-                width: '40px',
-                height: '40px',
-                border: '3px solid rgba(99, 102, 241, 0.2)',
-                borderTopColor: '#6366f1',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-            }} />
-            <style jsx>{`
-                @keyframes spin { to { transform: rotate(360deg); } }
-            `}</style>
+            <div className={styles.spinner} />
         </div>
     );
 
@@ -78,12 +69,12 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     const isPartner = (user as any).isPartner;
     if (!isPartner) {
         return (
-            <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1rem' }}>
+            <div className={styles.accessDenied}>
                 <h1>Доступ запрещен</h1>
                 <p>Этот раздел доступен только для партнеров проекта.</p>
-                <button onClick={() => router.push('/dashboard')} style={{ padding: '10px 20px', cursor: 'pointer' }}>
+                <Button onClick={() => router.push('/dashboard')}>
                     Вернуться в дашборд
-                </button>
+                </Button>
             </div>
         )
     }
@@ -91,20 +82,36 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
     return (
         <div className={styles.layout}>
             <header className={styles.header}>
-                <Link href="/partner" className={styles.logo}>
-                    <Logo size={32} />
-                    <h1>Tuterra Partner</h1>
-                </Link>
+                <div className={styles.headerLeft}>
+                    <Link href="/partner" className={styles.logo}>
+                        <Logo size={32} />
+                        <h1>Tuterra Partner</h1>
+                    </Link>
+                </div>
 
                 <div className={styles.userMenu}>
                     <Link href="/dashboard" className={styles.appLink}>
-                        <span className={styles.appLinkIcon}>←</span>
+                        <ArrowLeft size={18} />
                         <span className={styles.appLinkText}>В приложение</span>
                     </Link>
-                    <span className={styles.userEmail}>{user.email}</span>
-                    <button onClick={handleLogout} className={styles.logoutBtn}>
+
+                    <div className={styles.divider} />
+
+                    <div className={styles.userInfo}>
+                        <div className={styles.userAvatar}>
+                            {user.avatar ? (
+                                <img src={user.avatar} alt={user.name || 'User'} className={styles.avatarImg} />
+                            ) : (
+                                <UserIcon size={16} />
+                            )}
+                        </div>
+                        <span className={styles.userEmail}>{user.email}</span>
+                    </div>
+
+
+                    <button onClick={handleLogout} className={styles.logoutBtn} title="Выйти">
                         <span className={styles.logoutText}>Выйти</span>
-                        <span className={styles.logoutIcon}>⎋</span>
+                        <LogOut size={18} />
                     </button>
                 </div>
             </header>
@@ -115,3 +122,4 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
         </div>
     );
 }
+

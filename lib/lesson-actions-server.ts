@@ -34,6 +34,7 @@ export async function notifyLessonRescheduled(
                     title: 'Занятие перенесено',
                     message: `Занятие по предмету ${subjectName} с ${entityLabel} ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
                     type: 'lesson_rescheduled',
+                    link: `/lessons/${lesson.id}`,
                     isRead: false
                 }
             })
@@ -151,6 +152,7 @@ export async function notifyLessonCreated(
                             ? `Серия из ${totalCount} занятий по предмету ${subjectName} с ${entityName} добавлена. Первый урок: ${timeStr}`
                             : `Занятие по предмету ${subjectName} с ${entityLabel} ${entityName} добавлено на ${timeStr}`,
                         type: 'lesson_created',
+                        link: `/lessons/${lesson.id}`,
                         isRead: false
                     }
                 })

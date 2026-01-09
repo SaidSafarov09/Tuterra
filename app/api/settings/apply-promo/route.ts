@@ -69,8 +69,19 @@ export async function POST(req: NextRequest) {
             } as any
         });
 
+        // Use NextResponse to set cookies
+        const response = NextResponse.json({ success: true, code: partner.partnerCode });
 
-        return NextResponse.json({ success: true, code: partner.partnerCode });
+        // Set partner_ref cookie for attribution persistence
+        response.cookies.set('partner_ref', String(partner.partnerCode), {
+            path: '/',
+            maxAge: 90 * 24 * 60 * 60, // 90 days
+            sameSite: 'lax',
+        });
+
+
+        return response;
+
 
     } catch (error) {
         console.error('Apply promo error:', error);

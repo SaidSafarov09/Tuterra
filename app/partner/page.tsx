@@ -5,6 +5,22 @@ import styles from './page.module.scss';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import {
+    Wallet,
+    Users,
+    Ticket,
+    Info,
+    LayoutGrid,
+    Clock,
+    CheckCircle2,
+    Copy,
+    History,
+    TrendingUp,
+    Gift,
+    Zap,
+    ExternalLink
+} from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface Stats {
     balance: number;
@@ -18,8 +34,8 @@ interface Stats {
 export default function PartnerPage() {
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState<string | null>(null);
+    const [isCopying, setIsCopying] = useState(false);
 
     useEffect(() => {
         fetch('/api/partner/stats')
@@ -42,22 +58,30 @@ export default function PartnerPage() {
         const origin = typeof window !== 'undefined' ? window.location.origin : 'https://tuterra.online';
         const url = `${origin}/?inviteRef=${stats.code}`;
         navigator.clipboard.writeText(url);
-        toast.success('Ссылка скопирована в буфер обмена!');
+        setIsCopying(true);
+        toast.success('Ссылка успешно скопирована!');
+        setTimeout(() => setIsCopying(false), 2000);
     };
 
     const requestPayout = () => {
-        window.open('https://t.me/tuterrahelp', '_blank'); // Direct contact for payout
+        window.open('https://t.me/tuterrahelp', '_blank');
     };
 
-    if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Загрузка статистики...</div>;
+    if (loading) return (
+        <div className={styles.loadingState}>
+            <div className={styles.spinner} />
+            <p style={{ marginTop: '16px', color: '#8b949e', fontWeight: 600 }}>Загружаем вашу статистику...</p>
+        </div>
+    );
 
     if (error) return (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444' }}>
-            <h3>Ошибка загрузки</h3>
-            <p>{error}</p>
-            <button onClick={() => window.location.reload()} style={{ marginTop: '1rem', padding: '8px 16px', cursor: 'pointer' }}>
+        <div className={styles.errorState}>
+            <Info size={48} color="#f85149" />
+            <h3 style={{ marginTop: '24px', color: '#fff' }}>Ошибка загрузки</h3>
+            <p style={{ color: '#8b949e', marginBottom: '24px' }}>{error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
                 Попробовать снова
-            </button>
+            </Button>
         </div>
     );
 
@@ -65,115 +89,158 @@ export default function PartnerPage() {
 
     return (
         <div className={styles.container}>
-            <div className={styles.intro}>
-                <h2>Партнерская программа</h2>
-                <p>Ваша статистика и доходы в реальном времени</p>
-            </div>
-
-            <div className={styles.grid}>
-                {/* Balance */}
-                <div className={styles.card}>
-                    <div className={styles.cardContent}>
-                        <div className={styles.cardLabel}>Доступно к выводу</div>
-                        <div className={styles.balanceValue}>
-                            {stats.balance.toLocaleString('ru-RU')} <span>₽</span>
-                        </div>
-                        <button className={styles.actionButton} onClick={requestPayout}>
-                            Запросить вывод
-                        </button>
-                        <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#94a3b8', fontWeight: 500 }}>
-                            Мин. сумма вывода: 1000 ₽
-                        </p>
+            {/* Unified Action Center Hero */}
+            <div className={styles.heroSection}>
+                <div className={styles.balanceBlock}>
+                    <span className={styles.label}>Доступно к выводу</span>
+                    <div className={styles.value}>
+                        {stats.balance.toLocaleString('ru-RU')} <span>₽</span>
+                    </div>
+                    <Button
+                        className={styles.payoutBtn}
+                        onClick={requestPayout}
+                        size="large"
+                    >
+                        Запросить вывод
+                    </Button>
+                    <div className={styles.payoutLimitSide}>
+                        Минимальная сумма: 1 000 ₽
                     </div>
                 </div>
 
-                {/* Promo Code */}
-                <div className={styles.card}>
-                    <div className={styles.cardContent}>
-                        <div className={styles.cardLabel}>Ваш Промокод</div>
-                        <div className={styles.codeDisplay} onClick={copyLink} title="Скопировать ссылку">
+                <div className={styles.promoBlock}>
+                    <div className={styles.codeHeader}>
+                        <span>Ваш партнерский код</span>
+                        {isCopying ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#3fb950', fontSize: '13px', fontWeight: 700 }}>
+                                <CheckCircle2 size={16} />
+                                Скопировано
+                            </div>
+                        ) : null}
+                    </div>
+                    <div className={styles.codeWrapper}>
+                        <div className={styles.codeHex}>
                             {stats.code || '...'}
                         </div>
-                        <p style={{ color: '#64748b', fontSize: '1.1rem', marginBottom: '2rem' }}>
-                            Приглашено: <strong style={{ color: '#0f172a' }}>{stats.referralsCount}</strong> пользователей
-                        </p>
-                        <button className={`${styles.actionButton} ${styles.secondary}`} onClick={copyLink}>
-                            Скопировать ссылку
-                        </button>
+                        <div className={styles.copyBtnIcon} onClick={copyLink} title="Копировать ссылку">
+                            {isCopying ? <CheckCircle2 size={24} color="#3fb950" /> : <Copy size={24} />}
+                        </div>
+                    </div>
+                    <div className={styles.referralInfo}>
+                        <Users size={16} />
+                        <span>Всего приглашено: <strong>{stats.referralsCount}</strong> пользователей</span>
                     </div>
                 </div>
             </div>
 
-            {/* Program Terms */}
-            <div className={styles.termsCard}>
-                <h3>📋 Условия вашей партнерской программы</h3>
-                <div className={styles.termsList}>
-                    <div className={styles.termItem}>
-                        <span className={styles.termIcon}>💰</span>
-                        <div>
-                            <strong>Комиссия:</strong> {Math.round(stats.commissionRate * 100)}% от каждой оплаты приглашенного пользователя
-                        </div>
+            <div className={styles.contentLayout}>
+                {/* Main Content: History */}
+                <div className={styles.mainPanel}>
+                    <div className={styles.panelHeader}>
+                        <h3>История операций</h3>
+                        <span className={styles.limit}>Последние 20 транзакций</span>
                     </div>
-                    <div className={styles.termItem}>
-                        <span className={styles.termIcon}>🎁</span>
-                        <div>
-                            <strong>Скидка для клиентов:</strong> 20% на первую покупку подписки
-                        </div>
-                    </div>
-                    <div className={styles.termItem}>
-                        <span className={styles.termIcon}>🔢</span>
-                        <div>
-                            <strong>Количество оплат с комиссией:</strong> первые {stats.commissionPaymentsLimit} платежа от каждого пользователя
-                        </div>
-                    </div>
-                    <div className={styles.termItem}>
-                        <span className={styles.termIcon}>ℹ️</span>
-                        <div>
-                            После {stats.commissionPaymentsLimit}-х оплат пользователь остается в системе, но комиссия больше не начисляется
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div className={styles.historySection}>
-                <h3>
-                    История операций
-                    <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#94a3b8' }}>Последние 20</span>
-                </h3>
-                <div className={styles.tableWrapper}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>Дата</th>
-                                <th>Описание</th>
-                                <th>Сумма</th>
-                                <th>Статус</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {stats.transactions.length > 0 ? stats.transactions.map((tx: any) => (
-                                <tr key={tx.id}>
-                                    <td>{format(new Date(tx.createdAt), 'd MMM, HH:mm', { locale: ru })}</td>
-                                    <td style={{ fontWeight: 600, color: '#334155' }}>{tx.description || 'Начисление'}</td>
-                                    <td className={tx.amount > 0 ? styles.amountPlus : styles.amountMinus}>
-                                        {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('ru-RU')} ₽
-                                    </td>
-                                    <td>
-                                        <span className={`${styles.statusBadge} ${styles[tx.status] || ''}`}>
-                                            {tx.status === 'completed' ? 'Выполнено' : 'В обработке'}
-                                        </span>
-                                    </td>
-                                </tr>
-                            )) : (
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
+                            <thead>
                                 <tr>
-                                    <td colSpan={4} style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
-                                        Пока нет операций. Поделитесь ссылкой, чтобы начать!
-                                    </td>
+                                    <th>Дата</th>
+                                    <th>Описание</th>
+                                    <th>Сумма</th>
+                                    <th>Статус</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {stats.transactions.length > 0 ? stats.transactions.map((tx: any) => (
+                                    <tr key={tx.id}>
+                                        <td className={styles.dateCell}>{format(new Date(tx.createdAt), 'd MMM, HH:mm', { locale: ru })}</td>
+                                        <td className={styles.descCell}>
+                                            {tx.description || (tx.type === 'commission' ? 'Партнерское вознаграждение' : tx.type === 'payout' ? 'Вывод средств' : 'Начисление')}
+                                        </td>
+                                        <td className={tx.amount > 0 ? styles.amountPlus : styles.amountMinus}>
+
+                                            {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('ru-RU')} ₽
+                                        </td>
+                                        <td>
+                                            <div className={`${styles.statusBadge} ${styles[tx.status] || ''}`}>
+                                                {tx.status === 'completed' ? (
+                                                    <><CheckCircle2 size={12} /><span>Выполнено</span></>
+                                                ) : (
+                                                    <><Clock size={12} /><span>В обработке</span></>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan={4}>
+                                            <div className={styles.emptyState}>
+                                                <LayoutGrid size={48} />
+                                                <p>Пока нет операций. Поделитесь ссылкой, чтобы заработать!</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
+                {/* Sidebar: Information & Context */}
+                <aside className={styles.sidebar}>
+                    <div className={styles.sideCard}>
+                        <h4>Условия программы</h4>
+
+                        <div className={styles.featureItem}>
+                            <div className={styles.icon}><Zap size={18} /></div>
+                            <div>
+                                <h5>Комиссия {Math.round(stats.commissionRate * 100)}%</h5>
+                                <p>За каждую оплату приглашенного пользователя</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.featureItem}>
+                            <div className={styles.icon}><Gift size={18} /></div>
+                            <div>
+                                <h5>Бонус клиенту 20%</h5>
+                                <p>Скидка на первую покупку для ваших рефералов</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.featureItem}>
+                            <div className={styles.icon}><History size={18} /></div>
+                            <div>
+                                <h5>Лимит выплат</h5>
+                                <p>Комиссия за первые {stats.commissionPaymentsLimit} платежа</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.featureItem}>
+                            <div className={styles.icon}><Info size={18} /></div>
+                            <div>
+                                <h5>Поддержка</h5>
+                                <p>Выплаты производятся по запросу в Telegram</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={styles.sideCard} style={{ background: 'linear-gradient(135deg, rgba(88, 166, 255, 0.05) 0%, transparent 100%)' }}>
+                        <h4 style={{ color: '#58a6ff' }}>Нужна помощь?</h4>
+                        <p style={{ fontSize: '13px', color: '#8b949e', lineHeight: 1.6, marginBottom: '20px' }}>
+                            Если у вас есть вопросы по партнерской программе или начислениям, напишите нам.
+                        </p>
+                        <Button
+                            variant="outline"
+                            fullWidth
+                            onClick={() => window.open('https://t.me/tuterrahelp', '_blank')}
+                            style={{ borderRadius: '12px', height: '44px', fontSize: '13px' }}
+                        >
+                            <ExternalLink size={14} style={{ marginRight: '8px' }} />
+                            Написать в поддержку
+                        </Button>
+                    </div>
+                </aside>
             </div>
         </div>
     );

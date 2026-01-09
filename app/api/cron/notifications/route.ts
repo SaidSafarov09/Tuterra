@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
                                 message: isStudent ? `${subjectName} с ${teacherName} в ${timeString}` : `${subjectName} с ${entityName} в ${timeString}`,
                                 type: 'lesson_reminder',
                                 data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
-                                link: isStudent ? '/student/lessons' : `/calendar?date=${lesson.date.toISOString().split('T')[0]}`,
+                                link: isStudent ? `/student/lessons/${lesson.id}` : `/lessons/${lesson.id}`,
                                 isRead: !settings.deliveryWeb
                             }
                         })
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
                             message: msg,
                             type: 'unpaid_lesson',
                             data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
-                            link: isStudent ? '/student/lessons' : `/lessons?filter=unpaid`,
+                            link: isStudent ? '/student/lessons?tab=unpaid' : `/lessons?tab=unpaid`,
                             isRead: !settings.deliveryWeb
                         }
                     })
