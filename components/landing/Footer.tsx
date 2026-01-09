@@ -19,18 +19,19 @@ export const Footer = () => {
                     </div>
 
                     <div className={styles.links}>
-                        <Link href="#features">Функции</Link>
-                        <Link href="#pricing">Цены</Link>
+                        <Link href="/#features">Функции</Link>
+                        <Link href="/#pricing">Цены</Link>
                         <Link href="/auth">Войти</Link>
-                        <Link href="#">Поддержка</Link>
+                        <a href="https://t.me/tuterrahelp" target="_blank" rel="noopener noreferrer">Поддержка</a>
                     </div>
                 </div>
 
                 <div className={styles.bottom}>
                     <p>© {new Date().getFullYear()} Tuterra</p>
                     <div className={styles.legal}>
-                        <Link href="#">Оферта</Link>
-                        <Link href="#">Приватность</Link>
+                        <Link href="/oferta">Оферта</Link>
+                        <Link href="/policy">Политика конфиденциальности</Link>
+                        <Link href="/soglasie">Согласие</Link>
                     </div>
                 </div>
             </div>

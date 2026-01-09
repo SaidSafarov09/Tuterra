@@ -334,6 +334,24 @@
     }
 }
 
+.legalLinks {
+    margin-top: 24px;
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--text-muted);
+
+    a {
+        color: var(--primary);
+        text-decoration: underline;
+        font-weight: 500;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+}
+
 .divider {
     display: flex;
     align-items: center;

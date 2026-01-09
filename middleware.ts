@@ -4,7 +4,7 @@ import { verifyToken } from './lib/jwt'
 
 export const runtime = 'nodejs'
 
-const publicPaths = ['/auth', '/debug-auth', '/admin']
+const publicPaths = ['/auth', '/debug-auth', '/admin', '/oferta', '/policy', '/soglasie']
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
@@ -93,8 +93,9 @@ export async function middleware(request: NextRequest) {
         // We remove the aggressive 'isPartner' check here because newer logins will have 'startPage'
         // and older logins (without startPage) are likely existing users who should go to dashboard.
 
-        // Redirect from public paths to specific dashboard, except for /admin which has its own auth
-        if ((isPublicPath || pathname === '/') && !pathname.startsWith('/admin')) {
+        // Redirect from public paths to specific dashboard, except for /admin and legal pages
+        const isLegalPath = ['/oferta', '/policy', '/soglasie'].includes(pathname)
+        if ((isPublicPath || pathname === '/') && !pathname.startsWith('/admin') && !isLegalPath) {
             return NextResponse.redirect(getTargetUrl(targetDashboard))
         }
 

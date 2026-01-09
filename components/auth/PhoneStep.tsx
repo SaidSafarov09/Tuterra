@@ -7,6 +7,7 @@ import { GoogleLogo } from '@/components/icons/GoogleLogo'
 import styles from './Auth.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Check, X } from 'lucide-react'
+import Link from 'next/link'
 
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
@@ -210,6 +211,12 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
                         <p>{isDesk && "Войти с"} Google</p>
                     </div>
                 </button>
+            </div>
+            <div className={styles.legalLinks}>
+                Регистрируясь или входя в сервис, вы соглашаетесь с{' '}
+                <Link href="/oferta">Офертой</Link>,{' '}
+                <Link href="/policy">Политикой конфиденциальности</Link> и даете{' '}
+                <Link href="/soglasie">согласие на обработку данных</Link>.
             </div>
         </div>
     )

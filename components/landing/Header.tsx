@@ -23,10 +23,10 @@ export const Header = () => {
     }, [])
 
     const navLinks = [
-        { name: 'Функции', href: '#features' },
-        { name: 'Демо', href: '#demo' },
-        { name: 'Почему мы', href: '#why-us' },
-        { name: 'Цены', href: '#pricing' },
+        { name: 'Функции', href: '/#features' },
+        { name: 'Демо', href: '/#demo' },
+        { name: 'Почему мы', href: '/#why-us' },
+        { name: 'Цены', href: '/#pricing' },
     ]
 
     return (
