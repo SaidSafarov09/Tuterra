@@ -59,6 +59,7 @@ jobs:
       - name: Trigger Coolify Webhook (Main)
         if: github.ref == 'refs/heads/main'
         run: |
+          # We don't need sed here because we will use logic in the next update
           curl -X GET "${{ secrets.COOLIFY_WEBHOOK_MAIN }}" \
                -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}"
 
