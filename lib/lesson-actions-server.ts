@@ -28,13 +28,17 @@ export async function notifyLessonRescheduled(
         const msg = `📅 **Занятие перенесено:**\n\nЗанятие по предмету **${subjectName}** с ${entityLabel} **${studentName}** перенесено\n⏳ Было: ${formatter.format(oldDate)}\n🚀 Стало: **${formatter.format(newDate)}**`
 
         if (settings.deliveryWeb) {
+            const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+            const isStudent = user?.role === 'student'
+            const link = isStudent ? `/student/lessons/${lesson.id}` : `/lessons/${lesson.id}`
+
             await prisma.notification.create({
                 data: {
                     userId,
                     title: 'Занятие перенесено',
                     message: `Занятие по предмету ${subjectName} с ${entityLabel} ${studentName} перенесено с ${formatter.format(oldDate)} на ${formatter.format(newDate)}`,
                     type: 'lesson_rescheduled',
-                    link: `/lessons/${lesson.id}`,
+                    link,
                     isRead: false
                 }
             })
@@ -144,6 +148,10 @@ export async function notifyLessonCreated(
 
         if (settings?.statusChanges) {
             if (settings.deliveryWeb) {
+                const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+                const isStudent = user?.role === 'student'
+                const link = isStudent ? `/student/lessons/${lesson.id}` : `/lessons/${lesson.id}`
+
                 await prisma.notification.create({
                     data: {
                         userId,
@@ -152,7 +160,7 @@ export async function notifyLessonCreated(
                             ? `Серия из ${totalCount} занятий по предмету ${subjectName} с ${entityName} добавлена. Первый урок: ${timeStr}`
                             : `Занятие по предмету ${subjectName} с ${entityLabel} ${entityName} добавлено на ${timeStr}`,
                         type: 'lesson_created',
-                        link: `/lessons/${lesson.id}`,
+                        link,
                         isRead: false
                     }
                 })

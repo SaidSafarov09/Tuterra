@@ -144,7 +144,7 @@ export async function PUT(
                 ],
                 ownerId: user.id
             },
-            include: { student: true, subject: true, group: true }
+            include: { student: true, subject: true, group: { include: { students: true } } }
         })
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
         const lessonId = currentLesson.id
@@ -192,6 +192,19 @@ export async function PUT(
         if (currentLesson.date.getTime() !== validatedData.date.getTime()) {
             const { notifyLessonRescheduled } = await import('@/lib/lesson-actions-server')
             await notifyLessonRescheduled(user.id, currentLesson.date, validatedData.date, currentLesson, timezone)
+
+            // Also notify the student if they are linked to a user
+            if (currentLesson.student?.linkedUserId) {
+                await notifyLessonRescheduled(currentLesson.student.linkedUserId, currentLesson.date, validatedData.date, currentLesson, timezone)
+            }
+            // If it's a group, notify all students who have linked users
+            if (currentLesson.group?.students) {
+                for (const student of currentLesson.group.students) {
+                    if (student.linkedUserId) {
+                        await notifyLessonRescheduled(student.linkedUserId, currentLesson.date, validatedData.date, currentLesson, timezone)
+                    }
+                }
+            }
         }
 
         const { paidStudentIds, attendedStudentIds, planTopicId, ...lessonData } = validatedData
@@ -244,7 +257,7 @@ export async function PATCH(
                 ],
                 ownerId: user.id
             },
-            include: { student: true, subject: true, group: true }
+            include: { student: true, subject: true, group: { include: { students: true } } }
         })
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
         const lessonId = currentLesson.id
@@ -285,6 +298,19 @@ export async function PATCH(
             if (updateData.date && updateData.date.getTime() !== currentLesson.date.getTime()) {
                 const { notifyLessonRescheduled } = await import('@/lib/lesson-actions-server')
                 await notifyLessonRescheduled(user.id, currentLesson.date, updateData.date, currentLesson, timezone)
+
+                // Also notify the student if they are linked to a user
+                if (currentLesson.student?.linkedUserId) {
+                    await notifyLessonRescheduled(currentLesson.student.linkedUserId, currentLesson.date, updateData.date, currentLesson, timezone)
+                }
+                // If it's a group, notify all students who have linked users
+                if (currentLesson.group?.students) {
+                    for (const student of currentLesson.group.students) {
+                        if (student.linkedUserId) {
+                            await notifyLessonRescheduled(student.linkedUserId, currentLesson.date, updateData.date, currentLesson, timezone)
+                        }
+                    }
+                }
             }
         }
 

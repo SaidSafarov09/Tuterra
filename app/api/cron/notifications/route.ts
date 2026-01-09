@@ -303,7 +303,7 @@ export async function GET(request: NextRequest) {
                                     message: msg,
                                     type: 'missing_lessons',
                                     data: JSON.stringify({ key: studentKey, studentId: student.id }),
-                                    link: `/students/${student.id}`,
+                                    link: `/students/${student.slug || student.id}`,
                                     isRead: !settings.deliveryWeb
                                 }
                             })
@@ -348,7 +348,7 @@ export async function GET(request: NextRequest) {
                                 message: `У ученика ${student.name} накоплено долгов на ${totalDebtAmount} ₽`,
                                 type: 'debt',
                                 data: JSON.stringify({ key }),
-                                link: `/students/${student.id}`,
+                                link: `/students/${student.slug || student.id}`,
                                 isRead: !settings.deliveryWeb
                             }
                         })
@@ -434,7 +434,8 @@ export async function GET(request: NextRequest) {
                         await prisma.notification.create({
                             data: {
                                 userId, title: 'Утренний план', message: `У вас ${todayLessons.length} занятий сегодня.`,
-                                type: 'morning_briefing', data: JSON.stringify({ key }), isRead: true
+                                type: 'morning_briefing', data: JSON.stringify({ key }), isRead: true,
+                                link: '/lessons?tab=upcoming'
                             }
                         })
                         notificationsCreated.push('morning_briefing')
@@ -470,7 +471,8 @@ export async function GET(request: NextRequest) {
                             await prisma.notification.create({
                                 data: {
                                     userId, title: 'Итоги дня', message: `Вы провели ${todayLessons.length} занятий и заработали ${incomeTotal} ₽.`,
-                                    type: 'evening_summary', data: JSON.stringify({ key }), isRead: true
+                                    type: 'evening_summary', data: JSON.stringify({ key }), isRead: true,
+                                    link: '/income'
                                 }
                             })
                             notificationsCreated.push('evening_summary')

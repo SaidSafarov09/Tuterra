@@ -286,7 +286,7 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
         } as any,
         include: {
             student: true,
-            group: true,
+            group: { include: { students: true } },
             subject: true,
             lessonPayments: true,
         },
@@ -298,6 +298,19 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
 
     const { notifyLessonCreated } = await import('@/lib/lesson-actions-server')
     await notifyLessonCreated(userId, lesson, false, 1, timezone)
+
+    // Also notify the student if they are linked to a user
+    if (lesson.student?.linkedUserId) {
+        await notifyLessonCreated(lesson.student.linkedUserId, lesson, false, 1, timezone)
+    }
+    // If it's a group, notify all students who have linked users
+    if (lesson.group?.students) {
+        for (const student of lesson.group.students) {
+            if (student.linkedUserId) {
+                await notifyLessonCreated(student.linkedUserId, lesson, false, 1, timezone)
+            }
+        }
+    }
 
     // Trigger referral check
     checkAndGrantInviterBonus(userId).catch(e => console.error('Referral check error:', e))
@@ -433,7 +446,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
             where: { seriesId: series.id },
             include: {
                 student: true,
-                group: true,
+                group: { include: { students: true } },
                 subject: true,
                 lessonPayments: true,
             },
@@ -446,6 +459,18 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
     if (result.firstLesson) {
         const { notifyLessonCreated } = await import('@/lib/lesson-actions-server')
         await notifyLessonCreated(userId, result.firstLesson, true, dates.length, timezone)
+
+        // Notify student or group members
+        if (result.firstLesson.student?.linkedUserId) {
+            await notifyLessonCreated(result.firstLesson.student.linkedUserId, result.firstLesson, true, dates.length, timezone)
+        }
+        if (result.firstLesson.group?.students) {
+            for (const student of result.firstLesson.group.students) {
+                if (student.linkedUserId) {
+                    await notifyLessonCreated(student.linkedUserId, result.firstLesson, true, dates.length, timezone)
+                }
+            }
+        }
         checkAndGrantInviterBonus(userId).catch(e => console.error('Referral check error:', e))
     }
 
