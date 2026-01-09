@@ -1,2 +1,0 @@
-# Этот файл просит Coolify просто скачать готовый образ
-FROM ghcr.io/saidsafarov09/tuterra:test
