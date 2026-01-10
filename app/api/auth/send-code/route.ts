@@ -43,6 +43,16 @@ export async function POST(request: NextRequest) {
             'demo@tuterra.ru',
             'test@tuterra.ru',
             'testxy@test.ru',
+            'guzel1@test.ru',
+            'guzel2@test.ru',
+            'guzel3@test.ru',
+            'guzel4@test.ru',
+            'guzel5@test.ru',
+            'guzel6@test.ru',
+            'guzel7@test.ru',
+            'guzel8@test.ru',
+            'guzel9@test.ru',
+            'guzel10@test.ru',
         ]
         const isTestEmail = testEmails.includes(email)
         const code = isTestEmail ? '111111' : generateVerificationCode(6)
