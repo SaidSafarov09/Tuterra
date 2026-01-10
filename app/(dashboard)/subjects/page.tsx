@@ -124,13 +124,16 @@ export default function SubjectsPage() {
 
     const confirmDelete = async () => {
         if (!deleteConfirm.subject) return
-        const result = await deleteSubject(deleteConfirm.subject.id)
-        if (result.success) {
-            setDeleteConfirm({ isOpen: false, subject: null })
-            if (selectedSubject?.id === deleteConfirm.subject.id) {
-                handleCloseDetailsModal()
+        const subjectToDelete = deleteConfirm.subject
+        setDeleteConfirm({ isOpen: false, subject: null })
+        // Don't await - let it run in background
+        deleteSubject(subjectToDelete.id).then((result) => {
+            if (result.success) {
+                if (selectedSubject?.id === subjectToDelete.id) {
+                    handleCloseDetailsModal()
+                }
             }
-        }
+        })
     }
 
     const handleAddStudent = async (mode: 'create' | 'link', data: any) => {

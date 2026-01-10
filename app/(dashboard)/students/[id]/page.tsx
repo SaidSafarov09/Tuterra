@@ -83,13 +83,10 @@ export default function StudentDetailPage({
 
     isEditLessonModalOpen,
     setIsEditLessonModalOpen,
-    deleteLessonConfirm,
-    setDeleteLessonConfirm,
     unlinkStudentConfirm,
     setUnlinkStudentConfirm,
     handleUnlinkStudent,
     handleUpdateLesson,
-    confirmDeleteLesson,
     isGroupPaymentModalOpen,
     setIsGroupPaymentModalOpen,
     paymentLessonId,
@@ -280,16 +277,7 @@ export default function StudentDetailPage({
         variant="danger"
       />
 
-      <ConfirmDialog
-        isOpen={!!deleteLessonConfirm}
-        onClose={() => setDeleteLessonConfirm(null)}
-        onConfirm={confirmDeleteLesson}
-        title="Удалить занятие?"
-        message="Вы уверены, что хотите удалить это занятие?"
-        confirmText="Удалить"
-        cancelText="Отмена"
-        variant="danger"
-      />
+
 
       <ConfirmDialog
         isOpen={unlinkStudentConfirm}

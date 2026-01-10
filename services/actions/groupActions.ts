@@ -1,6 +1,7 @@
 import { toast } from 'sonner'
 import { groupsApi } from '@/services/api'
 import { Group } from '@/types'
+import { deleteWithUndo } from '@/lib/undo'
 
 export async function fetchGroups(): Promise<Group[]> {
     try {
@@ -68,14 +69,22 @@ export async function updateGroup(
 }
 
 export async function deleteGroup(id: string): Promise<boolean> {
-    try {
-        await groupsApi.delete(id)
-        toast.success('Группа удалена')
-        return true
-    } catch (error) {
-        toast.error('Ошибка при удалении группы')
-        return false
-    }
+    const result = await deleteWithUndo(
+        async () => {
+            try {
+                await groupsApi.delete(id)
+                toast.success('Группа удалена')
+                return true
+            } catch (error) {
+                toast.error('Ошибка при удалении группы')
+                return false
+            }
+        },
+        {
+            message: 'Удаление группы...'
+        }
+    )
+    return !!result
 }
 
 export async function linkStudentToGroup(groupId: string, studentId: string): Promise<boolean> {

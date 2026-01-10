@@ -176,3 +176,34 @@ section {
   padding-left: max(5%, 20px);
   padding-right: max(5%, 20px);
 }
+
+/* Toast Action Button Styling */
+[data-sonner-toast][data-type="warning"] button[data-button] {
+  background-color: var(--warning) !important;
+  color: white !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  transition: opacity 0.2s ease !important;
+}
+
+[data-sonner-toast][data-type="warning"] button[data-button]:hover {
+  opacity: 0.9 !important;
+}
+
+[data-sonner-toast][data-type="error"] button[data-button] {
+  background-color: var(--error) !important;
+  color: white !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  transition: opacity 0.2s ease !important;
+}
+
+[data-sonner-toast][data-type="error"] button[data-button]:hover {
+  opacity: 0.9 !important;
+}

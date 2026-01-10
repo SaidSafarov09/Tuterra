@@ -3,6 +3,7 @@ import { studentsApi } from '@/services/api'
 import { STUDENT_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages'
 import { Student } from '@/types'
 import { ContactType } from '@/lib/contactUtils'
+import { deleteWithUndo } from '@/lib/undo'
 
 export async function fetchStudent(studentId: string): Promise<Student | null> {
     try {
@@ -76,14 +77,22 @@ export async function updateStudent(
 }
 
 export async function deleteStudent(studentId: string): Promise<boolean> {
-    try {
-        await studentsApi.delete(studentId)
-        toast.success(STUDENT_MESSAGES.DELETED)
-        return true
-    } catch (error) {
-        toast.error(STUDENT_MESSAGES.DELETE_ERROR)
-        return false
-    }
+    const result = await deleteWithUndo(
+        async () => {
+            try {
+                await studentsApi.delete(studentId)
+                toast.success(STUDENT_MESSAGES.DELETED)
+                return true
+            } catch (error) {
+                toast.error(STUDENT_MESSAGES.DELETE_ERROR)
+                return false
+            }
+        },
+        {
+            message: 'Удаление ученика...'
+        }
+    )
+    return !!result
 }
 
 export async function unlinkStudentFromSubjectWithLessonsNotification(
@@ -109,14 +118,14 @@ export async function unlinkStudentFromSubjectWithLessonsNotification(
             throw new Error(error.message || error.error || 'Failed to unlink student from subject')
         }
         toast.success(`Предмет "${subjectName}" удален у ученика`)
- 
+
         if (lessonsToDelete.length > 0) {
             const lessonTimes = lessonsToDelete
                 .map(lesson => new Date(lesson.date))
                 .sort((a, b) => a.getTime() - b.getTime())
                 .map(date => `• ${date.toLocaleDateString('ru-RU')} в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`)
                 .join('\n')
-            
+
             toast.info(
                 `Будущие занятия по этому предмету были автоматически удалены:\n${lessonTimes}`,
                 {
@@ -125,7 +134,7 @@ export async function unlinkStudentFromSubjectWithLessonsNotification(
                 }
             )
         }
-        
+
         return true
     } catch (error: any) {
         console.error('Unlink student from subject error:', error)

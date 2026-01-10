@@ -57,7 +57,6 @@ export function useGroupDetail(groupId: string) {
     })
 
     const [deleteGroupConfirm, setDeleteGroupConfirm] = useState(false)
-    const [deleteLessonConfirm, setDeleteLessonConfirm] = useState<string | null>(null)
     const [isGroupPaymentModalOpen, setIsGroupPaymentModalOpen] = useState(false)
     const [paymentLessonId, setPaymentLessonId] = useState<string | null>(null)
 
@@ -90,11 +89,13 @@ export function useGroupDetail(groupId: string) {
     }, [groupId])
 
     const handleDeleteGroup = async () => {
-        const success = await deleteGroup(group?.id || groupId)
-        if (success) {
-            router.push('/groups')
-        }
         setDeleteGroupConfirm(false)
+        // Don't await - let it run in background
+        deleteGroup(group?.id || groupId).then((success) => {
+            if (success) {
+                router.push('/groups')
+            }
+        })
     }
 
     const handleUpdateGroup = async () => {
@@ -186,17 +187,10 @@ export function useGroupDetail(groupId: string) {
     }
 
     const handleDeleteLesson = async (lessonId: string) => {
-        setDeleteLessonConfirm(lessonId)
-    }
-
-    const confirmDeleteLesson = async () => {
-        if (!deleteLessonConfirm) return
-
-        const success = await deleteLesson(deleteLessonConfirm)
+        const success = await deleteLesson(lessonId)
         if (success) {
             await fetchGroup()
         }
-        setDeleteLessonConfirm(null)
     }
 
     const handleTogglePaidStatus = async (lessonId: string, isPaid: boolean) => {
@@ -322,13 +316,11 @@ export function useGroupDetail(groupId: string) {
         lessonFormData, setLessonFormData,
 
         deleteGroupConfirm, setDeleteGroupConfirm,
-        deleteLessonConfirm, setDeleteLessonConfirm,
 
         handleDeleteGroup,
         handleUpdateGroup,
         handleCreateLesson,
         handleUpdateLesson,
-        confirmDeleteLesson,
         handleEditLesson,
         handleDeleteLesson,
         handleTogglePaidStatus,

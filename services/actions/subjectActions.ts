@@ -2,6 +2,7 @@ import { toast } from 'sonner'
 import { subjectsApi } from '@/services/api'
 import { SUBJECT_MESSAGES, STUDENT_MESSAGES, VALIDATION_MESSAGES, createSubjectCreatedMessage } from '@/constants/messages'
 import { Subject } from '@/types'
+import { deleteWithUndo } from '@/lib/undo'
 
 export async function fetchSubject(subjectId: string): Promise<Subject | null> {
     try {
@@ -71,20 +72,28 @@ export async function deleteSubject(subjectId: string): Promise<{
     success: boolean
     deletedLessonsCount?: number
 }> {
-    try {
-        const result = await subjectsApi.delete(subjectId)
+    const result = await deleteWithUndo(
+        async () => {
+            try {
+                const result = await subjectsApi.delete(subjectId)
 
-        if (result.deletedLessonsCount && result.deletedLessonsCount > 0) {
-            toast.success(SUBJECT_MESSAGES.DELETED_WITH_LESSONS(result.deletedLessonsCount))
-        } else {
-            toast.success(SUBJECT_MESSAGES.DELETED)
+                if (result.deletedLessonsCount && result.deletedLessonsCount > 0) {
+                    toast.success(SUBJECT_MESSAGES.DELETED_WITH_LESSONS(result.deletedLessonsCount))
+                } else {
+                    toast.success(SUBJECT_MESSAGES.DELETED)
+                }
+
+                return result
+            } catch (error) {
+                toast.error(SUBJECT_MESSAGES.DELETE_ERROR)
+                return { success: false }
+            }
+        },
+        {
+            message: 'Удаление предмета...'
         }
-
-        return result
-    } catch (error) {
-        toast.error(SUBJECT_MESSAGES.DELETE_ERROR)
-        return { success: false }
-    }
+    )
+    return result || { success: false }
 }
 
 export async function linkStudentToSubject(

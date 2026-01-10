@@ -48,13 +48,11 @@ export default function GroupDetailPage({
         lessonFormData, setLessonFormData,
 
         deleteGroupConfirm, setDeleteGroupConfirm,
-        deleteLessonConfirm, setDeleteLessonConfirm,
 
         handleDeleteGroup,
         handleUpdateGroup,
         handleCreateLesson,
         handleUpdateLesson,
-        confirmDeleteLesson,
         handleEditLesson,
         handleDeleteLesson,
         handleTogglePaidStatus,
@@ -146,16 +144,7 @@ export default function GroupDetailPage({
                 variant="danger"
             />
 
-            <ConfirmDialog
-                isOpen={!!deleteLessonConfirm}
-                onClose={() => setDeleteLessonConfirm(null)}
-                onConfirm={confirmDeleteLesson}
-                title="Удалить занятие?"
-                message="Вы уверены, что хотите удалить это занятие?"
-                confirmText="Удалить"
-                cancelText="Отмена"
-                variant="danger"
-            />
+
 
             <RescheduleModal
                 isOpen={isRescheduleModalOpen}

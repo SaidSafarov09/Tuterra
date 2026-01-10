@@ -35,7 +35,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     const { id } = usePromise(params)
     const [lesson, setLesson] = useState<Lesson | null>(null)
     const [isLoading, setIsLoading] = useState(true)
-    const [deleteConfirm, setDeleteConfirm] = useState(false)
     const [cancelConfirm, setCancelConfirm] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
@@ -178,7 +177,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     }
 
     const handleDelete = async () => {
-        setDeleteConfirm(false)
         await deleteLesson(id)
         router.push('/lessons')
     }
@@ -351,7 +349,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                         onToggleCancel={() => setCancelConfirm(true)}
                         onReschedule={() => lesson && handleRescheduleLesson(lesson)}
                         onEdit={handleEditClick}
-                        onDelete={() => setDeleteConfirm(true)}
+                        onDelete={handleDelete}
                         isStudentView={isStudent}
                         isLoading={isActionLoading}
                     />
@@ -375,16 +373,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 handleChange={handleChange}
             />
 
-            <ConfirmDialog
-                isOpen={deleteConfirm}
-                onClose={() => setDeleteConfirm(false)}
-                onConfirm={handleDelete}
-                title="Удалить занятие?"
-                message="Вы уверены, что хотите удалить это занятие? Это действие нельзя отменить."
-                confirmText="Удалить"
-                cancelText="Отмена"
-                variant="danger"
-            />
+
 
             <ConfirmDialog
                 isOpen={cancelConfirm}

@@ -81,23 +81,35 @@ export function useLessonActions(onUpdate?: () => void, isStudent = false) {
     }
 
     const deleteLesson = async (lessonId: string, scope: 'single' | 'series' = 'single') => {
-        setIsLoading(true)
-        try {
-            const response = await fetch(`/api/lessons/${lessonId}?scope=${scope}`, {
-                method: 'DELETE',
-            })
+        const { deleteWithUndo } = await import('@/lib/undo')
 
-            if (!response.ok) {
-                throw new Error('Failed to delete lesson')
+        const result = await deleteWithUndo(
+            async () => {
+                try {
+                    const response = await fetch(`/api/lessons/${lessonId}?scope=${scope}`, {
+                        method: 'DELETE',
+                    })
+
+                    if (!response.ok) {
+                        throw new Error('Failed to delete lesson')
+                    }
+
+                    toast.success(scope === 'series' ? 'Серия занятий удалена' : 'Занятие удалено')
+                    if (onUpdate) onUpdate()
+                    return true
+                } catch (error) {
+                    toast.error('Не удалось удалить занятие')
+                    return false
+                }
+            },
+            {
+                message: scope === 'series'
+                    ? 'Удаление серии занятий...'
+                    : 'Удаление занятия...'
             }
+        )
 
-            toast.success(scope === 'series' ? 'Серия занятий удалена' : 'Занятие удалено')
-            if (onUpdate) onUpdate()
-        } catch (error) {
-            toast.error('Не удалось удалить занятие')
-        } finally {
-            setIsLoading(false)
-        }
+        return !!result
     }
 
     const handleRescheduleLesson = (lesson: Lesson) => {

@@ -2,6 +2,7 @@ import { toast } from 'sonner'
 import { lessonsApi } from '@/services/api'
 import { LESSON_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages'
 import { Lesson } from '@/types'
+import { deleteWithUndo } from '@/lib/undo'
 
 export async function fetchLesson(lessonId: string): Promise<Lesson | null> {
     try {
@@ -144,14 +145,22 @@ export async function updateLesson(
 }
 
 export async function deleteLesson(lessonId: string): Promise<boolean> {
-    try {
-        await lessonsApi.delete(lessonId)
-        toast.success(LESSON_MESSAGES.DELETED)
-        return true
-    } catch (error) {
-        toast.error(LESSON_MESSAGES.DELETE_ERROR)
-        return false
-    }
+    const result = await deleteWithUndo(
+        async () => {
+            try {
+                await lessonsApi.delete(lessonId)
+                toast.success(LESSON_MESSAGES.DELETED)
+                return true
+            } catch (error) {
+                toast.error(LESSON_MESSAGES.DELETE_ERROR)
+                return false
+            }
+        },
+        {
+            message: 'Удаление занятия...'
+        }
+    )
+    return !!result
 }
 
 export async function toggleLessonPaid(

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Toaster } from 'sonner'
+import { ToasterProvider } from '@/components/providers/ToasterProvider'
 import './globals.css'
 
 export const viewport: Viewport = {
@@ -62,7 +62,7 @@ export default function RootLayout({
                         <ProgressBar />
                     </Suspense>
                     {children}
-                    <Toaster position="bottom-right" richColors />
+                    <ToasterProvider />
                 </ThemeProvider>
             </body>
         </html>

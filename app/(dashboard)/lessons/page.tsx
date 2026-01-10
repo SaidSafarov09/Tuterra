@@ -242,8 +242,9 @@ function LessonsContent() {
 
     const handleConfirmDelete = async (scope: 'single' | 'series') => {
         if (deleteConfirm.lesson) {
-            await deleteLesson(deleteConfirm.lesson.id, scope)
+            const lessonId = deleteConfirm.lesson.id
             setDeleteConfirm({ isOpen: false, lesson: null })
+            await deleteLesson(lessonId, scope)
         }
     }
 

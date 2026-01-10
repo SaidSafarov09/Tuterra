@@ -75,7 +75,6 @@ export function useStudentDetail(studentId: string) {
     const [deleteStudentConfirm, setDeleteStudentConfirm] = useState(false)
     const [deleteSubjectConfirm, setDeleteSubjectConfirm] = useState<string | null>(null)
     const [deleteGroupConfirm, setDeleteGroupConfirm] = useState<string | null>(null)
-    const [deleteLessonConfirm, setDeleteLessonConfirm] = useState<string | null>(null)
     const [unlinkStudentConfirm, setUnlinkStudentConfirm] = useState(false)
 
     const fetchStudent = async () => {
@@ -126,11 +125,13 @@ export function useStudentDetail(studentId: string) {
     }, [studentId])
 
     const handleDeleteStudent = async () => {
-        const success = await deleteStudent(student?.id || studentId)
-        if (success) {
-            router.push('/students')
-        }
         setDeleteStudentConfirm(false)
+        // Don't await - let it run in background
+        deleteStudent(student?.id || studentId).then((success) => {
+            if (success) {
+                router.push('/students')
+            }
+        })
     }
 
     const handleDeleteSubject = async () => {
@@ -138,11 +139,13 @@ export function useStudentDetail(studentId: string) {
 
         const subject = allSubjects.find(s => s.id === deleteSubjectConfirm)
         const subjectName = subject?.name || 'предмет'
-
         const studentLessons = student?.lessons || []
+        const subjectId = deleteSubjectConfirm
+
+        setDeleteSubjectConfirm(null)
 
         const success = await unlinkStudentFromSubjectWithLessonsNotification(
-            deleteSubjectConfirm,
+            subjectId,
             student?.id || studentId,
             subjectName,
             studentLessons
@@ -152,7 +155,6 @@ export function useStudentDetail(studentId: string) {
             await fetchStudent()
             await loadSubjects()
         }
-        setDeleteSubjectConfirm(null)
     }
 
     const handleUpdateStudent = async () => {
@@ -201,13 +203,15 @@ export function useStudentDetail(studentId: string) {
     const handleDeleteGroup = async () => {
         if (!deleteGroupConfirm) return
 
-        const success = await unlinkStudentFromGroup(deleteGroupConfirm, student?.id || studentId)
+        const groupId = deleteGroupConfirm
+        setDeleteGroupConfirm(null)
+
+        const success = await unlinkStudentFromGroup(groupId, student?.id || studentId)
 
         if (success) {
             await fetchStudent()
             await loadGroups()
         }
-        setDeleteGroupConfirm(null)
     }
 
     const handleCreateLesson = async () => {
@@ -300,17 +304,10 @@ export function useStudentDetail(studentId: string) {
     }
 
     const handleDeleteLesson = async (lessonId: string) => {
-        setDeleteLessonConfirm(lessonId)
-    }
-
-    const confirmDeleteLesson = async () => {
-        if (!deleteLessonConfirm) return
-
-        const success = await deleteLesson(deleteLessonConfirm)
+        const success = await deleteLesson(lessonId)
         if (success) {
             await fetchStudent()
         }
-        setDeleteLessonConfirm(null)
     }
 
     const handleTogglePaidStatus = async (lessonId: string, isPaid: boolean) => {
@@ -446,7 +443,6 @@ export function useStudentDetail(studentId: string) {
         deleteStudentConfirm, setDeleteStudentConfirm,
         deleteSubjectConfirm, setDeleteSubjectConfirm,
         deleteGroupConfirm, setDeleteGroupConfirm,
-        deleteLessonConfirm, setDeleteLessonConfirm,
         unlinkStudentConfirm, setUnlinkStudentConfirm,
 
 
@@ -459,7 +455,6 @@ export function useStudentDetail(studentId: string) {
         handleAddGroup,
         handleCreateLesson,
         handleUpdateLesson,
-        confirmDeleteLesson,
         handleCreateSubject,
         handleEditLesson,
         handleDeleteLesson,
