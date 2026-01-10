@@ -66,9 +66,11 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const { sessionId, code, role, referralCode: refCode } = body
 
-        // Handle Partner Referral Cookie
+        // Handle Referral Cookies
         const requestCookies = await cookies()
         const partnerRef = requestCookies.get('partner_ref')?.value || null
+        const teacherRef = requestCookies.get('referral-code')?.value || null
+        const studentRef = requestCookies.get('student-referral-code')?.value || null
 
         if (!sessionId || !code) {
             return NextResponse.json(
@@ -120,6 +122,7 @@ export async function POST(request: NextRequest) {
                         lastName: isStudent ? 'Ученик' : '',
                         name: emailSession.email.split('@')[0],
                         plan: (isStudent ? null : 'free') as any,
+                        referralCode: !isStudent ? Math.random().toString(36).substring(2, 8).toUpperCase() : null,
                     },
                 })
                 await createWelcomeNotifications(user.id)
@@ -127,12 +130,22 @@ export async function POST(request: NextRequest) {
                 // Existing User via Email
                 user = await prisma.user.update({
                     where: { id: user.id },
-                    data: { emailVerified: true },
+                    data: {
+                        emailVerified: true,
+                        referralCode: user.referralCode || (user.role === 'teacher' ? Math.random().toString(36).substring(2, 8).toUpperCase() : null)
+                    },
                 })
             }
 
             // Centralized Partner/Referral Linking for Email Flow
-            const finalRefCode = (refCode || partnerRef)?.toString().trim()
+            const sanitizeCode = (c: any) => {
+                const s = c?.toString().trim()
+                if (!s || s === 'null' || s === 'undefined' || s.length < 3) return null
+                return s
+            }
+
+            const finalRefCode = sanitizeCode(refCode) || sanitizeCode(teacherRef) || sanitizeCode(partnerRef) || sanitizeCode(studentRef)
+
             if (finalRefCode && !user.invitedById && !(user as any).invitedByPartnerCode && !((user as any).partnerPaymentsCount > 0)) {
                 const partner = await prisma.user.findFirst({
                     where: {
@@ -196,16 +209,30 @@ export async function POST(request: NextRequest) {
                         lastName: isStudent ? 'Ученик' : 'Пользователь',
                         name: 'Новый Пользователь',
                         plan: (isStudent ? null : 'free') as any,
+                        referralCode: !isStudent ? Math.random().toString(36).substring(2, 8).toUpperCase() : null,
                     } as any,
                 })
                 await createWelcomeNotifications(user.id)
             } else {
                 // Existing User via Phone
-                user = await prisma.user.update({ where: { id: user.id }, data: { phoneVerified: true } })
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        phoneVerified: true,
+                        referralCode: user.referralCode || (user.role === 'teacher' ? Math.random().toString(36).substring(2, 8).toUpperCase() : null)
+                    }
+                })
             }
 
             // Centralized Partner/Referral Linking for Phone Flow
-            const finalRefCode = (refCode || partnerRef)?.toString().trim()
+            const sanitizeCode = (c: any) => {
+                const s = c?.toString().trim()
+                if (!s || s === 'null' || s === 'undefined' || s.length < 3) return null
+                return s
+            }
+
+            const finalRefCode = sanitizeCode(refCode) || sanitizeCode(teacherRef) || sanitizeCode(partnerRef) || sanitizeCode(studentRef)
+
             if (finalRefCode && !user.invitedById && !(user as any).invitedByPartnerCode && !((user as any).partnerPaymentsCount > 0)) {
                 const partner = await prisma.user.findFirst({
                     where: {

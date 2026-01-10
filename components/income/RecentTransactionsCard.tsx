@@ -4,6 +4,8 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 import { HistoryIcon, UserIcon, ArrowRightIcon, UsersGroupIcon } from '@/components/icons/Icons'
 import styles from '../../app/(dashboard)/income/page.module.scss'
+import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 
 interface Transaction {
     id: string
@@ -33,6 +35,7 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
     isLocked
 }) => {
     const router = useRouter()
+    const { user } = useAuthStore()
 
     return (
         <div className={styles.statCard} style={isLocked ? { opacity: 0.7 } : {}}>
@@ -83,7 +86,7 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                                 className={styles.transactionAmount}
                                 style={Number(tx.price) === 0 ? { color: 'var(--primary)' } : {}}
                             >
-                                {Number(tx.price) === 0 ? 'Бесплатно' : `+${tx.price} ₽`}
+                                {Number(tx.price) === 0 ? 'Бесплатно' : `+${formatCurrency(tx.price, user?.currency)}`}
                             </span>
                         </div>
                     ))

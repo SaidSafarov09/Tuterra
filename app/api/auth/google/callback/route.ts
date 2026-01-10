@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { findOrCreateOAuthUser, createAuthSession } from '@/lib/oauth'
+import { prisma } from '@/lib/prisma'
 
 interface GoogleUser {
     sub: string // Google user ID
@@ -55,34 +56,60 @@ export async function GET(req: NextRequest) {
             providerId: googleUser.sub,
         })
 
-        // Handle referral linking
+        // Handle referral linking (Unified logic)
         const { cookies } = await import('next/headers')
         const cookieStore = await cookies()
-        const studentRef = cookieStore.get('student-referral-code')?.value
-        const teacherRef = cookieStore.get('referral-code')?.value
 
-        if (studentRef || teacherRef) {
+        const sanitizeCode = (c: any) => {
+            const s = c?.toString().trim()
+            if (!s || s === 'null' || s === 'undefined' || s.length < 3) return null
+            return s
+        }
+
+        const studentRef = sanitizeCode(cookieStore.get('student-referral-code')?.value)
+        const teacherRef = sanitizeCode(cookieStore.get('referral-code')?.value)
+        const partnerRef = sanitizeCode(cookieStore.get('partner_ref')?.value)
+
+        const finalRefCode = teacherRef || partnerRef || studentRef
+
+        if (finalRefCode && !user.invitedById && !(user as any).invitedByPartnerCode && !((user as any).partnerPaymentsCount > 0)) {
             try {
                 const { linkStudentToTutor } = await import('@/lib/studentConnection')
                 const { processTeacherReferral } = await import('@/lib/referral')
 
-                // If specialized student link OR user explicitly chose student role
-                if (studentRef) {
-                    await linkStudentToTutor(user.id, studentRef)
-                } else if (teacherRef) {
-                    await processTeacherReferral(user.id, teacherRef)
+                const partner = await prisma.user.findFirst({
+                    where: {
+                        OR: [
+                            { partnerCode: finalRefCode.toUpperCase() },
+                            { partnerCode: finalRefCode },
+                            { partnerCode: finalRefCode.toLowerCase() }
+                        ],
+                        isPartner: true
+                    }
+                })
+
+                if (partner && partner.id !== user.id) {
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: {
+                            invitedByPartnerCode: partner.partnerCode,
+                            invitedByPartnerAt: new Date()
+                        } as any
+                    })
+                } else if (!partner) {
+                    if (user.role === 'student') {
+                        await linkStudentToTutor(user.id, finalRefCode)
+                    } else {
+                        await processTeacherReferral(user.id, finalRefCode)
+                    }
                 }
             } catch (e: any) {
-                console.error('Referral linking error during Google auth:', e)
-                if (e.message === 'ACCOUNT_IS_TEACHER') {
-                    const response = NextResponse.redirect(new URL('/auth', req.url))
-                    response.cookies.set('auth_error', 'account_is_teacher', { maxAge: 10, path: '/' })
-                    return response
-                }
+                console.error('Referral linking error during OAuth:', e)
             }
             // Clear the referral cookies
             cookieStore.delete('referral-code')
             cookieStore.delete('student-referral-code')
+            cookieStore.delete('partner_ref')
         }
 
         return createAuthSession(user.id, user.phone || '', req.url, user.role)

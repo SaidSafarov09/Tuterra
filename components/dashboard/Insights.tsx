@@ -13,6 +13,7 @@ import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { TrendingUpIcon } from '@/components/icons/Icons'
+import { formatCurrency } from '@/lib/formatUtils'
 
 interface InsightsProps {
     stats: DashboardStats
@@ -62,7 +63,7 @@ export const Insights: React.FC<InsightsProps> = ({ stats }) => {
             list.push({
                 id: 'projection',
                 title: 'Прогноз дохода',
-                text: `При текущем темпе ваш доход в этом месяце может составить ~${projected.toLocaleString()}₽.`,
+                text: `При текущем темпе ваш доход в этом месяце может составить ~${formatCurrency(projected, user?.currency)}.`,
                 icon: <TrendingUpIcon size={20} />,
                 color: 'green',
                 action: () => router.push('/income'),

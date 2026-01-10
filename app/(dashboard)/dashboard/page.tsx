@@ -355,7 +355,7 @@ function DashboardContent() {
                                 <StatCard
                                     icon={<MoneyIcon size={32} color="#14B8A6" />}
                                     label={<>Доход{isMobile ? <br /> : ''} за месяц</>}
-                                    value={`${stats?.monthlyIncome || 0} ₽`}
+                                    value={`${stats?.monthlyIncome || 0} ${user?.currency}`}
                                     href="/income"
                                 />
                             )}

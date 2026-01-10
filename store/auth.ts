@@ -10,6 +10,8 @@ interface User {
     phone: string | null
     avatar: string | null
     birthDate: string | null
+    country: string | null
+    currency?: string
     region: string | null
     onboardingCompleted: boolean
     showProgressBlock?: boolean

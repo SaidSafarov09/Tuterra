@@ -5,6 +5,7 @@ import { DurationSelector } from '@/components/lessons/DurationSelector'
 import { ClockIcon } from '@/components/icons/Icons'
 import { formatLessonEndTime } from '@/lib/lessonTimeUtils'
 import styles from './LessonForm.module.scss'
+import { useAuthStore } from '@/store/auth'
 
 interface LessonFormPriceDurationProps {
     price: string
@@ -35,6 +36,8 @@ export function LessonFormPriceDuration({
     disabled,
     isGroup
 }: LessonFormPriceDurationProps) {
+    const { user } = useAuthStore()
+    const currency = user?.currency || '₽'
     return (
         <>
             <TrialToggle
@@ -47,7 +50,7 @@ export function LessonFormPriceDuration({
 
             <div className={styles.priceRow}>
                 <Input
-                    label={isGroup ? "Стоимость с ученика (₽)" : "Стоимость (₽)"}
+                    label={isGroup ? `Стоимость с ученика (${currency})` : `Стоимость (${currency})`}
                     type="number"
                     value={price}
                     onChange={(e) => onPriceChange(e.target.value)}
@@ -73,7 +76,7 @@ export function LessonFormPriceDuration({
 
             {(price === '0' || isTrial) && activeTab === 'recurring' && onSeriesPriceChange && (
                 <Input
-                    label="Стоимость следующих занятий (₽)"
+                    label={`Стоимость следующих занятий (${currency})`}
                     type="number"
                     value={seriesPrice || ''}
                     onChange={(e) => onSeriesPriceChange(e.target.value)}

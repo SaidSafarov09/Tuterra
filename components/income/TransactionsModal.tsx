@@ -10,6 +10,8 @@ import { Dropdown } from '@/components/ui/Dropdown'
 import { incomeApi } from '@/services/api'
 import { toast } from 'sonner'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 import styles from './TransactionsModal.module.scss'
 
 interface TransactionsModalProps {
@@ -19,6 +21,7 @@ interface TransactionsModalProps {
 }
 
 const TransactionItem = ({ tx, onClose, router }: { tx: any, onClose: () => void, router: any }) => {
+    const { user } = useAuthStore()
     const [isExpanded, setIsExpanded] = useState(false)
     const hasParticipants = tx.group && tx.lessonPayments && tx.lessonPayments.length > 0
     const visibleParticipants = isExpanded ? tx.lessonPayments : tx.lessonPayments?.slice(0, 3)
@@ -63,7 +66,7 @@ const TransactionItem = ({ tx, onClose, router }: { tx: any, onClose: () => void
                     className={styles.transactionAmount}
                     style={Number(tx.price) === 0 ? { color: 'var(--primary)' } : {}}
                 >
-                    {Number(tx.price) === 0 ? 'Бесплатно' : `+${tx.price} ₽`}
+                    {Number(tx.price) === 0 ? 'Бесплатно' : `+${formatCurrency(tx.price, user?.currency)}`}
                 </span>
             </div>
 
@@ -90,7 +93,7 @@ const TransactionItem = ({ tx, onClose, router }: { tx: any, onClose: () => void
                                         className={styles.participantAmount}
                                         style={Number(tx.price) === 0 ? { color: 'var(--primary)' } : {}}
                                     >
-                                        {Number(tx.price) === 0 ? 'Бесплатно' : `+${tx.price / (tx.lessonPayments?.filter((lp: any) => lp.hasPaid).length || 1)} ₽`}
+                                        {Number(tx.price) === 0 ? 'Бесплатно' : `+${formatCurrency(tx.price / (tx.lessonPayments?.filter((lp: any) => lp.hasPaid).length || 1), user?.currency)}`}
                                     </span>
                                 ) : (
                                     <span className={isFutureOrOngoing ? styles.pendingLabel : styles.debtLabel}>

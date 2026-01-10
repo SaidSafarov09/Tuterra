@@ -25,15 +25,32 @@ export async function GET(request: NextRequest) {
             }
         });
 
+        if (partner) {
+            return NextResponse.json({
+                valid: true,
+                code: partner.partnerCode,
+                discount: 20 // Standard 20% discount for now
+            });
+        }
 
-        if (!partner) {
+        const teacher = await prisma.user.findFirst({
+            where: {
+                referralCode: code.trim().toUpperCase()
+            },
+            select: {
+                referralCode: true
+            }
+        });
+
+
+        if (!teacher) {
             return NextResponse.json({ valid: false, error: 'Промокод не найден' });
         }
 
         return NextResponse.json({
             valid: true,
-            code: partner.partnerCode,
-            discount: 20 // Standard 20% discount for now
+            code: teacher.referralCode,
+            discount: 0 // Regular referrals might not have a discount on sub, just grant PRO
         });
     } catch (error) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

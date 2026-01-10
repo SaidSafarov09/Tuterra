@@ -6,6 +6,8 @@ import { ru } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { AlertIcon } from '@/components/icons/Icons'
 import styles from './DebtsBlock.module.scss'
+import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 
 interface Debt {
     id: string
@@ -28,6 +30,7 @@ interface DebtsBlockProps {
 
 export const DebtsBlock: React.FC<DebtsBlockProps> = ({ debts }) => {
     const router = useRouter()
+    const { user } = useAuthStore()
 
     if (!debts || debts.length === 0) return null
 
@@ -58,7 +61,7 @@ export const DebtsBlock: React.FC<DebtsBlockProps> = ({ debts }) => {
                             {Number(debt.amount) === 0 ? (
                                 <span style={{ color: 'var(--primary)' }}>Бесплатно</span>
                             ) : (
-                                `${debt.amount.toLocaleString()} ₽`
+                                formatCurrency(debt.amount, user?.currency)
                             )}
                         </div>
                     </div>

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import styles from './SubscriptionSettings.module.scss';
 
 import { PartnerPromoInput } from '@/components/ui/PartnerPromoInput';
+import { formatCurrency } from '@/lib/formatUtils';
 
 export const SubscriptionSettings: React.FC = () => {
     const { user } = useAuthStore();
@@ -51,9 +52,27 @@ export const SubscriptionSettings: React.FC = () => {
         'Отсутствие любых лимитов платформы'
     ];
 
+    const isKz = user?.country === 'KZ'
+    const isBy = user?.country === 'BY'
+    const payCurrency = isKz ? '₸' : isBy ? 'BYN' : '₽'
+
     const PLANS = [
-        { id: 'month', label: 'Месяц', price: 490, oldPrice: null, note: 'Базовый тариф', savings: null },
-        { id: 'year', label: 'Год', price: 3990, oldPrice: 5880, note: '332 ₽ / мес', savings: 'Выгода 32%' }
+        {
+            id: 'month',
+            label: 'Месяц',
+            price: isKz ? 3200 : isBy ? 18 : 490,
+            oldPrice: null,
+            note: 'Базовый тариф',
+            savings: null
+        },
+        {
+            id: 'year',
+            label: 'Год',
+            price: isKz ? 26000 : isBy ? 147 : 3990,
+            oldPrice: isKz ? 38000 : isBy ? 217 : 5880,
+            note: isKz ? '2166 / мес' : isBy ? '12 / мес' : '332 / мес',
+            savings: 'Выгода 32%'
+        }
     ];
 
     const handleUpgrade = async () => {
@@ -167,14 +186,14 @@ export const SubscriptionSettings: React.FC = () => {
                                         )}
                                         <div className={styles.planOptionLabel}>{plan.label}</div>
                                         <div className={styles.planOptionPrice}>
-                                            <span>{getDisplayPrice(plan.price).toLocaleString()} ₽</span>
-                                            {hasPartnerDiscount && <span className={styles.oldPrice}>{plan.price.toLocaleString()} ₽</span>}
-                                            {!hasPartnerDiscount && plan.oldPrice && <span className={styles.oldPrice}>{plan.oldPrice}</span>}
+                                            <span>{formatCurrency(getDisplayPrice(plan.price), payCurrency)}</span>
+                                            {hasPartnerDiscount && <span className={styles.oldPrice}>{formatCurrency(plan.price, payCurrency)}</span>}
+                                            {!hasPartnerDiscount && plan.oldPrice && <span className={styles.oldPrice}>{formatCurrency(plan.oldPrice, payCurrency)}</span>}
                                         </div>
                                         <div className={styles.planOptionNote}>
                                             {hasPartnerDiscount && plan.id === 'year'
-                                                ? `${Math.round(getDisplayPrice(plan.price) / 12)} ₽ / мес`
-                                                : plan.note}
+                                                ? `${formatCurrency(Math.round(getDisplayPrice(plan.price) / 12), payCurrency)} / мес`
+                                                : (plan.id === 'year' ? `${formatCurrency(Math.round(plan.price / 12), payCurrency)} / мес` : plan.note)}
                                         </div>
                                     </div>
                                 ))}

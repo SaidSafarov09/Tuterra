@@ -8,6 +8,7 @@ import styles from './UpgradeToProModal.module.scss'
 import { LimitType, LIMIT_MESSAGES } from '@/lib/limits'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 
 import { PartnerPromoInput } from '@/components/ui/PartnerPromoInput'
 
@@ -28,22 +29,31 @@ const PRO_FEATURES = [
     { icon: CheckCircle2, text: 'Неограниченные планы обучения для учеников ' }
 ]
 
-const PLANS = {
-    month: {
-        id: 'month',
-        price: 490,
-        oldPrice: null,
-        savings: null,
-        label: 'Месяц',
-        note: 'Оплата раз в месяц'
-    },
-    year: {
-        id: 'year',
-        price: 3990,
-        oldPrice: 5880,
-        savings: 'Выгода 32%',
-        label: 'Год',
-        note: '332 ₽ / мес'
+const getPlans = (country?: string | null) => {
+    const isKz = country === 'KZ'
+    const isBy = country === 'BY'
+    const currency = isKz ? '₸' : isBy ? 'BYN' : '₽'
+
+    return {
+        currency,
+        plans: {
+            month: {
+                id: 'month',
+                price: isKz ? 3200 : isBy ? 18 : 490,
+                oldPrice: null,
+                savings: null,
+                label: 'Месяц',
+                note: 'Оплата раз в месяц'
+            },
+            year: {
+                id: 'year',
+                price: isKz ? 26000 : isBy ? 147 : 3990,
+                oldPrice: isKz ? 38000 : isBy ? 217 : 5880,
+                savings: 'Выгода 32%',
+                label: 'Год',
+                note: isKz ? '2166 / мес' : isBy ? '12 / мес' : '332 / мес'
+            }
+        }
     }
 }
 
@@ -55,6 +65,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
     customMessage
 }) => {
     const { user } = useAuthStore()
+    const { plans: PLANS, currency: payCurrency } = getPlans(user?.country)
     const message = LIMIT_MESSAGES[limitType]
     const [isLoading, setIsLoading] = useState(false)
     const [selectedPlan, setSelectedPlan] = useState<'month' | 'year'>(defaultPlan)
@@ -190,22 +201,22 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                                 <div className={styles.planLabel}>{plan.id === 'year' ? 'Выгодный' : 'Базовый'}</div>
                                 <div className={styles.planPeriod}>{plan.label}</div>
                                 <div className={styles.planPrice}>
-                                    <span className={styles.amount}>{getDisplayPrice(plan.price)} ₽</span>
+                                    <span className={styles.amount}>{formatCurrency(getDisplayPrice(plan.price), payCurrency)}</span>
                                     {hasPartnerDiscount && plan.id === 'year' && (
                                         <>
-                                            <span className={styles.oldPrice}>{plan.price} ₽</span>
-                                            <span className={styles.oldPrice}>{plan.oldPrice} ₽</span>
+                                            <span className={styles.oldPrice}>{formatCurrency(plan.price, payCurrency)}</span>
+                                            <span className={styles.oldPrice}>{formatCurrency(plan.oldPrice!, payCurrency)}</span>
                                         </>
                                     )}
                                     {hasPartnerDiscount && plan.id === 'month' && (
-                                        <span className={styles.oldPrice}>{plan.price} ₽</span>
+                                        <span className={styles.oldPrice}>{formatCurrency(plan.price, payCurrency)}</span>
                                     )}
-                                    {!hasPartnerDiscount && plan.oldPrice && <span className={styles.oldPrice}>{plan.oldPrice} ₽</span>}
+                                    {!hasPartnerDiscount && plan.oldPrice && <span className={styles.oldPrice}>{formatCurrency(plan.oldPrice, payCurrency)}</span>}
                                 </div>
                                 <div className={styles.planNote}>
                                     {hasPartnerDiscount && plan.id === 'year'
-                                        ? `${Math.round(getDisplayPrice(plan.price) / 12)} ₽ / мес`
-                                        : plan.note
+                                        ? `${formatCurrency(Math.round(getDisplayPrice(plan.price) / 12), payCurrency)} / мес`
+                                        : (plan.id === 'year' ? `${formatCurrency(Math.round(plan.price / 12), payCurrency)} / мес` : plan.note)
                                     }
                                 </div>
                                 <div className={styles.radio}>
@@ -236,7 +247,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                         disabled={isLoading}
                     >
                         <Zap size={20} fill="currentColor" />
-                        {isLoading ? 'Загрузка...' : `Оплатить ${getDisplayPrice(PLANS[selectedPlan].price)} ₽`}
+                        {isLoading ? 'Загрузка...' : `Оплатить ${formatCurrency(getDisplayPrice(PLANS[selectedPlan].price), payCurrency)}`}
                     </Button>
                     <button onClick={onClose} className={styles.closeButton} disabled={isLoading}>
                         Может быть позже

@@ -16,6 +16,7 @@ model User {
   hashedPassword    String?
   phone             String?            @unique
   avatar            String?
+  country           String?
   currency          String             @default("₽")
   timezone          String             @default("Europe/Moscow")
   theme             String             @default("system")

@@ -12,6 +12,8 @@ import styles from './LessonCard.module.scss'
 import { stringToColor } from '@/lib/utils'
 import { lessonsApi } from '@/services/api'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 import { Input } from '@/components/ui/Input'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { LessonLinkSection } from '@/components/lessons/LessonLinkSection'
@@ -49,6 +51,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     isLocked,
     onLockedAction
 }) => {
+    const { user } = useAuthStore()
     const [showTopic, setShowTopic] = useState(false)
     const isMobile = useMediaQuery('(max-width: 768px)')
     const isFullyPaid = isStudentView
@@ -152,10 +155,10 @@ export const LessonCard: React.FC<LessonCardProps> = ({
                         {lesson.price === 0 ? 'Бесплатно' : (
                             <>
                                 {isStudentView
-                                    ? lesson.price
+                                    ? formatCurrency(lesson.price, user?.currency)
                                     : (lesson.group
-                                        ? (lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price
-                                        : lesson.price)} ₽
+                                        ? formatCurrency((lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price, user?.currency)
+                                        : formatCurrency(lesson.price, user?.currency))}
                             </>
                         )}
                     </div>

@@ -8,6 +8,8 @@ import { formatDuration } from '@/lib/dateUtils'
 import styles from '../../app/(dashboard)/income/page.module.scss'
 
 import { LockIcon } from '@/components/icons/Icons'
+import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 
 interface CurrentMonthCardProps {
     date: Date
@@ -34,6 +36,7 @@ export const CurrentMonthCard: React.FC<CurrentMonthCardProps> = ({
     isPro,
     onUnlock
 }) => {
+    const { user } = useAuthStore()
     return (
         <div className={styles.statCard}>
             <div className={styles.statHeader}>
@@ -44,7 +47,7 @@ export const CurrentMonthCard: React.FC<CurrentMonthCardProps> = ({
                     </div>
                 )}
             </div>
-            <div className={styles.statValue}>{income.toLocaleString()} ₽</div>
+            <div className={styles.statValue}>{formatCurrency(income, user?.currency)}</div>
             <p className={styles.statDescription}>
                 Итого заработано за {format(date, 'LLLL yyyy', { locale: ru })}
             </p>
@@ -66,7 +69,7 @@ export const CurrentMonthCard: React.FC<CurrentMonthCardProps> = ({
                     <div className={styles.statDetailItem}>
                         <span className={styles.statDetailLabel}>Средний чек:</span>
                         <span className={styles.statDetailValue}>
-                            {averageCheck > 0 ? `${averageCheck.toLocaleString()} ₽` : '—'}
+                            {averageCheck > 0 ? formatCurrency(averageCheck, user?.currency) : '—'}
                         </span>
                     </div>
                     {previousIncome > 0 && (
@@ -75,7 +78,7 @@ export const CurrentMonthCard: React.FC<CurrentMonthCardProps> = ({
                                 {isGrowth ? 'Рост' : 'Снижение'}:
                             </span>
                             <span className={`${styles.statDetailValue} ${isGrowth ? styles.growthValue : styles.declineValue}`}>
-                                {isGrowth ? '+' : '-'}{Math.abs(income - previousIncome).toLocaleString()} ₽
+                                {isGrowth ? '+' : '-'}{formatCurrency(Math.abs(income - previousIncome), user?.currency)}
                             </span>
                         </div>
                     )}

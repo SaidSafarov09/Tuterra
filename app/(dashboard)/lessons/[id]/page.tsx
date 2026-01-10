@@ -23,6 +23,7 @@ import { LessonDetailSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
 import { GroupPaymentModal } from '@/components/lessons/GroupPaymentModal'
 import { LessonLinkSection } from '@/components/lessons/LessonLinkSection'
+import { formatCurrency } from '@/lib/formatUtils'
 
 
 import { useAuthStore } from '@/store/auth'
@@ -275,10 +276,10 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                             style={{ color: Number(lesson.price) === 0 ? 'var(--primary)' : isFullyPaid ? 'var(--success)' : 'var(--text-primary)' }}
                         >
                             {isStudent
-                                ? (Number(lesson.price) === 0 ? 'Бесплатно' : `${lesson.price} ₽`)
+                                ? (Number(lesson.price) === 0 ? 'Бесплатно' : formatCurrency(lesson.price, currentUser?.currency))
                                 : (lesson.group
-                                    ? (Number(lesson.price) === 0 ? 'Бесплатно' : `${(lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price} ₽`)
-                                    : (Number(lesson.price) === 0 ? 'Бесплатно' : `${lesson.price} ₽`))}
+                                    ? (Number(lesson.price) === 0 ? 'Бесплатно' : formatCurrency((lesson.lessonPayments?.filter(p => p.hasPaid).length || 0) * lesson.price, currentUser?.currency))
+                                    : (Number(lesson.price) === 0 ? 'Бесплатно' : formatCurrency(lesson.price, currentUser?.currency)))}
                         </div>
                         <LessonBadges
                             price={lesson.price}

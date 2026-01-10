@@ -34,6 +34,7 @@ import styles from './page.module.scss'
 export default function CalendarPage() {
     const { user } = useAuthStore()
     const userBirthDate = user?.birthDate
+    const userCountry = user?.country || 'RU'
     const userRegion = user?.region
     const router = useRouter()
     const isMobile = useMediaQuery('(max-width: 768px)')
@@ -237,6 +238,7 @@ export default function CalendarPage() {
                                 lessons={lessons}
                                 onDateClick={handleDayClick}
                                 userBirthDate={userBirthDate}
+                                country={userCountry}
                                 region={userRegion}
                             />
                         </motion.div>
@@ -259,6 +261,7 @@ export default function CalendarPage() {
                     onToggleCancel={toggleCancel}
                     onReschedule={handleRescheduleLesson}
                     userBirthDate={userBirthDate}
+                    country={userCountry}
                     region={userRegion}
                     isStudentView={isStudent}
                     isLoadingAction={isActionsLoading}

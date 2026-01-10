@@ -13,16 +13,20 @@ import { ru } from 'date-fns/locale'
 import { Lesson } from '@/types'
 import { getDayInfo } from '@/lib/holidayUtils'
 import styles from '../../app/(dashboard)/calendar/page.module.scss'
+import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 
 interface CalendarGridProps {
     currentMonth: Date
     lessons: Lesson[]
     onDateClick: (date: Date) => void
     userBirthDate?: string | null
+    country?: string | null
     region?: string | null
 }
 
-export function CalendarGrid({ currentMonth, lessons, onDateClick, userBirthDate, region }: CalendarGridProps) {
+export function CalendarGrid({ currentMonth, lessons, onDateClick, userBirthDate, country, region }: CalendarGridProps) {
+    const { user } = useAuthStore()
     const monthStart = startOfMonth(currentMonth)
     const monthEnd = endOfMonth(monthStart)
     const startDate = startOfWeek(monthStart, { locale: ru })
@@ -44,7 +48,7 @@ export function CalendarGrid({ currentMonth, lessons, onDateClick, userBirthDate
                 .filter(l => l.isPaid)
                 .reduce((sum, l) => sum + l.price, 0)
 
-            const dayInfo = getDayInfo(cloneDay, userBirthDate, region)
+            const dayInfo = getDayInfo(cloneDay, userBirthDate, country || 'RU', region)
 
             days.push(
                 <div
@@ -77,7 +81,7 @@ export function CalendarGrid({ currentMonth, lessons, onDateClick, userBirthDate
                                     )}
                                 </div>
                                 {dayEarnings > 0 && (
-                                    <div className={styles.earnings}>+{dayEarnings}₽</div>
+                                    <div className={styles.earnings}>+{formatCurrency(dayEarnings, user?.currency)}</div>
                                 )}
                             </div>
                             <div className={styles.mobileIndicator} />

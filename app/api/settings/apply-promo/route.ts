@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
 
 
 
-        // 2. Get current user status to check restrictions
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: { invitedByPartnerCode: true, partnerPaymentsCount: true } as any

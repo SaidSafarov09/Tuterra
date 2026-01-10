@@ -18,6 +18,7 @@ import {
     SettingsIcon,
     LogoutIcon,
 } from '@/components/icons/Icons'
+import { formatCurrency } from '@/lib/formatUtils'
 import styles from './UserProfileModal.module.scss'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { calculateAge, getAgeString } from '@/lib/validation'
@@ -146,7 +147,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                             />
                             <StatItem
                                 label="Этот месяц"
-                                value={stats ? `${stats.monthlyIncome?.toLocaleString() || 0} ₽` : <Skeleton width={80} height={24} />}
+                                value={stats ? formatCurrency(stats.monthlyIncome || 0, user?.currency) : <Skeleton width={80} height={24} />}
                                 icon={PaymentsIcon}
                                 href="/income"
                                 onClick={handleNavigate}

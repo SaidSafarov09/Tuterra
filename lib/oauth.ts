@@ -90,6 +90,7 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
             avatar,
             emailVerified: !!email,
             phoneVerified: !!formattedPhone,
+            referralCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
             authProviders: {
                 create: {
                     provider,

@@ -7,6 +7,8 @@ import { toast } from 'sonner'
 import { Users, CheckCircle2, XCircle } from 'lucide-react'
 import styles from './GroupPaymentModal.module.scss'
 import { MoneyIcon } from '../icons/Icons'
+import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 
 interface GroupPaymentModalProps {
     isOpen: boolean
@@ -31,6 +33,7 @@ export function GroupPaymentModal({
     price,
     lessonDate
 }: GroupPaymentModalProps) {
+    const { user } = useAuthStore()
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, { attended: boolean, paid: boolean }>>({});
 
     const prevIsOpenRef = useRef<boolean>(false)
@@ -192,7 +195,7 @@ export function GroupPaymentModal({
                                 </div>
                                 <div className={styles.statInfo}>
                                     <span className={styles.statLabel}>Сумма</span>
-                                    <span className={styles.statValue}>{amountDue} ₽</span>
+                                    <span className={styles.statValue}>{formatCurrency(amountDue, user?.currency)}</span>
                                 </div>
                             </div>
                         </>

@@ -14,8 +14,9 @@ export async function middleware(request: NextRequest) {
     // 0. Capture Referral Codes (Standard & Partner)
     const ref = request.nextUrl.searchParams.get('ref')
     const inviteRef = request.nextUrl.searchParams.get('inviteRef')
+    const refStudent = request.nextUrl.searchParams.get('refStudent')
 
-    if (ref || inviteRef) {
+    if (ref || inviteRef || refStudent) {
         const cleanUrl = new URL(pathname, request.url)
         // Preserve other params if needed, but usually we want a clean landing
         // request.nextUrl.searchParams.forEach((v, k) => { if (k!=='ref' && k!=='inviteRef') cleanUrl.searchParams.set(k, v) })
@@ -30,6 +31,11 @@ export async function middleware(request: NextRequest) {
         // Partner Referral (Partner -> User)
         if (inviteRef) {
             response.cookies.set('partner_ref', inviteRef, { path: '/', maxAge: 60 * 60 * 24 * 90 }) // 90 days
+        }
+
+        // Student Referral (Tutor -> Student)
+        if (refStudent) {
+            response.cookies.set('student-referral-code', refStudent, { path: '/', maxAge: 60 * 60 * 24 * 30 }) // 30 days
         }
 
         return response

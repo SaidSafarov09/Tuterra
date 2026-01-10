@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { MoneyIcon } from '../icons/Icons'
 import { Button } from "@/components/ui/Button";
 import { TabNav } from "@/components/ui/TabNav";
 import { PlusIcon, NoteIcon } from "@/components/icons/Icons";
@@ -13,6 +14,7 @@ import { LessonLinkSection } from "@/components/lessons/LessonLinkSection";
 import styles from "../../app/(dashboard)/students/[id]/page.module.scss";
 
 import { useAuthStore } from "@/store/auth";
+import { formatCurrency } from "@/lib/formatUtils";
 
 interface StudentLessonsProps {
     lessons: Lesson[];
@@ -118,7 +120,7 @@ export function StudentLessons({
                     setActiveTab(tab as LessonFilter);
                     const params = new URLSearchParams(window.location.search);
                     params.set('tab', tab);
-                    router.push(`${window.location.pathname}?${params.toString()}`, { scroll: false });
+                    router.push(`${window.location.pathname}?${params.toString()} `, { scroll: false });
                 }}
             />
 
@@ -154,7 +156,7 @@ export function StudentLessons({
                                         onLockedAction("Для просмотра деталей занятия необходимо обновить подписку");
                                         return;
                                     }
-                                    router.push(`/lessons/${lesson.slug || lesson.id}`)
+                                    router.push(`/ lessons / ${lesson.slug || lesson.id} `)
                                 }}
                             >
                                 <div className={styles.lessonHeader}>
@@ -217,14 +219,14 @@ export function StudentLessons({
                                         )}
                                     </div>
                                     <div className={styles.lessonPriceContainer}>
-                                        <span className={`${styles.lessonPrice} ${lesson.price === 0 ? styles.priceFree : ''}`}>
+                                        <span className={`${styles.lessonPrice} ${lesson.price === 0 ? styles.priceFree : ''} `}>
                                             {lesson.price === 0 ? 'Бесплатно' : (
                                                 <>
                                                     {isStudentView
-                                                        ? lesson.price
+                                                        ? formatCurrency(lesson.price, user?.currency)
                                                         : (lesson.group && lesson.lessonPayments
-                                                            ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
-                                                            : lesson.price)} ₽
+                                                            ? formatCurrency(lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price, user?.currency)
+                                                            : formatCurrency(lesson.price, user?.currency))}
                                                 </>
                                             )}
                                         </span>

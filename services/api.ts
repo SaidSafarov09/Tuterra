@@ -235,6 +235,7 @@ interface UserSettings {
     phone?: string
     avatar?: string | null
     birthDate?: string | null
+    country?: string | null
     region?: string | null
     timezone?: string
     currency?: string

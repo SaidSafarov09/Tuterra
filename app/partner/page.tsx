@@ -21,6 +21,8 @@ import {
     ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useAuthStore } from '@/store/auth';
+import { formatCurrency } from '@/lib/formatUtils';
 
 interface Stats {
     balance: number;
@@ -32,6 +34,7 @@ interface Stats {
 }
 
 export default function PartnerPage() {
+    const { user } = useAuthStore();
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -94,7 +97,7 @@ export default function PartnerPage() {
                 <div className={styles.balanceBlock}>
                     <span className={styles.label}>Доступно к выводу</span>
                     <div className={styles.value}>
-                        {stats.balance.toLocaleString('ru-RU')} <span>₽</span>
+                        {formatCurrency(stats.balance, user?.currency)}
                     </div>
                     <Button
                         className={styles.payoutBtn}
@@ -104,7 +107,7 @@ export default function PartnerPage() {
                         Запросить вывод
                     </Button>
                     <div className={styles.payoutLimitSide}>
-                        Минимальная сумма: 1 000 ₽
+                        Минимальная сумма: {formatCurrency(1000, user?.currency)}
                     </div>
                 </div>
 
@@ -159,8 +162,7 @@ export default function PartnerPage() {
                                             {tx.description || (tx.type === 'commission' ? 'Партнерское вознаграждение' : tx.type === 'payout' ? 'Вывод средств' : 'Начисление')}
                                         </td>
                                         <td className={tx.amount > 0 ? styles.amountPlus : styles.amountMinus}>
-
-                                            {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('ru-RU')} ₽
+                                            {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount, user?.currency)}
                                         </td>
                                         <td>
                                             <div className={`${styles.statusBadge} ${styles[tx.status] || ''}`}>

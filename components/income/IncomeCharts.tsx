@@ -14,12 +14,15 @@ import {
 } from 'recharts'
 import { MonthlyData } from '@/types'
 import styles from '../../app/(dashboard)/income/page.module.scss'
+import { useAuthStore } from '@/store/auth'
+import { formatCurrency } from '@/lib/formatUtils'
 
 interface IncomeChartsProps {
     data: MonthlyData[]
 }
 
 export const IncomeCharts: React.FC<IncomeChartsProps> = ({ data }) => {
+    const { user } = useAuthStore()
     if (!data || data.length === 0) return null
 
     return (
@@ -38,7 +41,7 @@ export const IncomeCharts: React.FC<IncomeChartsProps> = ({ data }) => {
                             <YAxis
                                 stroke="var(--text-secondary)"
                                 style={{ fontSize: '12px' }}
-                                tickFormatter={(value) => `${value.toLocaleString()} ₽`}
+                                tickFormatter={(value) => formatCurrency(value, user?.currency)}
                             />
                             <Tooltip
                                 contentStyle={{
@@ -47,7 +50,7 @@ export const IncomeCharts: React.FC<IncomeChartsProps> = ({ data }) => {
                                     borderRadius: '8px',
                                     fontSize: '12px',
                                 }}
-                                formatter={(value: number) => `${value.toLocaleString()} ₽`}
+                                formatter={(value: number) => formatCurrency(value, user?.currency)}
                             />
                             <Line
                                 type="monotone"

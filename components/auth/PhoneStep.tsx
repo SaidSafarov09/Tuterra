@@ -26,20 +26,23 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
     const isDesk = useMediaQuery('(min-width: 768px)')
 
     useEffect(() => {
-        const studentRef = searchParams.get('refStudent')
+        const getCookie = (name: string) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop()?.split(';').shift();
+            return null;
+        }
+
+        const studentRef = searchParams.get('refStudent') || getCookie('student-referral-code')
         if (studentRef) {
             setUserRole('student')
         }
 
         // Check for error in cookies (for OAuth redirects)
         const checkAuthError = () => {
-            const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-                const [key, value] = cookie.trim().split('=')
-                acc[key] = value
-                return acc
-            }, {} as Record<string, string>)
+            const error = getCookie('auth_error')
 
-            if (cookies['auth_error'] === 'account_is_teacher') {
+            if (error === 'account_is_teacher') {
                 toast.error('Этот аккаунт уже зарегистрирован как преподаватель и не может быть учеником')
                 // Clear the cookie so it doesn't show again
                 document.cookie = 'auth_error=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
@@ -74,10 +77,17 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
 
             toast.success('Код отправлен на ваш email')
 
-            // Priority: refStudent for students, ref for teachers, then promoCode
+            const getCookie = (name: string) => {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop()?.split(';').shift();
+                return null;
+            }
+
+            // Priority: refStudent for students, ref for teachers, then promoCode, then cookies
             const refCode = userRole === 'student'
-                ? (searchParams.get('refStudent') || searchParams.get('ref') || promoCode)
-                : (searchParams.get('ref') || promoCode)
+                ? (searchParams.get('refStudent') || getCookie('student-referral-code') || searchParams.get('ref') || getCookie('referral-code') || promoCode)
+                : (searchParams.get('ref') || getCookie('referral-code') || promoCode || getCookie('partner_ref'))
 
             onSuccess(data.sessionId || '', email, userRole, refCode)
         } catch (error) {

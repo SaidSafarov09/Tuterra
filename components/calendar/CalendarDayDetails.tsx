@@ -12,6 +12,7 @@ import { LessonLinkSection } from '@/components/lessons/LessonLinkSection'
 
 import { useAuthStore } from '@/store/auth'
 import { getDayInfo, getRandomColor } from '@/lib/holidayUtils'
+import { formatCurrency } from '@/lib/formatUtils'
 
 interface CalendarDayDetailsProps {
     date: Date | null
@@ -22,6 +23,7 @@ interface CalendarDayDetailsProps {
     onToggleCancel: (lesson: Lesson) => void
     onReschedule: (lesson: Lesson) => void
     userBirthDate?: string | null
+    country?: string | null
     region?: string | null
     isStudentView?: boolean
     isLoadingAction?: boolean
@@ -39,6 +41,7 @@ export function CalendarDayDetails({
     onToggleCancel,
     onReschedule,
     userBirthDate,
+    country,
     region,
     isStudentView,
     isLoadingAction = false,
@@ -52,7 +55,7 @@ export function CalendarDayDetails({
         return <div className={styles.modalLoading}>Загрузка...</div>
     }
 
-    const dayInfo = date ? getDayInfo(date, userBirthDate, region) : null
+    const dayInfo = date ? getDayInfo(date, userBirthDate, country || 'RU', region) : null
     const holidayGreeting = dayInfo?.holidayName || null
     const birthdayGreeting = dayInfo?.isBirthday ? `🎈🎉🎁 С днем рождения! 🎈🎉🎁` : null
 
@@ -128,7 +131,7 @@ export function CalendarDayDetails({
                                     <MoneyIcon size={24} color="#10B981" />
                                     <div>
                                         <div className={styles.statLabel}>Заработано</div>
-                                        <div className={styles.statValue}>{dayData.totalEarned} ₽</div>
+                                        <div className={styles.statValue}>{formatCurrency(dayData.totalEarned, user?.currency)}</div>
                                     </div>
                                 </div>
                             ) : (
@@ -137,7 +140,7 @@ export function CalendarDayDetails({
                                     <div>
                                         <div className={styles.statLabel}>Возможный заработок</div>
                                         <div className={styles.statValue}>
-                                            {dayData.totalEarned + dayData.potentialEarnings} ₽
+                                            {formatCurrency(dayData.totalEarned + dayData.potentialEarnings, user?.currency)}
                                         </div>
                                     </div>
                                 </div>
@@ -200,10 +203,10 @@ export function CalendarDayDetails({
                                                         {lesson.price === 0 ? 'Бесплатно' : (
                                                             <>
                                                                 {isStudentView
-                                                                    ? lesson.price
+                                                                    ? formatCurrency(lesson.price, user?.currency)
                                                                     : (lesson.group && lesson.lessonPayments
-                                                                        ? lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price
-                                                                        : lesson.price)} ₽
+                                                                        ? formatCurrency(lesson.lessonPayments.filter(p => p.hasPaid).length * lesson.price, user?.currency)
+                                                                        : formatCurrency(lesson.price, user?.currency))}
                                                             </>
                                                         )}
                                                     </span>

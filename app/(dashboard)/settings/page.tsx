@@ -18,9 +18,11 @@ import { GENERAL_MESSAGES } from '@/constants/messages'
 import { SettingsFormSkeleton } from '@/components/skeletons'
 import { formatPhoneNumber } from '@/lib/validation'
 import styles from './page.module.scss'
-import { TABS, TIMEZONES, REGIONS } from '@/constants'
+import { TABS, REGIONS } from '@/constants'
+import { COUNTRIES, ALL_TIMEZONES } from '@/constants/countries'
 import { AnimatePresence, motion } from 'framer-motion'
 import { maskDate, displayFormatDate, apiFormatDate } from '@/lib/dateMask'
+import { formatCurrency } from '@/lib/formatUtils' // Added this import
 import {
     UserIcon,
     CreditCardIcon,
@@ -54,7 +56,9 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
         birthDate: '',
         avatar: null as string | null,
         timezone: 'Europe/Moscow',
-        region: 'all',
+        country: null as string | null,
+        region: 'all' as string | null,
+        currency: '₽',
         notificationSettings: {
             lessonReminders: true,
             unpaidLessons: true,
@@ -133,7 +137,9 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                 birthDate: displayFormatDate(data.birthDate),
                 avatar: data.avatar || null,
                 timezone: data.timezone || 'Europe/Moscow',
-                region: data.region || 'all',
+                country: data.country || null,
+                region: data.region || (data.country === 'RU' ? 'all' : null),
+                currency: data.currency || '₽',
                 notificationSettings: data.notificationSettings || {
                     lessonReminders: true,
                     unpaidLessons: true,
@@ -283,7 +289,9 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
                 phone: updatedUser.phone || null,
                 avatar: updatedUser.avatar || null,
                 birthDate: updatedUser.birthDate || null,
+                country: updatedUser.country || null,
                 region: updatedUser.region || null,
+                currency: updatedUser.currency || '₽',
                 showProgressBlock: updatedUser.showProgressBlock,
                 showInsightsBlock: updatedUser.showInsightsBlock,
             })
@@ -447,25 +455,58 @@ function SettingsContent({ onLeaveSettings }: SettingsPageProps) {
 
                                 <div className={styles.section}>
                                     <h2 className={styles.sectionTitle}>Региональные настройки</h2>
-                                    <div className={styles.appGrid}>
+                                    <div className={styles.appGrid} style={{ gap: '12px' }}>
                                         <Dropdown
-                                            label="Регион (Субъект РФ)"
-                                            value={formData.region}
-                                            onChange={(value) => setFormData((prev) => ({ ...prev, region: value }))}
-                                            options={REGIONS}
-                                            searchable
-                                            placeholderSearch="Поиск..."
-                                            menuPosition="top"
-                                            hint="Выберите вашу республику - мы покажем в календаре дополнительные региональные выходные."
+                                            label="Страна"
+                                            menuPosition="absolute"
+                                            value={formData.country || ''}
+                                            onChange={(value) => {
+                                                const selectedCountry = COUNTRIES.find(c => c.value === value)
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    country: value,
+                                                    region: value === 'RU' ? 'all' : null,
+                                                    currency: selectedCountry ? (selectedCountry.currencies.includes(prev.currency) ? prev.currency : selectedCountry.defaultCurrency) : prev.currency,
+                                                    timezone: selectedCountry ? selectedCountry.timezones[0].value : prev.timezone
+                                                }))
+                                            }}
+                                            options={COUNTRIES}
+                                            placeholder="Выберите страну"
                                         />
+
+                                        {formData.country === 'RU' && (
+                                            <Dropdown
+                                                label="Регион (Субъект РФ)"
+                                                value={formData.region as string}
+                                                onChange={(value) => setFormData((prev) => ({ ...prev, region: value }))}
+                                                options={REGIONS}
+                                                searchable
+                                                placeholderSearch="Поиск..."
+                                                hint="Используется для праздников"
+                                            />
+                                        )}
+
+                                        <Dropdown
+                                            label="Валюта"
+                                            value={formData.currency}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
+                                            options={
+                                                (formData.country ? COUNTRIES.find(c => c.value === formData.country)?.currencies : ['₽', 'BYN', '₸', 'USD'])?.map(c => ({ value: c, label: c })) || []
+                                            }
+                                            hint="Будет использоваться во всем приложении"
+                                        />
+
                                         <Dropdown
                                             label="Часовой пояс"
                                             value={formData.timezone}
                                             onChange={(value) => setFormData((prev) => ({ ...prev, timezone: value }))}
-                                            options={TIMEZONES}
+                                            options={
+                                                formData.country
+                                                    ? (COUNTRIES.find(c => c.value === formData.country)?.timezones || ALL_TIMEZONES)
+                                                    : ALL_TIMEZONES
+                                            }
                                             searchable
                                             placeholderSearch="Поиск..."
-                                            menuPosition="top"
                                             onOpen={() => {
                                                 setTimeout(() => {
                                                     window.scrollBy({ top: 250, behavior: 'smooth' })
