@@ -45,6 +45,10 @@ export async function GET(req: NextRequest) {
         })
         const googleUser: GoogleUser = await userResponse.json()
 
+        const { cookies } = await import('next/headers')
+        const cookieStore = await cookies()
+        const selectedRole = cookieStore.get('selected-role')?.value || 'teacher'
+
         const user = await findOrCreateOAuthUser({
             email: googleUser.email,
             phone: null,
@@ -54,12 +58,9 @@ export async function GET(req: NextRequest) {
             birthDate: null,
             provider: 'google',
             providerId: googleUser.sub,
-        })
+        }, selectedRole)
 
         // Handle referral linking (Unified logic)
-        const { cookies } = await import('next/headers')
-        const cookieStore = await cookies()
-
         const sanitizeCode = (c: any) => {
             const s = c?.toString().trim()
             if (!s || s === 'null' || s === 'undefined' || s.length < 3) return null
@@ -110,6 +111,7 @@ export async function GET(req: NextRequest) {
             cookieStore.delete('referral-code')
             cookieStore.delete('student-referral-code')
             cookieStore.delete('partner_ref')
+            cookieStore.delete('selected-role')
         }
 
         return createAuthSession(user.id, user.phone || '', req.url, user.role)

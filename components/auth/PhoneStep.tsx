@@ -103,6 +103,7 @@ export function PhoneStep({ onSuccess }: PhoneStepProps) {
 
         let url = `/api/auth/${provider}/login`
         const params = new URLSearchParams()
+        params.set('role', userRole)
 
         if (studentRef) params.set('refStudent', studentRef)
         if (teacherRef) params.set('ref', teacherRef)

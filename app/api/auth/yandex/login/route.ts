@@ -26,15 +26,19 @@ export async function GET(req: NextRequest) {
     const teacherRef = searchParams.get('ref')
 
     const response = NextResponse.redirect(yandexAuthUrl)
+    const role = searchParams.get('role') || 'teacher'
 
     if (studentRef) {
         response.cookies.set('student-referral-code', studentRef, { maxAge: 3600, path: '/' })
-    }
-    if (teacherRef) {
+        response.cookies.set('selected-role', 'student', { maxAge: 3600, path: '/' })
+    } else if (teacherRef) {
         response.cookies.set('referral-code', teacherRef, { maxAge: 3600, path: '/' })
+        response.cookies.set('selected-role', 'teacher', { maxAge: 3600, path: '/' })
+    } else if (role) {
+        response.cookies.set('selected-role', role, { maxAge: 3600, path: '/' })
     }
 
-    // Clear cookies if not in URL
+    // Clear referral cookies if not in URL
     if (!studentRef && !teacherRef) {
         response.cookies.delete('referral-code')
         response.cookies.delete('student-referral-code')

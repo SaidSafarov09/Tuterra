@@ -28,7 +28,7 @@ export function formatPhoneForDB(rawPhone: string | null | undefined): string | 
 }
 
 
-export async function findOrCreateOAuthUser(params: CreateUserParams) {
+export async function findOrCreateOAuthUser(params: CreateUserParams, role: string = 'teacher') {
     const { email, phone, firstName, lastName, avatar, birthDate, provider, providerId } = params
 
 
@@ -83,6 +83,8 @@ export async function findOrCreateOAuthUser(params: CreateUserParams) {
         data: {
             email,
             phone: formattedPhone,
+            role,
+            plan: (role === 'teacher' ? 'free' : null) as any,
             firstName,
             lastName,
             birthDate,
