@@ -219,7 +219,7 @@ export function useLessonForm(
                 toast.error(errorMessage)
             }
         } catch (error) {
-            toast.error('Произошла ошибка при создании занятия')
+            toast.error(isEdit ? 'Ошибка при обновлении занятия' : 'Произошла ошибка при создании занятия')
         } finally {
             setIsSubmitting(false)
         }

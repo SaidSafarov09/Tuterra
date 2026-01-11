@@ -149,6 +149,7 @@ select {
   *:hover {
     box-shadow: none !important;
     opacity: 1 !important;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -206,4 +207,101 @@ section {
 
 [data-sonner-toast][data-type="error"] button[data-button]:hover {
   opacity: 0.9 !important;
+}
+
+/* React Time Picker Overrides */
+.react-time-picker {
+  width: 100% !important;
+  height: 44px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.react-time-picker:hover {
+  border-color: var(--border-hover) !important;
+}
+
+.react-time-picker--open {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.1) !important;
+}
+
+.react-time-picker--disabled {
+  background: var(--background) !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+.react-time-picker__wrapper {
+  border: none !important;
+  padding: 0 16px !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.react-time-picker__inputGroup {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  flex-grow: 1 !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+}
+
+.react-time-picker__inputGroup__input {
+  color: var(--text-primary) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  outline: none !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 4px !important;
+  font-variant-numeric: tabular-nums !important;
+  text-align: center !important;
+  min-width: 1.5em !important;
+}
+
+.react-time-picker__inputGroup__input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.react-time-picker__inputGroup__divider {
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  padding: 0 4px !important;
+  opacity: 0.8 !important;
+}
+
+.react-time-picker__inputGroup__leadingZero {
+  color: var(--text-primary) !important;
+}
+
+.react-time-picker__button {
+  padding: 4px !important;
+  color: var(--text-secondary) !important;
+  transition: all 0.2s !important;
+}
+
+.react-time-picker__button:hover {
+  color: var(--primary) !important;
+  transform: scale(1.1) !important;
+}
+
+.react-time-picker__button svg {
+  stroke: currentColor !important;
+}
+
+.react-time-picker__clock,
+.react-time-picker__calendar {
+  display: none !important;
+}
+
+.hasLeadingZero {
+  margin-left: -.65em !important;
 }

@@ -147,18 +147,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     }
 
     const handleEditSubmit = async () => {
-        try {
-            await lessonsApi.update(id, {
-                ...formData,
-                date: formData.date.toISOString(),
-                price: parseInt(formData.price),
-            })
-            toast.success(LESSON_MESSAGES.UPDATED)
-            setIsEditModalOpen(false)
-            fetchLesson()
-        } catch (error) {
-            toast.error(LESSON_MESSAGES.UPDATE_ERROR)
-        }
+        await handleSubmit(true, lesson?.id)
     }
 
     const handleTogglePaid = async () => {

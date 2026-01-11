@@ -229,9 +229,18 @@ export async function PUT(
         }
 
         const { paidStudentIds, attendedStudentIds, planTopicId, seriesPrice: _, rememberPrice: __, ...lessonData } = validatedData
+
+        // Explicitly handle student/group switching to avoid having both
+        const finalUpdateData = {
+            ...lessonData,
+            planTopicId,
+            studentId: validatedData.studentId || (validatedData.groupId ? null : currentLesson.studentId),
+            groupId: validatedData.groupId || (validatedData.studentId ? null : currentLesson.groupId),
+        }
+
         await prisma.lesson.update({
             where: { id: lessonId },
-            data: { ...lessonData, planTopicId } as any,
+            data: finalUpdateData as any,
         })
 
         if (paidStudentIds !== undefined || attendedStudentIds !== undefined) {
