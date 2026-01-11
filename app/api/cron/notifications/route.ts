@@ -315,7 +315,7 @@ export async function GET(request: NextRequest) {
 
         if (cronSecret && secret === cronSecret) {
             const users = await prisma.user.findMany({
-                where: { notificationSettings: { isNot: null }, telegramChatId: { not: null } },
+                where: { telegramChatId: { not: null } },
                 select: { id: true }
             })
             const results = []
