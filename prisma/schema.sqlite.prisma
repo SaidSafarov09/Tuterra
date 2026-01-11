@@ -8,103 +8,95 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(cuid())
-  role              String             @default("teacher") // teacher | student
-  plan              String?            @default("free") // free | pro
-  name              String?
-  email             String?            @unique
-  hashedPassword    String?
-  phone             String?            @unique
-  avatar            String?
-  country           String?
-  currency          String             @default("₽")
-  timezone          String             @default("Europe/Moscow")
-  theme             String             @default("system")
-  emailVerified     Boolean            @default(false)
-  phoneVerified     Boolean            @default(false)
-  twoFactorEnabled  Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  firstName         String?
-  lastName          String?
-  birthDate         DateTime?
-  region            String?
-  telegramId        String?            @unique
-  telegramChatId    String?
-  authProviders     AuthProvider[]
-  groups            Group[]
-  lessons           Lesson[]
-  lessonSeries      LessonSeries[]
-  students          Student[]
-  subjects          Subject[]
-  notifications     Notification[]
-  notificationSettings NotificationSettings?
-  verificationCodes VerificationCode[]
-  learningPlans     LearningPlan[]
-  onboardingCompleted Boolean            @default(false)
-  showProgressBlock Boolean              @default(true)
-  showInsightsBlock Boolean              @default(true)
-  referralCode      String?            @unique
-  invitedById       String?
-  invitedBy         User?              @relation("ReferralTree", fields: [invitedById], references: [id])
-  invitedUsers      User[]             @relation("ReferralTree")
-  referralBonusClaimed Boolean         @default(false)
-  bonusMonthsEarned Int                @default(0)
-  
-  // PRO subscription fields
-  isPro             Boolean            @default(false)
-  proActivatedAt    DateTime?
-  proExpiresAt      DateTime?
-  lastPaymentId     String?
-  
-  studentRecords    Student[]          @relation("LinkedStudent")
-  lessonRequests    LessonRequest[]    @relation("UserRequests")
-
-  // --- Partner Program ---
-  isPartner            Boolean             @default(false)
-  partnerCode          String?             @unique
-  partnerBalance       Float               @default(0)
-  commissionRate       Float?              
-  commissionPaymentsLimit Int              @default(3)  // How many payments bring commission
-  invitedByPartnerCode String?             
-  invitedByPartnerAt   DateTime?           
-  partnerPaymentsCount Int                 @default(0)  // Counter of payments made to partner
-
-  
-  partnerTransactions  PartnerTransaction[] @relation("PartnerOwner")
+  id                      String                @id @default(cuid())
+  name                    String?
+  email                   String?               @unique
+  hashedPassword          String?
+  phone                   String?               @unique
+  avatar                  String?
+  currency                String                @default("₽")
+  timezone                String                @default("Europe/Moscow")
+  theme                   String                @default("system")
+  emailVerified           Boolean               @default(false)
+  phoneVerified           Boolean               @default(false)
+  twoFactorEnabled        Boolean               @default(false)
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  firstName               String?
+  lastName                String?
+  birthDate               DateTime?
+  region                  String?
+  telegramChatId          String?
+  telegramId              String?               @unique
+  onboardingCompleted     Boolean               @default(false)
+  referralCode            String?               @unique
+  role                    String                @default("teacher")
+  plan                    String?               @default("free")
+  isPro                   Boolean               @default(false)
+  lastPaymentId           String?
+  proActivatedAt          DateTime?
+  proExpiresAt            DateTime?
+  bonusMonthsEarned       Int                   @default(0)
+  invitedById             String?
+  referralBonusClaimed    Boolean               @default(false)
+  showInsightsBlock       Boolean               @default(true)
+  showProgressBlock       Boolean               @default(true)
+  commissionRate          Float?
+  isPartner               Boolean               @default(false)
+  partnerBalance          Float                 @default(0)
+  partnerCode             String?               @unique
+  invitedByPartnerCode    String?
+  commissionPaymentsLimit Int                   @default(3)
+  invitedByPartnerAt      DateTime?
+  partnerPaymentsCount    Int                   @default(0)
+  country                 String?
+  authProviders           AuthProvider[]
+  groups                  Group[]
+  learningPlans           LearningPlan[]
+  lessons                 Lesson[]
+  lessonRequests          LessonRequest[]       @relation("UserRequests")
+  lessonSeries            LessonSeries[]
+  notifications           Notification[]
+  notificationSettings    NotificationSettings?
+  partnerTransactions     PartnerTransaction[]  @relation("PartnerOwner")
+  studentRecords          Student[]             @relation("LinkedStudent")
+  students                Student[]
+  subjects                Subject[]
+  invitedBy               User?                 @relation("ReferralTree", fields: [invitedById], references: [id])
+  invitedUsers            User[]                @relation("ReferralTree")
+  verificationCodes       VerificationCode[]
 }
 
 model PartnerTransaction {
-  id              String    @id @default(cuid())
-  partnerId       String
-  amount          Float     // +Earned, -Payout
-  type            String    // commission | payout
-  status          String    @default("completed")
-  sourceUserId    String?   // Context
-  paymentId       String?   
-  description     String?   
-  createdAt       DateTime  @default(now())
-  
-  partner         User      @relation("PartnerOwner", fields: [partnerId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  partnerId    String
+  amount       Float
+  type         String
+  status       String   @default("completed")
+  sourceUserId String?
+  paymentId    String?
+  description  String?
+  createdAt    DateTime @default(now())
+  partner      User     @relation("PartnerOwner", fields: [partnerId], references: [id], onDelete: Cascade)
 
   @@index([partnerId])
   @@index([createdAt])
 }
 
 model Subject {
-  id           String         @id @default(cuid())
-  name         String
-  color        String         @default("#4A6CF7")
-  icon         String?
-  userId       String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  groups       Group[]
-  lessons      Lesson[]
-  lessonSeries LessonSeries[]
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  students     Student[]      @relation("StudentToSubject")
+  id            String         @id @default(cuid())
+  name          String
+  color         String         @default("#4A6CF7")
+  icon          String?
+  userId        String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  groups        Group[]
   learningPlans LearningPlan[]
+  lessons       Lesson[]
+  lessonSeries  LessonSeries[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students      Student[]      @relation("StudentToSubject")
 
   @@unique([userId, name])
 }
@@ -113,7 +105,6 @@ model Student {
   id                String          @id @default(cuid())
   name              String
   slug              String?         @unique
-  defaultPrice      Int?
   contact           String?
   contactType       String?         @default("phone")
   parentContact     String?
@@ -122,17 +113,17 @@ model Student {
   ownerId           String
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+  linkedUserId      String?
+  invitationCode    String?         @unique
+  defaultPrice      Int?
+  learningPlans     LearningPlan[]
   lessons           Lesson[]
   lessonPayments    LessonPayment[]
   lessonSeries      LessonSeries[]
+  linkedUser        User?           @relation("LinkedStudent", fields: [linkedUserId], references: [id])
   owner             User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   groups            Group[]         @relation("GroupToStudent")
   subjects          Subject[]       @relation("StudentToSubject")
-  learningPlans     LearningPlan[]
-
-  linkedUserId      String?
-  linkedUser        User?           @relation("LinkedStudent", fields: [linkedUserId], references: [id])
-  invitationCode    String?         @unique
 
   @@index([ownerId])
   @@index([linkedUserId])
@@ -144,34 +135,33 @@ model Group {
   name         String
   ownerId      String
   subjectId    String
-  defaultPrice Int?
   note         String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
+  defaultPrice Int?
   owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   subject      Subject        @relation(fields: [subjectId], references: [id])
+  learningPlan LearningPlan?
   lessons      Lesson[]
   lessonSeries LessonSeries[]
   students     Student[]      @relation("GroupToStudent")
-  learningPlan LearningPlan?
 
   @@index([ownerId])
   @@index([subjectId])
 }
 
 model LearningPlan {
-  id        String   @id @default(cuid())
+  id        String              @id @default(cuid())
   studentId String?
-  groupId   String?  @unique
+  groupId   String?             @unique
   subjectId String?
   ownerId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  subject   Subject? @relation(fields: [subjectId], references: [id])
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  group     Group?              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  owner     User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  student   Student?            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject   Subject?            @relation(fields: [subjectId], references: [id])
   topics    LearningPlanTopic[]
 
   @@unique([studentId, subjectId])
@@ -182,14 +172,13 @@ model LearningPlan {
 }
 
 model LearningPlanTopic {
-  id          String   @id @default(cuid())
-  planId      String
+  id          String       @id @default(cuid())
   title       String
   description String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  planId      String
   plan        LearningPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
   lessons     Lesson[]
 
@@ -197,14 +186,13 @@ model LearningPlanTopic {
 }
 
 model Lesson {
-  id             String          @id @default(cuid())
-  slug           String?         @unique
+  id             String             @id @default(cuid())
+  slug           String?            @unique
   date           DateTime
   price          Int
-  isPaid         Boolean         @default(false)
-  isCanceled     Boolean         @default(false)
-  isTrial        Boolean         @default(false)
-  status         String          @default("confirmed") // confirmed | pending_cancel | pending_reschedule
+  isPaid         Boolean            @default(false)
+  isCanceled     Boolean            @default(false)
+  isTrial        Boolean            @default(false)
   notes          String?
   ownerId        String
   studentId      String?
@@ -213,19 +201,20 @@ model Lesson {
   subjectId      String?
   subjectName    String?
   subjectColor   String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
   topic          String?
-  planTopicId    String?
-  duration       Int             @default(60)
+  duration       Int                @default(60)
   seriesId       String?
+  planTopicId    String?
+  status         String             @default("confirmed")
   link           String?
-  group          Group?          @relation(fields: [groupId], references: [id])
-  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  series         LessonSeries?   @relation(fields: [seriesId], references: [id])
-  student        Student?        @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  subject        Subject?        @relation(fields: [subjectId], references: [id])
+  group          Group?             @relation(fields: [groupId], references: [id])
+  owner          User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   planTopic      LearningPlanTopic? @relation(fields: [planTopicId], references: [id])
+  series         LessonSeries?      @relation(fields: [seriesId], references: [id])
+  student        Student?           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject        Subject?           @relation(fields: [subjectId], references: [id])
   lessonPayments LessonPayment[]
   lessonRequests LessonRequest[]
 
@@ -242,18 +231,17 @@ model Lesson {
 }
 
 model LessonRequest {
-  id          String   @id @default(cuid())
-  lessonId    String
-  userId      String   // Student who made the request
-  type        String   // reschedule | cancel
-  newDate     DateTime?
-  reason      String?
-  status      String   @default("pending") // pending | approved | rejected
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  user        User     @relation("UserRequests", fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  lessonId  String
+  userId    String
+  type      String
+  newDate   DateTime?
+  reason    String?
+  status    String    @default("pending")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lesson    Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user      User      @relation("UserRequests", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([lessonId])
   @@index([userId])
@@ -354,7 +342,7 @@ model Notification {
   userId    String
   title     String
   message   String
-  type      String   // lesson_reminder, unpaid_lesson, lesson_created, lesson_rescheduled, lesson_deleted, income, debt, missing_lessons, onboarding, morning_briefing, evening_summary, referral_bonus_earned
+  type      String
   isRead    Boolean  @default(false)
   link      String?
   data      String?
@@ -365,24 +353,21 @@ model Notification {
 }
 
 model NotificationSettings {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  lessonReminders   Boolean  @default(true)
-  unpaidLessons     Boolean  @default(true)
-  statusChanges     Boolean  @default(true)
-  incomeReports     Boolean  @default(true)
-  studentDebts      Boolean  @default(true)
-  missingLessons    Boolean  @default(true)
-  onboardingTips    Boolean  @default(true)
-  morningBriefing   Boolean  @default(true)
-  eveningSummary    Boolean  @default(true)
-  
-  deliveryWeb       Boolean  @default(true)
-  deliveryTelegram  Boolean  @default(false)
-  
-  quietHoursEnabled Boolean  @default(false)
-  quietHoursStart   String?  @default("22:00")
-  quietHoursEnd     String?  @default("08:00")
-  
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  lessonReminders   Boolean @default(true)
+  unpaidLessons     Boolean @default(true)
+  statusChanges     Boolean @default(true)
+  incomeReports     Boolean @default(true)
+  studentDebts      Boolean @default(true)
+  missingLessons    Boolean @default(true)
+  onboardingTips    Boolean @default(true)
+  deliveryWeb       Boolean @default(true)
+  deliveryTelegram  Boolean @default(false)
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart   String? @default("22:00")
+  quietHoursEnd     String? @default("08:00")
+  eveningSummary    Boolean @default(true)
+  morningBriefing   Boolean @default(true)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
