@@ -25,6 +25,7 @@ export interface LessonFormProps {
     onCreateStudent: (name: string) => void
     onCreateSubject: (name: string) => void
     handleChange: (name: string, value: any) => void
+    handleGroupChange?: (groupId: string, groups: Group[]) => void
     fixedSubjectId?: string
     fixedStudentId?: string
     fixedGroupId?: string
@@ -45,6 +46,7 @@ export function LessonForm({
     handleChange,
     onStudentChange,
     onGroupChange,
+    handleGroupChange,
     fixedSubjectId,
     fixedStudentId,
     fixedGroupId,
@@ -96,22 +98,14 @@ export function LessonForm({
             const groupId = value.replace('group_', '')
             const group = groups.find(g => g.id === groupId)
             if (group?.isLocked) {
-                checkLimit('groups', 100, 'Эта группа доступна только в Pro версии') // Trigger modal
+                checkLimit('groups', 100, 'Эта группа доступна только в Pro версии')
                 return
             }
 
             if (onGroupChange) {
                 onGroupChange(groupId, groups)
             } else {
-                if (group) {
-                    setFormData(prev => ({
-                        ...prev,
-                        groupId: group.id,
-                        studentId: undefined,
-                        subjectId: group.subjectId,
-                        paidStudentIds: []
-                    }))
-                }
+                handleGroupChange?.(groupId, groups)
             }
         } else {
             const student = students.find(s => s.id === value)
@@ -120,13 +114,6 @@ export function LessonForm({
                 return
             }
 
-            setFormData(prev => ({
-                ...prev,
-                studentId: value,
-                groupId: undefined,
-                paidStudentIds: [],
-                subjectId: ''
-            }))
             onStudentChange(value, students)
         }
     }
@@ -241,6 +228,12 @@ export function LessonForm({
                 onSeriesPriceChange={(val) => handleChange('seriesPrice', val)}
                 disabled={isSubmitting}
                 isGroup={!!formData.groupId}
+                rememberPrice={formData.rememberPrice}
+                onRememberPriceChange={(val) => handleChange('rememberPrice', val)}
+                savedPrice={formData.studentId
+                    ? students.find(s => s.id === formData.studentId)?.defaultPrice
+                    : groups.find(g => g.id === formData.groupId)?.defaultPrice
+                }
             />
 
             <LessonFormTopic

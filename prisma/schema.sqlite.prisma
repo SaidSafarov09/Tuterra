@@ -113,6 +113,7 @@ model Student {
   id                String          @id @default(cuid())
   name              String
   slug              String?         @unique
+  defaultPrice      Int?
   contact           String?
   contactType       String?         @default("phone")
   parentContact     String?
@@ -143,6 +144,7 @@ model Group {
   name         String
   ownerId      String
   subjectId    String
+  defaultPrice Int?
   note         String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt

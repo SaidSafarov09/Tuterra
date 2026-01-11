@@ -43,6 +43,7 @@ const lessonSchema = z.object({
     paidStudentIds: z.array(z.string()).optional(),
     planTopicId: z.string().optional().nullable().transform(val => val === '' ? null : val),
     link: z.string().optional().nullable(),
+    rememberPrice: z.boolean().optional(),
 }).refine(data => data.studentId || data.groupId, {
     message: "Необходимо выбрать ученика или группу",
     path: ["studentId"],
@@ -201,6 +202,22 @@ export async function POST(request: NextRequest) {
             }
         }
 
+
+        const priceToSave = validatedData.seriesPrice ?? (!validatedData.isTrial ? validatedData.price : undefined);
+
+        if (validatedData.rememberPrice && priceToSave !== undefined) {
+            if (validatedData.studentId) {
+                await prisma.student.update({
+                    where: { id: validatedData.studentId, ownerId: payload.userId },
+                    data: { defaultPrice: priceToSave }
+                })
+            } else if (validatedData.groupId) {
+                await prisma.group.update({
+                    where: { id: validatedData.groupId, ownerId: payload.userId },
+                    data: { defaultPrice: priceToSave }
+                })
+            }
+        }
 
         if (validatedData.recurrence?.enabled) {
             return await createRecurringLesson(payload.userId, validatedData)

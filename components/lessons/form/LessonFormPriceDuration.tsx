@@ -6,6 +6,7 @@ import { ClockIcon } from '@/components/icons/Icons'
 import { formatLessonEndTime } from '@/lib/lessonTimeUtils'
 import styles from './LessonForm.module.scss'
 import { useAuthStore } from '@/store/auth'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 interface LessonFormPriceDurationProps {
     price: string
@@ -20,6 +21,9 @@ interface LessonFormPriceDurationProps {
     onSeriesPriceChange?: (value: string) => void
     disabled?: boolean
     isGroup?: boolean
+    rememberPrice?: boolean
+    onRememberPriceChange?: (value: boolean) => void
+    savedPrice?: number | null
 }
 
 export function LessonFormPriceDuration({
@@ -34,7 +38,10 @@ export function LessonFormPriceDuration({
     onTrialChange,
     onSeriesPriceChange,
     disabled,
-    isGroup
+    isGroup,
+    rememberPrice = false,
+    onRememberPriceChange,
+    savedPrice
 }: LessonFormPriceDurationProps) {
     const { user } = useAuthStore()
     const currency = user?.currency || '₽'
@@ -74,20 +81,46 @@ export function LessonFormPriceDuration({
                 </div>
             </div>
 
-            {(price === '0' || isTrial) && activeTab === 'recurring' && onSeriesPriceChange && (
-                <Input
-                    label={`Стоимость следующих занятий (${currency})`}
-                    type="number"
-                    value={seriesPrice || ''}
-                    onChange={(e) => onSeriesPriceChange(e.target.value)}
-                    placeholder={
-                        price === '0'
-                            ? "Оставьте пустым, если тоже бесплатно"
-                            : "Оставьте пустым, если цена как у пробного"
-                    }
-                    disabled={disabled}
-                />
-            )}
+            {(price === '0' || isTrial) && activeTab === 'recurring' && onSeriesPriceChange ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <Input
+                        label={`Стоимость следующих занятий (${currency})`}
+                        type="number"
+                        value={seriesPrice || ''}
+                        onChange={(e) => onSeriesPriceChange(e.target.value)}
+                        placeholder={
+                            price === '0'
+                                ? "Оставьте пустым, если тоже бесплатно"
+                                : "Оставьте пустым, если цена как у пробного"
+                        }
+                        disabled={disabled}
+                    />
+
+                    {seriesPrice && seriesPrice !== '' && parseInt(seriesPrice) !== savedPrice && (
+                        <div className={styles.rememberPriceContainer}>
+                            <Checkbox
+                                label={savedPrice !== undefined && savedPrice !== null ? "Запомнить новую цену" : "Запомнить цену"}
+                                checked={rememberPrice}
+                                onChange={(e) => onRememberPriceChange?.(e.target.checked)}
+                                disabled={disabled}
+                            />
+                        </div>
+                    )}
+                </div>
+            ) : (!isTrial && (
+                savedPrice === undefined ||
+                savedPrice === null ||
+                (price !== '' && parseInt(price) !== savedPrice)
+            ) && (
+                    <div className={styles.rememberPriceContainer}>
+                        <Checkbox
+                            label={savedPrice !== undefined && savedPrice !== null ? "Запомнить новую цену" : "Запомнить цену"}
+                            checked={rememberPrice}
+                            onChange={(e) => onRememberPriceChange?.(e.target.checked)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ))}
         </>
     )
 }

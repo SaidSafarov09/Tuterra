@@ -175,7 +175,8 @@ export default function CalendarPage() {
         handleSubmit,
         loadLessonWithDate,
         resetForm,
-    } = useLessonForm(handleCreateSuccess, fetchStudents, fetchSubjects)
+        handleGroupChange,
+    } = useLessonForm(handleCreateSuccess, fetchStudents, fetchSubjects, fetchGroups)
 
     const handleCreateStudent = (name: string) => {
         if (!checkLimit('students', students.length)) return
@@ -284,6 +285,7 @@ export default function CalendarPage() {
                 error={error}
                 onSubmit={() => handleSubmit(false)}
                 onStudentChange={handleStudentChange}
+                handleGroupChange={handleGroupChange}
                 onCreateStudent={handleCreateStudent}
                 onCreateSubject={handleCreateSubject}
                 handleChange={handleChange}

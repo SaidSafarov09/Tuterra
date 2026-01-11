@@ -5,7 +5,8 @@ import { LessonFormData, Student } from '@/types'
 export function useLessonForm(
     onSuccess: () => void,
     refetchStudents?: () => void,
-    refetchSubjects?: () => void
+    refetchSubjects?: () => void,
+    refetchGroups?: () => void
 ) {
     const [formData, setFormData] = useState<LessonFormData>({
         studentId: '',
@@ -21,6 +22,7 @@ export function useLessonForm(
         paidStudentIds: [],
         planTopicId: undefined,
         link: '',
+        rememberPrice: false,
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -43,6 +45,7 @@ export function useLessonForm(
             paidStudentIds: [],
             planTopicId: undefined,
             link: '',
+            rememberPrice: false,
         })
         setError('')
     }
@@ -62,6 +65,7 @@ export function useLessonForm(
             paidStudentIds: lesson.lessonPayments?.filter((p: any) => p.hasPaid).map((p: any) => p.studentId) || [],
             planTopicId: lesson.planTopicId || undefined,
             link: lesson.link || '',
+            rememberPrice: false,
         })
     }
 
@@ -75,7 +79,24 @@ export function useLessonForm(
         setFormData((prev) => ({
             ...prev,
             studentId,
+            groupId: undefined,
             subjectId: preSelectedSubject || prev.subjectId,
+            price: (student?.defaultPrice !== null && student?.defaultPrice !== undefined) ? student.defaultPrice.toString() : prev.price,
+            paidStudentIds: [],
+            rememberPrice: false,
+        }))
+    }
+
+    const handleGroupChange = (groupId: string, groups: any[]) => {
+        const group = groups.find((g) => g.id === groupId)
+        setFormData((prev) => ({
+            ...prev,
+            groupId,
+            studentId: undefined,
+            subjectId: group?.subjectId || prev.subjectId,
+            price: (group?.defaultPrice !== null && group?.defaultPrice !== undefined) ? group.defaultPrice.toString() : prev.price,
+            paidStudentIds: [],
+            rememberPrice: false,
         }))
     }
 
@@ -182,10 +203,14 @@ export function useLessonForm(
                     paidStudentIds: formData.paidStudentIds,
                     planTopicId: formData.planTopicId,
                     link: formData.link || undefined,
+                    rememberPrice: formData.rememberPrice,
                 }),
             })
 
             if (response.ok) {
+                if (refetchStudents) await refetchStudents()
+                if (refetchSubjects) await refetchSubjects()
+                if (refetchGroups) await refetchGroups()
                 onSuccess()
                 toast.success(isEdit ? 'Занятие обновлено' : 'Занятие успешно добавлено')
             } else {
@@ -220,5 +245,6 @@ export function useLessonForm(
         loadLessonWithDate,
         resetForm,
         handleSubmit,
+        handleGroupChange,
     }
 }

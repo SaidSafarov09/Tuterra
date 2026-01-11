@@ -65,7 +65,8 @@ export default function SubjectsPage() {
         handleStudentChange,
         handleCreateStudent: originalHandleCreateStudent,
         handleCreateSubject: originalHandleCreateSubject,
-        handleSubmit: submitLessonForm
+        handleSubmit: submitLessonForm,
+        handleGroupChange,
     } = useLessonForm(
         () => {
             setIsCreateLessonModalOpen(false)
@@ -75,7 +76,8 @@ export default function SubjectsPage() {
             refetch()
         },
         refetchStudents,
-        refetch
+        refetch,
+        () => selectedSubject && fetchStudents(selectedSubject.id)
     )
 
     const handleCreateStudent = (name: string) => {
@@ -261,6 +263,7 @@ export default function SubjectsPage() {
                 error={lessonError}
                 onSubmit={() => submitLessonForm(false)}
                 onStudentChange={handleStudentChange}
+                handleGroupChange={handleGroupChange}
                 onCreateStudent={handleCreateStudent}
                 onCreateSubject={handleCreateSubject}
                 handleChange={handleLessonChange}

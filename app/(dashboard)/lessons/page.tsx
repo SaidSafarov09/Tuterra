@@ -111,14 +111,16 @@ function LessonsContent() {
         handleStudentChange,
         handleCreateStudent: originalHandleCreateStudent,
         handleCreateSubject: originalHandleCreateSubject,
-        handleSubmit: submitForm
+        handleSubmit: submitForm,
+        handleGroupChange,
     } = useLessonForm(
         () => {
             setIsOpen(false)
             refetchLessons()
         },
         refetchStudents,
-        refetchSubjects
+        refetchSubjects,
+        refetchGroups
     )
 
     const handleCreateStudent = (name: string) => {
@@ -378,6 +380,7 @@ function LessonsContent() {
                 error={error}
                 onSubmit={() => submitForm(!!editingLesson, editingLesson?.id)}
                 onStudentChange={handleStudentChange}
+                handleGroupChange={handleGroupChange}
                 onCreateStudent={handleCreateStudent}
                 onCreateSubject={handleCreateSubject}
                 handleChange={handleChange}

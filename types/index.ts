@@ -53,6 +53,7 @@ export interface Student {
     id: string
     slug?: string
     name: string
+    defaultPrice?: number | null
     email?: string
     phone?: string
     contact?: string | null
@@ -98,6 +99,7 @@ export interface Group {
     id: string
     name: string
     subjectId: string
+    defaultPrice?: number | null
     note?: string
     subject: Subject
     students: Student[]
@@ -218,6 +220,7 @@ export interface LessonFormData {
     paidStudentIds?: string[]
     planTopicId?: string | null
     link?: string | null
+    rememberPrice?: boolean
 }
 
 export type LessonFilter = 'all' | 'upcoming' | 'past' | 'unpaid' | 'canceled'

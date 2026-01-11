@@ -26,6 +26,8 @@ const lessonSchema = z.object({
     attendedStudentIds: z.array(z.string()).optional(),
     planTopicId: z.string().optional().nullable().transform(val => val === '' ? null : val),
     link: z.string().optional().nullable(),
+    seriesPrice: z.number().optional(),
+    rememberPrice: z.boolean().optional(),
 })
 
 export async function GET(
@@ -207,7 +209,26 @@ export async function PUT(
             }
         }
 
-        const { paidStudentIds, attendedStudentIds, planTopicId, ...lessonData } = validatedData
+        const isTrial = validatedData.isTrial ?? currentLesson.isTrial;
+        const priceToSave = validatedData.seriesPrice ?? (!isTrial ? validatedData.price : undefined);
+
+        if (validatedData.rememberPrice && priceToSave !== undefined) {
+            const studentId = validatedData.studentId || currentLesson.studentId
+            const groupId = validatedData.groupId || currentLesson.groupId
+            if (studentId) {
+                await prisma.student.update({
+                    where: { id: studentId, ownerId: user.id },
+                    data: { defaultPrice: priceToSave }
+                })
+            } else if (groupId) {
+                await prisma.group.update({
+                    where: { id: groupId, ownerId: user.id },
+                    data: { defaultPrice: priceToSave }
+                })
+            }
+        }
+
+        const { paidStudentIds, attendedStudentIds, planTopicId, seriesPrice: _, rememberPrice: __, ...lessonData } = validatedData
         await prisma.lesson.update({
             where: { id: lessonId },
             data: { ...lessonData, planTopicId } as any,

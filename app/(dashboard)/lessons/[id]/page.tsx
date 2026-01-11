@@ -7,7 +7,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { format } from 'date-fns'
 import { isLessonPast, isLessonOngoing } from '@/lib/lessonTimeUtils'
 import { ru } from 'date-fns/locale'
-import { Lesson, Student, Subject } from '@/types'
+import { Lesson, Student, Subject, Group } from '@/types'
 import { useLessonActions } from '@/hooks/useLessonActions'
 import { useLessonForm } from '@/hooks/useLessonForm'
 import { useCheckLimit } from '@/hooks/useCheckLimit'
@@ -17,7 +17,7 @@ import { LessonBadges } from '@/components/lessons/LessonBadges'
 import { getLessonTimeInfo } from '@/lib/lessonTimeUtils'
 import { ClockIcon, CloseIcon, CheckIcon } from '@/components/icons/Icons'
 import styles from './page.module.scss'
-import { lessonsApi, studentsApi, subjectsApi } from '@/services/api'
+import { lessonsApi, studentsApi, subjectsApi, groupsApi } from '@/services/api'
 import { LESSON_MESSAGES } from '@/constants/messages'
 import { LessonDetailSkeleton } from '@/components/skeletons'
 import { RescheduleModal } from '@/components/lessons/RescheduleModal'
@@ -40,6 +40,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
 
     const [students, setStudents] = useState<Student[]>([])
     const [subjects, setSubjects] = useState<Subject[]>([])
+    const [groups, setGroups] = useState<Group[]>([])
 
     const {
         togglePaid,
@@ -74,6 +75,15 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         }
     }
 
+    const fetchGroups = async () => {
+        try {
+            const data = await groupsApi.getAll()
+            setGroups(data)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     const { checkLimit, UpgradeModal } = useCheckLimit()
 
     const {
@@ -86,14 +96,16 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         handleCreateStudent: originalHandleCreateStudent,
         handleCreateSubject: originalHandleCreateSubject,
         handleSubmit,
-        loadLesson
+        loadLesson,
+        handleGroupChange,
     } = useLessonForm(
         () => {
             setIsEditModalOpen(false)
             fetchLesson()
         },
         fetchStudents,
-        fetchSubjects
+        fetchSubjects,
+        fetchGroups
     )
 
     const handleCreateStudent = (name: string) => {
@@ -111,6 +123,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
         fetchLesson()
         fetchStudents()
         fetchSubjects()
+        fetchGroups()
     }, [id])
 
 
@@ -368,9 +381,11 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
                 error={error}
                 onSubmit={handleEditSubmit}
                 onStudentChange={handleStudentChange}
+                handleGroupChange={handleGroupChange}
                 onCreateStudent={handleCreateStudent}
                 onCreateSubject={handleCreateSubject}
                 handleChange={handleChange}
+                groups={groups}
             />
 
 
