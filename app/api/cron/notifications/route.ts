@@ -15,13 +15,16 @@ function getWeekNumber(d: Date) {
 
 async function processUserNotifications(userId: string) {
     const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { notificationSettings: true }
+        where: { id: userId }
     })
 
-    if (!user || !user.notificationSettings) return { success: true, message: 'No settings' }
+    if (!user) return { success: false, message: 'User not found' }
 
-    const settings = user.notificationSettings
+    const settings = await prisma.notificationSettings.upsert({
+        where: { userId },
+        create: { userId },
+        update: {}
+    })
     const now = new Date()
     const notificationsCreated = []
     const isStudent = user.role === 'student'
@@ -84,8 +87,13 @@ async function processUserNotifications(userId: string) {
 
                 await prisma.notification.create({
                     data: {
-                        userId, title: 'Скоро занятие', message: isStudent ? `${subjectName} с ${teacherName} в ${timeStr}` : `${subjectName} с ${entityName} в ${timeStr}`,
-                        type: 'lesson_reminder', data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
+                        userId,
+                        title: 'Скоро занятие',
+                        message: isStudent
+                            ? `${subjectName} с преподавателем ${teacherName} начнется в ${timeStr}`
+                            : `${subjectName} с ${lesson.studentId ? 'учеником' : 'группой'} ${entityName} начнется в ${timeStr}`,
+                        type: 'lesson_reminder',
+                        data: JSON.stringify({ key: notificationKey, lessonId: lesson.id }),
                         link: isStudent ? `/student/lessons/${lesson.id}` : `/lessons/${lesson.id}`,
                         isRead: !settings.deliveryWeb
                     }
@@ -96,10 +104,9 @@ async function processUserNotifications(userId: string) {
         }
     }
 
-    // 2. Unpaid Lessons
+    // 2. Unpaid Lessons (Shortly after each lesson ends)
     if (settings.unpaidLessons) {
         const lookbackDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
 
         const unpaidLessons = await prisma.lesson.findMany({
             where: {
@@ -111,13 +118,20 @@ async function processUserNotifications(userId: string) {
                 } : {
                     ownerId: userId
                 }),
-                date: { gte: lookbackDate, lte: oneHourAgo },
+                date: { gte: lookbackDate, lte: now },
                 isPaid: false, isCanceled: false, price: { gt: 0 }
             },
             include: { subject: true, owner: true }
         })
 
         for (const lesson of unpaidLessons) {
+            // Send notification only if lesson ended more than 5 minutes ago
+            const lessonDurationMinutes = lesson.duration || 60
+            const lessonEndTime = new Date(lesson.date.getTime() + lessonDurationMinutes * 60 * 1000)
+            const triggerTime = new Date(lessonEndTime.getTime() + 5 * 60 * 1000)
+
+            if (now < triggerTime) continue
+
             const notificationKey = `unpaid_${lesson.id}`
             const existing = await prisma.notification.findFirst({
                 where: { userId, type: 'unpaid_lesson', data: { contains: notificationKey } }
@@ -315,7 +329,6 @@ export async function GET(request: NextRequest) {
 
         if (cronSecret && secret === cronSecret) {
             const users = await prisma.user.findMany({
-                where: { telegramChatId: { not: null } },
                 select: { id: true }
             })
             const results = []

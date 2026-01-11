@@ -209,12 +209,12 @@ export async function POST(request: NextRequest) {
             if (validatedData.studentId) {
                 await prisma.student.update({
                     where: { id: validatedData.studentId, ownerId: payload.userId },
-                    data: { defaultPrice: priceToSave }
+                    data: { defaultPrice: priceToSave } as any
                 })
             } else if (validatedData.groupId) {
                 await prisma.group.update({
                     where: { id: validatedData.groupId, ownerId: payload.userId },
-                    data: { defaultPrice: priceToSave }
+                    data: { defaultPrice: priceToSave } as any
                 })
             }
         }
@@ -302,6 +302,7 @@ async function createSingleLesson(userId: string, data: z.infer<typeof lessonSch
             } : undefined
         } as any,
         include: {
+            owner: true,
             student: true,
             group: { include: { students: true } },
             subject: true,
@@ -462,6 +463,7 @@ async function createRecurringLesson(userId: string, data: z.infer<typeof lesson
         const firstLesson = await tx.lesson.findFirst({
             where: { seriesId: series.id },
             include: {
+                owner: true,
                 student: true,
                 group: { include: { students: true } },
                 subject: true,

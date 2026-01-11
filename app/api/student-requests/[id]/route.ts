@@ -74,6 +74,10 @@ export async function PATCH(
             data: { status }
         })
 
+        // Notify student about the result
+        const { notifyLessonRequestResult } = await import('@/lib/lesson-actions-server')
+        await notifyLessonRequestResult(id)
+
         return NextResponse.json({ success: true, request: updatedRequest })
     } catch (error) {
         console.error('Update request error:', error)

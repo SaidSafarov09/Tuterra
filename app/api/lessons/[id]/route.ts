@@ -146,7 +146,7 @@ export async function PUT(
                 ],
                 ownerId: user.id
             },
-            include: { student: true, subject: true, group: { include: { students: true } } }
+            include: { owner: true, student: true, subject: true, group: { include: { students: true } } }
         })
         if (!currentLesson) return NextResponse.json({ error: 'Занятие не найдено' }, { status: 404 })
         const lessonId = currentLesson.id
@@ -218,12 +218,12 @@ export async function PUT(
             if (studentId) {
                 await prisma.student.update({
                     where: { id: studentId, ownerId: user.id },
-                    data: { defaultPrice: priceToSave }
+                    data: { defaultPrice: priceToSave } as any
                 })
             } else if (groupId) {
                 await prisma.group.update({
                     where: { id: groupId, ownerId: user.id },
-                    data: { defaultPrice: priceToSave }
+                    data: { defaultPrice: priceToSave } as any
                 })
             }
         }
@@ -344,6 +344,24 @@ export async function PATCH(
             }
         }
 
+        if (updateData.isCanceled !== undefined && updateData.isCanceled !== currentLesson.isCanceled) {
+            const { notifyLessonStatusChanged } = await import('@/lib/lesson-actions-server')
+            const status = updateData.isCanceled ? 'canceled' : 'restored'
+
+            await notifyLessonStatusChanged(user.id, currentLesson, status, timezone)
+
+            if (currentLesson.student?.linkedUserId) {
+                await notifyLessonStatusChanged(currentLesson.student.linkedUserId, currentLesson, status, timezone)
+            }
+            if (currentLesson.group?.students) {
+                for (const student of currentLesson.group.students) {
+                    if (student.linkedUserId) {
+                        await notifyLessonStatusChanged(student.linkedUserId, currentLesson, status, timezone)
+                    }
+                }
+            }
+        }
+
         if (Object.keys(updateData).length > 0) {
             await prisma.lesson.update({ where: { id: lessonId }, data: updateData })
         }
@@ -396,7 +414,7 @@ export async function DELETE(
                 ],
                 ownerId: user.id
             },
-            include: { student: true, group: true, subject: true }
+            include: { owner: true, student: true, group: { include: { students: true } }, subject: true }
         })
 
         if (!lesson) {
@@ -445,28 +463,24 @@ export async function DELETE(
             })
         }
 
-        const subjectName = (lesson as any).subject?.name || 'Занятие'
-        const entityName = (lesson as any).student?.name || (lesson as any).group?.name || '---'
-        const isGroup = !!(lesson as any).groupId
-        const entityLabel = isGroup ? 'группой' : 'учеником'
+        const { notifyLessonDeleted } = await import('@/lib/lesson-actions-server')
+        const isSeries = scope === 'series'
 
-        const settings = await prisma.notificationSettings.findUnique({ where: { userId: user.id } })
+        // 1. Notify the teacher
+        await notifyLessonDeleted(user.id, lesson, isSeries)
 
-        if (settings?.statusChanges) {
-            if (settings.deliveryWeb) {
-                await prisma.notification.create({
-                    data: {
-                        userId: user.id,
-                        title: 'Занятие удалено',
-                        message: `Занятие по предмету ${subjectName} с ${entityLabel} ${entityName} было удалено`,
-                        type: 'lesson_deleted',
-                        link: '/lessons',
-                        isRead: false
-                    }
-                })
+        // 2. Notify the student if they are linked
+        if (lesson.student?.linkedUserId) {
+            await notifyLessonDeleted(lesson.student.linkedUserId, lesson, isSeries)
+        }
 
+        // 3. Notify group students who are linked
+        if (lesson.group?.students) {
+            for (const student of lesson.group.students) {
+                if (student.linkedUserId) {
+                    await notifyLessonDeleted(student.linkedUserId, lesson, isSeries)
+                }
             }
-            await sendTelegramNotification(user.id, `🗑 **Занятие удалено:**\n\nЗанятие по предмету **${subjectName}** с ${entityLabel} **${entityName}** было удалено.`, 'statusChanges')
         }
 
         return NextResponse.json({ success: true })

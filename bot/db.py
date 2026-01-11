@@ -24,6 +24,11 @@ async def link_user_telegram(pool, email, telegram_id, chat_id):
             'UPDATE "User" SET "telegramId" = $1, "telegramChatId" = $2 WHERE email = $3',
             str(telegram_id), str(chat_id), email
         )
+        # Enable Telegram delivery in settings
+        await conn.execute(
+            'UPDATE "NotificationSettings" SET "deliveryTelegram" = true WHERE "userId" = $1',
+            user['id']
+        )
         return user
 
 async def verify_telegram_code(pool, code, telegram_id, chat_id):
@@ -55,6 +60,12 @@ async def verify_telegram_code(pool, code, telegram_id, chat_id):
             UPDATE "User" SET "telegramId" = $1, "telegramChatId" = $2 WHERE id = $3
         """, str(telegram_id), str(chat_id), user_id)
         
+        # Enable Telegram delivery in settings
+        await conn.execute(
+            'UPDATE "NotificationSettings" SET "deliveryTelegram" = true WHERE "userId" = $1',
+            user_id
+        )
+
         # Delete used code
         await conn.execute('DELETE FROM "VerificationCode" WHERE id = $1', record['id'])
         

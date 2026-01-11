@@ -80,7 +80,7 @@ export function CalendarGrid({ currentMonth, lessons, onDateClick, userBirthDate
                                         <div className={styles.moreDots}>+</div>
                                     )}
                                 </div>
-                                {dayEarnings > 0 && (
+                                {dayEarnings > 0 && user?.role !== 'student' && (
                                     <div className={styles.earnings}>+{formatCurrency(dayEarnings, user?.currency)}</div>
                                 )}
                             </div>

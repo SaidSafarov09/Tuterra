@@ -124,29 +124,27 @@ export function CalendarDayDetails({
 
             {!isEmpty && (
                 <>
-                    {!isStudentView && (
-                        <div className={styles.dayStats}>
-                            {date && isPast(date) ? (
-                                <div className={styles.statCard}>
-                                    <MoneyIcon size={24} color="#10B981" />
-                                    <div>
-                                        <div className={styles.statLabel}>Заработано</div>
-                                        <div className={styles.statValue}>{formatCurrency(dayData.totalEarned, user?.currency)}</div>
+                    <div className={styles.dayStats}>
+                        {date && isPast(date) ? (
+                            <div className={styles.statCard}>
+                                <MoneyIcon size={24} color="#10B981" />
+                                <div>
+                                    <div className={styles.statLabel}>{isStudentView ? 'Оплачено' : 'Заработано'}</div>
+                                    <div className={styles.statValue}>{formatCurrency(dayData.totalEarned, user?.currency)}</div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className={styles.statCard}>
+                                <MoneyIcon size={24} color="#6366f1" />
+                                <div>
+                                    <div className={styles.statLabel}>{isStudentView ? 'К оплате' : 'Возможный заработок'}</div>
+                                    <div className={styles.statValue}>
+                                        {formatCurrency(dayData.totalEarned + dayData.potentialEarnings, user?.currency)}
                                     </div>
                                 </div>
-                            ) : (
-                                <div className={styles.statCard}>
-                                    <MoneyIcon size={24} color="#6366f1" />
-                                    <div>
-                                        <div className={styles.statLabel}>Возможный заработок</div>
-                                        <div className={styles.statValue}>
-                                            {formatCurrency(dayData.totalEarned + dayData.potentialEarnings, user?.currency)}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                            </div>
+                        )}
+                    </div>
 
                     <div className={styles.lessonsContainer}>
                         <div className={styles.lessonsHeader}>

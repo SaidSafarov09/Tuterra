@@ -103,6 +103,10 @@ export async function POST(
             } as any
         })
 
+        // Notify teacher and send Telegram message with actions
+        const { notifyNewLessonRequest } = await import('@/lib/lesson-actions-server')
+        await notifyNewLessonRequest(lessonRequest.id)
+
         return NextResponse.json({
             success: true,
             request: lessonRequest
