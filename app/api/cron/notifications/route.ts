@@ -158,7 +158,50 @@ async function processUserNotifications(userId: string) {
         }
     }
 
-    // 3. Teacher Only: Reports, Planning, Debts
+    // 3. Student Morning Briefing (around 9 AM)
+    if (isStudent && localHour >= 8 && localHour < 11) {
+        const startOfDay = new Date(now); startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(now); endOfDay.setHours(23, 59, 59, 999)
+
+        const todayLessons = await prisma.lesson.findMany({
+            where: {
+                OR: [
+                    { studentId: { in: studentIds } },
+                    { group: { students: { some: { id: { in: studentIds } } } } }
+                ],
+                date: { gte: startOfDay, lte: endOfDay },
+                isCanceled: false
+            },
+            include: { subject: true, owner: true },
+            orderBy: { date: 'asc' }
+        })
+
+        if (todayLessons.length > 0) {
+            const key = `student_morning_${todayStr}`
+            const existing = await prisma.notification.findFirst({
+                where: { userId, type: 'morning_briefing', data: { contains: key } }
+            })
+            if (!existing) {
+                const lessonsList = todayLessons.map((l, i) => {
+                    const time = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: userTz }).format(l.date)
+                    const teacherName = l.owner?.firstName || l.owner?.name || 'Преподаватель'
+                    return `${i + 1}. **${time}** — ${l.subject?.name || 'Урок'} (${teacherName})`
+                }).join('\n')
+                const msg = `☀️ **Доброе утро!**\n\nСегодня у тебя ${todayLessons.length} ${todayLessons.length === 1 ? 'занятие' : 'занятий'}:\n\n${lessonsList}\n\nУдачного дня! ✨`
+                if (await sendTelegramNotification(userId, msg, 'morningBriefing')) {
+                    await prisma.notification.create({
+                        data: {
+                            userId, title: 'Расписание на сегодня', message: `У тебя ${todayLessons.length} занятий сегодня.`,
+                            type: 'morning_briefing', data: JSON.stringify({ key }), isRead: true, link: '/student/lessons'
+                        }
+                    })
+                    notificationsCreated.push('student_morning')
+                }
+            }
+        }
+    }
+
+    // 4. Teacher Only: Reports, Planning, Debts
     if (!isStudent) {
         const startOfDay = new Date(now); startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(now); endOfDay.setHours(23, 59, 59, 999)

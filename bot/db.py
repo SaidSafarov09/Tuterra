@@ -137,6 +137,66 @@ async def get_dashboard_stats(pool, user_id, user_tz="Europe/Moscow"):
             "income_today": income_today
         }
 
+async def get_student_ids(pool, user_id):
+    async with pool.acquire() as conn:
+        rows = await conn.fetch('SELECT id FROM "Student" WHERE "linkedUserId" = $1', str(user_id))
+        return [row['id'] for row in rows]
+
+async def get_student_dashboard_stats(pool, user_id, user_tz="Europe/Moscow"):
+    student_ids = await get_student_ids(pool, user_id)
+    if not student_ids:
+        return {"lessons_today": 0, "debt": 0, "upcoming": 0}
+        
+    async with pool.acquire() as conn:
+        tz = pytz.timezone(user_tz)
+        now_local = datetime.now(tz)
+        today_start = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+        
+        today_start_utc = today_start.astimezone(pytz.utc).replace(tzinfo=None)
+        today_end_utc = today_end.astimezone(pytz.utc).replace(tzinfo=None)
+        now_utc = datetime.now(pytz.utc).replace(tzinfo=None)
+
+        # Today's lessons (individual + group)
+        lessons_today = await conn.fetchval('''
+            SELECT COUNT(*) FROM "Lesson" l
+            WHERE l."isCanceled" = false 
+              AND l.date >= $1 AND l.date < $2
+              AND (
+                  l."studentId" = ANY($3)
+                  OR l."groupId" IN (SELECT "A" FROM "_GroupToStudent" WHERE "B" = ANY($3))
+              )
+        ''', today_start_utc, today_end_utc, student_ids)
+
+        # Debt calculation
+        debt_amount = await conn.fetchval('''
+            SELECT SUM(price) FROM (
+                SELECT l.price FROM "Lesson" l
+                WHERE l."studentId" = ANY($1) AND l."isPaid" = false AND l."isCanceled" = false AND l.date < $2
+                UNION ALL
+                SELECT l.price FROM "LessonPayment" lp
+                JOIN "Lesson" l ON lp."lessonId" = l.id
+                WHERE lp."studentId" = ANY($1) AND lp."hasPaid" = false AND l."isCanceled" = false AND l.date < $2
+            ) as t
+        ''', student_ids, now_utc)
+
+        # Upcoming total
+        upcoming = await conn.fetchval('''
+            SELECT COUNT(*) FROM "Lesson" l
+            WHERE l."isCanceled" = false 
+              AND l.date >= $1
+              AND (
+                  l."studentId" = ANY($2)
+                  OR l."groupId" IN (SELECT "A" FROM "_GroupToStudent" WHERE "B" = ANY($2))
+              )
+        ''', now_utc, student_ids)
+
+        return {
+            "lessons_today": lessons_today or 0,
+            "debt": debt_amount or 0,
+            "upcoming": upcoming or 0
+        }
+
 # --- Lessons ---
 async def get_lessons_by_date(pool, user_id, date: datetime, user_tz="Europe/Moscow"):
     tz = pytz.timezone(user_tz)
@@ -163,14 +223,43 @@ async def get_lessons_by_date(pool, user_id, date: datetime, user_tz="Europe/Mos
             ORDER BY l.date ASC
         ''', user_id, start_utc, end_utc)
 
+async def get_student_lessons_by_date(pool, user_id, date: datetime, user_tz="Europe/Moscow"):
+    student_ids = await get_student_ids(pool, user_id)
+    if not student_ids: return []
+    
+    tz = pytz.timezone(user_tz)
+    if date.tzinfo is None: date = tz.localize(date)
+    start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+    end = start + timedelta(days=1)
+    
+    start_utc = start.astimezone(pytz.utc).replace(tzinfo=None)
+    end_utc = end.astimezone(pytz.utc).replace(tzinfo=None)
+    
+    async with pool.acquire() as conn:
+        return await conn.fetch('''
+            SELECT l.id, l.date, s.name as "subjectName", sg.name as "groupName", u.name as "teacherName", 
+                   l."groupId", l."studentId", l."isPaid", l."isCanceled", l.price
+            FROM "Lesson" l
+            LEFT JOIN "Subject" s ON l."subjectId" = s.id
+            LEFT JOIN "Group" sg ON l."groupId" = sg.id
+            LEFT JOIN "User" u ON l."ownerId" = u.id
+            WHERE (
+                l."studentId" = ANY($1)
+                OR l."groupId" IN (SELECT "A" FROM "_GroupToStudent" WHERE "B" = ANY($1))
+            )
+            AND l.date >= $2 AND l.date < $3
+            ORDER BY l.date ASC
+        ''', student_ids, start_utc, end_utc)
+
 async def get_lesson_by_id(pool, lesson_id):
     async with pool.acquire() as conn:
         return await conn.fetchrow('''
-            SELECT l.*, s.name as "subjectName", st.name as "studentName", sg.name as "groupName"
+            SELECT l.*, s.name as "subjectName", st.name as "studentName", sg.name as "groupName", u.name as "teacherName"
             FROM "Lesson" l
             LEFT JOIN "Subject" s ON l."subjectId" = s.id
             LEFT JOIN "Student" st ON l."studentId" = st.id
             LEFT JOIN "Group" sg ON l."groupId" = sg.id
+            LEFT JOIN "User" u ON l."ownerId" = u.id
             WHERE l.id = $1
         ''', lesson_id)
 

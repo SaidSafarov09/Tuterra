@@ -244,13 +244,19 @@ export async function notifyLessonCreated(
     timezone: string = 'Europe/Moscow'
 ) {
     try {
+        const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+        const isStudent = user?.role === 'student'
+
+        // Students should not be spammed about new lessons. They get morning briefings and reminders instead.
+        if (isStudent) {
+            return
+        }
+
         const settings = await prisma.notificationSettings.upsert({
             where: { userId },
             create: { userId },
             update: {}
         })
-        const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
-        const isStudent = user?.role === 'student'
 
         const formatter = new Intl.DateTimeFormat('ru-RU', {
             day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
@@ -292,7 +298,7 @@ export async function notifyLessonCreated(
                     }
                 })
             }
-            await sendTelegramNotification(userId, msg, 'statusChanges')
+            // No Telegram for lesson creation - teacher already sees this on site
         }
     } catch (error) {
         console.error('Failed to send creation notification:', error)

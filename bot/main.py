@@ -8,10 +8,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKe
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from db import (
     get_db_pool, get_user_by_telegram_id, link_user_telegram, verify_telegram_code,
-    get_dashboard_stats, get_lessons_by_date, get_lesson_by_id, 
     toggle_lesson_paid, toggle_lesson_cancel, get_all_students, 
     get_student_details, get_unpaid_lessons, get_group_lesson_payments,
-    toggle_student_payment
+    toggle_student_payment, get_student_dashboard_stats, get_student_lessons_by_date
 )
 
 # Load environment variables
@@ -56,7 +55,13 @@ async def send_subscription_wall(update: Update):
         await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 # --- Keyboards ---
-def main_reply_keyboard():
+def main_reply_keyboard(role='teacher'):
+    if role == 'student':
+        return ReplyKeyboardMarkup([
+            ["📅 Расписание", "📉 Оплата"],
+            ["⚙️ Настройки", "🏠 Главное меню"],
+            ["📎 Справка"]
+        ], resize_keyboard=True)
     return ReplyKeyboardMarkup([
         ["📅 Расписание", "👥 Ученики"],
         ["💰 Финансы", "📉 Должники"],
@@ -64,7 +69,12 @@ def main_reply_keyboard():
         ["📎 Справка"]
     ], resize_keyboard=True)
 
-def main_menu_keyboard():
+def main_menu_keyboard(role='teacher'):
+    if role == 'student':
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton("📅 Расписание", callback_data='menu_schedule'), InlineKeyboardButton("💰 Оплата", callback_data='menu_finance')],
+            [InlineKeyboardButton("⚙️ Настройки", callback_data='menu_settings')]
+        ])
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📅 Расписание", callback_data='menu_schedule'), InlineKeyboardButton("👥 Ученики", callback_data='menu_students')],
         [InlineKeyboardButton("💰 Финансы", callback_data='menu_finance'), InlineKeyboardButton("⚙️ Настройки", callback_data='menu_settings')],
@@ -78,22 +88,35 @@ def back_button(data='menu_main'):
 
 async def action_show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, user, is_start=False):
     pool = context.bot_data['pool']
-    stats = await get_dashboard_stats(pool, user['id'], user.get('timezone', 'Europe/Moscow'))
+    role = user.get('role', 'teacher')
+    timezone = user.get('timezone', 'Europe/Moscow')
     
-    greeting = f"👋 Привет, {user['firstName'] or 'Преподаватель'}!\n\n" if is_start else ""
+    greeting = f"👋 Привет, {user['firstName'] or 'Пользователь'}!\n\n" if is_start else ""
     
-    text = (
-        f"{greeting}📊 **Общая сводка:**\n\n"
-        f"• Учеников всего: **{stats['students']}**\n"
-        f"• Уроков сегодня: **{stats['lessons_today']}**\n"
-        f"• Доход за сегодня: **{stats['income_today']} ₽**\n"
-        f"• Доход за месяц: **{stats['income']} ₽**\n\n"
-        "Выберите нужное действие в меню. 👇"
-    )
-    if update.callback_query:
-        await update.callback_query.edit_message_text(text, reply_markup=main_menu_keyboard(), parse_mode='Markdown')
+    if role == 'student':
+        stats = await get_student_dashboard_stats(pool, user['id'], timezone)
+        text = (
+            f"{greeting}📊 **Твой дашборд:**\n\n"
+            f"• Уроков сегодня: **{stats['lessons_today']}**\n"
+            f"• Всего будущих уроков: **{stats['upcoming']}**\n"
+            f"• К оплате: **{stats['debt']} ₽**\n\n"
+            "Выберите нужное действие в меню. 👇"
+        )
     else:
-        await update.message.reply_text(text, reply_markup=main_reply_keyboard(), parse_mode='Markdown')
+        stats = await get_dashboard_stats(pool, user['id'], timezone)
+        text = (
+            f"{greeting}📊 **Общая сводка:**\n\n"
+            f"• Учеников всего: **{stats['students']}**\n"
+            f"• Уроков сегодня: **{stats['lessons_today']}**\n"
+            f"• Доход за сегодня: **{stats['income_today']} ₽**\n"
+            f"• Доход за месяц: **{stats['income']} ₽**\n\n"
+            "Выберите нужное действие в меню. 👇"
+        )
+
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, reply_markup=main_menu_keyboard(role), parse_mode='Markdown')
+    else:
+        await update.message.reply_text(text, reply_markup=main_reply_keyboard(role), parse_mode='Markdown')
 
 async def action_show_schedule_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("Сегодня", callback_data='sched_today'), InlineKeyboardButton("Завтра", callback_data='sched_tomorrow')], [back_button()]]
@@ -117,28 +140,36 @@ async def action_show_students_list(update: Update, context: ContextTypes.DEFAUL
 
 async def action_show_finance_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, user):
     pool = context.bot_data['pool']
-    stats = await get_dashboard_stats(pool, user['id'], user.get('timezone', 'Europe/Moscow'))
-    unpaid = await get_unpaid_lessons(pool, user['id'], limit=5)
+    role = user.get('role', 'teacher')
+    timezone = user.get('timezone', 'Europe/Moscow')
     
-    text = (
-        "💰 **Финансовый отчет**\n\n"
-        f"💵 Заработано сегодня: **{stats['income_today']} ₽**\n"
-        f"📈 Заработано за месяц: **{stats['income']} ₽**\n\n"
-    )
-    
-    if unpaid:
-        text += "⚠️ **Последние неоплаченные уроки:**"
-        keyboard = []
-        for l in unpaid:
-            if l['groupName']:
-                display_name = f"👤 {l['studentName']} (👥 {l['groupName']})"
-            else:
-                display_name = f"👤 {l['studentName']}"
-            keyboard.append([InlineKeyboardButton(f"{display_name} — {l['price']}₽", callback_data=f"l_{l['id']}")])
-        keyboard.append([back_button()])
-    else:
-        text += "Все уроки оплачены! 🎉"
+    if role == 'student':
+        stats = await get_student_dashboard_stats(pool, user['id'], timezone)
+        text = (
+            "💰 **Твоя оплата**\n\n"
+            f"📉 Текущий долг: **{stats['debt']} ₽**\n"
+            "Пожалуйста, оплати прошедшие занятия через своего преподавателя."
+        )
         keyboard = [[back_button()]]
+    else:
+        stats = await get_dashboard_stats(pool, user['id'], timezone)
+        unpaid = await get_unpaid_lessons(pool, user['id'], limit=5)
+        text = (
+            "💰 **Финансовый отчет**\n\n"
+            f"💵 Заработано сегодня: **{stats['income_today']} ₽**\n"
+            f"📈 Заработано за месяц: **{stats['income']} ₽**\n\n"
+        )
+        if unpaid:
+            text += "⚠️ **Последние неоплаченные уроки:**"
+            keyboard = []
+            for l in unpaid:
+                display_name = f"👤 {l['studentName']} (👥 {l['groupName']})" if l['groupName'] else f"👤 {l['studentName']}"
+                keyboard.append([InlineKeyboardButton(f"{display_name} — {l['price']}₽", callback_data=f"l_{l['id']}")])
+            keyboard.append([back_button()])
+        else:
+            text += "Все уроки оплачены! 🎉"
+            keyboard = [[back_button()]]
+
     if update.callback_query: await update.callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     else: await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
@@ -225,15 +256,29 @@ async def schedule_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not user_rec: return
     user = dict(user_rec)
     user_tz = user.get('timezone', 'Europe/Moscow')
+    role = user.get('role', 'teacher')
     target_date = datetime.now(pytz.timezone(user_tz))
     title = "Сегодня"
     if query.data == 'sched_tomorrow': target_date += timedelta(days=1); title = "Завтра"
-    lessons = await get_lessons_by_date(context.bot_data['pool'], user['id'], target_date, user_tz)
+    
+    if role == 'student':
+        from db import get_student_lessons_by_date
+        lessons = await get_student_lessons_by_date(context.bot_data['pool'], user['id'], target_date, user_tz)
+    else:
+        from db import get_lessons_by_date # though it's already imported
+        lessons = await get_lessons_by_date(context.bot_data['pool'], user['id'], target_date, user_tz)
+
     if not lessons:
         await query.edit_message_text(f"📅 **{title}:** Занятий нет. 🏖", reply_markup=InlineKeyboardMarkup([[back_button('menu_schedule')]]), parse_mode='Markdown')
         return
     text = f"📅 **Расписание на {title}:**"
-    keyboard = [[InlineKeyboardButton(f"{'✅' if l['isPaid'] else ('❌' if l['isCanceled'] else '⚠️')} {to_local_time(l['date'], user_tz).strftime('%H:%M')} - {l['studentName'] or l['groupName']}", callback_data=f"l_{l['id']}")] for l in lessons]
+    keyboard = []
+    for l in lessons:
+        time_str = to_local_time(l['date'], user_tz).strftime('%H:%M')
+        name = l['studentName'] or l['groupName'] if role != 'student' else f"{l['subjectName']} ({l['teacherName']})"
+        icon = '✅' if l['isPaid'] else ('❌' if l['isCanceled'] else '⚠️')
+        keyboard.append([InlineKeyboardButton(f"{icon} {time_str} - {name}", callback_data=f"l_{l['id']}")])
+    
     keyboard.append([back_button('menu_schedule')])
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
@@ -265,7 +310,6 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
     
     if lesson['groupId']:
         group_payments = await get_group_lesson_payments(pool, lesson_id)
-        # Check if all paid
         all_paid = all(p['hasPaid'] for p in group_payments) if group_payments else False
         status = "✅ Все ученики оплатили" if all_paid else "⚠️ Есть долги"
     else:
@@ -274,30 +318,34 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
     if lesson['isCanceled']:
         status = "❌ Отменено"
     
+    teacher_name = lesson.get('teacherName') or "Преподаватель"
     entity_label = f"👤 Ученик: **{lesson['studentName']}**" if lesson['studentName'] else f"👥 Группа: **{lesson['groupName']}**"
+    if user_rec['role'] == 'student':
+        entity_label = f"👨‍🏫 Преподаватель: **{teacher_name}**"
+
     text = f"📚 **Занятие**\n{entity_label}\n📖 Предмет: **{lesson['subjectName'] or '---'}**\n📅 Время: **{time_str}**\n💰 Стоимость: **{lesson['price']} ₽**\n📊 Статус: {status}"
     
     keyboard = []
     
-    # If group, show list of students
-    if lesson['groupId']:
+    # If teacher view AND group, show list of students
+    if user_rec['role'] != 'student' and lesson['groupId']:
         group_payments = await get_group_lesson_payments(pool, lesson_id)
         if group_payments:
             text += "\n\n👥 **Ученики в группе:**"
             for p in group_payments:
                 p_status = "✅" if p['hasPaid'] else "❌"
                 text += f"\n{p_status} {p['studentName']}"
-                # Toggle button for each student
                 btn_action = 'ups' if p['hasPaid'] else 'ps'
                 btn_text = f"{'🔄' if p['hasPaid'] else '✅'} {p['studentName']}"
                 keyboard.append([InlineKeyboardButton(btn_text, callback_data=f"l_{lesson_id}_{btn_action}_{p['studentId']}")])
 
     btns = []
-    if not lesson['isCanceled']: 
+    if user_rec['role'] != 'student' and not lesson['isCanceled']: 
         if not lesson['groupId']:
             btns.append(InlineKeyboardButton("↩️ Не оплачено" if lesson['isPaid'] else "✅ Оплачено", callback_data=f"l_{lesson_id}_{'up' if lesson['isPaid'] else 'p'}"))
-    btns.append(InlineKeyboardButton("Восстановить" if lesson['isCanceled'] else "❌ Отменить", callback_data=f"l_{lesson_id}_tc"))
-    keyboard.append(btns)
+        btns.append(InlineKeyboardButton("Восстановить" if lesson['isCanceled'] else "❌ Отменить", callback_data=f"l_{lesson_id}_tc"))
+    
+    if btns: keyboard.append(btns)
     keyboard.append([back_button('menu_schedule')])
     
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
@@ -339,13 +387,13 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_rec = await get_user_by_telegram_id(pool, user_id)
 
     # Menu checks
-    if text in ["📅 Расписание", "👥 Ученики", "💰 Финансы", "📉 Должники", "⚙️ Настройки", "🏠 Главное меню"]:
+    if text in ["📅 Расписание", "👥 Ученики", "💰 Финансы", "📉 Должники", "⚙️ Настройки", "🏠 Главное меню", "📉 Оплата", "💰 Оплата"]:
         if not user_rec: return await update.message.reply_text("🔒 Авторизуйтесь.")
         user = dict(user_rec)
         if text == "📅 Расписание": await action_show_schedule_menu(update, context)
-        elif text == "👥 Ученики": await action_show_students_list(update, context, user)
-        elif text == "💰 Финансы": await action_show_finance_menu(update, context, user)
-        elif text == "📉 Должники": await action_show_debtors(update, context, user)
+        elif text == "👥 Ученики" and user['role'] != 'student': await action_show_students_list(update, context, user)
+        elif text in ["💰 Финансы", "📉 Оплата", "💰 Оплата"]: await action_show_finance_menu(update, context, user)
+        elif text == "📉 Должники" and user['role'] != 'student': await action_show_debtors(update, context, user)
         elif text == "⚙️ Настройки": await action_show_settings(update, context, user)
         elif text == "🏠 Главное меню": await action_show_main_menu(update, context, user, is_start=False)
         return
@@ -355,7 +403,10 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if user_id in PENDING_LINK:
         user = await link_user_telegram(pool, text, user_id, update.effective_chat.id)
-        if user: PENDING_LINK.remove(user_id); await update.message.reply_text("🎉 Готово! Аккаунт привязан.", reply_markup=main_reply_keyboard())
+        if user: 
+            PENDING_LINK.remove(user_id)
+            role = user.get('role', 'teacher')
+            await update.message.reply_text("🎉 Готово! Аккаунт привязан.", reply_markup=main_reply_keyboard(role))
         else: await update.message.reply_text("❌ Email не найден.")
 
 if __name__ == '__main__':
