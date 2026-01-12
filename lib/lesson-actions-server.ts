@@ -122,7 +122,9 @@ export async function notifyNewLessonRequest(requestId: string) {
         }
 
         // 2. Telegram Notification
-        await sendTelegramNotification(teacherId, msg, 'statusChanges', buttons)
+        console.log(`[LessonRequest] Sending Telegram to teacher ${teacherId}, has chatId: ${!!teacher.telegramChatId}`)
+        const sent = await sendTelegramNotification(teacherId, msg, 'statusChanges', buttons)
+        console.log(`[LessonRequest] Telegram result: ${sent}`)
 
     } catch (error) {
         console.error('Failed to notify about new lesson request:', error)

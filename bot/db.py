@@ -395,3 +395,56 @@ async def get_unpaid_lessons(pool, user_id, limit=20):
             ORDER BY date DESC
             LIMIT $2
         ''', user_id, limit)
+
+# --- Lesson Requests ---
+async def get_lesson_request(pool, request_id):
+    async with pool.acquire() as conn:
+        return await conn.fetchrow('''
+            SELECT lr.*, l.date as "lessonDate", s.name as "subjectName", 
+                   st.name as "studentName", sg.name as "groupName", u.name as "requesterName"
+            FROM "LessonRequest" lr
+            JOIN "Lesson" l ON lr."lessonId" = l.id
+            LEFT JOIN "Subject" s ON l."subjectId" = s.id
+            LEFT JOIN "Student" st ON l."studentId" = st.id
+            LEFT JOIN "Group" sg ON l."groupId" = sg.id
+            LEFT JOIN "User" u ON lr."userId" = u.id
+            WHERE lr.id = $1
+        ''', request_id)
+
+async def approve_lesson_request(pool, request_id):
+    async with pool.acquire() as conn:
+        lr = await conn.fetchrow('SELECT * FROM "LessonRequest" WHERE id = $1', request_id)
+        if not lr: return None
+        
+        await conn.execute('UPDATE "LessonRequest" SET status = $1 WHERE id = $2', 'approved', request_id)
+        
+        if lr['type'] == 'cancel':
+            await conn.execute('UPDATE "Lesson" SET "isCanceled" = true, status = $1 WHERE id = $2', 'canceled', lr['lessonId'])
+        elif lr['type'] == 'reschedule' and lr['newDate']:
+            await conn.execute('UPDATE "Lesson" SET date = $1, status = $2 WHERE id = $3', lr['newDate'], 'confirmed', lr['lessonId'])
+        
+        return lr
+
+async def reject_lesson_request(pool, request_id):
+    async with pool.acquire() as conn:
+        lr = await conn.fetchrow('SELECT * FROM "LessonRequest" WHERE id = $1', request_id)
+        if not lr: return None
+        
+        await conn.execute('UPDATE "LessonRequest" SET status = $1 WHERE id = $2', 'rejected', request_id)
+        await conn.execute('UPDATE "Lesson" SET status = $1 WHERE id = $2', 'confirmed', lr['lessonId'])
+        
+        return lr
+
+async def create_lesson_request(pool, lesson_id, user_id, request_type, new_date=None, reason=None):
+    import uuid
+    async with pool.acquire() as conn:
+        request_id = str(uuid.uuid4())
+        await conn.execute('''
+            INSERT INTO "LessonRequest" (id, "lessonId", "userId", type, "newDate", reason, status, "createdAt", "updatedAt")
+            VALUES ($1, $2, $3, $4, $5, $6, 'pending', NOW(), NOW())
+        ''', request_id, lesson_id, user_id, request_type, new_date, reason)
+        
+        new_status = 'pending_cancel' if request_type == 'cancel' else 'pending_reschedule'
+        await conn.execute('UPDATE "Lesson" SET status = $1 WHERE id = $2', new_status, lesson_id)
+        
+        return request_id

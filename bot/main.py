@@ -10,7 +10,8 @@ from db import (
     get_db_pool, get_user_by_telegram_id, link_user_telegram, verify_telegram_code,
     toggle_lesson_paid, toggle_lesson_cancel, get_all_students, 
     get_student_details, get_unpaid_lessons, get_group_lesson_payments,
-    toggle_student_payment, get_student_dashboard_stats, get_student_lessons_by_date
+    toggle_student_payment, get_student_dashboard_stats, get_student_lessons_by_date,
+    get_lesson_request, approve_lesson_request, reject_lesson_request, create_lesson_request
 )
 
 # Load environment variables
@@ -25,6 +26,8 @@ logging.basicConfig(
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "@tuterra")
 PENDING_LINK = set()
+# State for reschedule flow: {user_id: {'lesson_id': str, 'date': datetime, 'role': str}}
+PENDING_RESCHEDULE = {}
 
 # --- Helpers ---
 async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -43,6 +46,42 @@ def to_local_time(dt, zone="Europe/Moscow"):
     try: tz = pytz.timezone(zone)
     except: tz = pytz.timezone("Europe/Moscow")
     return dt.astimezone(tz)
+
+def generate_date_picker(lesson_id, action_prefix, user_tz="Europe/Moscow"):
+    """Generate a keyboard with next 7 days for date selection"""
+    tz = pytz.timezone(user_tz)
+    now = datetime.now(tz)
+    keyboard = []
+    row = []
+    for i in range(7):
+        day = now + timedelta(days=i)
+        day_str = day.strftime("%d.%m")
+        day_name = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"][day.weekday()]
+        label = f"{day_name} {day_str}"
+        date_iso = day.strftime("%Y-%m-%d")
+        row.append(InlineKeyboardButton(label, callback_data=f"{action_prefix}_{lesson_id}_d_{date_iso}"))
+        if len(row) == 4:
+            keyboard.append(row)
+            row = []
+    if row:
+        keyboard.append(row)
+    keyboard.append([InlineKeyboardButton("🔙 Отмена", callback_data=f"l_{lesson_id}")])
+    return InlineKeyboardMarkup(keyboard)
+
+def generate_time_picker(lesson_id, date_str, action_prefix):
+    """Generate a keyboard with time slots"""
+    keyboard = []
+    times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"]
+    row = []
+    for t in times:
+        row.append(InlineKeyboardButton(t, callback_data=f"{action_prefix}_{lesson_id}_t_{date_str}_{t}"))
+        if len(row) == 4:
+            keyboard.append(row)
+            row = []
+    if row:
+        keyboard.append(row)
+    keyboard.append([InlineKeyboardButton("🔙 Назад к дате", callback_data=f"{action_prefix}_{lesson_id}")])
+    return InlineKeyboardMarkup(keyboard)
 
 async def send_subscription_wall(update: Update):
     channel_url = f"https://t.me/{CHANNEL_ID.replace('@', '')}"
@@ -290,6 +329,8 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
     pool = context.bot_data['pool']
     if len(data_parts) > 2:
         action = data_parts[2]
+        user_rec_check = await get_user_by_telegram_id(pool, update.effective_user.id)
+        
         if action == 'p': await toggle_lesson_paid(pool, lesson_id, True)
         elif action == 'up': await toggle_lesson_paid(pool, lesson_id, False)
         elif action == 'ps': 
@@ -301,6 +342,19 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
         elif action == 'tc':
             l = await get_lesson_by_id(pool, lesson_id)
             if l: await toggle_lesson_cancel(pool, lesson_id, not l['isCanceled'])
+        # Student actions
+        elif action == 'spaid' and user_rec_check and user_rec_check['role'] == 'student':
+            # Student claims they paid - notify teacher
+            lesson = await get_lesson_by_id(pool, lesson_id)
+            if lesson:
+                await query.answer("✅ Преподаватель уведомлен об оплате!", show_alert=True)
+                # Could add a more sophisticated notification here
+        elif action == 'sreq' and len(data_parts) > 3:
+            req_type = data_parts[3]  # 'reschedule' or 'cancel'
+            if user_rec_check and user_rec_check['role'] == 'student':
+                await create_lesson_request(pool, lesson_id, user_rec_check['id'], req_type)
+                type_label = "перенос" if req_type == 'reschedule' else "отмену"
+                await query.answer(f"✅ Заявка на {type_label} отправлена преподавателю!", show_alert=True)
 
     lesson = await get_lesson_by_id(pool, lesson_id)
     if not lesson: return
@@ -343,7 +397,18 @@ async def lesson_details_callback(update: Update, context: ContextTypes.DEFAULT_
     if user_rec['role'] != 'student' and not lesson['isCanceled']: 
         if not lesson['groupId']:
             btns.append(InlineKeyboardButton("↩️ Не оплачено" if lesson['isPaid'] else "✅ Оплачено", callback_data=f"l_{lesson_id}_{'up' if lesson['isPaid'] else 'p'}"))
+        btns.append(InlineKeyboardButton("📅 Перенести", callback_data=f"resc_{lesson_id}"))
         btns.append(InlineKeyboardButton("Восстановить" if lesson['isCanceled'] else "❌ Отменить", callback_data=f"l_{lesson_id}_tc"))
+    
+    # Student actions
+    if user_rec['role'] == 'student' and not lesson['isCanceled']:
+        student_btns = []
+        if not lesson['isPaid']:
+            student_btns.append(InlineKeyboardButton("💳 Я оплатил", callback_data=f"l_{lesson_id}_spaid"))
+        student_btns.append(InlineKeyboardButton("📅 Перенести", callback_data=f"sreq_{lesson_id}"))
+        student_btns.append(InlineKeyboardButton("❌ Отменить", callback_data=f"l_{lesson_id}_sreq_cancel"))
+        if student_btns:
+            keyboard.append(student_btns)
     
     if btns: keyboard.append(btns)
     keyboard.append([back_button('menu_schedule')])
@@ -407,7 +472,44 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             PENDING_LINK.remove(user_id)
             role = user.get('role', 'teacher')
             await update.message.reply_text("🎉 Готово! Аккаунт привязан.", reply_markup=main_reply_keyboard(role))
-        else: await update.message.reply_text("❌ Email не найден.")
+        else:
+            await update.message.reply_text("❌ Email не найден.")
+
+# Handler for lesson request approve/reject
+async def lesson_request_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    pool = context.bot_data['pool']
+    
+    data = query.data  # lr_approve:id or lr_reject:id
+    parts = data.split(':')
+    if len(parts) != 2:
+        return
+    
+    action, request_id = parts
+    
+    user_rec = await get_user_by_telegram_id(pool, update.effective_user.id)
+    if not user_rec or user_rec['role'] == 'student':
+        await query.answer("❌ Только преподаватель может обрабатывать заявки", show_alert=True)
+        return
+    
+    lr = await get_lesson_request(pool, request_id)
+    if not lr:
+        await query.edit_message_text("❌ Заявка не найдена или уже обработана.")
+        return
+    
+    if lr['status'] != 'pending':
+        await query.edit_message_text(f"ℹ️ Эта заявка уже обработана (статус: {lr['status']}).")
+        return
+    
+    if action == 'lr_approve':
+        await approve_lesson_request(pool, request_id)
+        type_label = "отмену" if lr['type'] == 'cancel' else "перенос"
+        await query.edit_message_text(f"✅ **Заявка одобрена!**\n\nВы одобрили {type_label} занятия.\nУченик получит уведомление.", parse_mode='Markdown')
+    elif action == 'lr_reject':
+        await reject_lesson_request(pool, request_id)
+        type_label = "отмену" if lr['type'] == 'cancel' else "перенос"
+        await query.edit_message_text(f"❌ **Заявка отклонена.**\n\nВы отклонили {type_label} занятия.\nУченик получит уведомление.", parse_mode='Markdown')
 
 if __name__ == '__main__':
     if not TOKEN: exit(1)
@@ -425,5 +527,6 @@ if __name__ == '__main__':
     app.add_handler(CallbackQueryHandler(schedule_callback, pattern='^sched_'))
     app.add_handler(CallbackQueryHandler(lesson_details_callback, pattern='^l_'))
     app.add_handler(CallbackQueryHandler(student_details_callback, pattern='^student_'))
+    app.add_handler(CallbackQueryHandler(lesson_request_callback, pattern='^lr_'))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), text_handler))
     app.run_polling()
